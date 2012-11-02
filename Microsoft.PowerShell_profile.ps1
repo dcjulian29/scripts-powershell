@@ -1,0 +1,89 @@
+﻿################################################################################
+# This profile is loaded with the PowerShell.exe "host" is executed.
+################################################################################
+
+$Global:PromptAdmin="$"
+
+$principal = new-object System.Security.principal.windowsprincipal($CurrentUser)
+if ($principal.IsInRole("Administrators"))
+{
+  $host.UI.RawUI.BackgroundColor = "DarkRed"
+  $host.UI.RawUI.ForegroundColor = "Yellow"
+
+  Set-Location C:\
+  $host.UI.RawUI.WindowTitle = "Administrator: PowerShell Prompt"
+  $PromptAdmin="#"
+}
+else
+{
+  $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
+  $host.UI.RawUI.BackgroundColor = "Black"
+  $host.UI.RawUI.ForegroundColor = "Green"
+}
+
+clear
+
+"Loading PowerShell Community Extensions"
+Import-Module Pscx
+
+"Loading PowerShell Pack"
+Import-Module PowerShellPack
+
+Import-Module PowerTab
+
+$globalScriptsPath = (Get-Item "$(Split-Path $profile)\GlobalScripts\")
+
+foreach ($directory in $globalScriptsPath.GetDirectories())
+{
+  foreach ($file in $directory.GetFiles("*.ps1"))
+  {
+    "Loading $($file.Name)"
+    . $file.FullName
+  }
+}
+
+function prompt
+{
+  $realLASTEXITCODE = $LASTEXITCODE
+  $originalColor = $Host.UI.RawUI.ForegroundColor
+  $username = $currentuser.name.split('\')[1]
+  
+  Write-Host($username) -nonewline -foregroundcolor Yellow
+  Write-Host("@") -nonewline -foregroundcolor $originalColor
+  Write-Host($env:ComputerName) -nonewline -foregroundcolor Green
+  Write-Host(":") -nonewline -foregroundcolor $originalColor
+  Write-Host($pwd) -foregroundcolor Red
+
+  # Posh-GIT gets confused when in the GIT metadata directory.
+  if (-not $pwd.Path.EndsWith('.git')) {
+    Write-VcsStatus
+  }
+
+  Write-Host($PromptAdmin) -nonewline -foregroundcolor Cyan
+  
+  # Reset color, which can be messed up by Enable-GitColors
+  $Host.UI.RawUI.ForegroundColor = $originalColor
+
+  $global:LASTEXITCODE = $realLASTEXITCODE
+  return "  `b"
+}
+
+
+if($error.Count -eq 0)
+{
+  clear
+}
+else
+{
+  ""
+  "Error(s) Loading Profile..."
+  ""
+  foreach ($e in $error)
+  {
+  $e.ToString()
+  ""
+  }
+  "For details, type error-details..."
+  ""
+  function error-details { $error }
+}
