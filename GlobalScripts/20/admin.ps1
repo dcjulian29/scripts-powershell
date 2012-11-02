@@ -1,6 +1,3 @@
-# Administrative Functions
-
-
 function elevate
 {
   $file, [string]$arguments = $args;
