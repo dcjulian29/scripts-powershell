@@ -1,6 +1,6 @@
 function Get-WallPapers
 {
-  $up = "$($env:Home)\Wallpapers\"
+  $up = "$($env:Home)\SkyDrive\Wallpapers\"
   @("http://themeserver.microsoft.com/default.aspx?p=Bing&c=Desktop&m=en-US",
     "http://themeserver.microsoft.com/default.aspx?p=Windows&c=Aqua&m=en-US",
     "http://themeserver.microsoft.com/default.aspx?p=Windows&c=Fauna&m=en-US",
