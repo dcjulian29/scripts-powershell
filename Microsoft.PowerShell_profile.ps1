@@ -23,13 +23,21 @@ else
 
 clear
 
-"Loading PowerShell Community Extensions"
-Import-Module Pscx
+if ($host.version.major -eq 3)
+{
+  #"Loading PowerShell Community Extensions - Version 3"
+  #Import-Module Pscx -RequiredVersion 3.0.0.0
+}
+else
+{
+  "Loading PowerShell Community Extensions - Version 2"
+  Import-Module Pscx
+}
 
 "Loading PowerShell Pack"
 Import-Module PowerShellPack
 
-Import-Module PowerTab
+#Import-Module PowerTab
 
 $globalScriptsPath = (Get-Item "$(Split-Path $profile)\GlobalScripts\")
 
