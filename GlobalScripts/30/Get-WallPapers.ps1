@@ -8,6 +8,7 @@ function Get-WallPapers
     "http://themeserver.microsoft.com/default.aspx?p=Windows&c=Insects&m=en-US",
     "http://themeserver.microsoft.com/default.aspx?p=Windows&c=LandScapes&m=en-US") | foreach `
     {
+      $_
       Get-RssEnclosures $_ $up
     }
 }
