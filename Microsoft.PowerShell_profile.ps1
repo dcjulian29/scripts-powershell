@@ -77,21 +77,21 @@ function prompt
 }
 
 
-if($error.Count -eq 0)
-{
-  clear
-}
-else
-{
-  ""
-  "Error(s) Loading Profile..."
-  ""
-  foreach ($e in $error)
-  {
-  $e.ToString()
-  ""
-  }
-  "For details, type error-details..."
-  ""
-  function error-details { $error }
-}
+#if($error.Count -eq 0)
+#{
+#  clear
+#}
+#else
+#{
+#  ""
+#  "Error(s) Loading Profile..."
+#  ""
+#  foreach ($e in $error)
+#  {
+#  $e.ToString()
+#  ""
+#  }
+#  "For details, type error-details..."
+#  ""
+#  function error-details { $error }
+#}
