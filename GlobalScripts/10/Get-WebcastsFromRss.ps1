@@ -4,7 +4,8 @@ function Get-WebcastsFromRSS
   (
     [Parameter(ValueFromPipeline=$True)][String]$rssUrl,
     [String]$baseDirectory = $pwd.Path,
-    [Bool]$downloadFiles = $true
+    [Bool]$downloadFiles = $true,
+    [Bool]$useDirectories = $false
   )
 
   $destinationFolder = $baseDirectory + "\_download"
@@ -46,7 +47,7 @@ function Get-WebcastsFromRSS
   {
     ""
     $itemTitle = $_.title
-    "Item: $itemTitle"
+    "... $itemTitle ..."
 
     $ignoreThis = $false
     $ignores | foreach `
@@ -55,7 +56,7 @@ function Get-WebcastsFromRSS
       {
         if ($itemTitle -match $_.expression)
         {
-          "  Ignoring this item..."
+          "    Ignoring this item..."
           $ignoreThis = $true
         }
       }    
@@ -73,24 +74,37 @@ function Get-WebcastsFromRSS
         $enclosureUrl = $enclosure.url
         $enclosureUrl = $enclosureUrl.substring($enclosureUrl.indexof("http"))
         $enclosureUrl = new-object Uri($enclosureUrl)
-        $fileName = $enclosureUrl.Segments[-1]
-        $filePath = (join-path $destinationFolder $filename)
+        $fileName = [Web.HttpUtility]::UrlDecode($enclosureUrl.Segments[-1])
         $prehash = $feedTitle + $title + $enclosureUrl
         $hash = Get-Hash $prehash
         
-        "Enclosure: $filename"
+        "    Enclosure: $filename"
         if (($enclosureHashes | Where-Object { $_.hash -eq $hash } | Count-Object) -eq 0)
         {
           # Do not download a webcast if the file already exists.
-          if ((-not (test-path ($filePath))))
+          if ($downloadFiles)
           {
-            if ($downloadFiles)
+            if ($useDirectories)
             {
-              C:\bin\webcast-download $enclosure.url $destinationFolder
+              $destination = $baseDirectory + "\" + $feedTitle
             }
+            else
+            {
+              $destination = $destinationFolder
+            }
+
+            $src = $enclosure.url
+            $dst = $destination + "\" + $fileName
+            if ((-not (test-path ($destination))))
+            {
+              mkdir $destination
+            }
+            
+            ""
+            C:\bin\network\wget\wget.exe "$src" -O "$dst" --continue --tries=10 --restrict-file-names=windows
           }
-          
-          if ((-not $downloadFiles) -or (test-path ([Web.HttpUtility]::UrlDecode($filePath))))
+
+          if ((-not $downloadFiles) -or (test-path ($dst)))
           {
             $ob = New-Object PSObject `
               | Add-Member -MemberType NoteProperty -Name "pubdate" -Value $pubdate -PassThru `
@@ -105,9 +119,14 @@ function Get-WebcastsFromRSS
             }
             
             $newHashes += $ob | select *
+            "... Recording Download ..."
             $newHashes | Export-CSV $dat -Force
             $enclosureHashes = $newHashes
-          }        
+          }
+          else
+          {
+            "... Download Failed ..."
+          }
         }
       }
     }
