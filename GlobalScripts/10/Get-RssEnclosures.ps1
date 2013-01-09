@@ -11,6 +11,7 @@ function Get-RssEnclosures(
     $enclosureUrl = $_.enclosure.url    
     
     if ($enclosureUrl -ne "") {
+      $enclosureUrl
       $enclosureUrl = new-object Uri($enclosureUrl)
       $filename = (join-path $destinationFolder $enclosureUrl.Segments[-1])
       
