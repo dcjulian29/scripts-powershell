@@ -4,14 +4,16 @@ function Get-RssEnclosures(
 {
   $client = New-Object Net.WebClient
   
+  "Checking $rssUrl..."
+  
   $feed = [xml]$client.DownloadString($rssUrl)
   
   $feed.rss.channel.item | foreach `
   {
     $enclosureUrl = $_.enclosure.url    
     
-    if ($enclosureUrl -ne "") {
-      $enclosureUrl
+    if ($enclosureUrl -ne "")
+    {
       $enclosureUrl = new-object Uri($enclosureUrl)
       $filename = (join-path $destinationFolder $enclosureUrl.Segments[-1])
       
@@ -23,7 +25,9 @@ function Get-RssEnclosures(
         }
         catch [Exception]
         {
+          ""
           $_.Exception.Message
+          ""
         }
       }
     }
