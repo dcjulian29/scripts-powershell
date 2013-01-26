@@ -1,24 +1,26 @@
 function Get-BingHomePageImage(
   [String]$destinationFolder = "$($env:Home)\SkyDrive\Wallpapers\Bing")
 {
-  $client = New-Object Net.WebClient
-  
-  $feed = [xml]$client.DownloadString("http://www.bing.com/HPImageArchive.aspx?format=rss&n=1&mkt=en-us")
-  
-  $pic = $feed.rss.channel.item.link
-  $enclosureUrl = "http://www.bing.com" + $pic    
-  $uri = new-object Uri($enclosureUrl)
-  $filename = (join-path $destinationFolder (get-date).ToString("yyyyMMdd")) + ".jpg"
 
-  if ((-not (test-path ($fileName))))
+  $url = 'http://www.bing.com/HPImageArchive.aspx?format=js&n=10&mkt=en-us'
+
+  (Invoke-RestMethod $url).images | foreach `
   {
-    try
+    $imageUrl = "http://www.bing.com" + $_.url
+
+    $uri = new-object Uri($imageUrl)
+    $filename = (join-path $destinationFolder $uri.Segments[-1])
+
+    if ((-not (test-path ($fileName))))
     {
-      Get-WebFile $uri.AbsoluteUri $filename
-    }
-    catch [Exception]
-    {
-      $_.Exception.Message
+      try
+      {
+        Get-WebFile $uri.AbsoluteUri $filename
+      }
+      catch [Exception]
+      {
+        $_.Exception.Message
+      }
     }
   } 
 }
