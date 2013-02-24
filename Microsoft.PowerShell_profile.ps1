@@ -23,6 +23,15 @@ else
 
 clear
 
+# On domain joined machines, the home variable gets written with the "Home Directory" value
+# from Active Directory. This causes problems with loading modules so, I'll "force" the value
+# to match the value set be the UserProfile environment variable.
+Set-Variable -Name Home -Value $env:UserProfile -Force
+
+# On some systems, the modules will not load because they "can't be found"; so, let's
+# explicitly add the modules path to the search path...
+$env:PSModulePath = "$(Get-Item "$(Split-Path $profile)\Modules");" + $env:PSModulePath
+
 if ($host.version.major -eq 3)
 {
   #"Loading PowerShell Community Extensions - Version 3"
