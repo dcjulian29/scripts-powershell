@@ -11,11 +11,13 @@ function Get-RssEnclosures(
   $feed.rss.channel.item | foreach `
   {
     $enclosureUrl = $_.enclosure.url    
-    
+    $enclosureUrl
     if ($enclosureUrl -ne "")
     {
       $enclosureUrl = new-object Uri($enclosureUrl)
       $filename = (join-path $destinationFolder $enclosureUrl.Segments[-1])
+      
+      $filename
       
       if ((-not (test-path ($fileName))))
       {
