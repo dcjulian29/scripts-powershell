@@ -72,8 +72,13 @@ function prompt
   Write-Host($pwd) -foregroundcolor Red
 
   # Posh-GIT gets confused when in the GIT metadata directory.
-  if (-not $pwd.Path.EndsWith('.git')) {
-    Write-VcsStatus
+  if (-not $pwd.Path.EndsWith('.git'))
+  {
+    # Ignore writing VCS status if tools are not loaded.
+    if (Get-Command Write-VcsStatus -errorAction SilentlyContinue)
+    {
+      Write-VcsStatus
+    }
   }
 
   Write-Host($PromptAdmin) -nonewline -foregroundcolor Cyan
