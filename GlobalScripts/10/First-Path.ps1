@@ -2,7 +2,8 @@ function First-Path
 {
   $result = $null
   
-  foreach ($arg in $args) {
+  foreach ($arg in $args)
+  {
     if ($arg -is [ScriptBlock])
     {
       $result = & $arg
@@ -11,7 +12,7 @@ function First-Path
     {
       $result = $arg
     }
- 
+    
     if ($result)
     {
       if (test-path "$result")
