@@ -20,3 +20,59 @@ function tfHistory($path, $knownGoodVersion)
     tf hist $path /noprompt /recursive
   }
 }
+
+function tfs-profile-clear
+{
+  Remove-Item -path env:TFS-PROFILE
+}
+
+function tfs-profile-load
+{
+  param
+  (
+    $tfs= $(Write-Error “An TFS profile name is required.”)
+  )
+
+  if ($tfs.Length -gt 0)
+  {
+    # First let's load the "dev-path" script to get the path to the DEV-Tools
+    $devt = ""
+    $cmd = "dev-path.bat & set PATH"
+    cmd /c $cmd | Foreach-Object `
+    {
+      $p, $v = $_.split('=')
+      if ($p.ToLower() -eq 'path')
+      {
+        $a = $v.IndexOf('development-tools;')
+        $b = $v.LastIndexOf(';', $a)
+        if ($b -eq -1) { $b = 0 }
+        $devt = $v.Substring($b, $a + 17)
+      }
+    }
+
+    if ($devt.Length -eq 0)
+    {
+      Write-Error "Could not determine development tools directory."
+    }
+    else
+    {
+      $cmd = "`"$devt\tfs-profile-load.bat`" $tfs & set"
+
+      $profileFound = $false
+      cmd /c $cmd | Foreach-Object `
+      {
+        $p, $v = $_.split('=')
+        if ($p -eq 'TFS-PROFILE')
+        {
+          Set-Item -path env:$p -value $v
+          $profileFound = $true
+        }
+      }
+      
+      if (-not $profileFound)
+      {
+        Write-Error "The TFS profile does not exist."
+      }
+    }
+  }
+}
