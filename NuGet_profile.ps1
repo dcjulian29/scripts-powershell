@@ -3,25 +3,21 @@
 # nuget.exe Package Manager Console "host" is executed.
 ################################################################################
 
-function Add-Class($className) 
-{
-  if ($className.EndsWith(".cs") -eq $false)
-  {
-    $className = $className + ".cs"
-  }
+$globalScriptsPath = (Get-Item "$(Split-Path $profile)\NuGet\")
 
-  $dte.ItemOperations.AddNewItem("Code\Class", $className)
+Get-ChildItem -Path $globalScriptsPath -Filter *.ps1 -Recurse | % `
+{
+  "Loading Script: $($_.Name)"
+  . $_.FullName
 }
 
-function Add-ViewModel($className) 
+Get-ChildItem -Path $globalScriptsPath -Filter *.psm1 -Recurse | % `
 {
-  if ($className.EndsWith(".cs") -eq $false)
-  {
-    $className = $className + ".cs"
-  }
+  "Loading Module: $($_.Name)"
+  Import-Module $_.FullName -Force
+}
 
-  $modelsDir = $dte.ActiveSolutionProjects[0].UniqueName.Replace(".csproj", "") + "\ViewModels"
-  $dte.Windows.Item([EnvDTE.Constants]::vsWindowKindSolutionExplorer).Activate()
-  $dte.ActiveWindow.Object.GetItem($modelsDir).Select([EnvDTE.vsUISelectionType]::vsUISelectionTypeSelect)
-  $dte.ItemOperations.AddNewItem("Code\Class", $className)
+function prompt()
+{
+	"§->";
 }
