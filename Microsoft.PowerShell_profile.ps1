@@ -50,13 +50,16 @@ Import-Module PowerShellPack
 
 $globalScriptsPath = (Get-Item "$(Split-Path $profile)\GlobalScripts\")
 
-foreach ($directory in $globalScriptsPath.GetDirectories())
+Get-ChildItem -Path $globalScriptsPath -Filter *.ps1 -Recurse | % `
 {
-  foreach ($file in $directory.GetFiles("*.ps1"))
-  {
-    "Loading $($file.Name)"
-    . $file.FullName
-  }
+  "Loading Script: $($_.Name)"
+  . $_.FullName
+}
+
+Get-ChildItem -Path $globalScriptsPath -Filter *.psm1 -Recurse | % `
+{
+  "Loading Module: $($_.Name)"
+  Import-Module $_.FullName -Force
 }
 
 function prompt
