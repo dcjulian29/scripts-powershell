@@ -32,35 +32,7 @@ Set-Variable -Name Home -Value $env:UserProfile -Force
 # explicitly add the modules path to the search path...
 $env:PSModulePath = "$(Get-Item "$(Split-Path $profile)\Modules");" + $env:PSModulePath
 
-if ($host.version.major -eq 3)
-{
-  #"Loading PowerShell Community Extensions - Version 3"
-  #Import-Module Pscx -RequiredVersion 3.0.0.0
-}
-else
-{
-  "Loading PowerShell Community Extensions - Version 2"
-  Import-Module Pscx
-}
-
-"Loading PowerShell Pack"
-Import-Module PowerShellPack
-
-#Import-Module PowerTab
-
-$globalScriptsPath = (Get-Item "$(Split-Path $profile)\GlobalScripts\")
-
-Get-ChildItem -Path $globalScriptsPath -Filter *.ps1 -Recurse | % `
-{
-  "Loading Script: $($_.Name)"
-  . $_.FullName
-}
-
-Get-ChildItem -Path $globalScriptsPath -Filter *.psm1 -Recurse | % `
-{
-  "Loading Module: $($_.Name)"
-  Import-Module $_.FullName -Force
-}
+. "$(Split-Path $profile)\Load-ProfileModulesAndScripts.ps1" GlobalScripts
 
 function prompt
 {
@@ -92,23 +64,3 @@ function prompt
   $global:LASTEXITCODE = $realLASTEXITCODE
   return "  `b"
 }
-
-
-#if($error.Count -eq 0)
-#{
-#  clear
-#}
-#else
-#{
-#  ""
-#  "Error(s) Loading Profile..."
-#  ""
-#  foreach ($e in $error)
-#  {
-#  $e.ToString()
-#  ""
-#  }
-#  "For details, type error-details..."
-#  ""
-#  function error-details { $error }
-#}
