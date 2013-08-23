@@ -37,7 +37,7 @@ function tfs-profile-load
   {
     # First let's load the "dev-path" script to get the path to the DEV-Tools
     $devt = ""
-    $cmd = "dev-path.bat & set PATH"
+    $cmd = "path-dev.bat & set PATH"
     cmd /c $cmd | Foreach-Object `
     {
       $p, $v = $_.split('=')
