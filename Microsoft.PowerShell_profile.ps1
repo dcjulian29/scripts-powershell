@@ -34,7 +34,7 @@ $env:PSModulePath = "$(Get-Item "$(Split-Path $profile)\Modules");" + $env:PSMod
 
 . "$(Split-Path $profile)\Load-ProfileModulesAndScripts.ps1" GlobalScripts
 
-function prompt
+Function prompt
 {
   $realLASTEXITCODE = $LASTEXITCODE
   $originalColor = $Host.UI.RawUI.ForegroundColor
@@ -64,3 +64,9 @@ function prompt
   $global:LASTEXITCODE = $realLASTEXITCODE
   return "  `b"
 }
+
+Function Edit-Profile
+{
+  notepad $profile
+}
+
