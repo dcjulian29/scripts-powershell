@@ -1,5 +1,6 @@
 function Find-NoRssPostInMonths
 {
+  [CmdletBinding()]
   param
   (
     [int]$months,
@@ -16,9 +17,14 @@ function Find-NoRssPostInMonths
     $feed = [xml]$response.Substring($response.IndexOf('<'))
     $feedTitle = $feed.rss.channel.title
   
-    $feedTitle = $feed.rss.channel.title
-
     $item = $feed.rss.channel.item[0]
+    if ($item -eq $null)
+    {
+          $item = $feed.rss.channel.item
+    }
+
+    Write-Verbose "     Feed: $($feedTitle)"
+    Write-Verbose "Last Post: $($pubdate)"
     
     # sometimes items have a non-parsable US Timezone such as 'EDT' or 'EST'
     $pubdate = $item.pubDate
@@ -32,8 +38,7 @@ function Find-NoRssPostInMonths
     if ($lastPost -lt $monthsAgo)
     {
       Write-Warning "No Posts in $($months) months from $($feedTitle)..."
-      "Last Post on $($lastPost.ToLongDateString())."
-      ""
+      Write-Warning "Last Post on $($lastPost.ToLongDateString())."
     }
   }
 }
