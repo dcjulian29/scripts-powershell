@@ -70,3 +70,8 @@ Function Edit-Profile
   notepad $profile
 }
 
+Function Reload-Profile
+{
+  . $profile
+}
+
