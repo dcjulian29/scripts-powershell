@@ -4,24 +4,28 @@
 
 $Global:PromptAdmin="$"
 
-$principal = new-object System.Security.principal.windowsprincipal($CurrentUser)
-if ($principal.IsInRole("Administrators"))
+$batch = (Get-WmiObject Win32_Process -filter "ProcessID=$pid").CommandLine -match "-NonInteractive"
+if (-not $batch)
 {
-  $host.UI.RawUI.BackgroundColor = "DarkRed"
-  $host.UI.RawUI.ForegroundColor = "Yellow"
+  $principal = new-object System.Security.principal.windowsprincipal($CurrentUser)
+  if ($principal.IsInRole("Administrators"))
+  {
+    $host.UI.RawUI.BackgroundColor = "DarkRed"
+    $host.UI.RawUI.ForegroundColor = "Yellow"
 
-  Set-Location C:\
-  $host.UI.RawUI.WindowTitle = "Administrator: PowerShell Prompt"
-  $PromptAdmin="#"
-}
-else
-{
-  $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
-  $host.UI.RawUI.BackgroundColor = "Black"
-  $host.UI.RawUI.ForegroundColor = "Green"
-}
+    Set-Location C:\
+    $host.UI.RawUI.WindowTitle = "Administrator: PowerShell Prompt"
+    $PromptAdmin="#"
+  }
+  else
+  {
+    $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
+    $host.UI.RawUI.BackgroundColor = "Black"
+    $host.UI.RawUI.ForegroundColor = "Green"
+  }
 
-clear
+  clear
+}
 
 # On domain joined machines, the home variable gets written with the "Home Directory" value
 # from Active Directory. This causes problems with loading modules so, I'll "force" the value
