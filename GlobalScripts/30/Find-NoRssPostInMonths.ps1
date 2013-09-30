@@ -20,18 +20,27 @@ function Find-NoRssPostInMonths
     $item = $feed.rss.channel.item[0]
     if ($item -eq $null)
     {
-          $item = $feed.rss.channel.item
+        $item = $feed.rss.channel.item
+    }
+
+    if ($item.pubdate -eq $null)
+    {
+        # Feed doesn't have any posts...
+        $pubdate = "Jan 1, 1970"
+    }
+    else
+    {
+        $pubdate = $item.pubDate
+        
+        # sometimes items have a non-parsable US Timezone such as 'EDT' or 'EST'
+        $pubdate = $pubdate.Replace("EDT", "-4")
+        $pubdate = $pubdate.Replace("EST", "-5")
+        $pubdate = $pubdate.Replace("PDT", "-7")
+        $pubdate = $pubdate.Replace("PST", "-8")
     }
 
     Write-Verbose "     Feed: $($feedTitle)"
     Write-Verbose "Last Post: $($pubdate)"
-    
-    # sometimes items have a non-parsable US Timezone such as 'EDT' or 'EST'
-    $pubdate = $item.pubDate
-    $pubdate = $pubdate.Replace("EDT", "-4")
-    $pubdate = $pubdate.Replace("EST", "-5")
-    $pubdate = $pubdate.Replace("PDT", "-7")
-    $pubdate = $pubdate.Replace("PST", "-8")
     
     $lastPost = [DateTime]::Parse($pubdate)
     
