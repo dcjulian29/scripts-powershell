@@ -109,8 +109,12 @@ Function Get-TfsWorkItem
     [Parameter(Mandatory = $true,
                ValueFromPipeline = $true)]   
     [psobject] $TfsServer,                                   
-    [Parameter(Mandatory = $false)]   
-    [string]$User = "@Me"
+    [Parameter(Mandatory = $false)]
+    [string]$User = "@Me",
+    [switch]$ExcludeActive,
+    [switch]$ExcludeResolved,
+    [switch]$ExcludeProposed,
+    [switch]$ExcludeClosed
   )   
   BEGIN
   { }
@@ -121,32 +125,45 @@ SELECT
   [Id], [State], [Title], [Assigned To]
 FROM workitems
 WHERE [Assigned To] = '$($User)'
-  AND [State] <> 'Closed'
-  AND [State] <> 'Resolved'
-ORDER BY [Id]
 "@
+
+    if ($ExcludeActive)
+    {
+    $wiql = $wiql + " AND [State] <> 'Active' "
+    }
+
+    if ($ExcludeResolved)
+    {
+    $wiql = $wiql + " AND [State] <> 'Resolved' "
+    }
+
+    if ($ExcludeProposed)
+    {
+    $wiql = $wiql + " AND [State] <> 'Proposed' "
+    }
+
+    if ($ExcludeClosed)
+    {
+    $wiql = $wiql + " AND [State] <> 'Closed' "
+    }
+
+    
+    $wiql = $wiql + " ORDER BY [Id]"
 
     $ws = $TfsServer.WorkItemStore
 
+    $line = @{Expression={$_.Fields["Id"].value};Label="ID";width=6}, `
+            @{Expression={$_.Fields["State"].value};Label="State";width=10}, `
+            @{Expression={$_.Fields["Title"].value};Label="Title";width=94}
+
     if ($ws -ne $null)
     {
-        $ws.Query($wiql) | ForEach-Object `
-        {
-            $id = $_.Fields["Id"].value
-            $state = $_.Fields["State"].value
-            $title = $_.Fields["Title"].value
-
-            Write-Host "$id`t$state`t$title"
-        }
+        $ws.Query($wiql) | Format-Table $line
     }
   }
   END
   { } 
 }
-
-
-
-
 
 
 Set-Alias gtfs Get-TfsServer
