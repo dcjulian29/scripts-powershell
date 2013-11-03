@@ -1,14 +1,28 @@
-$env:Path = "$env:Path;c:\bin\development-tools\msysgit\bin"
+if (Test-Path "$env:SYSTEMDRIVE\Program Files (x86)\")
+{
+  $GIT_INSTALL_ROOT = "$env:SYSTEMDRIVE\Program Files (x86)\Git\bin"
+}
+else
+{
+  $GIT_INSTALL_ROOT = "$env:SYSTEMDRIVE\Program Files\Git\bin"
+}
 
-Import-Module Posh-Git
+if (Test-Path "$GIT_INSTALL_ROOT")
+{
+  $env:Path = "$env:Path;$GIT_INSTALL_ROOT"
 
-Enable-GitColors
+  Import-Module Posh-Git
 
-$GitPromptSettings.BeforeText = "["
+  Enable-GitColors
 
-$GIT = "C:\bin\development-tools\msysgit\bin\git.exe"
+  $GitPromptSettings.BeforeText = "["
 
-function gb { ."C:\bin\development-tools\git-backup.bat" }
-function gbr { ."C:\bin\development-tools\git-backup-remove.bat" }
-function gsc { ."C:\bin\development-tools\git-svn-commit-project.bat" }
-function gsu { ."C:\bin\development-tools\git-svn-update-project.bat" }
+  $GIT = "$GIT_INSTALL_ROOT\git.exe"
+
+  function gb { ."C:\bin\development-tools\git-backup.bat" }
+  function gbr { ."C:\bin\development-tools\git-backup-remove.bat" }
+
+  function gpull { cmd.exe /c "$GIT" pull }
+  function gpush { cmd.exe /c "$GIT" push }
+  function gs { cmd.exe /c "$GIT" status }
+}
