@@ -4,7 +4,17 @@
 
 $Global:CurrentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent()
 
-$env:Home = $env:UserProfile
-$env:HomeDrive = $env:UserProfile.Split(":")[0] + ":"
-$env:HomePath = $env:UserProfile.Split(":")[1]
-$env:Path = "c:\bin;$env:Path"
+if (($env:Home).Length -eq 0) 
+{
+  $env:Home = $env:UserProfile
+}
+
+$env:HomeDrive = ($env:Home).Split(":")[0] + ":"
+$env:HomePath = ($env:Home).Split(":")[1]
+
+$binarydirectory = "$env:SYSTEMDRIVE\Tools\binaries"
+
+if (-not ($env:PATH).Contains($binarydirectory)) 
+{
+  $env:PATH = "$binarydirectory;$($env:PATH)"
+}
