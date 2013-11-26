@@ -29,7 +29,7 @@ function path-java
   if ($java.Length -gt 0)
   {
     $env:JAVA_HOME = $java
-    $env:Path = "$java\bin;$($env:Path)"    
+    $env:Path = "$java\bin;$($env:PATH)"    
   }
   else
   {
