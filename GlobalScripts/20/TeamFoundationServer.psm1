@@ -562,7 +562,7 @@ Function Get-WorkItemTime {
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]   
         [psobject] $WorkItem,
         [Parameter(Mandatory = $true, ValueFromPipeline = $false)]   
-        [int] $Id,
+        [int] $Id
     )
 
     BEGIN {}
