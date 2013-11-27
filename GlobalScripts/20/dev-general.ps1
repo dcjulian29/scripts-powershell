@@ -1,4 +1,4 @@
-$env:Path = "$env:Path;c:\bin\development-tools\"
+$env:Path = "$env:SYSTEMDRIVE\Tools\development;$env:PATH"
 
 function build-project
 {
