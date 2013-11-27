@@ -446,102 +446,216 @@ ORDER BY [Id]
 }
 
 Function Update-WorkItem {
-    param($item,$field,$value)
+    param (
+        [Parameter(Mandatory = $True, ValueFromPipeline = $True)]   
+        [psobject] $WorkItem,
 
-    if (!$item.IsOpen) {
-        $item.open()
+        [Parameter(Mandatory = $True, ValueFromPipeline = $False)]
+        [string] $Field,
+        
+        [Parameter(Mandatory = $True, ValueFromPipeline = $False)]
+        $Value
+    )
+
+    BEGIN { }
+    PROCESS {
+        if ($WorkItem -is [Microsoft.TeamFoundation.WorkItemTracking.Client.WorkItem]) {
+            if (!$WorkItem.IsOpen) {
+                $WorkItem.open()
+            }
+
+            Write-Verbose "Updating `"$Field`" to `"$Value`" on work item $($WorkItem.Id)..."
+            $WorkItem.Fields[$Field].Value = $Value
+            $WorkItem.Save() | Out-Null
+            return $WorkItem
+        } else {
+            throw "Not a valid TFS work item!"
+        }
     }
-
-    $item.Fields[$field].Value = $value
-    $item.Save()
-    return $item
+    END { } 
 }
 
 Function Set-WorkItemProposed {
    [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]   
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $true)]   
         [psobject] $TfsServer,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false)]   
-        [int] $Id
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $false)]   
+        [int] $Id,
+
+        [Parameter(ParameterSetName="p2", Mandatory = $true, ValueFromPipeline = $true)]   
+        [psobject] $WorkItem
     )
-    
-    $ws = $TfsServer.WorkItemStore
-    $wi = $ws.GetWorkItem($WorkItemId)    
-    Update-WorkItem($wi, "State", "Proposed")
+
+    BEGIN { }
+    PROCESS {
+        if ($PsCmdlet.ParameterSetName -eq "p1") {    
+            $WorkItem = ($TfsServer.WorkItemStore).GetWorkItem($Id)    
+        }
+        
+        Update-WorkItem $WorkItem "State" "Proposed" | Out-Null
+    }
+    END { }
 }
 
 Function Set-WorkItemActive {
-   [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]   
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $true)]   
         [psobject] $TfsServer,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false)]   
-        [int] $Id
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $false)]   
+        [int] $Id,
+
+        [Parameter(ParameterSetName="p2", Mandatory = $true, ValueFromPipeline = $true)]   
+        [psobject] $WorkItem
     )
-    
-    $ws = $TfsServer.WorkItemStore
-    $wi = $ws.GetWorkItem($WorkItemId)    
-    Update-WorkItem($wi, "State", "Active")
+
+    BEGIN { }
+    PROCESS {
+        if ($PsCmdlet.ParameterSetName -eq "p1") {    
+            $WorkItem = ($TfsServer.WorkItemStore).GetWorkItem($Id)    
+        }
+        
+        Update-WorkItem $WorkItem "State" "Active" | Out-Null
+    }
+    END { }
 }
 
 Function Set-WorkItemResolved {
    [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]   
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $true)]   
         [psobject] $TfsServer,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false)]   
-        [int] $Id
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $false)]   
+        [int] $Id,
+
+        [Parameter(ParameterSetName="p2", Mandatory = $true, ValueFromPipeline = $true)]   
+        [psobject] $WorkItem
     )
-    
-    $ws = $TfsServer.WorkItemStore
-    $wi = $ws.GetWorkItem($WorkItemId)    
-    Update-WorkItem($wi, "State", "Resolved")
+
+    BEGIN { }
+    PROCESS {
+        if ($PsCmdlet.ParameterSetName -eq "p1") {    
+            $WorkItem = ($TfsServer.WorkItemStore).GetWorkItem($Id)    
+        }
+        
+        $RemainingWork = $WorkItem.Fields["Remaining Work"].Value
+
+        if ($RemainingWork -gt 0) {
+            throw "Work item $($WorkItem.Id) still has remaining work!"
+        }
+
+        Update-WorkItem $WorkItem "State" "Resolved" | Out-Null
+    }
+    END { }
 }
 
 Function Set-WorkItemCompletedTime {
    [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]   
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $true)]   
         [psobject] $TfsServer,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false)]   
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $false)]   
         [int] $Id,
+
+        [Parameter(ParameterSetName="p2", Mandatory = $true, ValueFromPipeline = $true)]   
+        [psobject] $WorkItem,
+
         [Parameter(Mandatory = $true, ValueFromPipeline = $false)]   
         [int] $Hours
     )
-    
-    $ws = $TfsServer.WorkItemStore
-    $wi = $ws.GetWorkItem($WorkItemId)    
-    Update-WorkItem($wi, "Completed Work", $Hours)
+
+    BEGIN { }
+    PROCESS {
+        if ($PsCmdlet.ParameterSetName -eq "p1") {    
+            $WorkItem = ($TfsServer.WorkItemStore).GetWorkItem($Id)    
+        }
+        
+        Update-WorkItem $WorkItem "Completed Work" $Hours | Out-Null
+    }
+    END { }
+}
+
+Function Set-WorkItemOriginalEstimate {
+   [CmdletBinding()]
+    param (
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $true)]   
+        [psobject] $TfsServer,
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $false)]   
+        [int] $Id,
+
+        [Parameter(ParameterSetName="p2", Mandatory = $true, ValueFromPipeline = $true)]   
+        [psobject] $WorkItem,
+
+        [Parameter(Mandatory = $true, ValueFromPipeline = $false)]   
+        [int] $Hours
+    )
+
+    BEGIN { }
+    PROCESS {
+        if ($PsCmdlet.ParameterSetName -eq "p1") {    
+            $WorkItem = ($TfsServer.WorkItemStore).GetWorkItem($Id)    
+        }
+        
+        $Estimate = $WorkItem.Fields["Original Estimate"].Value
+
+        if ($Estimate.Length -gt 0) {
+            throw "Work item $($WorkItem.Id) already has an original estimate!"
+        }
+
+        Update-WorkItem $WorkItem "Original Estimate" $Hours | Out-Null
+        $WorkItem | Set-WorkItemRemainingTime -Hours $Hours
+        $WorkItem | Set-WorkItemCompletedTime -Hours 0
+    }
+    END { }
 }
 
 Function Set-WorkItemRemainingTime {
    [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]   
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $true)]   
         [psobject] $TfsServer,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false)]   
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $false)]   
         [int] $Id,
+
+        [Parameter(ParameterSetName="p2", Mandatory = $true, ValueFromPipeline = $true)]   
+        [psobject] $WorkItem,
+
         [Parameter(Mandatory = $true, ValueFromPipeline = $false)]   
         [int] $Hours
     )
-    
-    $ws = $TfsServer.WorkItemStore
-    $wi = $ws.GetWorkItem($WorkItemId)    
-    Update-WorkItem($wi, "Remaining Work", $Hours)
+
+    BEGIN { }
+    PROCESS {
+        if ($PsCmdlet.ParameterSetName -eq "p1") {    
+            $WorkItem = ($TfsServer.WorkItemStore).GetWorkItem($Id)    
+        }
+        
+        Update-WorkItem $WorkItem "Remaining Work" $Hours | Out-Null
+    }
+    END { }
 }
 
 Function Update-WorkItemTime {
    [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]   
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $true)]   
+        [psobject] $TfsServer,
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $false)]   
+        [int] $Id,
+
+        [Parameter(ParameterSetName="p2", Mandatory = $true, ValueFromPipeline = $true)]   
         [psobject] $WorkItem,
+
         [Parameter(Mandatory = $true, ValueFromPipeline = $false)]   
         [int] $Hours
     )
 
     BEGIN {}
     PROCESS {
+        if ($PsCmdlet.ParameterSetName -eq "p1") {    
+            $WorkItem = ($TfsServer.WorkItemStore).GetWorkItem($Id)    
+        }
+
         $RemainingWork = $WorkItem.Fields["Remaining Work"].Value
         $CompletedWork = $WorkItem.Fields["Completed Work"].Value
 
@@ -550,8 +664,8 @@ Function Update-WorkItemTime {
         
         if ($RemainingWork -lt 0) { $RemainingWork = 0 }
         
-        Update-WorkItem($WorkItem, "Remaining Work", $RemainingWork - $Hours)
-        Update-WorkItem($WorkItem, "Completed Work", $CompletedWork + $Hours)
+        Update-WorkItem $WorkItem "Remaining Work" $RemainingWork | Out-Null
+        Update-WorkItem $WorkItem "Completed Work" $CompletedWork | Out-Null
     }
     END {}
 }
@@ -626,6 +740,55 @@ Function Get-WorkItemDetails {
     END {}
 }
 
+Function Get-WorkItems {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]   
+        [psobject] $TfsServer,                                   
+        [Parameter(Mandatory = $false)]
+        [string]$User,
+        [string]$Project,
+        [string[]]$ExcludedStates,
+        [switch]$JustMine
+    )
+    
+    BEGIN { }
+    PROCESS {
+        $wiql = "SELECT * FROM workitems"
+
+         if ($ExcludedStates.Count -gt 0) {
+            foreach ($state in $ExcludedStates) {
+                $filter = $filter + "AND [State] <> '$state' "
+            }
+        }
+
+        if ($JustMine) {
+            if ($User.Length -gt 0) {
+                Write-Warning "When selecting just your work items, you can not specify a user to include in the filter."
+            }
+
+            $filter = $filter + "AND [Assigned To] = @Me "
+        } else {
+            if ($User.Length -gt 0) {
+                $filter = $filter + "AND [Assigned To] = '$User' "
+            }
+        }
+
+        if ($Project.Length -gt 0) {
+            $filter = $filter + "AND [System.TeamProject] = '$Project' "
+        }
+
+        if ($filter.Length -gt 0) {
+            $wiql = "$wiql WHERE $($filter.SubString(4))"
+        }
+        
+        return ($TfsServer.WorkItemStore).Query($wiql)
+  }
+  END { } 
+}
+
+Export-ModuleMember Get-WorkItems
+Export-ModuleMember Set-WorkItemOriginalEstimate
 Export-ModuleMember Set-WorkItemRemainingTime
 Export-ModuleMember Set-WorkItemCompletedTime
 Export-ModuleMember Clear-TfsProfile
@@ -647,9 +810,8 @@ Export-ModuleMember Get-WorkItem
 Export-ModuleMember Get-WorkItemState
 Export-ModuleMember Get-WorkItemDetails
 Export-ModuleMember Update-WorkItemTime
+Export-ModuleMember Update-WorkItem
 Export-ModuleMember Get-WorkItemTime
-
-
 
 Set-Alias gtfs Get-TfsServer
 Set-Alias gtwi Get-TfsWorkItem
