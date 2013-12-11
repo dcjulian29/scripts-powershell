@@ -1,8 +1,9 @@
 function Reset-NetworkAdapters {
-    $adapters = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }
+    $adapters = Get-NetAdapter | Where-Object { $_.Status -ne 'Disconnected' }
 
     foreach ($adapter in $adapters) {
-        Restart-Adapter $adapter
+        Write-Output "Restarting $($adapter.Name) interface..."
+        $adapter | Restart-NetAdapter
 
         Start-Sleep 2
 
