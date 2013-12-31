@@ -1,6 +1,6 @@
-if (Find-ProgramFiles 'Git\bin\git.exe')
+if (Test-Path "$($env:SYSTEMDRIVE)\Tools\apps\gittfs")
 {
-  $env:Path = "$env:PATH;$env:SYSTEMDRIVE\Tools\development\git-tfs"
+  $env:Path = "$($env:SYSTEMDRIVE)\Tools\apps\gittfs;$env:PATH"
 }
 
 $tfPath = First-Path `
