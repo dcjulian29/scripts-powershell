@@ -33,7 +33,7 @@ Function Initialize-NugetProfileSettings {
 
     $devt = Get-DevPath
 
-    $cmd = "call `"$devt\nuget\_nuget_LoadSettings.cmd`" NO $ProfileName & set"
+    $cmd = "call `"$devt\_nuget_LoadSettings.cmd`" NO $ProfileName & set"
     cmd /c $cmd | Foreach-Object {
         $p, $v = $_.split('=')
         if ($p -eq 'NUGET-URL') {
