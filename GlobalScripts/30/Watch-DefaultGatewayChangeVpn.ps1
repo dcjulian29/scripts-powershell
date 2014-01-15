@@ -6,24 +6,29 @@
                 | Where-Object { $_.destination -eq '0.0.0.0' -and $_.mask -eq '0.0.0.0'} `
                 | Sort-Object metric1 | Select-Object nexthop, metric1, interfaceindex
 
+            Write-Host $([DateTime]::Now),$routes.nexthop
+
             if ($routes.interfaceindex -ne $adapter.ifIndex) {
-                for ($i = 0; $i -lt $routes.length; $i++) {
-                    $gateway = Get-NetAdapter | Where-Object { $_.ifIndex -eq $routes[$i].interfaceindex }
-                    $gateway
-                    "-----"
+                $adapter | Disable-NetAdapter -Confirm:$false
+                
+                $connectedAdapters = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
+                
+                foreach ($gateway in $connectedAdapters) {
                     $gateway | Disable-NetAdapter -Confirm:$false
                 }
 
-                ShowPopUpVpn "Default Gateway is not currently set to the VPN adapter!"
+                $adapter | Enable-NetAdapter
 
-                for ($i = 0; $i -lt $routes.length; $i++) {
-                    Get-NetAdapter | Where-Object { $_.ifIndex -eq $routes[$i].interfaceindex } | Enable-NetAdapter
+                ShowPopUpVpn "Default Gateway is not currently set to the VPN adapter!"
+ 
+                foreach ($gateway in $connectedAdapters) {
+                    $gateway | Enable-NetAdapter
                 }
+                
+                ShowPopUpVpn "Click Ok to resume watch."
             }
 
-            Write-Host $([DateTime]::Now),$routes.nexthop
-
-            Start-Sleep -s 60
+            Start-Sleep -s 15
         }
     } else {
         ShowPopUpVpn "The specified interface is not connected..."
