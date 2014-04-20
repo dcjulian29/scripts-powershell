@@ -16,5 +16,5 @@ Get-ChildItem -Path $globalScriptsPath -Filter *.ps1 -Recurse | % `
 Get-ChildItem -Path $globalScriptsPath -Filter *.psm1 -Recurse | % `
 {
     Write-Verbose "Loading Module: $($_.Name)"
-    Import-Module $_.FullName -Force
+    Import-Module $_.FullName -Force -DisableNameChecking
 }
