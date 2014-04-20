@@ -1,6 +1,32 @@
 ﻿$script:TfsUrl = ''
 $script:TfsCollection = ''
 $script:TfsNamespace = ''
+$script:tfPath = First-Path `
+  (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\TF.exe') `
+  (Find-ProgramFiles 'Microsoft Visual Studio 11.0\Common7\IDE\TF.exe') `
+  (Find-ProgramFiles 'Microsoft Visual Studio 10.0\Common7\IDE\TF.exe')
+
+if (Test-Path "$($env:SYSTEMDRIVE)\Tools\apps\gittfs")
+{
+  $env:Path = "$($env:SYSTEMDRIVE)\Tools\apps\gittfs;$env:PATH"
+}
+
+function tf()
+{
+  & $tfPath $args;
+}
+
+function tfHistory($path, $knownGoodVersion)
+{
+  if ($knownGoodVersion)
+  {
+    tf hist $path /noprompt /recursive /stopafter:$knownGoodVersion
+  }
+  else
+  {
+    tf hist $path /noprompt /recursive
+  }
+}
 
 Function Clear-TfsProfile {
   Remove-Item -path env:TFS-PROFILE
