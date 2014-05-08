@@ -284,6 +284,93 @@ Function Create-VirtualMachine {
     Set-Vm -Name $computerName -AutomaticStopAction ShutDown 
 }
 
+Function Create-VirtualMachineFromCsv {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
+        [Alias("CSV")]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $csvFile,  
+        [string] $virtualSwitch = "Internal",
+        [Parameter(Mandatory=$true)]
+        [string] $isoFile,
+        [Parameter(Mandatory=$true)]
+        [string] $baseDisk,
+        [Parameter(Mandatory=$true)]
+        [string] $unattend,
+        [Parameter(Mandatory=$true)]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $virtualStorage = "C:\Virtual Machines"
+    )
+
+    Push-Location $virtualStorage
+
+    foreach ($vm in (Import-Csv -Path $csvFile)) {
+        Create-DifferencingVHDX -referenceDisk $baseDisk -vhdxFile "$($vm.ComputerName).vhdx"
+        Create-DataVHDX -vhdxFile "$($vm.ComputerName)-DATA.vhdx" -diskSize (0 + $vm.DataDrive)
+
+        Make-UnattendForStaticIp -vhdxFile "$($vm.ComputerName).vhdx" -unattendTemplate $unattend `
+            -computerName "$($vm.ComputerName)" -networkAddress "$($vm.IP)" `
+            -gatewayAddress "$($vm.Gateway)" -nameServer "$($vm.DNS)"
+
+        Create-VirtualMachine -vhdxFile "$($vm.ComputerName).vhdx" -computerName "$($vm.ComputerName)" `
+            -virtualSwitch $virtualSwitch -memory (0 + $vm.Memory) #-cpu (0 + $vm.Cpu)
+
+        if (-not ([string]::IsNullOrEmpty($vm.DataDrive))) {
+            Add-VMHardDiskDrive -VMName "$($vm.ComputerName)" `
+                -Path "$($vm.ComputerName)-DATA.vhdx" -diskSize (0 + $vm.DataDrive)
+        }
+    
+        if (-not ([string]::IsNullOrEmpty($vm.StartupScript))) {
+            Inject-VMStartUpScriptFile -vhdxFile "$($vm.ComputerName).vhdx" -scriptFile $vm.StartupScript
+        }
+    }
+
+    Pop-Location
+}
+
+Function Create-VirtualMachineFromName {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $computerName,  
+        [Parameter(Mandatory=$true)]
+        [string] $isoFile,
+        [string] $virtualSwitch = "Internal",
+        [Parameter(Mandatory=$true)]
+        [string] $networkAddress,
+        [Parameter(Mandatory=$true)]
+        [string] $gateway,
+        [Parameter(Mandatory=$true)]
+        [string] $nameServer,
+        [Parameter(Mandatory=$true)]
+        [string] $baseDisk,
+        [Parameter(Mandatory=$true)]
+        [string] $unattend,
+        [Parameter(Mandatory=$true)]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $virtualStorage = "C:\Virtual Machines"
+    )
+
+    Push-Location $virtualStorage
+
+    Create-DifferencingVHDX -referenceDisk $baseDisk -vhdxFile "$($computerName).vhdx"
+    Create-DataVHDX -vhdxFile "$($computerName)-DATA.vhdx"
+
+    Make-UnattendForStaticIp -vhdxFile "$($computerName).vhdx" -unattendTemplate $unattend `
+        -computerName "$($computerName)" -networkAddress "$($networkAddress)" `
+        -gatewayAddress "$($gateway)" -nameServer "$($nameServer)"
+
+    Create-VirtualMachine -vhdxFile "$($computerName).vhdx" -computerName "$($computerName)" `
+        -virtualSwitch $virtualSwitch
+
+    Add-VMHardDiskDrive -VMName "$($computerName)" -Path "$($computerName)-DATA.vhdx"
+
+    Pop-Location
+}
+
 Export-ModuleMember Create-ReferenceVHDX
 Export-ModuleMember Create-DifferencingVHDX
 Export-ModuleMember Create-DataVHDX
@@ -293,3 +380,5 @@ Export-ModuleMember Make-UnattendForStaticIp
 Export-ModuleMember Inject-VMStartUpScriptFile
 Export-ModuleMember Inject-VMStartUpScriptBlock
 Export-ModuleMember Create-VirtualMachine
+Export-ModuleMember Create-VirtualMachineFromCsv
+Export-ModuleMember Create-VirtualMachineFromName
