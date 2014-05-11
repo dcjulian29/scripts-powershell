@@ -26,7 +26,7 @@ Function Create-ReferenceVHDX {
       [uint64] $diskSize = 80GB
     )
 
-    If   (-not (Test-Path $isoFile)) {
+    if (-not (Test-Path $isoFile)) {
         Write-Error "ISO File does not exist!"
         return
     }
@@ -337,26 +337,26 @@ Function Create-VirtualMachineFromName {
         [ValidateNotNullOrEmpty()]
         [string] $computerName,  
         [Parameter(Mandatory=$true)]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string] $isoFile,
         [string] $virtualSwitch = "Internal",
         [Parameter(Mandatory=$true)]
         [string] $networkAddress,
-        [Parameter(Mandatory=$true)]
         [string] $gateway,
         [Parameter(Mandatory=$true)]
         [string] $nameServer,
         [Parameter(Mandatory=$true)]
-        [string] $baseDisk,
-        [Parameter(Mandatory=$true)]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string] $unattend,
-        [Parameter(Mandatory=$true)]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string] $virtualStorage = "C:\Virtual Machines"
     )
 
     Push-Location $virtualStorage
 
-    Create-DifferencingVHDX -referenceDisk $baseDisk -vhdxFile "$($computerName).vhdx"
+    Create-ReferenceVHDX -isoFile $isoFile -vhdxFile "$($computerName).vhdx" `
+        -edition "ServerStandardEval"
+
     Create-DataVHDX -vhdxFile "$($computerName)-DATA.vhdx"
 
     Make-UnattendForStaticIp -vhdxFile "$($computerName).vhdx" -unattendTemplate $unattend `
