@@ -17,6 +17,26 @@ Function Get-FullPath {
     "$((Get-Item -Path $file).Directory.FullName.TrimEnd('\'))\$((Get-Item -Path $file).Name)"
 }
 
+Function Mount-VHDX {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path
+    )
+
+    Mount-DiskImage -ImagePath $fullPath | Out-Null
+
+    Get-PSDrive | Out-Null # Work around to "force" drive letter to be available
+
+    $disk = Get-DiskImage -ImagePath $fullPath | Get-Disk
+    $partitions = Get-Partition -DiskNumber $disk.Number
+    $partition = $partitions | where { $_.DriveLetter -match '[^\W]' }
+    $driveLetter = ([regex]"[^A-Z]").Replace($partition.DriveLetter, "")
+
+    "$($driveLetter):"
+}
+
 Function Create-ReferenceVHDX {
     [Cmdletbinding()]
     param (
@@ -125,11 +145,8 @@ Function Make-UnattendForDhcpIp {
 
     Write-Verbose "Injecting unattend.xml into $($fullPath)"
 
-    Mount-DiskImage -ImagePath $fullPath
-
-    $disk = Get-DiskImage -ImagePath $fullPath | Get-Disk
-    $drive = (([string](Get-Partition -DiskNumber $disk.Number).DriveLetter) -split '\s')[2] + ":"
-
+    $drive = Mount-VHDX $fullPath
+    
     $xml = [xml](Get-Content $unattendTemplate) 
 
     # Change ComputerName 
@@ -160,10 +177,9 @@ Function Make-UnattendForStaticIp {
 
     $fullPath = Get-FullPath $vhdxFile
 
-    Mount-DiskImage -ImagePath $fullPath
+    Write-Verbose "Injecting unattend.xml into $($fullPath)"
 
-    $disk = Get-DiskImage -ImagePath $fullPath | Get-Disk
-    $drive = (([string](Get-Partition -DiskNumber $disk.Number).DriveLetter) -split '\s')[2] + ":"
+    $drive = Mount-VHDX $fullPath
 
     $xml = [xml](Get-Content $unattendTemplate) 
 
@@ -210,12 +226,8 @@ Function Inject-VMStartUpScriptFile {
 
     $fullPath = Get-FullPath $vhdxFile
 
-    Mount-DiskImage -ImagePath $fullPath
+    $drive = Mount-VHDX $fullPath
 
-    $disk = Get-DiskImage -ImagePath $fullPath | Get-Disk
-    $drive = (([string](Get-Partition -DiskNumber $disk.Number).DriveLetter) -split '\s')[2] + ":"
-
-    Get-PSDrive | Out-Null # Work around to "force" drive letter to be available
     Write-Verbose "VHDX file mounted on $($drive)..."
     
     $scriptPath = "$((Get-Item -Path $scriptFile).Directory.FullName.TrimEnd('\'))"
@@ -258,6 +270,49 @@ Function Inject-VMStartUpScriptBlock {
     Inject-VMStartUpScriptFile -vhdxFile $vhdxFile -ScriptFile $scriptFile
 
     Remove-Item $scriptFile
+}
+
+Function Inject-UpdatesToVhdx {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$vhdx,
+        [Parameter(Mandatory=$true)]
+        [string]$updatesPath
+    )
+
+    $fullPath = Get-FullFilePath $vhdx
+
+    $drive = Mount-VHDX $fullPath
+
+    Write-Output "VHDX file mounted on drive: $drive"
+
+    $updates = Get-ChildItem -path $updatesPath | `
+        where {($_.extension -eq ".msu") -or ($_.extension -eq ".cab")} | `
+        Select-Object fullname
+
+    $totalPasses = 3
+    $totalUpdates = $updates.Length
+
+    for ($i = 1; $i -lt $totalPasses; $i++) {
+        Write-Progress -Activity "Processing Updates From: $updatesPath" `
+            -Status ("Loop {0} of {1}" -f $i, $totalPasses)
+        for ($j = 1; $j -le $totalUpdates; $j++) {
+            $update = $updates[$j]
+            $patchProgress = ($j / $totalUpdates) * 100
+            Write-Progress -Id  1 `
+                -Activity "Injecting Patches To: $($fullPath)" `
+                -Status "Injecting Update: $($update.FullName)" `
+                -PercentComplete $patchProgress
+            Invoke-Expression "dism /image:$drive /add-package /packagepath:'$($update.fullname)'"
+        }
+    }
+
+    Invoke-Expression "dism /image:$drive /Cleanup-Image /spsuperseded"
+
+    Dismount-DiskImage -ImagePath $fullPath
 }
 
 Function Create-VirtualMachine {
@@ -379,6 +434,10 @@ Export-ModuleMember Make-UnattendForDhcpIp
 Export-ModuleMember Make-UnattendForStaticIp
 Export-ModuleMember Inject-VMStartUpScriptFile
 Export-ModuleMember Inject-VMStartUpScriptBlock
+Export-ModuleMember Inject-UpdatesToVhdx
 Export-ModuleMember Create-VirtualMachine
 Export-ModuleMember Create-VirtualMachineFromCsv
 Export-ModuleMember Create-VirtualMachineFromName
+
+Set-Alias New-SystemVHDX Create-ReferenceVHDX
+Export-ModuleMember -Alias New-SystemVHDX
