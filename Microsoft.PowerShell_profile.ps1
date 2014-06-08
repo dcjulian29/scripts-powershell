@@ -37,6 +37,7 @@ Set-Variable -Name Home -Value $env:UserProfile -Force
 $env:PSModulePath = "$(Get-Item "$(Split-Path $profile)\Modules");" + $env:PSModulePath
 
 . "$(Split-Path $profile)\Load-ProfileModulesAndScripts.ps1" GlobalScripts
+. "$(Split-Path $profile)\Load-ProfileModulesAndScripts.ps1" MyModules
 
 Function prompt
 {
