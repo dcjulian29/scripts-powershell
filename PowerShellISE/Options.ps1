@@ -44,12 +44,12 @@ $principal = new-object System.Security.principal.windowsprincipal($CurrentUser)
 if ($principal.IsInRole("Administrators"))
 {
   $psISE.Options.ConsolePaneBackgroundColor = 'DarkRed'
-  $psISE.Options.ConsolePaneTextBackgroundColor = 'DarkRed'
+  $psISE.Options.ConsolePaneTextBackgroundColor = 'Transparent'
   $psISE.Options.ConsolePaneForegroundColor = 'Yellow'
 }
 else
 {
-  $psISE.Options.ConsolePaneBackgroundColor = 'Black'
-  $psISE.Options.ConsolePaneTextBackgroundColor = 'Black'
-  $psISE.Options.ConsolePaneForegroundColor = 'Green'
+  $psISE.Options.ConsolePaneBackgroundColor = 'DarkBlue'
+  $psISE.Options.ConsolePaneTextBackgroundColor = 'Transparent'
+  $psISE.Options.ConsolePaneForegroundColor = 'LightGray'
 }
