@@ -1,4 +1,4 @@
-Function Check-Elevation {
+Function Test-Elevation {
     Write-Verbose "Checking for elevation... "
     $CurrentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
     if (($CurrentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) -eq $false)  {
@@ -13,4 +13,4 @@ Function Check-Elevation {
 
 ##############################################################################
 
-Export-ModuleMember Check-Elevation
+Export-ModuleMember Test-Elevation
