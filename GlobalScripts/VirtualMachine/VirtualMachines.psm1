@@ -1,23 +1,4 @@
-﻿Function Check-Elevation {
-    Write-Verbose "Checking for elevation... "
-    $CurrentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
-    if (($CurrentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) -eq $false)  {
-        Write-Verbose "Not an administrator session!"
-        Write-Error "This command requires elevation"
-        "$false"
-    } else {
-        Write-Verbose "Yes, this is an elevated session."
-        "$true"
-    }
-}
-
-Function Get-FullPath {
-    param ( [string] $file )
-
-    "$((Get-Item -Path $file).Directory.FullName.TrimEnd('\'))\$((Get-Item -Path $file).Name)"
-}
-
-Function Mount-VHDX {
+﻿Function Mount-VHDX {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -37,7 +18,7 @@ Function Mount-VHDX {
     "$($driveLetter):"
 }
 
-Function Create-ReferenceVHDX {
+Function New-SystemVHDX {
     [Cmdletbinding()]
     param (
       [string] $isoFile,
@@ -51,13 +32,13 @@ Function Create-ReferenceVHDX {
         return
     }
 
-    if (-not $(Check-Elevation)) { return }
+    if (-not $(Test-Elevation)) { return }
 
     Set-Content $vhdxFile "TEMP"
-    $fullPath = Get-FullPath $vhdxFile
+    $fullPath = Get-FullFilePath $vhdxFile
     Remove-Item $vhdxFile
 
-    Write-Verbose "Reference VHDX file will be $($fullPath)"
+    Write-Verbose "System VHDX file will be $($fullPath)"
 
     if (-not ([string]::IsNullOrEmpty($edition))) {
         Convert-WindowsImage -SourcePath $isoFile `
@@ -69,36 +50,36 @@ Function Create-ReferenceVHDX {
             -SizeBytes $diskSize
     }
     
-    Write-Verbose "Created Reference Disk [$($vhdxFile)]"
+    Write-Verbose "Created System Disk [$($vhdxFile)]"
 }
 
-Function Create-DifferencingVHDX {
+Function New-DifferencingVHDX {
     [Cmdletbinding()]
     param (
       [string] $referenceDisk,
       [string] $vhdxFile
     )
 
-    if (-not $(Check-Elevation)) { return }
+    if (-not $(Test-Elevation)) { return }
 
     Write-Verbose "Creating a Differencing Disk [$($vhdxFile)] based on [$($referenceDisk)]"
 
     New-VHD –Path $vhdxFile -Differencing –ParentPath $referenceDisk
 }
 
-Function Create-DataVHDX {
+Function New-DataVHDX {
     [Cmdletbinding()]
     param (
       [string] $vhdxFile,
       [UInt64] $diskSize = 80GB
     )
 
-    if (-not $(Check-Elevation)) { return }
+    if (-not $(Test-Elevation)) { return }
 
     Write-Verbose "Creating a Data Disk [$($vhdxFile)] sized [$($diskSize)]"
     New-VHD -Path $vhdxFile -SizeBytes $diskSize -Dynamic
 
-    $fullPath = Get-FullPath $vhdxFile
+    $fullPath = Get-FullFilePath $vhdxFile
 
     Mount-DiskImage -ImagePath $fullPath
 
@@ -124,7 +105,7 @@ Function Connect-IsoToVirtual {
         [string] $isoFile
     ) 
 
-    if (-not $(Check-Elevation)) { return }
+    if (-not $(Test-Elevation)) { return }
 
     Set-VMDvdDrive -VMName $virtualMachineName `
         -ControllerNumber 1  -ControllerLocation 0 `
@@ -139,9 +120,9 @@ Function Make-UnattendForDhcpIp {
         [string] $computerName
     )
 
-    if (-not $(Check-Elevation)) { return }
+    if (-not $(Test-Elevation)) { return }
 
-    $fullPath = Get-FullPath $vhdxFile
+    $fullPath = Get-FullFilePath $vhdxFile
 
     Write-Verbose "Injecting unattend.xml into $($fullPath)"
 
@@ -173,9 +154,9 @@ Function Make-UnattendForStaticIp {
         [string] $nameServer
     )
 
-    if (-not $(Check-Elevation)) { return }
+    if (-not $(Test-Elevation)) { return }
 
-    $fullPath = Get-FullPath $vhdxFile
+    $fullPath = Get-FullFilePath $vhdxFile
 
     Write-Verbose "Injecting unattend.xml into $($fullPath)"
 
@@ -222,9 +203,9 @@ Function Inject-VMStartUpScriptFile {
         [string] $scriptFile
     )
 
-    if (-not $(Check-Elevation)) { return }
+    if (-not $(Test-Elevation)) { return }
 
-    $fullPath = Get-FullPath $vhdxFile
+    $fullPath = Get-FullFilePath $vhdxFile
 
     $drive = Mount-VHDX $fullPath
 
@@ -296,26 +277,26 @@ Function Inject-UpdatesToVhdx {
     $totalPasses = 3
     $totalUpdates = $updates.Length
 
-    for ($i = 1; $i -lt $totalPasses; $i++) {
+    for ($i = 1; $i -le $totalPasses; $i++) {
         Write-Progress -Activity "Processing Updates From: $updatesPath" `
-            -Status ("Loop {0} of {1}" -f $i, $totalPasses)
-        for ($j = 1; $j -le $totalUpdates; $j++) {
+            -Status ("Pass {0} of {1}" -f $i, $totalPasses)
+        for ($j = 1; $j -lt $totalUpdates; $j++) {
             $update = $updates[$j]
             $patchProgress = ($j / $totalUpdates) * 100
             Write-Progress -Id  1 `
                 -Activity "Injecting Patches To: $($fullPath)" `
                 -Status "Injecting Update: $($update.FullName)" `
                 -PercentComplete $patchProgress
-            Invoke-Expression "dism /image:$drive /add-package /packagepath:'$($update.fullname)'"
+            Invoke-Expression "dism /image:$drive /add-package /packagepath:'$($update.fullname)'" | Out-Null
         }
     }
 
-    Invoke-Expression "dism /image:$drive /Cleanup-Image /spsuperseded"
+    Invoke-Expression "dism /image:$drive /Cleanup-Image /spsuperseded" | Out-Null
 
     Dismount-DiskImage -ImagePath $fullPath
 }
 
-Function Create-VirtualMachine {
+Function New-VirtualMachine {
     [Cmdletbinding()]
     param (
         [string] $vhdxFile,
@@ -326,9 +307,9 @@ Function Create-VirtualMachine {
         [Int32] $cpu = 2
     )
 
-    if (-not $(Check-Elevation)) { return }
+    if (-not $(Test-Elevation)) { return }
 
-    $fullPath = Get-FullPath $vhdxFile
+    $fullPath = Get-FullFilePath $vhdxFile
 
     New-VM –Name $computerName –VHDPath $fullPath -Generation 2
     Connect-VMNetworkAdapter -VMName $computerName –Switch $virtualSwitch 
@@ -339,7 +320,7 @@ Function Create-VirtualMachine {
     Set-Vm -Name $computerName -AutomaticStopAction ShutDown 
 }
 
-Function Create-VirtualMachineFromCsv {
+Function New-VirtualMachineFromCsv {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
@@ -362,14 +343,14 @@ Function Create-VirtualMachineFromCsv {
     Push-Location $virtualStorage
 
     foreach ($vm in (Import-Csv -Path $csvFile)) {
-        Create-DifferencingVHDX -referenceDisk $baseDisk -vhdxFile "$($vm.ComputerName).vhdx"
-        Create-DataVHDX -vhdxFile "$($vm.ComputerName)-DATA.vhdx" -diskSize (0 + $vm.DataDrive)
+        New-DifferencingVHDX -referenceDisk $baseDisk -vhdxFile "$($vm.ComputerName).vhdx"
+        New-DataVHDX -vhdxFile "$($vm.ComputerName)-DATA.vhdx" -diskSize (0 + $vm.DataDrive)
 
         Make-UnattendForStaticIp -vhdxFile "$($vm.ComputerName).vhdx" -unattendTemplate $unattend `
             -computerName "$($vm.ComputerName)" -networkAddress "$($vm.IP)" `
             -gatewayAddress "$($vm.Gateway)" -nameServer "$($vm.DNS)"
 
-        Create-VirtualMachine -vhdxFile "$($vm.ComputerName).vhdx" -computerName "$($vm.ComputerName)" `
+        New-VirtualMachine -vhdxFile "$($vm.ComputerName).vhdx" -computerName "$($vm.ComputerName)" `
             -virtualSwitch $virtualSwitch -memory (0 + $vm.Memory) #-cpu (0 + $vm.Cpu)
 
         if (-not ([string]::IsNullOrEmpty($vm.DataDrive))) {
@@ -385,7 +366,7 @@ Function Create-VirtualMachineFromCsv {
     Pop-Location
 }
 
-Function Create-VirtualMachineFromName {
+Function New-VirtualMachineFromName {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
@@ -409,16 +390,16 @@ Function Create-VirtualMachineFromName {
 
     Push-Location $virtualStorage
 
-    Create-ReferenceVHDX -isoFile $isoFile -vhdxFile "$($computerName).vhdx" `
+    New-SystemVHDX -isoFile $isoFile -vhdxFile "$($computerName).vhdx" `
         -edition "ServerStandardEval"
 
-    Create-DataVHDX -vhdxFile "$($computerName)-DATA.vhdx"
+    New-DataVHDX -vhdxFile "$($computerName)-DATA.vhdx"
 
     Make-UnattendForStaticIp -vhdxFile "$($computerName).vhdx" -unattendTemplate $unattend `
         -computerName "$($computerName)" -networkAddress "$($networkAddress)" `
         -gatewayAddress "$($gateway)" -nameServer "$($nameServer)"
 
-    Create-VirtualMachine -vhdxFile "$($computerName).vhdx" -computerName "$($computerName)" `
+    New-VirtualMachine -vhdxFile "$($computerName).vhdx" -computerName "$($computerName)" `
         -virtualSwitch $virtualSwitch
 
     Add-VMHardDiskDrive -VMName "$($computerName)" -Path "$($computerName)-DATA.vhdx"
@@ -426,18 +407,18 @@ Function Create-VirtualMachineFromName {
     Pop-Location
 }
 
-Export-ModuleMember Create-ReferenceVHDX
-Export-ModuleMember Create-DifferencingVHDX
-Export-ModuleMember Create-DataVHDX
+Export-ModuleMember New-SystemVHDX
+Export-ModuleMember New-DifferencingVHDX
+Export-ModuleMember New-DataVHDX
 Export-ModuleMember Connect-IsoToVirtual
 Export-ModuleMember Make-UnattendForDhcpIp
 Export-ModuleMember Make-UnattendForStaticIp
 Export-ModuleMember Inject-VMStartUpScriptFile
 Export-ModuleMember Inject-VMStartUpScriptBlock
 Export-ModuleMember Inject-UpdatesToVhdx
-Export-ModuleMember Create-VirtualMachine
-Export-ModuleMember Create-VirtualMachineFromCsv
-Export-ModuleMember Create-VirtualMachineFromName
+Export-ModuleMember New-VirtualMachine
+Export-ModuleMember New-VirtualMachineFromCsv
+Export-ModuleMember New-VirtualMachineFromName
 
-Set-Alias New-SystemVHDX Create-ReferenceVHDX
-Export-ModuleMember -Alias New-SystemVHDX
+Set-Alias New-ReferenceVHDX New-SystemVHDX
+Export-ModuleMember -Alias New-ReferenceVHDX
