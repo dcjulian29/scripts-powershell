@@ -304,20 +304,19 @@ Function New-VirtualMachine {
         [string] $virtualSwitch = "External",
         [Int64] $memory = 1024MB,
         [Int64] $maximumMemory = 8GB,
-        [Int32] $cpu = 2
+        [Int32] $cpu = 2,
+        [string] $RemoteHost = "$($env:COMPUTERNAME)"
     )
 
     if (-not $(Test-Elevation)) { return }
 
-    $fullPath = Get-FullFilePath $vhdxFile
-
-    New-VM –Name $computerName –VHDPath $fullPath -Generation 2
-    Connect-VMNetworkAdapter -VMName $computerName –Switch $virtualSwitch 
-    Set-VMProcessor -VMName $computerName -Count $cpu
-    Set-VMMemory -VMName $computerName -DynamicMemoryEnabled $true -StartupBytes $memory
-    Set-VMMemory -VMName $computerName -MaximumBytes $maximumMemory -MinimumBytes $memory
-    Set-VM -Name $computerName -AutomaticStartAction Nothing 
-    Set-Vm -Name $computerName -AutomaticStopAction ShutDown 
+    New-VM –Name $computerName –VHDPath $vhdxFile -Generation 2 -ComputerName $RemoteHost
+    Connect-VMNetworkAdapter -VMName $computerName –Switch $virtualSwitch  -ComputerName $RemoteHost
+    Set-VMProcessor -VMName $computerName -Count $cpu -ComputerName $RemoteHost
+    Set-VMMemory -VMName $computerName -DynamicMemoryEnabled $true -StartupBytes $memory -ComputerName $RemoteHost
+    Set-VMMemory -VMName $computerName -MaximumBytes $maximumMemory -MinimumBytes $memory -ComputerName $RemoteHost
+    Set-VM -Name $computerName -AutomaticStartAction Nothing -ComputerName $RemoteHost
+    Set-Vm -Name $computerName -AutomaticStopAction ShutDown -ComputerName $RemoteHost
 }
 
 Function New-VirtualMachineFromCsv {
