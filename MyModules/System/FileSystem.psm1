@@ -7,7 +7,8 @@ Function Copy-File {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string]$Destination,
-        [switch]$Force
+        [switch]$Force,
+        [switch]$UseWin32
     )
 
     if ($Force) {
@@ -16,51 +17,60 @@ Function Copy-File {
         }
     }
 
-    $from = [IO.File]::OpenRead($Path)
-    $to = [IO.File]::OpenWrite($Destination)
+    if ($UseWin32) {
+        Add-Type -AssemblyName Microsoft.VisualBasic
+        [Microsoft.VisualBasic.FileIO.FileSystem]::CopyFile( `
+            $Path, `
+            $Destination, `
+            [Microsoft.VisualBasic.FileIO.UIOption]::AllDialogs, `
+            [Microsoft.VisualBasic.FileIO.UICancelOption]::ThrowException)
+    } else {    
+        $from = [IO.File]::OpenRead($Path)
+        $to = [IO.File]::OpenWrite($Destination)
 
-    Write-Progress -Activity "Copying file" -status "$Path -> $Destination" -PercentComplete 0
+        Write-Progress -Activity "Copying file" -status "$Path -> $Destination" -PercentComplete 0
 
-    try {
-        $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        [byte[]]$buff = New-Object byte[] 4096
-        [long]$total = [int]$count = 0
+        try {
+            $sw = [System.Diagnostics.Stopwatch]::StartNew()
+            [byte[]]$buff = New-Object byte[] 4096
+            [long]$total = [int]$count = 0
 
-        do {
-            $count = $from.Read($buff, 0, $buff.Length)
-            $to.Write($buff, 0, $count)
-            $total += $count
+            do {
+                $count = $from.Read($buff, 0, $buff.Length)
+                $to.Write($buff, 0, $count)
+                $total += $count
 
-            [int]$percent = ([int]($total / $from.Length * 100))
-            [int]$elapsed = [int]($sw.ElapsedMilliseconds.ToString()) / 1000
+                [int]$percent = ([int]($total / $from.Length * 100))
+                [int]$elapsed = [int]($sw.ElapsedMilliseconds.ToString()) / 1000
 
-            if ( $elapsed -ne 0 ) {
-                [single]$xferrate = (($total/$elapsed) / 1MB)
-            } else {
-                [single]$xferrate = 0.0
-            }
-
-            if ($total % 1mb -eq 0) {
-                if($percent -gt 0) {
-                    [int]$remainingTime = ((($elapsed / $percent) * 100) - $elapsed)
+                if ( $elapsed -ne 0 ) {
+                    [single]$xferrate = (($total/$elapsed) / 1MB)
                 } else {
-                    [int]$remainingTime = 0
+                    [single]$xferrate = 0.0
                 }
 
-                Write-Progress `
-                    -Activity ("Copying file: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s") `
-                    -status "$Path -> $Destination" `
-                    -PercentComplete $percent `
-                    -SecondsRemaining $remainingTime
-            }
-        } while ($count -gt 0)
+                if ($total % 1mb -eq 0) {
+                    if($percent -gt 0) {
+                        [int]$remainingTime = ((($elapsed / $percent) * 100) - $elapsed)
+                    } else {
+                        [int]$remainingTime = 0
+                    }
 
-        $sw.Stop()
-        $sw.Reset()
-    }
-    finally {
-        $from.Dispose()
-        $to.Dispose()
+                    Write-Progress `
+                        -Activity ("Copying file: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s") `
+                        -status "$Path -> $Destination" `
+                        -PercentComplete $percent `
+                        -SecondsRemaining $remainingTime
+                }
+            } while ($count -gt 0)
+
+            $sw.Stop()
+            $sw.Reset()
+        }
+        finally {
+            $from.Dispose()
+            $to.Dispose()
+        }
     }
 }
 
