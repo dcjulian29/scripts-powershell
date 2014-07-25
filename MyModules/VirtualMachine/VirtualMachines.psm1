@@ -200,7 +200,8 @@ Function Inject-VMStartUpScriptFile {
     [Cmdletbinding()]
     param (
         [string] $vhdxFile,
-        [string] $scriptFile
+        [string] $scriptFile,
+        [string] $arguments
     )
 
     if (-not $(Test-Elevation)) { return }
@@ -225,7 +226,7 @@ Function Inject-VMStartUpScriptFile {
     Copy-Item -Path $scriptFile -Destination $virtualScript
 
     $pshellexe = "%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe"
-    $pshellcmd = "%WINDIR%\Setup\Scripts\$($scriptName)"
+    $pshellcmd = "%WINDIR%\Setup\Scripts\$($scriptName) $arguments"
 
     Set-Content -Path $virtualCommand -Encoding Ascii `
         -Value "@$($pshellexe) -ExecutionPolicy unrestricted -NoLogo -Command $($pshellcmd)" 
@@ -238,6 +239,7 @@ Function Inject-VMStartUpScriptBlock {
     param (
         [parameter(Mandatory=$true)]
         [string] $vhdxFile,
+        [string] $arguments,
         [parameter(Mandatory=$true)]
         [ScriptBlock] $scriptBlock
     )
@@ -248,7 +250,7 @@ Function Inject-VMStartUpScriptBlock {
     Write-Verbose "Creating temporary script file for injection: $($scriptFile.FullName)"
     Write-Output $scriptBlock | Out-File $scriptFile.FullName -Encoding Ascii
 
-    Inject-VMStartUpScriptFile -vhdxFile $vhdxFile -ScriptFile $scriptFile
+    Inject-VMStartUpScriptFile -vhdxFile $vhdxFile -ScriptFile $scriptFile -Arguments $arguments
 
     Remove-Item $scriptFile
 }
