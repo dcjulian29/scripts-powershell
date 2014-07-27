@@ -5,6 +5,14 @@
   [array]$Directory
 )
 
+# On some systems, modules will not load because they "can't be found";
+#  so, let's explicitly add the modules path to the search path...
+$PSModules = "$(Get-Item "$(Split-Path $profile)\Modules")
+
+if (-not ($env:PSModulePath -split ';' -contains $PSModules)) {
+    $env:PSModulePath = "$PSModules;$($env:PSModulePath)"
+}
+
 $modulesPath = Get-Item "$(Split-Path $profile)\$($Directory)\"
 
 Get-ChildItem -Path $modulesPath -Filter *.ps1 -Recurse | % `

@@ -32,10 +32,6 @@ if (-not $batch)
 # to match the value set be the UserProfile environment variable.
 Set-Variable -Name Home -Value $env:UserProfile -Force
 
-# On some systems, the modules will not load because they "can't be found"; so, let's
-# explicitly add the modules path to the search path...
-$env:PSModulePath = "$(Get-Item "$(Split-Path $profile)\Modules");" + $env:PSModulePath
-
 . "$(Split-Path $profile)\Load-ProfileModulesAndScripts.ps1" GlobalScripts
 . "$(Split-Path $profile)\Load-ProfileModulesAndScripts.ps1" MyModules
 
