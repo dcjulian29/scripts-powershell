@@ -1,5 +1,5 @@
-$script:NugetUrl = ''
-$script:NugetApi = ''
+$script:NuGetUrl = ''
+$script:NuGetApi = ''
 
 Function Get-DevPath {
     $cmd = "path-dev.bat & set PATH"
@@ -22,14 +22,14 @@ Function Get-DevPath {
     return $devt
 }
 
-Function Initialize-NugetProfileSettings {
+Function Initialize-NuGetProfileSettings {
     param (
         $ProfileName= $(Write-Error “An NuGet profile name is required.”)
     )
     
     $OriginalProfile = ${env:'NUGET-PROFILE'}
   
-    Get-NugetProfile $ProfileName
+    Get-NuGetProfile $ProfileName
 
     $devt = Get-DevPath
 
@@ -37,25 +37,25 @@ Function Initialize-NugetProfileSettings {
     cmd /c $cmd | Foreach-Object {
         $p, $v = $_.split('=')
         if ($p -eq 'NUGET-URL') {
-            $script:NugetUrl = $v
+            $script:NuGetUrl = $v
         }
         if ($p -eq 'NUGET-API') {
-            $script:NugetApi = $v
+            $script:NuGetApi = $v
         }
     }
 
-    Clear-NugetProfile
+    Clear-NuGetProfile
     if ($OriginalProfile.Length -gt 0) {
         ${env:'NUGET-PROFILE'} = $OriginalProfile
     }
 }
 
 
-Function Clear-NugetProfile {
+Function Clear-NuGetProfile {
   Remove-Item -path env:NUGET-PROFILE
 }
 
-Function Get-NugetProfile {
+Function Get-NuGetProfile {
     param (
         $ProfileName= $(Write-Error “An NuGet profile name is required.”)
     )
@@ -81,11 +81,13 @@ Function Get-NugetProfile {
     }
 }
 
-Export-ModuleMember Clear-NugetProfile
-Export-ModuleMember Get-NugetProfile
+Export-ModuleMember Clear-NuGetProfile
+Export-ModuleMember Get-NuGetProfile
 
-Set-Alias nuget-profile-clear Clear-NugetProfile
-Set-Alias nuget-profile-load Get-NugetProfile
+Set-Alias nuget-profile-clear Clear-NuGetProfile
+Set-Alias nuget-profile-load Get-NuGetProfile
+Set-Alias Load-NuGetProfile Get-NuGetProfile
 
 Export-ModuleMember -Alias nuget-profile-clear
 Export-ModuleMember -Alias nuget-profile-load
+Export-ModuleMember -Alias Load-NuGetProfile
