@@ -6,6 +6,8 @@
         [string]$Path
     )
 
+    $fullPath = Get-FullFilePath $Path
+
     Mount-DiskImage -ImagePath $fullPath | Out-Null
 
     Get-PSDrive | Out-Null # Work around to "force" drive letter to be available
