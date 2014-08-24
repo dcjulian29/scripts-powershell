@@ -1,11 +1,9 @@
-$nodePath = Find-ProgramFiles 'nodejs\node.exe'
-
 function npm()
 {
-  & "$(Split-Path $nodePath)\node_modules\npm\bin\npm-cli.js" $args;
+  & "$(Split-Path (Find-ProgramFiles 'nodejs\node.exe'))\npm.cmd" $args;
 }
 
 function node()
 {
-  & $nodePath $args;
+  & "Find-ProgramFiles 'nodejs\node.exe'" $args;
 }
