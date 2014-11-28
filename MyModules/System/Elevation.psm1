@@ -4,10 +4,10 @@ Function Test-Elevation {
     if (($CurrentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) -eq $false)  {
         Write-Verbose "Not an administrator session!"
         Write-Error "This command requires elevation"
-        "$false"
+        return $false
     } else {
         Write-Verbose "Yes, this is an elevated session."
-        "$true"
+        return $true
     }
 }
 
