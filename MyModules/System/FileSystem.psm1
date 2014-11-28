@@ -87,7 +87,20 @@ Function Get-FullFilePath {
     }
 }
 
+Function Reset-Path {
+    $windowsPath = "C:\WINDOWS;C:\WINDOWS\system32;C:\WINDOWS\System32\Wbem"
+    $powershellPath = "C:\WINDOWS\System32\WindowsPowerShell\v1.0"
+    $binaryPath = "C:\Tools\binaries"
+    $chocolateyPath = "C:\ProgramData\chocolatey\bin"
+
+    $path = "$binaryPath;$windowsPath;$powershellPath"
+
+    $env:Path = $path
+    setx.exe /m PATH $path
+}
+
 ##############################################################################
 
 Export-ModuleMember Copy-File
 Export-ModuleMember Get-FullFilePath
+Export-ModuleMember Reset-Path
