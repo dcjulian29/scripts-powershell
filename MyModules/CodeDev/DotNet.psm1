@@ -105,6 +105,38 @@ Function Test-NetFrameworks
     return $versions.Split(',', [StringSplitOptions]::RemoveEmptyEntries)
 }
 
+Function Get-AssemblyInfo
+{
+  param
+  (
+    $assembly= $(throw “An assembly name is required.”)
+  )
+
+  if (test-path $assembly)
+  {
+    $assemblyPath = Get-Item $assembly
+    $loadedAssembly = [System.Reflection.Assembly]::LoadFrom($assemblyPath)
+  }
+  else
+  {
+    # Load from GAC
+    $loadedAssembly = [System.Reflection.Assembly]::LoadWithPartialName("$assembly")
+  }
+
+  $name = $loadedAssembly.GetName().name
+  $version =  $loadedAssembly.GetName().version
+
+  "{0} [{1}]" -f $name, $version
+}
+
+Function Get-AllAssemblyInfo {
+    Get-ChildItem | Where-Object { $_.Extension -eq ".dll" } | foreach {
+        Get-AssemblyInfo $_ 
+    }
+}
+
+###################################################################################################
+
 Export-ModuleMember Test-NetFramework2
 Export-ModuleMember Test-NetFramework3
 Export-ModuleMember Test-NetFramework35
@@ -113,3 +145,8 @@ Export-ModuleMember Test-NetFramework45
 Export-ModuleMember Test-NetFramework451
 Export-ModuleMember Test-NetFramework452
 Export-ModuleMember Test-NetFrameworks
+Export-ModuleMember Get-AssemblyInfo
+Export-ModuleMember Get-AllAssemblyInfo
+
+Set-Alias aia Get-AllAssemblyInfo
+Export-ModuleMember -Alias aia
