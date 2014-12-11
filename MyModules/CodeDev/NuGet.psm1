@@ -50,12 +50,11 @@ Function Initialize-NuGetProfileSettings {
     }
 }
 
-
 Function Clear-NuGetProfile {
   Remove-Item -path env:NUGET-PROFILE
 }
 
-Function Get-NuGetProfile {
+Function Load-NuGetProfile {
     param (
         $ProfileName= $(Write-Error “An NuGet profile name is required.”)
     )
@@ -81,13 +80,26 @@ Function Get-NuGetProfile {
     }
 }
 
+Function Restore-NugetPackages {
+    Invoke-Nuget restore $args
+}
+
+Function Invoke-Nuget {
+    & "C:\tools\apps\nuget\nuget.exe" $args
+}
+
+###################################################################################################
+
 Export-ModuleMember Clear-NuGetProfile
-Export-ModuleMember Get-NuGetProfile
+Export-ModuleMember Load-NuGetProfile
+Export-ModuleMember Restore-NugetPackages
+Export-ModuleMember Invoke-Nuget
 
 Set-Alias nuget-profile-clear Clear-NuGetProfile
-Set-Alias nuget-profile-load Get-NuGetProfile
-Set-Alias Load-NuGetProfile Get-NuGetProfile
-
 Export-ModuleMember -Alias nuget-profile-clear
+
+Set-Alias nuget-profile-load Load-NuGetProfile
 Export-ModuleMember -Alias nuget-profile-load
-Export-ModuleMember -Alias Load-NuGetProfile
+
+Set-Alias nuget Invoke-Nuget
+Export-ModuleMember -Alias nuget
