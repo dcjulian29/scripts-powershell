@@ -36,6 +36,7 @@ Function Test-NetFramework45AndUp
         switch ($version) {
             "4.5"   { $release = "378389 378675 378758" }
             "4.5.1" { $release = "378675 378758" }
+            "4.5.2" { $release = "379893" }
             default { return $False }
         }
 
@@ -84,9 +85,31 @@ Function Test-NetFramework451
     Test-NetFramework45AndUp -Version "4.5.1"
 }
 
+Function Test-NetFramework452
+{
+    Test-NetFramework45AndUp -Version "4.5.2"
+}
+
+Function Test-NetFrameworks
+{
+    $versions = ""
+
+    if (Test-NetFramework2) { $versions = $versions + "2.0," }
+    if (Test-NetFramework3) { $versions = $versions + "3.0," }
+    if (Test-NetFramework35) { $versions = $versions + "3.5," }
+    if (Test-NetFramework40) { $versions = $versions + "4.0," }
+    if (Test-NetFramework45) { $versions = $versions + "4.5," }
+    if (Test-NetFramework451) { $versions = $versions + "4.5.1," }
+    if (Test-NetFramework452) { $versions = $versions + "4.5.2," }
+
+    return $versions.Split(',', [StringSplitOptions]::RemoveEmptyEntries)
+}
+
 Export-ModuleMember Test-NetFramework2
 Export-ModuleMember Test-NetFramework3
 Export-ModuleMember Test-NetFramework35
 Export-ModuleMember Test-NetFramework40
 Export-ModuleMember Test-NetFramework45
 Export-ModuleMember Test-NetFramework451
+Export-ModuleMember Test-NetFramework452
+Export-ModuleMember Test-NetFrameworks
