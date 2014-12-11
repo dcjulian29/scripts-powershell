@@ -10,30 +10,57 @@
     ("$($env:WINDIR)\Microsoft.NET\Framework\v3.0\MSBuild.exe") `
     ("$($env:WINDIR)\Microsoft.NET\Framework\v2.0.50727\MSBuild.exe")
 
+$script:vsvarPath = First-Path `
+  (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\Tools\vsvars32.bat') `
+  (Find-ProgramFiles 'Microsoft Visual Studio 11.0\Common7\Tools\vsvars32.bat') `
+  (Find-ProgramFiles 'Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat')
+
 if (Test-Path "$($env:SYSTEMDRIVE)\Tools\development")
 {
     $env:Path = "$env:SYSTEMDRIVE\Tools\development;$env:PATH"
 }
 
-function msbuild() {
-    & $script:msbuildExe $args
-}
-
-function build-project {
-  if (test-path build.bat) {
+Function Build-Project {
+  if (Test-Path build.bat) {
     .\build.bat $args
+  } elseif (Test-Path build.cmd) {
+    .\build.cmd $args
+  } elseif (Test-Path build.xml) {
+      C:\tools\apps\nant\bin\nant.exe -buildfile:build.xml $args
   } else {
-    if (test-path build.xml) {
-      C:\bin\development-tools\nant\bin\NAnt.exe -buildfile:build.xml $args
-    } else {
-      Write-Host "This directory does not include build script to build the project"
-    }
+    Write-Host "This directory does not include build script to build the project"
   }
 }
 
-Set-Alias bp build-project
+Function Invoke-MSBuild {
+    if (Test-Path $script:msbuildExe) {
+        & $script:msbuildExe $args
+    } else {
+        Write-Error "Unable to locate MSBuild executable..."
+    }
+}
+
+Function Load-VisualStudioVariables {
+    cmd /c "`"$script:vsvarPath`" & set" | Foreach-Object {
+        $p, $v = $_.split('=')
+        Set-Item -path env:$p -value $v
+    }
+}
 
 ##################################################################################################
 
-Export-ModuleMember build-project
+Export-ModuleMember Build-Project
+Export-ModuleMember Invoke-MSBuild
+Export-ModuleMember Load-VisualStudioVariables
+
+Set-Alias bp build-project
 Export-ModuleMember -Alias bp
+
+Set-Alias msbuild Invoke-MSBuild
+Export-ModuleMember -Alias msbuild
+
+Set-Alias vsvars32 Load-VisualStudioVariables
+Export-ModuleMember -Alias vsvars32
+
+Set-Alias Load-VSVariables Load-VisualStudioVariables
+Export-ModuleMember -Alias Load-VSVariables
