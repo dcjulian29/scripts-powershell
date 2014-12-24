@@ -117,7 +117,7 @@ Function Uninstall-ChocolateyPackage {
     }
 }
 
-Function Invoke-ChocolateyInstaller {
+Function Upgrade-Chocolatey {
     $url = 'https://chocolatey.org/install.ps1'
     Invoke-Expression ((New-Object System.Net.WebClient).DownloadString($url))
 
@@ -136,18 +136,6 @@ Function Invoke-ChocolateyInstaller {
     choco.exe sources disable -name chocolatey
 }
 
-Function Update-Chocolatey {
-    if (Test-Elevation) {
-        Invoke-ChocolateyInstaller
-    }
-}
-
-Function Install-Chocolatey {
-    if (Test-Elevation) {
-        Invoke-ChocolateyInstaller
-    }
-}
-
 Function Add-ChocolateyToPath {
     $chocolateyPath = "C:\ProgramData\chocolatey\bin"
 
@@ -164,6 +152,5 @@ Export-ModuleMember Find-ChocolateyInstalledPackages
 Export-ModuleMember Update-ChocolateyPackage
 Export-ModuleMember Install-ChocolateyPackage
 Export-ModuleMember Uninstall-ChocolateyPackage
-Export-ModuleMember Update-Chocolatey
-Export-ModuleMember Install-Chocolatey
+Export-ModuleMember Upgrade-Chocolatey
 Export-ModuleMember Add-ChocolateyToPath
