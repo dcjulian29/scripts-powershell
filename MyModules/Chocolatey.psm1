@@ -1,4 +1,4 @@
-﻿Function Find-ChocolateyUpgradablePackages {
+﻿Function Find-UpgradableChocolateyPackages {
     Write-Host "Examining Installed Packages..."
     $installed = choco.exe list -localonly
 
@@ -34,10 +34,20 @@
     }
 }
 
-Function Find-ChocolateyInstalledPackages {
+Function Find-InstalledChocolateyPackages {
     $packages = (Get-ChildItem "$($env:ChocolateyInstall)\lib" | Select-Object basename).basename 
     
     $packages | ForEach-Object { $_.split('\.')[0] } | Sort-Object -unique
+}
+
+Function Find-AvailableChocolateyPackages {
+    $installed = choco.exe list -localonly | ForEach-Object { $_.split(' ')[0] }
+    $online = choco.exe list | ForEach-Object { $_.split(' ')[0] }
+    $combined = $installed + $online | Sort-Object
+
+    $available = $combined | Group-Object | Where-Object { $_.Count -eq 1 } | Select-Object Name
+
+    return $available
 }
 
 Function Update-ChocolateyPackage {
@@ -147,8 +157,9 @@ Function Add-ChocolateyToPath {
 
 ###################################################################################################
 
-Export-ModuleMember Find-ChocolateyUpgradablePackages
-Export-ModuleMember Find-ChocolateyInstalledPackages
+Export-ModuleMember Find-UpgradableChocolateyPackages
+Export-ModuleMember Find-InstalledChocolateyPackages
+Export-ModuleMember Find-AvailableChocolateyPackages
 Export-ModuleMember Update-ChocolateyPackage
 Export-ModuleMember Install-ChocolateyPackage
 Export-ModuleMember Uninstall-ChocolateyPackage
