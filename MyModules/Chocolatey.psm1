@@ -128,22 +128,25 @@ Function Uninstall-ChocolateyPackage {
 }
 
 Function Upgrade-Chocolatey {
-    $url = 'https://chocolatey.org/install.ps1'
-    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString($url))
+    if (Test-Elevation) {
+        $url = 'https://chocolatey.org/install.ps1'
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString($url))
 
-    $config = Get-Content "C:\ProgramData\chocolatey\chocolateyinstall\chocolatey.config"
-    $config = $config -replace '<ksMessage>true</ksMessage>', '<ksMessage>false</ksMessage>' 
-    $config | Out-File "C:\ProgramData\chocolatey\chocolateyinstall\chocolatey.config"
+        $config = Get-Content "C:\ProgramData\chocolatey\chocolateyinstall\chocolatey.config"
+        $config = $config -replace '<ksMessage>true</ksMessage>', '<ksMessage>false</ksMessage>' 
+        $config | Out-File "C:\ProgramData\chocolatey\chocolateyinstall\chocolatey.config"
 
-    cmd /c "icacls.exe ${env:ALLUSERSPROFILE}\chocolatey /grant Everyone:(OI)(CI)F /T"
+        cmd /c "icacls.exe ${env:ALLUSERSPROFILE}\chocolatey /grant Everyone:(OI)(CI)F /T"
 
-    if (-not ($env:Path -contains "chocolatey")) {
-        $env:Path = $env:path + ";${env:ALLUSERSPROFILE}\chocolatey\bin"
-        setx /m PATH $env:PATH
+        if (-not ($env:Path -contains "chocolatey")) {
+            $env:Path = $env:path + ";${env:ALLUSERSPROFILE}\chocolatey\bin"
+            setx /m PATH $env:PATH
+        }
+
+        choco.exe sources add -name dcjulian29 -source 'https://www.myget.org/F/dcjulian29-chocolatey'
+        choco.exe sources disable -name chocolatey
+
     }
-
-    choco.exe sources add -name dcjulian29 -source 'https://www.myget.org/F/dcjulian29-chocolatey'
-    choco.exe sources disable -name chocolatey
 }
 
 Function Add-ChocolateyToPath {
