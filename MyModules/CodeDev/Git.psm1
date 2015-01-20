@@ -76,8 +76,8 @@ Function Push-GitRepository {
 }
 
 Function Pull-GitRepository {
-    & "$GIT" pull --all
-    & "$GIT" pull --tags
+    & "$GIT" fetch --all
+    & "$GIT" pull
 }
 
 Function Fetch-GitRepository {
