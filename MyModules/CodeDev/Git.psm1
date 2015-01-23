@@ -71,7 +71,7 @@ Function Remove-GitRepositoryBackup {
 }
 
 Function Push-GitRepository {
-    & "$GIT" push --all
+    & "$GIT" push
     & "$GIT" push --tags
 }
 
@@ -88,6 +88,25 @@ Function Get-GitRepositoryStatus {
     & "$GIT" status
 }
 
+Function Push-GitRepositoriesThatAreTracked {
+    # TODO: Added support for additional "remote" repositories
+    $remoteRepositories = @("origin")
+
+    foreach ($remote in $remoteRepositories) {
+        $remoteInfo = Invoke-Expression "& '$GIT' remote show origin"
+
+        foreach ($line in $remoteInfo) {
+            if ($line -match "\W*(.+) pushes to .+") { 
+                "Pushing {0}/{1}..." -f $remote, $Matches[1]
+                Invoke-Expression $("& '{0}' push {1} {2}" -f $GIT, $remote, $Matches[1])
+            }
+        }
+    }
+
+    "Pushing tags..."
+    & "$GIT" push --tags
+}
+
 ###################################################################################################
 
 Export-ModuleMember Get-GitIgnore
@@ -98,6 +117,7 @@ Export-ModuleMember Pull-GitRepository
 Export-ModuleMember Push-GitRepository
 Export-ModuleMember Fetch-GitRepository
 Export-ModuleMember Get-GitRepositoryStatus
+Export-ModuleMember Push-GitRepositoriesThatAreTracked
 
 Set-Alias gb Backup-GitRepository
 Export-ModuleMember -Alias gb
@@ -110,6 +130,9 @@ Export-ModuleMember -Alias gpull
 
 Set-Alias gpush Push-GitRepository
 Export-ModuleMember -Alias gpush
+
+Set-Alias gpushall Push-GitRepositoriesThatAreTracked
+Export-ModuleMember -Alias gpushall
 
 Set-Alias gfetch Fetch-GitRepository
 Export-ModuleMember -Alias gfetch
