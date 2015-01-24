@@ -76,12 +76,12 @@ Function Push-GitRepository {
 }
 
 Function Pull-GitRepository {
-    & "$GIT" fetch --all
+    Fetch-GitRepository
     & "$GIT" pull
 }
 
 Function Fetch-GitRepository {
-    & "$GIT" fetch --all
+    & "$GIT" fetch --prune --all
 }
 
 Function Get-GitRepositoryStatus {
