@@ -71,8 +71,7 @@ Function Remove-GitRepositoryBackup {
 }
 
 Function Push-GitRepository {
-    & "$GIT" push
-    & "$GIT" push --tags
+    & "$GIT" push -v --tags
 }
 
 Function Pull-GitRepository {
