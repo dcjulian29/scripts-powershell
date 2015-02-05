@@ -154,6 +154,30 @@ Function Add-ChocolateyToPath {
     setx.exe /m PATH $path
 }
 
+Function Purge-ObsoleteChocolateyPackages {
+    $packageDir = "${env:ChocolateyInstall}\lib"
+    $packages = Get-ChildItem -Path $packageDir -Directory | Sort-Object
+
+    for ($i = 0; $i -lt $packages.Count - 1; $i++) {
+        $this = $packages[$i].Name
+        $next = $packages[$i + 1].Name
+
+        $a = $this.IndexOf('.')
+        $b = $next.IndexOf('.')
+
+        $thisName = $this.Substring(0,$a)
+        $nextName = $next.Substring(0,$b)
+
+        $thisVersion = $this.Substring($a + 1)
+        $nextVersion = $next.Substring($b + 1)
+
+        if ($thisName -eq $nextName) {
+            Write-Output "Purging $thisName : $thisVersion --> $nextVersion"
+            Remove-Item $packages[$i].FullName -Recurse -Force
+        }
+    }
+}
+
 ###################################################################################################
 
 Export-ModuleMember Find-UpgradableChocolateyPackages
@@ -164,3 +188,4 @@ Export-ModuleMember Install-ChocolateyPackage
 Export-ModuleMember Uninstall-ChocolateyPackage
 Export-ModuleMember Upgrade-Chocolatey
 Export-ModuleMember Add-ChocolateyToPath
+Export-ModuleMember Purge-ObsoleteChocolateyPackages
