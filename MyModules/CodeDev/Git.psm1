@@ -110,6 +110,20 @@ Function Push-GitRepositoriesThatAreTracked {
     & "$GIT" push --tags
 }
 
+
+Function Push-GitRepositoryToQA {
+
+    $tag = & $GIT lasttag
+    $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
+
+    $commit = "Publish $tag to QA on $date"
+
+    & "$GIT" checkout qa
+
+    & "$GIT" merge --no-ff master -m $commit
+}
+
+
 ###################################################################################################
 
 Export-ModuleMember Get-GitIgnore
@@ -121,6 +135,7 @@ Export-ModuleMember Push-GitRepository
 Export-ModuleMember Fetch-GitRepository
 Export-ModuleMember Get-GitRepositoryStatus
 Export-ModuleMember Push-GitRepositoriesThatAreTracked
+Export-ModuleMember Push-GitRepositoryToQA
 
 Set-Alias gb Backup-GitRepository
 Export-ModuleMember -Alias gb
