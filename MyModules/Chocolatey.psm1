@@ -123,28 +123,6 @@ Function Uninstall-ChocolateyPackage {
     }
 }
 
-Function Upgrade-Chocolatey {
-    if (Test-Elevation) {
-        $url = 'https://chocolatey.org/install.ps1'
-        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString($url))
-
-        $config = Get-Content "C:\ProgramData\chocolatey\chocolateyinstall\chocolatey.config"
-        $config = $config -replace '<ksMessage>true</ksMessage>', '<ksMessage>false</ksMessage>' 
-        $config | Out-File "C:\ProgramData\chocolatey\chocolateyinstall\chocolatey.config"
-
-        cmd /c "icacls.exe ${env:ALLUSERSPROFILE}\chocolatey /grant Everyone:(OI)(CI)F /T"
-
-        if (-not ($env:Path -contains "chocolatey")) {
-            $env:Path = $env:path + ";${env:ALLUSERSPROFILE}\chocolatey\bin"
-            setx /m PATH $env:PATH
-        }
-
-        choco.exe sources add -name dcjulian29 -source 'https://www.myget.org/F/dcjulian29-chocolatey'
-        choco.exe sources disable -name chocolatey
-
-    }
-}
-
 Function Add-ChocolateyToPath {
     $chocolateyPath = "C:\ProgramData\chocolatey\bin"
 
@@ -193,6 +171,5 @@ Export-ModuleMember Find-AvailableChocolateyPackages
 Export-ModuleMember Update-ChocolateyPackage
 Export-ModuleMember Install-ChocolateyPackage
 Export-ModuleMember Uninstall-ChocolateyPackage
-Export-ModuleMember Upgrade-Chocolatey
 Export-ModuleMember Add-ChocolateyToPath
 Export-ModuleMember Purge-ObsoleteChocolateyPackages
