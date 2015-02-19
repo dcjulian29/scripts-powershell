@@ -155,8 +155,15 @@ Function Add-ChocolateyToPath {
 }
 
 Function Purge-ObsoleteChocolateyPackages {
+    $expression = "(?<name>[a-zA-Z-\.]+)\.(?<major>\d+)\.(?<minor>\d+)\.(?<revision>\d+)\.?(?<patch>\d+)?"
     $packageDir = "${env:ChocolateyInstall}\lib"
-    $packages = Get-ChildItem -Path $packageDir -Directory | Sort-Object
+    $packages = Get-ChildItem -Path $packageDir -Directory `
+        | Sort-Object -Property `
+            @{Expression={[RegEx]::Match($_.Name, $expression).Groups["name"].Value}}, `
+            @{Expression={[int][RegEx]::Match($_.Name, $expression).Groups["major"].Value}}, `
+            @{Expression={[int][RegEx]::Match($_.Name, $expression).Groups["minor"].Value}}, `
+            @{Expression={[int][RegEx]::Match($_.Name, $expression).Groups["revision"].Value}}, `
+            @{Expression={[int][RegEx]::Match($_.Name, $expression).Groups["patch"].Value}} `
 
     for ($i = 0; $i -lt $packages.Count - 1; $i++) {
         $this = $packages[$i].Name
@@ -172,7 +179,7 @@ Function Purge-ObsoleteChocolateyPackages {
         $nextVersion = $next.Substring($b + 1)
 
         if ($thisName -eq $nextName) {
-            Write-Output "Purging $thisName : $thisVersion --> $nextVersion"
+            Write-Output "Purging $thisName : $thisVersion (< $nextVersion)"
             Remove-Item $packages[$i].FullName -Recurse -Force
         }
     }
