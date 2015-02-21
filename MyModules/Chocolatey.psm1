@@ -133,7 +133,7 @@ Function Add-ChocolateyToPath {
 }
 
 Function Purge-ObsoleteChocolateyPackages {
-    $expression = "(?<name>[a-zA-Z-\.]+)\.(?<major>\d+)\.(?<minor>\d+)\.(?<revision>\d+)\.?(?<patch>\d+)?"
+    $expression = "(?<name>[^\.]+)\.(?<major>\d+)\.(?<minor>\d+)\.?(?<revision>\d+)?\.?(?<patch>\d+)?"
     $packageDir = "${env:ChocolateyInstall}\lib"
     $packages = Get-ChildItem -Path $packageDir -Directory `
         | Sort-Object -Property `
