@@ -3,6 +3,7 @@
     $installed = choco.exe list -localonly
     $available = choco.exe list
 
+
     foreach ($line in $installed) {
         if ($line -match '\d+\.\d+') {
             $package = $line.split(' ')[0]
@@ -11,20 +12,22 @@
 
             $localVersion = $line.Split(' ')[1]
             
-            $remotePackage = $available -match "^$package\W"
+            $remotePackage = $available -match "^$package\s"
 
-            if ($remotePackage) {
+            if ($remotePackage.Length -gt 0) {
                 $remoteVersion = ($remotePackage).Split(' ')[1]
-            }
 
-            if ($remoteVersion) {
-                if ($localVersion -ne $remoteVersion) {
-                    Write-Host "newer version available: $remoteVersion (installed: $localVersion)" -ForegroundColor Yellow
-                } else {
-                    Write-Host ("`b" * $output.length) -NoNewline
-                    Write-Host (" " * $output.length) -NoNewline
-                    Write-Host ("`b" * $output.length) -NoNewline
+                if ($remoteVersion) {
+                    if ($localVersion -ne $remoteVersion) {
+                        Write-Host "newer version available: $remoteVersion (installed: $localVersion)" -ForegroundColor Yellow
+                    } else {
+                        Write-Host ("`b" * $output.length) -NoNewline
+                        Write-Host (" " * $output.length) -NoNewline
+                        Write-Host ("`b" * $output.length) -NoNewline
+                    }
                 }
+            } else {
+                Write-Host "remote package removed." -ForegroundColor Red
             }
         }
     }
