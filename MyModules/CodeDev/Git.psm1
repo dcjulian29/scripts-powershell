@@ -1,20 +1,64 @@
 ﻿$script:GIT_INSTALL_ROOT = Find-ProgramFiles "Git\bin"
 $script:GIT = "${script:GIT_INSTALL_ROOT}\git.exe"
-$script:DEV_TOOLS_ROOT = "${env:SYSTEMDRIVE}\tools\development"
 
-if (Test-Path "$GIT_INSTALL_ROOT") {
-    $env:Path = "$env:Path;$GIT_INSTALL_ROOT"
+if ([String]::IsNullOrWhiteSpace($script:GIT_INSTALL_ROOT) {
+    if (Test-Path "$script:GIT_INSTALL_ROOT") {
+        $env:Path = "$env:Path;$script:GIT_INSTALL_ROOT"
 
-    if (Test-Path "$($env:UserProfile)\Documents\WindowsPowerShell\Modules\posh-git") {
-        Import-Module Posh-Git
+        if (Test-Path "$($env:UserProfile)\Documents\WindowsPowerShell\Modules\posh-git") {
+            Import-Module Posh-Git
 
-        Enable-GitColors
+            Enable-GitColors
 
-        $GitPromptSettings.BeforeText = "["
+            $GitPromptSettings.BeforeText = "["
+        }
     }
 }
 
-Function Get-GitIgnore {
+Function Add-GitIgnoreToLocalRepository {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullorEmpty()]
+        [string] $Pattern,
+        [ValidateNotNullorEmpty()]
+        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [string] $Path = $pwd
+    )
+
+    if (-not (Test-Path "$(Join-Path $Path ".git")")) {
+        Write-Warning "This directory is not the root of a GIT repository."
+        return
+    }
+
+    $ignore = [System.IO.Path]::Combine($Path, ".git", "info", "exclude")
+    Add-Content -Path $ignore -Value "$Pattern"
+}
+
+Function Add-GitIgnoreToRemoteRepository {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullorEmpty()]
+        [string] $Pattern,
+        [ValidateNotNullorEmpty()]
+        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [string] $Path = $pwd
+    )
+
+    if (-not (Test-Path "$(Join-Path $Path ".git")")) {
+        Write-Warning "This directory is not the root of a GIT repository."
+        return
+    }
+
+    $ignore = [System.IO.Path]::Combine($Path, ".gitignore")
+
+    if (-not (Test-Path $ignore)) {
+        Set-Content -Path $ignore -Value "$Pattern"        
+    } else {
+        Add-Content -Path $ignore -Value "$Pattern"
+    }
+}
+
+Function Get-GitIgnoreTemplate {
     <#
     .Synopsis
         Displays list of supported templates.
@@ -41,7 +85,7 @@ Function Get-GitIgnore {
     }
 }
 
-Function Add-GitIgnore {
+Function Add-GitIgnoreTemplate {
     <#
     .Synopsis
         Add the requested .gitignore to current directory.
@@ -63,11 +107,97 @@ Function Add-GitIgnore {
 }
 
 Function Backup-GitRepository {
-    & "$DEV_TOOLS_ROOT\git-backup.bat"
+    param (
+        [ValidateNotNullorEmpty()]
+        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [string] $Path = $pwd
+    )
+
+    if (-not (Test-Path "$(Join-Path $Path ".git")")) {
+        Write-Warning "This directory is not the root of a GIT repository."
+        return
+    }
+
+    $timestamp = [DateTime]::Now.ToString("yyyyMMdd")
+    $project = Split-Path -Leaf $Path
+
+    $backup = Join-Path $env:TEMP "$project-backup-$timestamp"
+
+    if (Test-Path $backup) {
+        Write-Error "This project already has a backup for today, please delete the backup and try again."
+        return
+    }
+
+    Write-Output "Backing up $project..."
+
+    New-Item -ItemType Directory -Path $backup | Out-Null
+
+    & robocopy.exe "$Path" "$backup" /MIR /Z /SL /MT /XJ /R:5 /W:5
 }
 
 Function Remove-GitRepositoryBackup {
-    & "$DEV_TOOLS_ROOT\git-backup-remove.bat"
+    param (
+        [ValidateNotNullorEmpty()]
+        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [string] $Path = $pwd
+    )
+
+    if (-not (Test-Path "$(Join-Path $Path ".git")")) {
+        Write-Warning "This directory is not the root of a GIT repository."
+        return
+    }
+
+    $project = Split-Path -Leaf $Path
+
+    $backup = Get-ChildItem -Path $env:TEMP | Where-Object { $_.PSIsContainer } `
+        | Where-Object { $_.Name -like "$project-backup-*" } | Select-Object FullName
+
+    $foobar = Get-ChildItem -Path $env:TEMP | Where-Object { $_.PSIsContainer } `
+        | Where-Object { $_.Name -like "$project-foobar-*" } | Select-Object FullName
+    
+    foreach ($folder in $backup) {
+        Write-Output "Removing backup at $($folder.FullName)"
+        Remove-Item -Path $folder.FullName -Recurse -Force
+    }
+
+    foreach ($folder in $foobar) {
+        Write-Output "Removing foobar copy at $($folder.FullName)"
+        Remove-Item -Path $folder.FullName -Recurse -Force
+    }
+}
+
+Function Restore-GitRepositoryBackup {
+    param (
+        [ValidateNotNullorEmpty()]
+        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [string] $Path = $pwd
+    )
+
+    if (-not (Test-Path "$(Join-Path $Path ".git")")) {
+        Write-Warning "This directory is not the root of a GIT repository."
+        return
+    }
+
+    $timestamp = [DateTime]::Now.ToString("yyyyMMdd")
+    $project = Split-Path -Leaf $Path
+
+    $backup = Join-Path $env:TEMP "$project-backup-$timestamp"
+    $foobar = Join-Path $env:TEMP "$project-foobar-$timestamp"
+
+    if (-not (Test-Path $backup)) {
+        Write-Error "This project does not contain a backup for today."
+        return
+    }
+
+    New-Item -ItemType Directory -Path $foobar | Out-Null
+
+    & robocopy.exe "$Path" "$foobar" /MIR /Z
+
+    Remove-Item -Path "$Path\*" -Recurse -Force
+
+    Write-Output "Restoring from $project backup..."
+
+    & robocopy.exe "$backup" "$Path" /MIR /Z
 }
 
 Function Push-GitRepository {
@@ -123,19 +253,56 @@ Function Push-GitRepositoryToQA {
     & "$GIT" merge --no-ff master -m $commit
 }
 
+Function Push-GitRepositoryToPROD {
+    $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
+
+    $commit = "Publish QA to Production on $date"
+
+    & "$GIT" checkout prod
+
+    & "$GIT" merge --no-ff qa -m $commit
+}
+
+Function Update-AllGitRepositories {
+    param (
+        [ValidateNotNullorEmpty()]
+        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [string] $Path = $pwd
+    )
+
+    Write-Output "Updating from remote repository for GIT projects in this directory..."
+
+    $folders = Get-ChildItem -Path $Path | Where-Object { $_.PSIsContainer }
+
+    foreach ($folder in $folders) {
+        if (Test-Path "$(Join-Path $folder.FullName ".git")") {
+            Write-Output "== $($folder.Name)"
+            Push-Location $folder.FullName
+            & "$GIT" remote -v
+            & "$GIT" fetch --all
+            Pop-Location
+            Write-Output ""
+        }
+    }
+}
 
 ###################################################################################################
 
-Export-ModuleMember Get-GitIgnore
-Export-ModuleMember Add-GitIgnore
+Export-ModuleMember Add-GitIgnoreToLocalRepository
+Export-ModuleMember Add-GitIgnoreToRemoteRepository
+Export-ModuleMember Get-GitIgnoreTemplate
+Export-ModuleMember Add-GitIgnoreTemplate
 Export-ModuleMember Backup-GitRepository
 Export-ModuleMember Remove-GitRepositoryBackup
+Export-ModuleMember Restore-GitRepositoryBackup
 Export-ModuleMember Pull-GitRepository
 Export-ModuleMember Push-GitRepository
 Export-ModuleMember Fetch-GitRepository
 Export-ModuleMember Get-GitRepositoryStatus
 Export-ModuleMember Push-GitRepositoriesThatAreTracked
 Export-ModuleMember Push-GitRepositoryToQA
+Export-ModuleMember Push-GitRepositoryToPROD
+Export-ModuleMember Update-AllGitRepositories
 
 Set-Alias gb Backup-GitRepository
 Export-ModuleMember -Alias gb
