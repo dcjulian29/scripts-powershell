@@ -1,7 +1,7 @@
 ﻿$script:GIT_INSTALL_ROOT = Find-ProgramFiles "Git\bin"
 $script:GIT = "${script:GIT_INSTALL_ROOT}\git.exe"
 
-if ([String]::IsNullOrWhiteSpace($script:GIT_INSTALL_ROOT) {
+if (-not ([String]::IsNullOrWhiteSpace($script:GIT_INSTALL_ROOT)) {
     if (Test-Path "$script:GIT_INSTALL_ROOT") {
         $env:Path = "$env:Path;$script:GIT_INSTALL_ROOT"
 
