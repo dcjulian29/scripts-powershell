@@ -240,7 +240,6 @@ Function Push-GitRepositoriesThatAreTracked {
     & "$GIT" push --tags
 }
 
-
 Function Push-GitRepositoryToQA {
 
     $tag = & $GIT lasttag
@@ -253,7 +252,17 @@ Function Push-GitRepositoryToQA {
     & "$GIT" merge --no-ff master -m $commit
 }
 
-Function Push-GitRepositoryToPROD {
+Function Push-GitRepositoryToUAT {
+    $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
+
+    $commit = "Publish QA to UAT on $date"
+
+    & "$GIT" checkout uat
+
+    & "$GIT" merge --no-ff qa -m $commit
+}
+
+Function Push-GitRepositoryToPRODFromQA {
     $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
 
     $commit = "Publish QA to Production on $date"
@@ -261,6 +270,16 @@ Function Push-GitRepositoryToPROD {
     & "$GIT" checkout prod
 
     & "$GIT" merge --no-ff qa -m $commit
+}
+
+Function Push-GitRepositoryToPRODFromUAT {
+    $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
+
+    $commit = "Publish UAT to Production on $date"
+
+    & "$GIT" checkout prod
+
+    & "$GIT" merge --no-ff uat -m $commit
 }
 
 Function Update-AllGitRepositories {
@@ -301,7 +320,9 @@ Export-ModuleMember Fetch-GitRepository
 Export-ModuleMember Get-GitRepositoryStatus
 Export-ModuleMember Push-GitRepositoriesThatAreTracked
 Export-ModuleMember Push-GitRepositoryToQA
-Export-ModuleMember Push-GitRepositoryToPROD
+Export-ModuleMember Push-GitRepositoryToUAT
+Export-ModuleMember Push-GitRepositoryToPRODFromQA
+Export-ModuleMember Push-GitRepositoryToPRODFromUAT
 Export-ModuleMember Update-AllGitRepositories
 
 Set-Alias gb Backup-GitRepository
