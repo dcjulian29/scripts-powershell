@@ -18,3 +18,6 @@ if (-not ($env:PATH).Contains($binarydirectory))
 {
   $env:PATH = "$binarydirectory;$($env:PATH)"
 }
+
+Remove-Item alias:wget
+Remove-Item alias:curl
