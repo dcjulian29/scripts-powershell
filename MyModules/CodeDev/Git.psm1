@@ -272,7 +272,7 @@ Function Publish-GitRepositoryToPROD {
         throw "You cannot publish from both environments."
     }
     
-    if ( -not ($FromUAT -or $FromQA) {
+    if ( -not ($FromUAT -or $FromQA)) {
         throw "You must select an environment to publish from."
     }
     

@@ -873,6 +873,7 @@ WHERE [Id] = $UserStory
                 if ($story.Type.Name -ne "User Story") {
                     throw "The provided work item is not a User Story."
                 }
+            }
         }
 
         $projectName = ($story.Fields | ? { $_.Name -eq "Team Project" }).Value
