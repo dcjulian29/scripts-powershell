@@ -546,6 +546,35 @@ Function Set-WorkItemActive {
     END { }
 }
 
+Function Set-WorkItemClosed {
+   [CmdletBinding()]
+    param (
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $true)]   
+        [psobject] $TfsServer,
+        [Parameter(ParameterSetName="p1", Mandatory = $true, ValueFromPipeline = $false)]   
+        [int] $Id,
+
+        [Parameter(ParameterSetName="p2", Mandatory = $true, ValueFromPipeline = $true)]   
+        [psobject] $WorkItem
+    )
+
+    BEGIN { }
+    PROCESS {
+        if ($PsCmdlet.ParameterSetName -eq "p1") {    
+            $WorkItem = ($TfsServer.WorkItemStore).GetWorkItem($Id)    
+        }
+        
+        $RemainingWork = $WorkItem.Fields["Remaining Work"].Value
+
+        if ($RemainingWork -gt 0) {
+            throw "Work item $($WorkItem.Id) still has remaining work!"
+        }
+
+        Update-WorkItem $WorkItem "State" "Closed" | Out-Null
+    }
+    END { }
+}
+
 Function Set-WorkItemResolved {
    [CmdletBinding()]
     param (
@@ -813,6 +842,69 @@ Function Get-WorkItems {
   END { } 
 }
 
+Function New-TfsTaskForUserStory {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]   
+        [psobject] $TfsServer,
+        [Parameter(Mandatory = $true)]   
+        [int] $UserStory,
+        [Parameter(Mandatory = $true)]   
+        [string] $Title,
+        [Parameter(Mandatory = $true)]   
+        [int] $Hours
+    )
+    
+    BEGIN { }
+    PROCESS {
+        $wiql = @"
+SELECT
+  [Work Item Type], [Title] 
+FROM workitems 
+WHERE [Id] = $UserStory
+"@
+
+        $ws = $TfsServer.WorkItemStore
+
+        if ($ws -ne $null) {
+            $story = $ws.Query($wiql) 
+
+            if ($story -ne $null) {
+                if ($story.Type.Name -ne "User Story") {
+                    throw "The provided work item is not a User Story."
+                }
+        }
+
+        $projectName = ($story.Fields | ? { $_.Name -eq "Team Project" }).Value
+        $project = $ws.Projects | ? { $_.Name -eq $projectName }
+        $taskItem = $project.WorkItemTypes | ? { $_.Name -eq "Task" }
+
+        $workItem = New-Object Microsoft.TeamFoundation.WorkItemTracking.Client.WorkItem($taskItem)
+        $workItem.Title = $Title
+
+        $linkType = $ws.WorkItemLinkTypes[[Microsoft.TeamFoundation.WorkItemTracking.Client.CoreLinkTypeReferenceNames]::Hierarchy]
+        $link = New-Object Microsoft.TeamFoundation.WorkItemTracking.Client.WorkItemLink($linkType.ReverseEnd, $story.Id)
+
+        $workItem.WorkItemLinks.Add($link) | Out-Null
+
+        $activity = $workItem.Fields | ? { $_.Name -eq "Activity" }
+        $activity.Value = "Implementation"
+
+        $iteration = $workItem.Fields | ? { $_.Name -eq "Iteration Path" }
+        $iteration.Value = ($story.Fields | ? { $_.Name -eq "Iteration Path" }).Value
+
+        $remaining = $workItem.Fields | ? { $_.Name -eq "Remaining Work" }
+        $remaining.Value = $Hours
+
+        $workItem.Save()
+
+        Write-Output "Created a new task #$($workItem.Id)"
+    }
+    END { } 
+}
+
+###############################################################################
+
 Export-ModuleMember Get-WorkItems
 Export-ModuleMember Set-WorkItemOriginalEstimate
 Export-ModuleMember Set-WorkItemRemainingTime
@@ -830,6 +922,7 @@ Export-ModuleMember Get-TfsWorkItemIveTouchedYesterday
 Export-ModuleMember Get-TfsWorkItemIveTouchedThisWeek
 Export-ModuleMember Get-TfsWorkItemIveTouchedThisMonth
 Export-ModuleMember Set-WorkItemActive
+Export-ModuleMember Set-WorkItemClosed
 Export-ModuleMember Set-WorkItemProposed
 Export-ModuleMember Set-WorkItemResolved
 Export-ModuleMember Get-WorkItem
@@ -838,6 +931,7 @@ Export-ModuleMember Get-WorkItemDetails
 Export-ModuleMember Update-WorkItemTime
 Export-ModuleMember Update-WorkItem
 Export-ModuleMember Get-WorkItemTime
+Export-ModuleMember New-TfsTaskForUserStory
 
 Set-Alias gtfs Get-TfsServer
 Set-Alias gtwi Get-TfsWorkItem
