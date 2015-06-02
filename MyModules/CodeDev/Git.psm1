@@ -240,7 +240,7 @@ Function Push-GitRepositoriesThatAreTracked {
     & "$GIT" push --tags
 }
 
-Function Push-GitRepositoryToQA {
+Function Publish-GitRepositoryToQA {
 
     $tag = & $GIT lasttag
     $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
@@ -252,7 +252,7 @@ Function Push-GitRepositoryToQA {
     & "$GIT" merge --no-ff master -m $commit
 }
 
-Function Push-GitRepositoryToUAT {
+Function Publish-GitRepositoryToUAT {
     $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
 
     $commit = "Publish QA to UAT on $date"
@@ -262,24 +262,31 @@ Function Push-GitRepositoryToUAT {
     & "$GIT" merge --no-ff qa -m $commit
 }
 
-Function Push-GitRepositoryToPRODFromQA {
+Function Publish-GitRepositoryToPROD {
+    param (
+        [switch] $FromUAT,
+        [switch] $FromQA
+    )
+    
+    if ($FromUAT -and $FromQA) {
+        throw "You cannot publish from both environments."
+    }
+    
+    if ( -not ($FromUAT -or $FromQA) {
+        throw "You must select an environment to publish from."
+    }
+    
     $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
-
-    $commit = "Publish QA to Production on $date"
 
     & "$GIT" checkout prod
 
-    & "$GIT" merge --no-ff qa -m $commit
-}
-
-Function Push-GitRepositoryToPRODFromUAT {
-    $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
-
-    $commit = "Publish UAT to Production on $date"
-
-    & "$GIT" checkout prod
-
-    & "$GIT" merge --no-ff uat -m $commit
+    if ($FromQA) {
+        $commit = "Publish QA to Production on $date"
+        & "$GIT" merge --no-ff qa -m $commit
+    } else {
+        $commit = "Publish UAT to Production on $date"    
+        & "$GIT" merge --no-ff uat -m $commit
+    }
 }
 
 Function Update-AllGitRepositories {
@@ -319,10 +326,9 @@ Export-ModuleMember Push-GitRepository
 Export-ModuleMember Fetch-GitRepository
 Export-ModuleMember Get-GitRepositoryStatus
 Export-ModuleMember Push-GitRepositoriesThatAreTracked
-Export-ModuleMember Push-GitRepositoryToQA
-Export-ModuleMember Push-GitRepositoryToUAT
-Export-ModuleMember Push-GitRepositoryToPRODFromQA
-Export-ModuleMember Push-GitRepositoryToPRODFromUAT
+Export-ModuleMember Publish-GitRepositoryToQA
+Export-ModuleMember Publish-GitRepositoryToUAT
+Export-ModuleMember Publish-GitRepositoryToPROD
 Export-ModuleMember Update-AllGitRepositories
 
 Set-Alias gb Backup-GitRepository
