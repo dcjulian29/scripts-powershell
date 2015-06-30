@@ -51,7 +51,7 @@ Function Find-AvailableChocolateyPackages {
 
 Function Update-ChocolateyPackage {
     Param (
-        [alias("ia","installArgs")][string] $installArguments = '',
+        [alias("ia","installArgs")][string] $installArguments,
         [parameter(Mandatory=$true, Position=1)]
         [string] $package
     )
@@ -59,18 +59,18 @@ Function Update-ChocolateyPackage {
     if (Test-Elevation) {
         $choco = "${env:ChocolateyInstall}\chocolateyInstall\chocolatey.ps1"
 
-        if ($installArguments.Length -gt 0) {
-            $args = $args + " -installArguments $installArguments"
+        if ($installArguments) {
+            $args = " -installArguments $installArguments"
         }
 
-        & $choco update $package $args -y
+        Invoke-Expression "$choco update $package$args -y"
     }
 }
 
 Function Install-ChocolateyPackage {
     Param (
-        [string]$version='',
-        [alias("ia","installArgs")][string] $installArguments = '',
+        [string]$version,
+        [alias("ia","installArgs")][string] $installArguments,
         [parameter(Mandatory=$true, Position=1)]
         [string] $package
     )
@@ -78,22 +78,22 @@ Function Install-ChocolateyPackage {
     if (Test-Elevation) {
         $choco = "${env:ChocolateyInstall}\chocolateyInstall\chocolatey.ps1"
 
-        if ($version.Length -gt 0) {
+        if ($version.Length) {
             $args = $args + " -version $version"
         }
 
-        if ($installArguments.Length -gt 0) {
+        if ($installArguments) {
             $args = $args + " -installArguments $installArguments"
         }
 
-        & $choco install $package $args -y
+        Invoke-Expression $choco install $package$args -y
     }
 }
 
 Function Uninstall-ChocolateyPackage {
     Param (
-        [string]$version='',
-        [alias("ia","installArgs")][string] $installArguments = '',
+        [string]$version,
+        [alias("ia","installArgs")][string] $installArguments,
         [parameter(Mandatory=$true, Position=1)]
         [string] $package
     )
@@ -101,15 +101,15 @@ Function Uninstall-ChocolateyPackage {
     if (Test-Elevation) {
         $choco = "${env:ChocolateyInstall}\chocolateyInstall\chocolatey.ps1"
 
-        if ($version.Length -gt 0) {
+        if ($version) {
             $args = $args + " -version $version"
         }
 
-        if ($installArguments.Length -gt 0) {
+        if ($installArguments) {
             $args = $args + " -installArguments $installArguments"
         }
 
-        & $choco uninstall $package $args -y
+        Invoke-Expression $choco uninstall $package$args -y
     }
 }
 
