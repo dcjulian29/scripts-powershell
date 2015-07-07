@@ -86,7 +86,7 @@ Function Install-ChocolateyPackage {
             $args = $args + " -installArguments $installArguments"
         }
 
-        Invoke-Expression $choco install $package$args -y
+        Invoke-Expression "$choco install $package$args -y"
     }
 }
 
@@ -109,7 +109,7 @@ Function Uninstall-ChocolateyPackage {
             $args = $args + " -installArguments $installArguments"
         }
 
-        Invoke-Expression $choco uninstall $package$args -y
+        Invoke-Expression "$choco uninstall $package$args -y"
     }
 }
 
@@ -153,6 +153,18 @@ Function Purge-ObsoleteChocolateyPackages {
     }
 }
 
+Function Make-ChocolateyPackage {
+    Param (
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $NuspecFile = "package.nuspec"
+    )
+
+    $nuget = "${env:ChocolateyInstall}\chocolateyinstall\nuget.exe"
+    $options = "-Verbosity detailed -NoPackageAnalysis -NonInteractive -NoDefaultExcludes"
+
+    Invoke-Expression "$nuget pack ""$NuspecFile"" $options"
+}
+
 ###################################################################################################
 
 Export-ModuleMember Find-UpgradableChocolateyPackages
@@ -166,3 +178,8 @@ Export-ModuleMember Purge-ObsoleteChocolateyPackages
 
 Set-Alias chocoupdate Update-ChocolateyPackage
 Export-ModuleMember -Alias chocoupdate
+
+Export-ModuleMember Make-ChocolateyPackage
+
+Set-Alias choco-make-package Make-ChocolateyPackage
+Export-ModuleMember -Alias choco-make-package
