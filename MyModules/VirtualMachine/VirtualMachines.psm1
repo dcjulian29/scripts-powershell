@@ -100,6 +100,173 @@ Function New-DataVHDX {
     Dismount-DiskImage -ImagePath $fullPath
 }
 
+Function New-NanoServerVhdx {
+<#
+    .SYNOPSIS 
+        Prepares an Hyper-V Vhdx file ready-to-boot Windows Server 2016 Technical Preview 2 - Nano Server
+
+    .PARAMETER IsoPath
+    This is the path to the Windows Server 2016 Technical Preview 2 ISO downloaded from:
+    https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-technical-preview
+
+    .PARAMETER VhdxFile
+    This is the path and name of the new Nano Server VHDX File.
+
+    .PARAMETER StoragePackage
+        Adds support of the File Server role and other storage components
+
+    .PARAMETER FailoverClusterPackage
+        Adds support of Failover Clustering
+
+    .PARAMETER ComputerName
+    This is the Computer Name for the new Nano Server.
+
+    .PARAMETER AdministratorPassword
+    This is the Administrator account password for the new Nano Server.
+
+    .PARAMETER IPAddress
+    This is a Static IP address to assign to the first ethernet card in this Nano Server. If not passed it will use DHCP.
+
+    .PARAMETER RegisteredOwner
+    This is the Registered Owner that will be set for the Nano Server.
+
+    .PARAMETER RegisteredCorporation
+    This is the Registered Corporation name that will be set for the Nano Server.
+#>
+#Requires -Version 4.0
+
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateScript({Test-Path -Path $_ })]
+        [String]$IsoPath,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String]$VhdxFile,
+
+        [switch]$StoragePackage,
+        [switch]$FailoverClusterPackage,
+
+        [ValidateNotNullOrEmpty()]
+        [String]$ComputerName = "NanoServer03",
+
+        [ValidateNotNullOrEmpty()]
+        [String]$AdministratorPassword = "P@ssw0rd",
+        [String]$IPAddress,
+        [string]$RegisteredOwner = "Contoso",
+        [string]$RegisteredCorporation = "Contoso"
+    )
+
+    $WorkFolder = Join-Path -Path $env:TEMP -ChildPath 'NanoServer' 
+    $DismFolder = Join-Path -Path $WorkFolder -ChildPath "dism"
+    $MountFolder = Join-Path -Path $WorkFolder -ChildPath "mount"
+    $TempVHDName = Join-Path -Path $WorkFolder -ChildPath "NanoServer.vhdx"
+    $dism = Join-Path -Path $DismFolder -ChildPath "Dism.exe"
+
+    if (-not (Test-Path -Path $WorkFolder -PathType Container)) {
+        New-Item -Path $WorkFolder -ItemType Directory | Out-Null
+    }
+
+    Mount-DiskImage -ImagePath $IsoPath
+
+    $DriveLetter = (Get-Diskimage -ImagePath $IsoPath | Get-Volume).DriveLetter
+
+    If (-not (Test-Path -Path $DismFolder -PathType Container)) {
+        New-Item -Path $DismFolder -ItemType Directory | Out-Null
+    }
+
+    Copy-Item -Path "$($DriveLetter):\Sources\api*downlevel*.dll" -Destination $DismFolder -Force
+    Copy-Item -Path "$($DriveLetter):\Sources\*dism*" -Destination $DismFolder -Force
+    Copy-Item -Path "$($DriveLetter):\Sources\*provider*" -Destination $DismFolder -Force
+
+    Convert-WindowsImage -SourcePath "$($DriveLetter):\NanoServer\NanoServer.wim" -Edition 1 `
+        -VHDPartitionStyle 'GPT' -VHDFormat VHDX -SizeBytes 10GB -VHDPath $TempVHDName 
+
+    If (-not (Test-Path -Path $MountFolder -PathType Container)) {
+        New-Item -Path $MountFolder -ItemType Directory | Out-Null
+    }
+
+    Invoke-Expression "$dism /Mount-Image /ImageFile:$TempVHDName /Index:1 /MountDir:$MountFolder"
+
+    Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\Microsoft-NanoServer-OEM-Drivers-Package.cab /Image:$MountFolder"
+    Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\en-US\Microsoft-NanoServer-OEM-Drivers-Package.cab /Image:$MountFolder"
+
+    if ($FailoverClusterPackage) {
+        Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\Microsoft-NanoServer-FailoverCluster-Package.cab /Image:$MountFolder"
+        Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\en-US\Microsoft-NanoServer-FailoverCluster-Package.cab /Image:$MountFolder"
+    }
+
+    if ($StoragePackage) {
+        Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\Microsoft-NanoServer-Storage-Package.cab /Image:$MountFolder"
+        Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\en-US\Microsoft-NanoServer-Storage-Package.cab /Image:$MountFolder"
+    }
+
+    Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\Microsoft-OneCore-ReverseForwarders-Package.cab /Image:$MountFolder"
+    Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\en-US\Microsoft-OneCore-ReverseForwarders-Package.cab /Image:$MountFolder"
+    Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\Microsoft-NanoServer-Guest-Package.cab /Image:$MountFolder"
+    Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\en-US\Microsoft-NanoServer-Guest-Package.cab /Image:$MountFolder"
+
+    $UnattendedContent = @"
+<?xml version='1.0' encoding='utf-8'?>
+<unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <settings pass="offlineServicing">
+    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <ComputerName>$ComputerName</ComputerName>
+    </component>
+  </settings>
+  <settings pass="oobeSystem">
+    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <UserAccounts>
+        <AdministratorPassword>
+           <Value>$AdministratorPassword</Value>
+           <PlainText>true</PlainText>
+        </AdministratorPassword>
+      </UserAccounts>
+      <TimeZone>Eastern Standard Time</TimeZone>
+    </component>
+  </settings>
+  <settings pass="specialize">
+    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <RegisteredOwner>$RegisteredOwner</RegisteredOwner>
+      <RegisteredOrganization>$RegisteredCorporation</RegisteredOrganization>
+    </component>
+  </settings>
+</unattend>
+"@
+
+    $UnattendFile = Join-Path -Path $WorkFolder -ChildPath 'Unattend.xml'
+
+    Set-Content -Path $UnattendFile -Value $UnattendedContent
+
+    Invoke-Expression "$dism /Image:$MountFolder /Apply-Unattend:$UnattendFile"
+
+    New-Item -Path "$MountFolder\windows\panther" -ItemType Directory | Out-Null
+
+    Copy-Item -Path $UnattendFile -Destination "$MountFolder\windows\panther"
+
+    If ($IPaddress -ne $null) {
+        New-Item "$MountFolder\Windows\Setup\Scripts" -ItemType Directory | Out-Null
+        Set-Content -Path "$MountFolder\Windows\Setup\Scripts\SetupComplete.cmd" `
+            -Value @"
+netsh int ip set address name="Ethernet" source=static address=$IPAddress
+netsh advfirewall set allprofiles state off
+cls
+ipconfig /all
+"@
+    }
+
+    Invoke-Expression "$dism /Unmount-Image /MountDir:$MountFolder /Commit"
+
+    Dismount-DiskImage -ImagePath $IsoPath
+
+    Move-Item -Path $TempVHDName -Destination $VhdxFile -Force
+
+    Remove-Item -Path $WorkFolder -Recurse -Force
+
+    Write-Output "NanoServer VHDX is ready for deployment..."
+}
+
 Function Connect-IsoToVirtual {
     [Cmdletbinding()]
     param (
@@ -413,6 +580,7 @@ Function New-VirtualMachineFromName {
 Export-ModuleMember New-SystemVHDX
 Export-ModuleMember New-DifferencingVHDX
 Export-ModuleMember New-DataVHDX
+Export-ModuleMember New-NanoServerVhdx
 Export-ModuleMember Connect-IsoToVirtual
 Export-ModuleMember Make-UnattendForDhcpIp
 Export-ModuleMember Make-UnattendForStaticIp
