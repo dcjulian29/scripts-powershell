@@ -176,6 +176,10 @@ Function New-NanoServerVhdx {
         New-Item -Path $DismFolder -ItemType Directory | Out-Null
     }
 
+    while (-not (Test-Path "${DriveLetter}:\")) {
+        Sleep 2
+    }
+
     Copy-Item -Path "$($DriveLetter):\Sources\api*downlevel*.dll" -Destination $DismFolder -Force
     Copy-Item -Path "$($DriveLetter):\Sources\*dism*" -Destination $DismFolder -Force
     Copy-Item -Path "$($DriveLetter):\Sources\*provider*" -Destination $DismFolder -Force
@@ -260,7 +264,7 @@ ipconfig /all
 
     Dismount-DiskImage -ImagePath $IsoPath
 
-    Move-Item -Path $TempVHDName -Destination $VhdxFile -Force
+    Move-Item -Path $TempVHDName -Destination $VhdxFile -Force -Verbose
 
     Remove-Item -Path $WorkFolder -Recurse -Force
 
