@@ -312,6 +312,14 @@ Function Update-AllGitRepositories {
     }
 }
 
+Function Get-GitBranchesThatAreLocal {
+    & "$GIT" for-each-ref --sort refname --format='%(refname:short)' refs/heads
+}
+
+Function Get-GitBranchesThatAreRemote {
+    & "$GIT" for-each-ref --sort refname --format='%(refname:short)' refs/remotes
+}
+
 ###################################################################################################
 
 Export-ModuleMember Add-GitIgnoreToLocalRepository
@@ -330,6 +338,8 @@ Export-ModuleMember Publish-GitRepositoryToQA
 Export-ModuleMember Publish-GitRepositoryToUAT
 Export-ModuleMember Publish-GitRepositoryToPROD
 Export-ModuleMember Update-AllGitRepositories
+Export-ModuleMember Get-GitBranchesThatAreLocal
+Export-ModuleMember Get-GitBranchesThatAreRemote
 
 Set-Alias gb Backup-GitRepository
 Export-ModuleMember -Alias gb
