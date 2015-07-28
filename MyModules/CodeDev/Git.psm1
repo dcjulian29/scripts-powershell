@@ -320,6 +320,14 @@ Function Get-GitBranchesThatAreRemote {
     & "$GIT" for-each-ref --sort refname --format='%(refname:short)' refs/remotes
 }
 
+Function Remove-LastGitCommit {
+    if ($(& "$GIT" diff --exit-code) -and $(& "$GIT" diff --cached --exit-code)) {
+        & "$GIT" reset --soft HEAD~1
+    } else {
+        Write-Warning "Commit is already pushed... You will need to revert the changes instead."
+    }
+}
+
 ###################################################################################################
 
 Export-ModuleMember Add-GitIgnoreToLocalRepository
@@ -340,6 +348,7 @@ Export-ModuleMember Publish-GitRepositoryToPROD
 Export-ModuleMember Update-AllGitRepositories
 Export-ModuleMember Get-GitBranchesThatAreLocal
 Export-ModuleMember Get-GitBranchesThatAreRemote
+Export-ModuleMember Remove-LastGitCommit
 
 Set-Alias gb Backup-GitRepository
 Export-ModuleMember -Alias gb
