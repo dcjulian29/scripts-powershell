@@ -37,6 +37,8 @@ Function Test-NetFramework45AndUp
             "4.5"   { $release = "378389 378675 378758" }
             "4.5.1" { $release = "378675 378758" }
             "4.5.2" { $release = "379893" }
+            "4.6"   { $release = "393295" }
+
             default { return $False }
         }
 
@@ -90,6 +92,11 @@ Function Test-NetFramework452
     Test-NetFramework45AndUp -Version "4.5.2"
 }
 
+Function Test-NetFramework46
+{
+    Test-NetFramework45AndUp -Version "4.6"
+}
+
 Function Test-NetFrameworks
 {
     $versions = ""
@@ -101,38 +108,32 @@ Function Test-NetFrameworks
     if (Test-NetFramework45) { $versions = $versions + "4.5," }
     if (Test-NetFramework451) { $versions = $versions + "4.5.1," }
     if (Test-NetFramework452) { $versions = $versions + "4.5.2," }
+    if (Test-NetFramework46) { $versions = $versions + "4.6," }
 
     return $versions.Split(',', [StringSplitOptions]::RemoveEmptyEntries)
 }
 
-Function Get-AssemblyInfo
-{
-  param
-  (
-    $assembly= $(throw “An assembly name is required.”)
-  )
+Function Get-AssemblyInfo {
+    param (
+        $assembly = $(throw “An assembly name is required.”)
+    )
+    
+    if (test-path $assembly) {
+        $assemblyPath = Get-Item $assembly
+        $loadedAssembly = [System.Reflection.Assembly]::LoadFrom($assemblyPath)
+    } else {
+        # Load from GAC
+        $loadedAssembly = [System.Reflection.Assembly]::LoadWithPartialName("$assembly")
+    }
 
-  if (test-path $assembly)
-  {
-    $assemblyPath = Get-Item $assembly
-    $loadedAssembly = [System.Reflection.Assembly]::LoadFrom($assemblyPath)
-  }
-  else
-  {
-    # Load from GAC
-    $loadedAssembly = [System.Reflection.Assembly]::LoadWithPartialName("$assembly")
-  }
+    $name = $loadedAssembly.GetName().name
+    $version =  $loadedAssembly.GetName().version
 
-  $name = $loadedAssembly.GetName().name
-  $version =  $loadedAssembly.GetName().version
-
-  "{0} [{1}]" -f $name, $version
+    "{0} [{1}]" -f $name, $version
 }
 
 Function Get-AllAssemblyInfo {
-    Get-ChildItem | Where-Object { $_.Extension -eq ".dll" } | foreach {
-        Get-AssemblyInfo $_ 
-    }
+    Get-ChildItem | Where-Object { $_.Extension -eq ".dll" } | foreach { Get-AssemblyInfo $_ }
 }
 
 ###################################################################################################
@@ -144,6 +145,7 @@ Export-ModuleMember Test-NetFramework40
 Export-ModuleMember Test-NetFramework45
 Export-ModuleMember Test-NetFramework451
 Export-ModuleMember Test-NetFramework452
+Export-ModuleMember Test-NetFramework46
 Export-ModuleMember Test-NetFrameworks
 Export-ModuleMember Get-AssemblyInfo
 Export-ModuleMember Get-AllAssemblyInfo
