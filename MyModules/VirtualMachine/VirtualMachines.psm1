@@ -103,10 +103,10 @@ Function New-DataVHDX {
 Function New-NanoServerVhdx {
 <#
     .SYNOPSIS 
-        Prepares an Hyper-V Vhdx file ready-to-boot Windows Server 2016 Technical Preview 2 - Nano Server
+        Prepares an Hyper-V Vhdx file ready-to-boot Windows Server 2016 Technical Preview 3 - Nano Server
 
     .PARAMETER IsoPath
-    This is the path to the Windows Server 2016 Technical Preview 2 ISO downloaded from:
+    This is the path to the Windows Server 2016 Technical Preview 3 ISO downloaded from:
     https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-technical-preview
 
     .PARAMETER VhdxFile
@@ -149,7 +149,8 @@ Function New-NanoServerVhdx {
         [switch]$FailoverClusterPackage,
 
         [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = "NanoServer03",
+        [ValidateLength(1, 15)]
+        [String]$ComputerName = "NanoServer",
 
         [ValidateNotNullOrEmpty()]
         [String]$AdministratorPassword = "P@ssw0rd",
@@ -206,8 +207,12 @@ Function New-NanoServerVhdx {
         Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\en-US\Microsoft-NanoServer-Storage-Package.cab /Image:$MountFolder"
     }
 
+    Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\Microsoft-NanoServer-Defender-Package.cab /Image:$MountFolder"
+    Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\en-US\Microsoft-NanoServer-Defender-Package.cab /Image:$MountFolder"
+
     Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\Microsoft-OneCore-ReverseForwarders-Package.cab /Image:$MountFolder"
     Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\en-US\Microsoft-OneCore-ReverseForwarders-Package.cab /Image:$MountFolder"
+
     Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\Microsoft-NanoServer-Guest-Package.cab /Image:$MountFolder"
     Invoke-Expression "$dism /Add-Package /PackagePath:$($DriveLetter):\NanoServer\packages\en-US\Microsoft-NanoServer-Guest-Package.cab /Image:$MountFolder"
 
@@ -253,10 +258,13 @@ Function New-NanoServerVhdx {
         New-Item "$MountFolder\Windows\Setup\Scripts" -ItemType Directory | Out-Null
         Set-Content -Path "$MountFolder\Windows\Setup\Scripts\SetupComplete.cmd" `
             -Value @"
+@echo off
 netsh int ip set address name="Ethernet" source=static address=$IPAddress
-netsh advfirewall set allprofiles state off
+netsh advfirewall firewall add rule name="WinRM 5985" protocol=TCP dir=in localport=5985 action=allow
+schtasks /Create /TN IPBootDisplay /SC ONSTART /RU SYSTEM /Delay 0000:30 /TR ipconfig > nul
 cls
-ipconfig /all
+ping localhost -n 30 > nul 2>&1
+ipconfig
 "@
     }
 
