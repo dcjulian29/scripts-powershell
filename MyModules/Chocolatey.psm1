@@ -49,6 +49,41 @@ Function Find-AvailableChocolateyPackages {
     return $available
 }
 
+Function Update-AllChocolateyPackages {
+    Write-Host "Examining Installed Packages..."
+    $installed = choco.exe list -localonly
+    $available = choco.exe list
+
+
+    foreach ($line in $installed) {
+        if ($line -match '\d+\.\d+') {
+            $package = $line.split(' ')[0]
+            $output = "Checking $package... "
+            Write-Host $output -NoNewline
+
+            $localVersion = $line.Split(' ')[1]
+            
+            $remotePackage = $available -match "^$package\s"
+
+            if ($remotePackage.Length -gt 0) {
+                $remoteVersion = ($remotePackage).Split(' ')[1]
+
+                if ($remoteVersion) {
+                    if ($localVersion -ne $remoteVersion) {
+                        Update-ChocolateyPackage $package
+                    } else {
+                        Write-Host ("`b" * $output.length) -NoNewline
+                        Write-Host (" " * $output.length) -NoNewline
+                        Write-Host ("`b" * $output.length) -NoNewline
+                    }
+                }
+            } else {
+                Write-Host "remote package removed." -ForegroundColor Red
+            }
+        }
+    }
+}
+
 Function Update-ChocolateyPackage {
     Param (
         [alias("ia","installArgs")][string] $installArguments,
@@ -170,6 +205,7 @@ Function Make-ChocolateyPackage {
 Export-ModuleMember Find-UpgradableChocolateyPackages
 Export-ModuleMember Find-InstalledChocolateyPackages
 Export-ModuleMember Find-AvailableChocolateyPackages
+Export-ModuleMember Update-AllChocolateyPackages
 Export-ModuleMember Update-ChocolateyPackage
 Export-ModuleMember Install-ChocolateyPackage
 Export-ModuleMember Uninstall-ChocolateyPackage
