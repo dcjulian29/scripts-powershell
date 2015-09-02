@@ -99,7 +99,7 @@ Function Add-GitIgnoreTemplate {
         [string] $Template
     )
 
-    $content = Get-GitIgnore $Template
+    $content = Get-GitIgnoreTemplate $Template
 
     if ($content) {
         Out-File -Encoding UTF8 -Filepath .gitignore -NoClobber -InputObject $content
