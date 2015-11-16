@@ -1,6 +1,33 @@
-function path-cygwin { $env:Path = "C:\cygwin\bin;$($env:Path)" }
-function path-mongo { $env:Path = "C:\Program Files\MongoDB\bin;$($env:Path)" }
-function path-nodejs { $env:Path = "$($env:PF32)\nodejs;$($env:Path)" }
+function path-cygwin { 
+    if (Test-Path "C:\cygwin\bin")
+    {
+        $env:Path = "C:\cygwin\bin;$($env:Path)" 
+    }
+}
+
+function path-mongo {
+    if (Test-Path "C:\Program Files\MongoDB\bin")
+    {
+        $env:Path = "C:\Program Files\MongoDB\bin;$($env:Path)" 
+    }
+
+    if (Test-Path "C:\tools\apps\mongodb")
+    {
+        $env:Path = "C:\tools\apps\mongodb;$($env:Path)" 
+    }
+}
+
+function path-nodejs {
+    if (Test-Path "C:\Program Files\nodejs")
+    {
+        $env:Path = "C:\Program Files\nodejs;$($env:USERPROFILE)\AppData\Roaming\npm;$($env:Path)" 
+    }
+
+    if (Test-Path "C:\Program Files (x86)\nodejs")
+    {
+        $env:Path = "C:\Program Files (x86)\nodejs;$($env:USERPROFILE)\AppData\Roaming\npm;$($env:Path)" 
+    }
+}
 
 function path-java 
 { 
