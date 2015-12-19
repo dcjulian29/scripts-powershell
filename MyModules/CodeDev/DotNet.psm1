@@ -37,7 +37,8 @@ Function Test-NetFramework45AndUp
             "4.5"   { $release = "378389 378675 378758" }
             "4.5.1" { $release = "378675 378758" }
             "4.5.2" { $release = "379893" }
-            "4.6"   { $release = "393295" }
+            "4.6"   { $release = "393295 393297" }
+            "4.6.1" { $release = "393295 394271" }
 
             default { return $False }
         }
