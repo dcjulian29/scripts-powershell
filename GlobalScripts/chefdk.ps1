@@ -1,9 +1,7 @@
-$chefdk_bin = "C:\opscode\chefdk\bin"
+$chefdk_root = "C:\opscode\chefdk"
 
-if (Test-Path $chefdk_bin) {
-    $env:Path = "$chefdk_bin;$env:PATH"
-    $env:CHEFDK_ENV_FIX = 1
-    & chef shell-init powershell | out-string | iex
-    Import-Module chef -DisableNameChecking
+if (Test-Path "$chefdk_root\bin") {
+    & "$chefdk_root\bin\chef.exe" shell-init powershell | Out-String | Invoke-Expression
+    Import-Module "$chefdk_root\modules\chef\chef.psm1" -DisableNameChecking
 }
     
