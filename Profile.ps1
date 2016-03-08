@@ -21,3 +21,6 @@ if (-not ($env:PATH).Contains($binarydirectory))
 
 Remove-Item alias:wget
 Remove-Item alias:curl
+
+Set-Alias -Name go -Value gd
+
