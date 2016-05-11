@@ -1,4 +1,8 @@
 ﻿$script:msbuildExe = First-Path `
+    ("$($env:SYSTEMDRIVE)\Program Files\MSBuild\15.0\bin\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\MSBuild\15.0\bin\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files\MSBuild\14.0\bin\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\MSBuild\14.0\bin\MSBuild.exe") `
     ("$($env:SYSTEMDRIVE)\Program Files\MSBuild\12.0\bin\MSBuild.exe") `
     ("$($env:SYSTEMDRIVE)\Program Files (x86)\MSBuild\12.0\bin\MSBuild.exe") `
     ("$($env:WINDIR)\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe") `
@@ -11,6 +15,8 @@
     ("$($env:WINDIR)\Microsoft.NET\Framework\v2.0.50727\MSBuild.exe")
 
 $script:vsvarPath = First-Path `
+  (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\Tools\vsvars32.bat') `
+  (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\Tools\vsvars32.bat') `
   (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\Tools\vsvars32.bat') `
   (Find-ProgramFiles 'Microsoft Visual Studio 11.0\Common7\Tools\vsvars32.bat') `
   (Find-ProgramFiles 'Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat')
