@@ -27,18 +27,21 @@ if (Test-Path "$($env:SYSTEMDRIVE)\Tools\development")
 }
 
 Function Build-Project {
-  if (Test-Path build.bat) {
-    .\build.bat $args
-  } elseif (Test-Path build.cmd) {
-    .\build.cmd $args
-  } elseif (Test-Path build.xml) {
-      C:\tools\apps\nant\bin\nant.exe -buildfile:build.xml $args
-  } else {
-    Write-Host "This directory does not include build script to build the project"
-  }
+    if (Test-Path build.ps1) {
+        Invoke-Psake .\build.ps1 $args
+    } elseif (Test-Path build.bat) {
+        .\build.bat $args
+    } elseif (Test-Path build.cmd) {
+        .\build.cmd $args
+    } elseif (Test-Path build.xml) {
+        C:\tools\apps\nant\bin\nant.exe -buildfile:build.xml $args
+    } else {
+        Write-Host "This directory does not include build script to build the project"
+    }
 }
 
 Function Invoke-MSBuild {
+    Load-VisualStudioVariables
     if (Test-Path $script:msbuildExe) {
         & $script:msbuildExe $args
     } else {
@@ -47,10 +50,20 @@ Function Invoke-MSBuild {
 }
 
 Function Load-VisualStudioVariables {
-    cmd /c "`"$script:vsvarPath`" & set" | Foreach-Object {
-        $p, $v = $_.split('=')
-        Set-Item -path env:$p -value $v
+    if (Test-Path $script:vsvarPath) {
+        cmd /c "`"$script:vsvarPath`" & set" | Foreach-Object {
+            $p, $v = $_.split('=')
+            Set-Item -path env:$p -value $v
+        }
     }
+}
+
+Function Where-VisualStudioVariables {
+    $script:vsvarPath
+}
+
+Function Where-MSBuild {
+    $script:msbuildExe
 }
 
 ##################################################################################################
@@ -58,6 +71,8 @@ Function Load-VisualStudioVariables {
 Export-ModuleMember Build-Project
 Export-ModuleMember Invoke-MSBuild
 Export-ModuleMember Load-VisualStudioVariables
+Export-ModuleMember Where-VisualStudioVariables
+Export-ModuleMember Where-MSBuild
 
 Set-Alias bp build-project
 Export-ModuleMember -Alias bp
