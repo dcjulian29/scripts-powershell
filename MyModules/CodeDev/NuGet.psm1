@@ -2,16 +2,12 @@ $script:NuGetUrl = ''
 $script:NuGetApi = ''
 
 Function Get-DevPath {
-    $cmd = "path-dev.bat & set PATH"
-    cmd /c $cmd | Foreach-Object {
-        $p, $v = $_.split('=')
-        if ($p.ToLower() -eq 'path') {
-        $a = $v.IndexOf('development;')
-        $b = $v.LastIndexOf(';', $a)
-        if ($b -eq -1) { $b = 0 }
-        $devt = $v.Substring($b, $a + 11)
-        }
-    }
+    $a = $($env:Path).IndexOf('development;')
+    $b = $($env:Path).LastIndexOf(';', $a)
+
+    if ($b -eq -1) { $b = 0 }
+
+    $devt = $($env:Path).Substring($b, $a + 11)
     
     Write-Verbose "Development Script Directory is $devt"
 
