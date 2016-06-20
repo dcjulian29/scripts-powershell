@@ -27,7 +27,9 @@ if (Test-Path "$($env:SYSTEMDRIVE)\Tools\development")
 }
 
 Function Build-Project {
-    if (Test-Path build.ps1) {
+    if (Test-Path build.cake) {
+        .\build.ps1 $args
+    } elseif (Test-Path build.ps1) {
         Invoke-Psake .\build.ps1 $args
     } elseif (Test-Path build.bat) {
         .\build.bat $args
