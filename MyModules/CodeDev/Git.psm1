@@ -8,8 +8,6 @@ if (-not ([String]::IsNullOrWhiteSpace($script:GIT_INSTALL_ROOT))) {
         if (Test-Path "$($env:UserProfile)\Documents\WindowsPowerShell\Modules\posh-git") {
             Import-Module Posh-Git
 
-            Enable-GitColors
-
             $GitPromptSettings.BeforeText = "["
         }
     }
