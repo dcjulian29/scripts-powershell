@@ -27,16 +27,17 @@ if (Test-Path "$($env:SYSTEMDRIVE)\Tools\development")
 }
 
 Function Build-Project {
+    $param = "$args"
     if (Test-Path build.cake) {
-        .\build.ps1 $args
+        Invoke-Expression ".\build.ps1 $param"
     } elseif (Test-Path build.ps1) {
-        Invoke-Psake .\build.ps1 $args
+        Invoke-Psake .\build.ps1 $param
     } elseif (Test-Path build.bat) {
-        .\build.bat $args
+        .\build.bat $param
     } elseif (Test-Path build.cmd) {
-        .\build.cmd $args
+        .\build.cmd $param
     } elseif (Test-Path build.xml) {
-        C:\tools\apps\nant\bin\nant.exe -buildfile:build.xml $args
+        C:\tools\apps\nant\bin\nant.exe -buildfile:build.xml $param
     } else {
         Write-Host "This directory does not include build script to build the project"
     }
