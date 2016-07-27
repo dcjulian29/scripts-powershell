@@ -377,6 +377,29 @@ Function Make-UnattendForStaticIp {
     Dismount-DiskImage -ImagePath $fullPath
 }
 
+Function Inject-StartLayout {
+    [Cmdletbinding()]
+    param (
+        [string] $vhdxFile,
+        [string] $layoutFile
+    )
+
+    if (-not $(Test-Elevation)) { return }
+
+    $fullPath = Get-FullFilePath $vhdxFile
+    $layoutPath = Get-FullFilePath $layoutFile
+
+    $drive = Mount-VHDX $fullPath
+
+    Write-Verbose "VHDX file mounted on $($drive)..."
+
+    if (Test-Path $layoutPath ) {
+        Import-StartLayout -LayoutPath $layoutPath -MountPath $drive
+    }
+
+    Dismount-DiskImage -ImagePath $fullPath
+}
+
 Function Inject-VMStartUpScriptFile {
     [Cmdletbinding()]
     param (
@@ -596,6 +619,7 @@ Export-ModuleMember New-NanoServerVhdx
 Export-ModuleMember Connect-IsoToVirtual
 Export-ModuleMember Make-UnattendForDhcpIp
 Export-ModuleMember Make-UnattendForStaticIp
+Export-ModuleMember Inject-StartLayout
 Export-ModuleMember Inject-VMStartUpScriptFile
 Export-ModuleMember Inject-VMStartUpScriptBlock
 Export-ModuleMember Inject-UpdatesToVhdx
