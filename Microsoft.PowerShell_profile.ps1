@@ -24,7 +24,14 @@ if (-not $batch)
     $host.UI.RawUI.ForegroundColor = "Green"
   }
 
+  # Something keeps changing the PowerShell Console font and size from my preference, so
+  # we'll enforce the defaults for all console windows.
+  Remove-Item HKCU:\Console\* -Force
+  
+  # Changing the color of the console window doesn't take effect unless you clear the screen
   clear
+  
+  Write-Host "Loading Profile..."
 }
 
 # On domain joined machines, the home variable gets written with the "Home Directory" value
