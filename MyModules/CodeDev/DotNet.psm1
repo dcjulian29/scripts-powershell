@@ -39,6 +39,7 @@ Function Test-NetFramework45AndUp
             "4.5.2" { $release = "379893" }
             "4.6"   { $release = "393295 393297" }
             "4.6.1" { $release = "393295 394271" }
+            "4.6.2" { $release = "394802 394806" }
 
             default { return $False }
         }
@@ -98,6 +99,16 @@ Function Test-NetFramework46
     Test-NetFramework45AndUp -Version "4.6"
 }
 
+Function Test-NetFramework461
+{
+    Test-NetFramework45AndUp -Version "4.6.1"
+}
+
+Function Test-NetFramework462
+{
+    Test-NetFramework45AndUp -Version "4.6.2"
+}
+
 Function Test-NetFrameworks
 {
     $versions = ""
@@ -110,6 +121,8 @@ Function Test-NetFrameworks
     if (Test-NetFramework451) { $versions = $versions + "4.5.1," }
     if (Test-NetFramework452) { $versions = $versions + "4.5.2," }
     if (Test-NetFramework46) { $versions = $versions + "4.6," }
+    if (Test-NetFramework461) { $versions = $versions + "4.6.1," }
+    if (Test-NetFramework462) { $versions = $versions + "4.6.2," }
 
     return $versions.Split(',', [StringSplitOptions]::RemoveEmptyEntries)
 }
@@ -147,6 +160,8 @@ Export-ModuleMember Test-NetFramework45
 Export-ModuleMember Test-NetFramework451
 Export-ModuleMember Test-NetFramework452
 Export-ModuleMember Test-NetFramework46
+Export-ModuleMember Test-NetFramework461
+Export-ModuleMember Test-NetFramework462
 Export-ModuleMember Test-NetFrameworks
 Export-ModuleMember Get-AssemblyInfo
 Export-ModuleMember Get-AllAssemblyInfo
