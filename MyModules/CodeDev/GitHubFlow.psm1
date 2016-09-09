@@ -4,7 +4,7 @@ $script:GIT = "${script:GIT_INSTALL_ROOT}\git.exe"
 Function Start-GitHubFlowFeature {
     param (
         [string] $Name = "$(Read-Host 'What is the name of the feature')",
-        [flag] $Force
+        [switch] $Force
     )
 
     $branch = Invoke-Expression "& `"$GIT`" rev-parse --abbrev-ref HEAD"
