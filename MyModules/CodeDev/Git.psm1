@@ -208,7 +208,7 @@ Function Push-GitRepository {
 
 Function Pull-GitRepository {
     Fetch-GitRepository
-    & "$GIT" pull --recurse-submodules
+    & "$GIT" pull
 }
 
 Function Fetch-GitRepository {
