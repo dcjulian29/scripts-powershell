@@ -33,6 +33,22 @@ Function Pull-GitFlowFeature {
    & "$GIT" flow feature pull $Name
 }
 
+Function Update-GitFlowFeature {
+    $branch = Invoke-Expression "& `"$GIT`" rev-parse --abbrev-ref HEAD"
+    $branchNormalized = $branch.ToLowerInvariant()
+    
+    if (-not $branchNormalized.StartsWith("feature/")) {
+        Write-Error "You are not in a GitFlow Feature branch."
+    } else {
+        Write-Output "Making Sure that local branches or up-to-date..."
+        & "$GIT" checkout develop
+        & "$GIT" pull origin
+        & "$GIT" checkout $branch
+        & "$GIT" pull origin
+        & "$GIT" merge develop --no-ff
+    }
+}
+
 Function Start-GitFlowRelease {
     param (
         [string] $Name = "$(Read-Host 'What is the name of the release')"
@@ -64,6 +80,7 @@ Export-ModuleMember Start-GitFlowFeature
 Export-ModuleMember Finish-GitFlowFeature
 Export-ModuleMember Publish-GitFlowFeature
 Export-ModuleMember Pull-GitFlowFeature
+Export-ModuleMember Update-GitFlowFeature
 Export-ModuleMember Start-GitFlowRelease
 Export-ModuleMember Finish-GitFlowRelease
 Export-ModuleMember Start-GitFlowHotfix
