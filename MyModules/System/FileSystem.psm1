@@ -161,6 +161,42 @@ Function Download-File {
     Write-Verbose "Saved --> $Destination"
 }
 
+Function Unzip-File {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$File,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Destination,
+        [switch]$RemoveDestinationFirst
+    )
+
+    $File = Get-FullFilePath $File
+    $Destination = Get-FullDirectoryPath $Destination
+
+    if ((Test-Path $Destination) -and $Force) {
+        Write-Verbose "Removing --> $Destination"
+
+        Remove-Item $Destination -Recurse -Force | Out-Null
+    }
+
+    if (-not (Test-Path $Destination)) {
+        Write-Verbose "Creating --> $Destination"
+
+        New-Item -Type Directory -Path $Destination | Out-Null
+    }
+
+    Write-Verbose "Source --> $File"
+    Write-Verbose "Destination --> $Destination"
+
+    [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
+    
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($File, $Destination)
+}
+
 Function Get-FullFilePath {
     param (
         [Parameter(Mandatory=$true)]
@@ -172,6 +208,20 @@ Function Get-FullFilePath {
     if (Test-Path $Path) {
         "$((Get-Item -Path $Path).Directory.FullName.TrimEnd('\'))\$((Get-Item -Path $Path).Name)"
     }
+}
+
+Function Get-FullDirectoryPath {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Path
+    )
+
+    if ($Path.Substring($Path.Length) -ne [IO.Path]::DirectorySeparatorChar) {
+        $Path = "$Path\"
+    }
+
+    $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($path)
 }
 
 Function Reset-Path {
@@ -190,5 +240,7 @@ Function Reset-Path {
 
 Export-ModuleMember Copy-File
 Export-ModuleMember Download-File
+Export-ModuleMember Unzip-File
 Export-ModuleMember Get-FullFilePath
+Export-ModuleMember Get-FullDirectoryPath
 Export-ModuleMember Reset-Path
