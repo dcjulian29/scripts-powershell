@@ -1,4 +1,5 @@
 Function Copy-File {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -11,11 +12,16 @@ Function Copy-File {
         [switch]$UseWin32
     )
 
-    if ($Force) {
-        if (Test-Path $Destination) {
-            Remove-Item -Path $Destination -Force
-        }
+    $Destination = Get-FullFilePath $Destination
+
+    if ((Test-Path $Destination) -and $Force) {
+        Write-Verbose "Removing --> $Destination"
+
+        Remove-Item $Destination -Force
     }
+
+    Write-Verbose "Source --> $Path"
+    Write-Verbose "Destination --> $Destination"
 
     if ($UseWin32) {
         Add-Type -AssemblyName Microsoft.VisualBasic
@@ -49,19 +55,19 @@ Function Copy-File {
                     [single]$xferrate = 0.0
                 }
 
-                if ($total % 1mb -eq 0) {
-                    if($percent -gt 0) {
-                        [int]$remainingTime = ((($elapsed / $percent) * 100) - $elapsed)
-                    } else {
-                        [int]$remainingTime = 0
-                    }
-
-                    Write-Progress `
-                        -Activity ("Copying file: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s") `
-                        -status "$Path -> $Destination" `
-                        -PercentComplete $percent `
-                        -SecondsRemaining $remainingTime
+                if ($percent -gt 0) {
+                    [int]$remainingTime = ((($elapsed / $percent) * 100) - $elapsed)
+                } else {
+                    [int]$remainingTime = 0
                 }
+
+                Write-Progress `
+                    -Activity ("Copying file: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s") `
+                    -status "$Path -> $Destination" `
+                    -PercentComplete $percent `
+                    -SecondsRemaining $remainingTime
+
+                Write-Verbose ("Progress: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s")
             } while ($count -gt 0)
 
             $sw.Stop()
@@ -71,7 +77,88 @@ Function Copy-File {
             $from.Dispose()
             $to.Dispose()
         }
+
+        Write-Verbose "Copied --> $Destination"
     }
+}
+
+Function Download-File {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Url,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Destination,
+        [switch]$Force
+    )
+
+    $Destination = Get-FullFilePath $Destination
+
+    if ((Test-Path $Destination) -and $Force) {
+        Write-Verbose "Removing --> $Destination"
+
+        Remove-Item $Destination -Force
+    }
+
+    Write-Verbose "Downloading --> $Url"
+
+    $uri = New-Object "System.Uri" "$Url" 
+
+    $request = [System.Net.HttpWebRequest]::Create($uri) 
+    $request.set_Timeout(15000)
+    $response = $request.GetResponse() 
+    $totalLength = $response.get_ContentLength() 
+
+    $responseStream = $response.GetResponseStream() 
+
+    $to = New-Object -TypeName System.IO.FileStream -ArgumentList $Destination, Create 
+
+    try {
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
+        [byte[]]$buffer = New-Object byte[] 4096
+        [long]$total = [int]$count = 0
+
+        do {
+            $count = $responseStream.Read($buffer,0,$buffer.length) 
+            $to.Write($buffer, 0, $count) 
+            $total += $count
+
+            [int]$percent = ([int]($total / $totalLength * 100))
+            [int]$elapsed = [int]($sw.ElapsedMilliseconds.ToString()) / 1000
+
+            if ( $elapsed -ne 0 ) {
+                [single]$xferrate = (($total/$elapsed) / 1MB)
+            } else {
+                [single]$xferrate = 0.0
+            }
+
+            if ($percent -gt 0) {
+                [int]$remainingTime = ((($elapsed / $percent) * 100) - $elapsed)
+            } else {
+                [int]$remainingTime = 0
+            }
+
+            Write-Progress `
+                -Activity ("Downloading ${Url}: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s") `
+                -status "To $Destination" `
+                -PercentComplete $percent `
+                -SecondsRemaining $remainingTime
+                
+            Write-Verbose ("Progress: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s")
+        } while ($count -gt 0)
+
+        $sw.Stop()
+        $sw.Reset()
+    } finally {
+        $to.Flush()
+        $to.Close() 
+        $to.Dispose() 
+        $responseStream.Dispose() 
+    }
+
+    Write-Verbose "Saved --> $Destination"
 }
 
 Function Get-FullFilePath {
@@ -102,5 +189,6 @@ Function Reset-Path {
 ##############################################################################
 
 Export-ModuleMember Copy-File
+Export-ModuleMember Download-File
 Export-ModuleMember Get-FullFilePath
 Export-ModuleMember Reset-Path
