@@ -201,13 +201,10 @@ Function Get-FullFilePath {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string] $Path
     )
 
-    if (Test-Path $Path) {
-        "$((Get-Item -Path $Path).Directory.FullName.TrimEnd('\'))\$((Get-Item -Path $Path).Name)"
-    }
+    $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($path)
 }
 
 Function Get-FullDirectoryPath {
