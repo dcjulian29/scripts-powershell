@@ -117,8 +117,8 @@ Function Download-File {
 
     try {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        [byte[]]$buffer = New-Object byte[] 1MB
-        [long]$total = [int]$count = 0
+        [byte[]]$buffer = New-Object byte[] 10MB
+        [long]$total = [int]$count = [int]$iteration = 0
 
         Write-Progress -Id 0 `
             -Activity "Downloading ${Url}: 0% @ 0.00 MB/s" -Status "To $Destination" -PercentComplete 0
@@ -128,28 +128,32 @@ Function Download-File {
             $to.Write($buffer, 0, $count) 
             $total += $count
 
-            [int]$percent = ([int]($total / $totalLength * 100))
-            [int]$elapsed = [int]($sw.ElapsedMilliseconds.ToString()) / 1000
+            if ($iteration % 10) {
+                [int]$percent = ([int]($total / $totalLength * 100))
+                [int]$elapsed = [int]($sw.ElapsedMilliseconds.ToString()) / 1000
 
-            if ( $elapsed -ne 0 ) {
-                [single]$xferrate = (($total/$elapsed) / 1MB)
-            } else {
-                [single]$xferrate = 0.0
-            }
+                if ( $elapsed -ne 0 ) {
+                    [single]$xferrate = (($total/$elapsed) / 1MB)
+                } else {
+                    [single]$xferrate = 0.0
+                }
 
-            if ($percent -gt 0) {
-                [int]$remainingTime = ((($elapsed / $percent) * 100) - $elapsed)
-            } else {
-                [int]$remainingTime = 0
-            }
+                if ($percent -gt 0) {
+                    [int]$remainingTime = ((($elapsed / $percent) * 100) - $elapsed)
+                } else {
+                    [int]$remainingTime = 0
+                }
 
-            Write-Progress -Id 0 `
-                -Activity ("Downloading ${Url}: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s") `
-                -status "To $Destination" `
-                -PercentComplete $percent `
-                -SecondsRemaining $remainingTime
+                Write-Progress -Id 0 `
+                    -Activity ("Downloading ${Url}: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s") `
+                    -status "To $Destination" `
+                    -PercentComplete $percent `
+                    -SecondsRemaining $remainingTime
                 
-            Write-Verbose ("Progress: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s")
+                Write-Verbose ("Progress: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s")
+            }
+
+            $iteration++
         } while ($count -gt 0)
 
         Write-Progress -Id 0 -Activity "Downloading ${Url}" -Completed -Status "All done."
