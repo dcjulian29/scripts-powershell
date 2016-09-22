@@ -117,8 +117,11 @@ Function Download-File {
 
     try {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        [byte[]]$buffer = New-Object byte[] 4096
+        [byte[]]$buffer = New-Object byte[] 1MB
         [long]$total = [int]$count = 0
+
+        Write-Progress -Id 0 `
+            -Activity "Downloading ${Url}: 0% @ 0.00 MB/s" -Status "To $Destination" -PercentComplete 0
 
         do {
             $count = $responseStream.Read($buffer,0,$buffer.length) 
@@ -140,7 +143,7 @@ Function Download-File {
                 [int]$remainingTime = 0
             }
 
-            Write-Progress `
+            Write-Progress -Id 0 `
                 -Activity ("Downloading ${Url}: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s") `
                 -status "To $Destination" `
                 -PercentComplete $percent `
@@ -148,6 +151,8 @@ Function Download-File {
                 
             Write-Verbose ("Progress: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s")
         } while ($count -gt 0)
+
+        Write-Progress -Id 0 -Activity "Downloading ${Url}" -Completed -Status "All done."
 
         $sw.Stop()
         $sw.Reset()
