@@ -242,6 +242,90 @@ Function Reset-Path {
     setx.exe /m PATH $path
 }
 
+Function Find-ProgramFiles {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$folderName
+    )
+
+    $location1 = "C:\Program Files\$folderName"
+    
+    if (!(Test-Path $location1)) {
+        $location2 = "C:\Program Files (x86)\$folderName"
+        
+        if (!(Test-Path $location2)) {
+            ""
+        } else {
+            $location2
+        }
+    } else {
+        $location1
+    }
+}
+
+Function First-Path {
+    $result = $null
+  
+    foreach ($arg in $args) {
+        if ($arg -is [ScriptBlock]) {
+            $result = & $arg
+        } else {
+            $result = $arg
+        }
+    
+        if ($result) {
+            if (Test-Path "$result") {
+                break
+            }
+        }
+    }
+  
+    $result
+}
+
+Function Purge-Files {
+    param(
+        [string]$folder = $(throw “A directory name is required.”),
+        [string]$filter = $(throw “A file match filter is required.”),
+        [int]$age = $(throw “Provide the number of days old.”)
+    )
+
+    if (Test-Path $folder) {
+        $attemps = 0
+        $done = $false
+
+        while (($attempts -lt 20) -and (-not $done)) {
+            $files = 	Get-ChildItem -Path $folder -Filter $filter -Recurse `
+                | where { [Datetime]::Now -gt $_.LastWriteTime.AddDays($age) }
+
+            if ($files -eq $null) {
+                $done = $true
+            } else {
+                Write-Output "Attempt $($attempts + 1)..."
+                $files | Remove-Item  -Force -Recurse -ErrorAction SilentlyContinue
+                $attempts++
+            }
+        }
+
+        if ($attempts -eq 20) {
+            ""
+            Write-Warning "Unable to complete the purge process... The following file were not purged:"
+            $files = 	Get-ChildItem -Path $folder -Filter $filter -Recurse `
+                | where { [Datetime]::Now -gt $_.LastWriteTime.AddDays($age) }
+      
+            foreach ($file in $files) {
+                Write-Warning "   $($file.FullName)"
+            }
+            ""
+        } else {
+            ""
+            Write-Out "Pruge operation complete..." -ForeGroundColor Magenta
+            ""
+        }
+    }
+}
+
 ##############################################################################
 
 Export-ModuleMember Copy-File
@@ -250,3 +334,6 @@ Export-ModuleMember Unzip-File
 Export-ModuleMember Get-FullFilePath
 Export-ModuleMember Get-FullDirectoryPath
 Export-ModuleMember Reset-Path
+Export-ModuleMember Find-ProgramFiles
+Export-ModuleMember First-Path
+Export-ModuleMember Purge-Files
