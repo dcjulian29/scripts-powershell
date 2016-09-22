@@ -20,7 +20,7 @@ Function Invoke-ElevatedCommand {
         [switch]$Wait = $false
     )
     
-    if (-not Test-Elevation) {
+    if (-not (Test-Elevation)) {
         $process = New-Object System.Diagnostics.ProcessStartInfo $File
         $process.Arguments = $ArgumentList
         $process.Verb = "runas"
