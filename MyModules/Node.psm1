@@ -1,24 +1,31 @@
-$script:node = Find-ProgramFiles 'nodejs\node.exe'
-$script:npm = "$(Split-Path $script:node)\node_modules\npm\bin\npm-cli.js"
+Function Get-Node {
+    Find-ProgramFiles 'nodejs\node.exe'
+}
+
+Function Get-Npm {
+    if (Test-Node) {
+        "$(Split-Path $script:node)\node_modules\npm\bin\npm-cli.js"
+    }
+}
 
 Function Get-NodeVersion {
     Start-Node -p -e "process.versions.node + ' (' + process.arch + ')'"    
 }
 
 Function Start-NodePackageManager {
-    Start-Node $script:npm $args;
+    Start-Node Get-Npm $args;
 }
 
 Function Start-Node {
     if (Test-Node) {
-        & $script:node $args
+        & Get-Node $args
     } else {
         Write-Error "NodeJS is not installed!"
     }
 }
 
 Function Test-Node {
-    Test-Path $script:node
+    Test-Path Get-Node
 }
 
 ###############################################################################
