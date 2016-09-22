@@ -12,23 +12,52 @@ Function Test-Elevation {
 }
 
 Function Invoke-ElevatedCommand {
-    $file, [string]$arguments = $args
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$File,
+        [string]$ArgumentList,
+        [switch]$Wait = $false
+    )
+    
+    if (-not Test-Elevation) {
+        $process = New-Object System.Diagnostics.ProcessStartInfo $File
+        $process.Arguments = $ArgumentList
+        $process.Verb = "runas"
 
-    $process = New-Object System.Diagnostics.ProcessStartInfo $file
-    $process.Arguments = $arguments
-    $process.Verb = "runas"
+        $handle = [System.Diagnostics.Process]::Start($process)
 
-    [System.Diagnostics.Process]::Start($process) | Out-Null
+        if ($Wait) {
+            $handle.WaitForExit()
+        }
+    } else {
+        if ($Wait) {
+            Start-Process -FilePath $File -ArgumentList $ArgumentList -Wait
+        } else {
+            Start-Process -FilePath $File -ArgumentList $ArgumentList
+        }
+    }
 }
 
-Function Invoke-ElevatedCommandAs {
-    $file, [string]$arguments = $args
 
-    $process = New-Object System.Diagnostics.ProcessStartInfo $file
-    $process.Arguments = $arguments
+Function Invoke-ElevatedCommandAs {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$File,
+        [string]$ArgumentList,
+        [switch]$Wait = $false
+    )
+
+    $process = New-Object System.Diagnostics.ProcessStartInfo $File
+    $process.Arguments = $Arguments
     $process.Verb = "runasuser"
 
-    [System.Diagnostics.Process]::Start($process) | Out-Null
+    $handle = [System.Diagnostics.Process]::Start($process)
+    
+    if ($Wait) {
+        $handle.WaitForExit()
+    }
 }
 
 Function Invoke-ElevatedScript {
@@ -81,12 +110,26 @@ Function Invoke-ElevatedScript {
     }
 }
 
+Function Start-RemoteProcess {
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$ComputerName,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Command
+    )
+  
+    ([WMICLASS]"\\$ComputerName\ROOT\CIMV2:win32_process").Create($Command)
+}
+
 ##############################################################################
 
 Export-ModuleMember Test-Elevation
 Export-ModuleMember Invoke-ElevatedCommand
 Export-ModuleMember Invoke-ElevatedCommandAs
 Export-ModuleMember Invoke-ElevatedScript
+Export-ModuleMember Start-RemoteProcess
 
 Set-Alias sudo Invoke-ElevatedCommand
 Export-ModuleMember -Alias sudo
