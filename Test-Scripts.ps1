@@ -1,5 +1,5 @@
 $source = $PSScriptRoot
-$destination = "${env:SYSTEMDRIVE}\tools\powershell"
+$destination = "$($env:UserProfile)\Documents\WindowsPowerShell"
 
 Get-ChildItem -Path $source -Recurse -Force |
     Where-Object { $_.psIsContainer } |
@@ -7,7 +7,7 @@ Get-ChildItem -Path $source -Recurse -Force |
     ForEach-Object { $_.FullName -replace [regex]::Escape($source), $destination } |
     ForEach-Object { 
         if (-not (Test-Path $_)) {
-            New-Item -ItemType Container -Path $_ #| Out-Null
+            New-Item -ItemType Container -Path $_ | Out-Null
         }
     }
 
