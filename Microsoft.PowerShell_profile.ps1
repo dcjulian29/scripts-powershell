@@ -35,12 +35,11 @@ if (-not $batch)
 }
 
 # On domain joined machines, the home variable gets written with the "Home Directory" value
-# from Active Directory. This causes problems with loading modules so, I'll "force" the value
-# to match the value set be the UserProfile environment variable.
+# from Active Directory.
 Set-Variable -Name Home -Value $env:UserProfile -Force
 
-. "$(Split-Path $profile)\Load-ProfileModulesAndScripts.ps1" GlobalScripts
-. "$(Split-Path $profile)\Load-ProfileModulesAndScripts.ps1" MyModules
+$env:PSModulePath = "$(Split-Path $profile)\Modules;$($env:PSModulePath)"
+$env:PSModulePath = "$(Split-Path $profile)\MyModules;$($env:PSModulePath)"
 
 Function prompt
 {
