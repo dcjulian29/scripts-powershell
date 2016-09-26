@@ -21,11 +21,6 @@ $script:vsvarPath = First-Path `
   (Find-ProgramFiles 'Microsoft Visual Studio 11.0\Common7\Tools\vsvars32.bat') `
   (Find-ProgramFiles 'Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat')
 
-if (Test-Path "$($env:SYSTEMDRIVE)\Tools\development")
-{
-    $env:Path = "$env:SYSTEMDRIVE\Tools\development;$env:PATH"
-}
-
 Function Build-Project {
     $param = "$args"
     if (Test-Path build.cake) {

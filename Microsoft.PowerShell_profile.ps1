@@ -5,20 +5,16 @@
 $Global:PromptAdmin="$"
 
 $batch = (Get-WmiObject Win32_Process -filter "ProcessID=$pid").CommandLine -match "-NonInteractive"
-if (-not $batch)
-{
+if (-not $batch) {
   $principal = new-object System.Security.principal.windowsprincipal($CurrentUser)
-  if ($principal.IsInRole("Administrators"))
-  {
+  if ($principal.IsInRole("Administrators")) {
     $host.UI.RawUI.BackgroundColor = "DarkRed"
     $host.UI.RawUI.ForegroundColor = "Yellow"
 
     Set-Location C:\
     $host.UI.RawUI.WindowTitle = "Administrator: PowerShell Prompt"
     $PromptAdmin="#"
-  }
-  else
-  {
+  } else {
     $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
     $host.UI.RawUI.BackgroundColor = "Black"
     $host.UI.RawUI.ForegroundColor = "Green"
@@ -41,8 +37,13 @@ Set-Variable -Name Home -Value $env:UserProfile -Force
 $env:PSModulePath = "$(Split-Path $profile)\Modules;$($env:PSModulePath)"
 $env:PSModulePath = "$(Split-Path $profile)\MyModules;$($env:PSModulePath)"
 
-Function prompt
-{
+# My modules used to be executed once for each module file where the path was updated for various
+# tools. Since they are now being dynamically loaded I have the update the path here...
+Add-DevPath
+Add-GitPath
+
+
+Function prompt {
   $realLASTEXITCODE = $LASTEXITCODE
   $originalColor = $Host.UI.RawUI.ForegroundColor
   $username = $currentuser.name.split('\')[1]
@@ -54,11 +55,9 @@ Function prompt
   Write-Host($pwd) -foregroundcolor Red
 
   # Posh-GIT gets confused when in the GIT metadata directory.
-  if (-not $pwd.Path.EndsWith('.git'))
-  {
+  if (-not $pwd.Path.EndsWith('.git')) {
     # Ignore writing VCS status if tools are not loaded.
-    if (Get-Command Write-VcsStatus -errorAction SilentlyContinue)
-    {
+    if (Get-Command Write-VcsStatus -errorAction SilentlyContinue) {
       Write-VcsStatus
     }
   }
@@ -72,13 +71,11 @@ Function prompt
   return "  `b"
 }
 
-Function Edit-Profile
-{
+Function Edit-Profile {
   notepad $profile
 }
 
-Function Reload-Profile
-{
+Function Reload-Profile {
   . $profile
 }
 

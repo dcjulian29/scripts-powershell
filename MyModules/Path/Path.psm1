@@ -19,6 +19,12 @@ Function Add-CygwinPath {
     }
 }
 
+Function Add-DevPath {
+    if (Test-Path "$($env:SYSTEMDRIVE)\Tools\development") {
+        $env:Path = "$env:SYSTEMDRIVE\Tools\development;$env:PATH"
+    }
+}
+
 Function Add-JavaPath {
     $path = Find-JavaPath
         
@@ -135,7 +141,9 @@ Function Find-NodeJsPath {
 ###############################################################################
 
 Export-ModuleMember Add-CygwinPath
+Export-ModuleMember Add-DevPath
 Export-ModuleMember Add-JavaPath
+Export-ModuleMember Add-MongoDbPath
 Export-ModuleMember Add-MongoDbPath
 Export-ModuleMember Add-NodeJsPath
 Export-ModuleMember Find-CygwinPath

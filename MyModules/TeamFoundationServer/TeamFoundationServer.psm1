@@ -6,11 +6,6 @@ $script:tfPath = First-Path `
   (Find-ProgramFiles 'Microsoft Visual Studio 11.0\Common7\IDE\TF.exe') `
   (Find-ProgramFiles 'Microsoft Visual Studio 10.0\Common7\IDE\TF.exe')
 
-if (Test-Path "$($env:SYSTEMDRIVE)\Tools\apps\gittfs")
-{
-  $env:Path = "$($env:SYSTEMDRIVE)\Tools\apps\gittfs;$env:PATH"
-}
-
 function tf()
 {
   & $tfPath $args;

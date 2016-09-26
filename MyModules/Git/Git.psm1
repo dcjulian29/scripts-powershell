@@ -1,14 +1,20 @@
 ﻿$script:GIT_INSTALL_ROOT = Find-ProgramFiles "Git\bin"
 $script:GIT = "${script:GIT_INSTALL_ROOT}\git.exe"
 
-if (-not ([String]::IsNullOrWhiteSpace($script:GIT_INSTALL_ROOT))) {
-    if (Test-Path "$script:GIT_INSTALL_ROOT") {
-        $env:Path = "$env:Path;$script:GIT_INSTALL_ROOT"
+Function Add-GitPath {
+    if (-not ([String]::IsNullOrWhiteSpace($script:GIT_INSTALL_ROOT))) {
+        if (Test-Path "$script:GIT_INSTALL_ROOT") {
+            $env:Path = "$env:Path;$script:GIT_INSTALL_ROOT"
 
-        if (Test-Path "$($env:UserProfile)\Documents\WindowsPowerShell\Modules\posh-git") {
-            Import-Module Posh-Git
+            if (Test-Path "$($env:UserProfile)\Documents\WindowsPowerShell\Modules\posh-git") {
+                Import-Module Posh-Git
 
-            $GitPromptSettings.BeforeText = "["
+                $GitPromptSettings.BeforeText = "["
+            }
+        }
+
+        if (Test-Path "$($env:SYSTEMDRIVE)\Tools\apps\gittfs") {
+          $env:Path = "$($env:SYSTEMDRIVE)\Tools\apps\gittfs;$env:PATH"
         }
     }
 }
@@ -328,6 +334,7 @@ Function Remove-LastGitCommit {
 
 ###################################################################################################
 
+Export-ModuleMember Add-GitPath
 Export-ModuleMember Add-GitIgnoreToLocalRepository
 Export-ModuleMember Add-GitIgnoreToRemoteRepository
 Export-ModuleMember Get-GitIgnoreTemplate
