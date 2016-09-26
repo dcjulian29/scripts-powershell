@@ -17,12 +17,6 @@ if (-not ($env:PATH).Contains($binarydirectory)) {
   $env:PATH = "$binarydirectory;$($env:PATH)"
 }
 
-$developmentdirectory = "$env:SYSTEMDRIVE\Tools\development"
-
-if (-not ($env:PATH).Contains($developmentdirectory)) {
-  $env:PATH = "$developmentdirectory;$($env:PATH)"
-}
-
 Remove-Item alias:wget
 Remove-Item alias:curl
 
