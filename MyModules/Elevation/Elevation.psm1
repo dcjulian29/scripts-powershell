@@ -5,7 +5,7 @@ Function Assert-Elevation {
         Write-Error "This command requires elevation"
         return $false
     }
-    
+
     return $true
 }
 
@@ -120,6 +120,44 @@ Function Invoke-ElevatedScript {
     }
 }
 
+Function Invoke-ElevatedExpression {
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $Command
+    )
+
+    $commandString = "try { Invoke-Expression `"" + $Command + "`"} catch { throw }"
+
+    $commandBytes = [System.Text.Encoding]::Unicode.GetBytes($commandString)
+    $encodedCommand = [Convert]::ToBase64String($commandBytes)
+
+    $commandLine = "-NoProfile -EncodedCommand $encodedCommand"
+
+    $processInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $processInfo.FileName = (Get-Command powershell).Definition
+    $processInfo.RedirectStandardError = $true
+    $processInfo.RedirectStandardOutput = $true
+    $processInfo.UseShellExecute = $false
+    $processInfo.Arguments = $commandLine
+    $processInfo.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
+    $processInfo.Verb = "runas"
+    $processInfo.WorkingDirectory = Get-Location
+    $processInfo.CreateNoWindow = $true
+
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $processInfo
+    $process.Start() | Out-Null
+
+    $process.WaitForExit()
+
+    Write-Output $process.StandardOutput.ReadToEnd()
+
+    if ( $process.ExitCode -ne 0) {
+        Write-Error $process.StandardError.ReadToEnd()
+    }
+}
+
 Function Start-RemoteProcess {
     param (
         [Parameter(Mandatory = $true)]
@@ -140,6 +178,7 @@ Export-ModuleMember Test-Elevation
 Export-ModuleMember Invoke-ElevatedCommand
 Export-ModuleMember Invoke-ElevatedCommandAs
 Export-ModuleMember Invoke-ElevatedScript
+Export-ModuleMember Invoke-ElevatedExpression
 Export-ModuleMember Start-RemoteProcess
 
 Set-Alias sudo Invoke-ElevatedCommand
