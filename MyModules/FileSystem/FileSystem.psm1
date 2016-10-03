@@ -326,6 +326,51 @@ Function Purge-Files {
     }
 }
 
+Function Get-Sha1 {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$File
+    )
+
+    $File = Get-FullFilePath $File
+
+    Write-Verbose "Calculating SHA1 for $File..."
+
+    (Get-FileHash -Path $file -Algorithm SHA1).Hash
+}
+
+Function Get-Sha256 {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$File
+    )
+
+    $File = Get-FullFilePath $File
+
+    Write-Verbose "Calculating SHA256 for $File..."
+
+    (Get-FileHash -Path $file -Algorithm SHA256).Hash
+}
+
+Function Get-Md5 {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$File
+    )
+
+    $File = Get-FullFilePath $File
+
+    Write-Verbose "Calculating MD5 for $File..."
+
+    (Get-FileHash -Path $file -Algorithm MD5).Hash
+}
+
 ##############################################################################
 
 Export-ModuleMember Copy-File
@@ -337,3 +382,14 @@ Export-ModuleMember Reset-Path
 Export-ModuleMember Find-ProgramFiles
 Export-ModuleMember First-Path
 Export-ModuleMember Purge-Files
+Export-ModuleMember Get-Sha1
+Export-ModuleMember Get-Sha256
+Export-ModuleMember Get-Md5
+
+Set-Alias -Name sha1 -Value Get-Sha1
+Set-Alias -Name sha256 -Value Get-Sha1
+Set-Alias -Name md5 -Value Get-Sha1
+
+Export-ModuleMember -Alias sha1
+Export-ModuleMember -Alias sha256
+Export-ModuleMember -Alias md5
