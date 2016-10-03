@@ -149,11 +149,10 @@ Function Download-File {
                     [int]$remainingTime = 0
                 }
 
-                Write-Progress -Id 0 `
-                    -Activity ("Downloading ${Url}: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s") `
-                    -status "To $Destination" `
-                    -PercentComplete $percent `
-                    -SecondsRemaining $remainingTime
+                $activity = "Downloading ${Url}: " + $percent + "% @ " + "{0:n2}" -f $xferrate + " MB/s"
+
+                Write-Progress -Id 0 -Activity  $activity -status "To $Destination" `
+                    -PercentComplete $percent -SecondsRemaining $remainingTime
                 
                 Write-Verbose ("Progress: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s")
             }
