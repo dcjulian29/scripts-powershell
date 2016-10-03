@@ -91,7 +91,7 @@ Function Update-ChocolateyPackage {
         [string] $package
     )
 
-    if (Test-Elevation) {
+    if (Assert-Elevation) {
         $choco = "${env:ChocolateyInstall}\chocolateyInstall\chocolatey.ps1"
 
         if ($installArguments) {
@@ -110,7 +110,7 @@ Function Install-ChocolateyPackage {
         [string] $package
     )
 
-    if (Test-Elevation) {
+    if (Assert-Elevation) {
         $choco = "${env:ChocolateyInstall}\chocolateyInstall\chocolatey.ps1"
 
         if ($version.Length) {
@@ -133,7 +133,7 @@ Function Uninstall-ChocolateyPackage {
         [string] $package
     )
 
-    if (Test-Elevation) {
+    if (Assert-Elevation) {
         $choco = "${env:ChocolateyInstall}\chocolateyInstall\chocolatey.ps1"
 
         if ($version) {

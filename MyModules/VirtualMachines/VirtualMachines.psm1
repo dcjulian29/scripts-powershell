@@ -37,7 +37,7 @@ Function New-SystemVHDX {
         return
     }
 
-    if (-not $(Test-Elevation)) { return }
+    if (-not $(Assert-Elevation)) { return }
 
     Set-Content $vhdxFile "TEMP"
     $fullPath = Get-FullFilePath $vhdxFile
@@ -65,7 +65,7 @@ Function New-DifferencingVHDX {
       [string] $vhdxFile
     )
 
-    if (-not $(Test-Elevation)) { return }
+    if (-not $(Assert-Elevation)) { return }
 
     Write-Verbose "Creating a Differencing Disk [$($vhdxFile)] based on [$($referenceDisk)]"
 
@@ -79,7 +79,7 @@ Function New-DataVHDX {
       [UInt64] $diskSize = 80GB
     )
 
-    if (-not $(Test-Elevation)) { return }
+    if (-not $(Assert-Elevation)) { return }
 
     Write-Verbose "Creating a Data Disk [$($vhdxFile)] sized [$($diskSize)]"
     New-VHD -Path $vhdxFile -SizeBytes $diskSize -Dynamic
@@ -289,7 +289,7 @@ Function Connect-IsoToVirtual {
         [string] $isoFile
     ) 
 
-    if (-not $(Test-Elevation)) { return }
+    if (-not $(Assert-Elevation)) { return }
 
     Set-VMDvdDrive -VMName $virtualMachineName `
         -ControllerNumber 1  -ControllerLocation 0 `
@@ -304,7 +304,7 @@ Function Make-UnattendForDhcpIp {
         [string] $computerName
     )
 
-    if (-not $(Test-Elevation)) { return }
+    if (-not $(Assert-Elevation)) { return }
 
     $fullPath = Get-FullFilePath $vhdxFile
 
@@ -338,7 +338,7 @@ Function Make-UnattendForStaticIp {
         [string] $nameServer
     )
 
-    if (-not $(Test-Elevation)) { return }
+    if (-not $(Assert-Elevation)) { return }
 
     $fullPath = Get-FullFilePath $vhdxFile
 
@@ -387,7 +387,7 @@ Function Inject-StartLayout {
         [string] $layoutFile
     )
 
-    if (-not $(Test-Elevation)) { return }
+    if (-not $(Assert-Elevation)) { return }
 
     $fullPath = Get-FullFilePath $vhdxFile
     $layoutPath = Get-FullFilePath $layoutFile
@@ -411,7 +411,7 @@ Function Inject-VMStartUpScriptFile {
         [string] $arguments
     )
 
-    if (-not $(Test-Elevation)) { return }
+    if (-not $(Assert-Elevation)) { return }
 
     $fullPath = Get-FullFilePath $vhdxFile
 
@@ -517,7 +517,7 @@ Function New-VirtualMachine {
         [string] $RemoteHost = "$($env:COMPUTERNAME)"
     )
 
-    if (-not $(Test-Elevation)) { return }
+    if (-not $(Assert-Elevation)) { return }
 
     New-VM –Name $computerName –VHDPath $vhdxFile -Generation 2 -ComputerName $RemoteHost
     Connect-VMNetworkAdapter -VMName $computerName –Switch $virtualSwitch  -ComputerName $RemoteHost

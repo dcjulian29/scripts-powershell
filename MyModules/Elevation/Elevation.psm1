@@ -1,9 +1,19 @@
+Function Assert-Elevation {
+    Write-Verbose "Checking for elevation... "
+    $CurrentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
+    if (($CurrentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) -eq $false)  {
+        Write-Error "This command requires elevation"
+        return $false
+    }
+    
+    return $true
+}
+
 Function Test-Elevation {
     Write-Verbose "Checking for elevation... "
     $CurrentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
     if (($CurrentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) -eq $false)  {
-        Write-Verbose "Not an administrator session!"
-        Write-Error "This command requires elevation"
+        Write-Verbose "No, this is not an elevated session."
         return $false
     } else {
         Write-Verbose "Yes, this is an elevated session."
@@ -125,6 +135,7 @@ Function Start-RemoteProcess {
 
 ##############################################################################
 
+Export-ModuleMember Assert-Elevation
 Export-ModuleMember Test-Elevation
 Export-ModuleMember Invoke-ElevatedCommand
 Export-ModuleMember Invoke-ElevatedCommandAs
