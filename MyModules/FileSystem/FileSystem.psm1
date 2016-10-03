@@ -91,7 +91,8 @@ Function Download-File {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string]$Destination,
-        [switch]$Force
+        [switch]$Force,
+        [switch]$ShowHostOnly
     )
 
     $Destination = Get-FullFilePath $Destination
@@ -115,6 +116,10 @@ Function Download-File {
 
     $to = New-Object -TypeName System.IO.FileStream -ArgumentList $Destination, Create 
 
+    if (-not $ShowHostOnly) {
+        $Url = "from $($request.Address.Host)"
+    }
+    
     try {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
         [byte[]]$buffer = New-Object byte[] 10MB
