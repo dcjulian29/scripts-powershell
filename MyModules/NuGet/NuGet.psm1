@@ -84,12 +84,32 @@ Function Invoke-Nuget {
     & "C:\tools\apps\nuget\nuget.exe" $args
 }
 
+Function Purge-NugetPackages {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]        
+        [int]$Age
+    )
+
+    $cache = "${env:LOCALAPPDATA}\NuGet\Cache"
+    $filter = "*.nupkg"
+
+    Purge-Files -Folder $cache -Filter $filter -Age $Age
+}
+
+Function Purge-AllNugetPackages {
+    Purge-NugetPackages -Age 0
+}
+
 ###################################################################################################
 
 Export-ModuleMember Clear-NuGetProfile
 Export-ModuleMember Load-NuGetProfile
 Export-ModuleMember Restore-NugetPackages
 Export-ModuleMember Invoke-Nuget
+Export-ModuleMember Purge-NugetPackages
+Export-ModuleMember Purge-AllNugetPackages
+
 
 Set-Alias nuget-profile-clear Clear-NuGetProfile
 Export-ModuleMember -Alias nuget-profile-clear
