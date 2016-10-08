@@ -289,10 +289,17 @@ Function First-Path {
 }
 
 Function Purge-Files {
-    param(
-        [string]$folder = $(throw “A directory name is required.”),
-        [string]$filter = $(throw “A file match filter is required.”),
-        [int]$age = $(throw “Provide the number of days old.”)
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]        
+        [string]$Folder,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]        
+        [string]$Filter,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]        
+        [int]$Age,
+        [switch]$Quiet
     )
 
     if (Test-Path $folder) {
@@ -306,26 +313,31 @@ Function Purge-Files {
             if ($files -eq $null) {
                 $done = $true
             } else {
-                Write-Output "Attempt $($attempts + 1)..."
+                if (-not $Quiet) {
+                    Write-Output "Attempt $($attempts + 1)..."
+                }
+                
                 $files | Remove-Item  -Force -Recurse -ErrorAction SilentlyContinue
                 $attempts++
             }
         }
 
         if ($attempts -eq 20) {
-            ""
-            Write-Warning "Unable to complete the purge process... The following file were not purged:"
-            $files = 	Get-ChildItem -Path $folder -Filter $filter -Recurse `
-                | where { [Datetime]::Now -gt $_.LastWriteTime.AddDays($age) }
-      
-            foreach ($file in $files) {
-                Write-Warning "   $($file.FullName)"
+            if (-not $Quiet) {
+                Write-Output ""
+                Write-Warning "Unable to complete the purge process... The following file were not purged:"
+                $files = 	Get-ChildItem -Path $folder -Filter $filter -Recurse `
+                    | where { [Datetime]::Now -gt $_.LastWriteTime.AddDays($age) }
+          
+                foreach ($file in $files) {
+                    Write-Warning "   $($file.FullName)"
+                }
             }
-            ""
         } else {
-            ""
-            Write-Out "Pruge operation complete..." -ForeGroundColor Magenta
-            ""
+            if (-not $Quiet) {
+                Write-Output ""
+                Write-Output "Purge operation complete..."
+            }
         }
     }
 }
