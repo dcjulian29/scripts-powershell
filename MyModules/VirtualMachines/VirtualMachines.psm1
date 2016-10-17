@@ -54,7 +54,7 @@ Function New-SystemVHDX {
             -VHDPath $fullPath -VHDFormat VHDX -VHDPartitionStyle GPT `
             -SizeBytes $diskSize
     }
-    
+
     Write-Verbose "Created System Disk [$($vhdxFile)]"
 }
 
@@ -91,11 +91,11 @@ Function New-DataVHDX {
     $diskNumber = (Get-DiskImage -ImagePath $fullPath | Get-Disk).Number
 
     Write-Verbose "Initializing Data Disk..."
-    
+
     Initialize-Disk -Number $diskNumber -PartitionStyle GPT
     $partition = New-Partition -DiskNumber $diskNumber -UseMaximumSize `
         -GptType '{ebd0a0a2-b9e5-4433-87c0-68b6b72699c7}'
-    
+
     Write-Verbose "Formatting Data Disk..."
 
     Format-Volume -FileSystem NTFS -Partition $partition -Confirm:$false
@@ -105,7 +105,7 @@ Function New-DataVHDX {
 
 Function New-NanoServerVhdx {
 <#
-    .SYNOPSIS 
+    .SYNOPSIS
         Prepares an Hyper-V Vhdx file ready-to-boot Windows Server 2016 Technical Preview 3 - Nano Server
 
     .PARAMETER IsoPath
@@ -162,7 +162,7 @@ Function New-NanoServerVhdx {
         [string]$RegisteredCorporation = "Contoso"
     )
 
-    $WorkFolder = Join-Path -Path $env:TEMP -ChildPath 'NanoServer' 
+    $WorkFolder = Join-Path -Path $env:TEMP -ChildPath 'NanoServer'
     $DismFolder = Join-Path -Path $WorkFolder -ChildPath "dism"
     $MountFolder = Join-Path -Path $WorkFolder -ChildPath "mount"
     $TempVHDName = Join-Path -Path $WorkFolder -ChildPath "NanoServer.vhdx"
@@ -189,7 +189,7 @@ Function New-NanoServerVhdx {
     Copy-Item -Path "$($DriveLetter):\Sources\*provider*" -Destination $DismFolder -Force
 
     Convert-WindowsImage -SourcePath "$($DriveLetter):\NanoServer\NanoServer.wim" -Edition 1 `
-        -VHDPartitionStyle 'GPT' -VHDFormat VHDX -SizeBytes 10GB -VHDPath $TempVHDName 
+        -VHDPartitionStyle 'GPT' -VHDFormat VHDX -SizeBytes 10GB -VHDPath $TempVHDName
 
     If (-not (Test-Path -Path $MountFolder -PathType Container)) {
         New-Item -Path $MountFolder -ItemType Directory | Out-Null
@@ -287,7 +287,7 @@ Function Connect-IsoToVirtual {
     param (
         [string] $virtualMachineName,
         [string] $isoFile
-    ) 
+    )
 
     if (-not $(Assert-Elevation)) { return }
 
@@ -311,17 +311,17 @@ Function Make-UnattendForDhcpIp {
     Write-Verbose "Injecting unattend.xml into $($fullPath)"
 
     $drive = Mount-VHDX $fullPath
-    
-    $xml = [xml](Get-Content $unattendTemplate) 
 
-    # Change ComputerName 
+    $xml = [xml](Get-Content $unattendTemplate)
+
+    # Change ComputerName
     $xml.unattend.settings.component | Where-Object { $_.Name -eq "Microsoft-Windows-Shell-Setup" } |
         ForEach-Object {
-            if ($_.ComputerName) { 
-                $_.ComputerName = $computerName 
-            } 
-        } 
-    
+            if ($_.ComputerName) {
+                $_.ComputerName = $computerName
+            }
+        }
+
     $xml.Save("$($drive)\unattend.xml")
 
     Dismount-DiskImage -ImagePath $fullPath
@@ -346,35 +346,35 @@ Function Make-UnattendForStaticIp {
 
     $drive = Mount-VHDX $fullPath
 
-    $xml = [xml](Get-Content $unattendTemplate) 
+    $xml = [xml](Get-Content $unattendTemplate)
 
-    # Change ComputerName 
+    # Change ComputerName
     $xml.unattend.settings.component | Where-Object { $_.Name -eq "Microsoft-Windows-Shell-Setup" } |
         ForEach-Object {
-            if ($_.ComputerName) { 
-                $_.ComputerName = $computerName 
-            } 
-        } 
-
-    # Change IP address 
-    $xml.unattend.settings.component | Where-Object { $_.Name -eq "Microsoft-Windows-TCPIP" } | 
-        ForEach-Object { 
-            if ($_.Interfaces) { 
-                $ht='#text' 
-                $_.interfaces.interface.unicastIPaddresses.ipaddress.$ht = $networkAddress 
-                $_.interfaces.interface.routes.route.nexthopaddress = $gatewayAddress
-            } 
+            if ($_.ComputerName) {
+                $_.ComputerName = $computerName
+            }
         }
- 
-    # Change DNS Server address 
+
+    # Change IP address
+    $xml.unattend.settings.component | Where-Object { $_.Name -eq "Microsoft-Windows-TCPIP" } |
+        ForEach-Object {
+            if ($_.Interfaces) {
+                $ht='#text'
+                $_.interfaces.interface.unicastIPaddresses.ipaddress.$ht = $networkAddress
+                $_.interfaces.interface.routes.route.nexthopaddress = $gatewayAddress
+            }
+        }
+
+    # Change DNS Server address
     $xml.Unattend.Settings.Component | Where-Object { $_.Name -eq "Microsoft-Windows-DNS-Client" } |
-        ForEach-Object { 
-            if ($_.Interfaces) { 
-                $ht='#text' 
+        ForEach-Object {
+            if ($_.Interfaces) {
+                $ht='#text'
                 $_.Interfaces.Interface.DNSServerSearchOrder.Ipaddress.$ht = $nameServer
             }
-        } 
-    
+        }
+
     $xml.Save("$($drive)\unattend.xml")
 
     Dismount-DiskImage -ImagePath $fullPath
@@ -418,7 +418,7 @@ Function Inject-VMStartUpScriptFile {
     $drive = Mount-VHDX $fullPath
 
     Write-Verbose "VHDX file mounted on $($drive)..."
-    
+
     $scriptPath = "$((Get-Item -Path $scriptFile).Directory.FullName.TrimEnd('\'))"
     $scriptName = "$((Get-Item -Path $scriptFile).Name)"
 
@@ -429,15 +429,15 @@ Function Inject-VMStartUpScriptFile {
     if (-not (Test-Path $virtualRoot)) {
         New-Item -Type Directory -Path $drive -Name "\Windows\Setup\Scripts" | Out-Null
     }
-    
+
     Copy-Item -Path $scriptFile -Destination $virtualScript
 
     $pshellexe = "%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe"
     $pshellcmd = "%WINDIR%\Setup\Scripts\$($scriptName) $arguments"
 
     Set-Content -Path $virtualCommand -Encoding Ascii `
-        -Value "@$($pshellexe) -ExecutionPolicy unrestricted -NoLogo -Command $($pshellcmd)" 
-  
+        -Value "@$($pshellexe) -ExecutionPolicy unrestricted -NoLogo -Command $($pshellcmd)"
+
     Dismount-DiskImage -ImagePath $fullPath
 }
 
@@ -535,7 +535,7 @@ Function New-VirtualMachineFromCsv {
         [Alias("CSV")]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $csvFile,  
+        [string] $csvFile,
         [string] $virtualSwitch = "Internal",
         [Parameter(Mandatory=$true)]
         [string] $isoFile,
@@ -565,7 +565,7 @@ Function New-VirtualMachineFromCsv {
             Add-VMHardDiskDrive -VMName "$($vm.ComputerName)" `
                 -Path "$($vm.ComputerName)-DATA.vhdx" -diskSize (0 + $vm.DataDrive)
         }
-    
+
         if (-not ([string]::IsNullOrEmpty($vm.StartupScript))) {
             Inject-VMStartUpScriptFile -vhdxFile "$($vm.ComputerName).vhdx" -scriptFile $vm.StartupScript
         }
@@ -579,7 +579,7 @@ Function New-VirtualMachineFromName {
     param(
         [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
         [ValidateNotNullOrEmpty()]
-        [string] $computerName,  
+        [string] $computerName,
         [Parameter(Mandatory=$true)]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string] $isoFile,
@@ -615,6 +615,45 @@ Function New-VirtualMachineFromName {
     Pop-Location
 }
 
+Function Install-DevVmPackage {
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $package
+    )
+
+    $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.log"
+
+    if (Test-Path "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.log") {
+        Move-Item "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.log" `
+            "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.old.log" -Force
+    }
+
+    Start-Transcript $logFile -Verbose
+
+    # For some reason, my PSModules environment keeps getting reset installing packages,
+    # so let explictly add it each and everytime
+    $env:PSModulePath = "$(Split-Path $profile)\Modules;$($env:PSModulePath)"
+    $env:PSModulePath = "$(Split-Path $profile)\MyModules;$($env:PSModulePath)"
+
+    Get-Module -ListAvailable | Out-Null
+
+    Invoke-Expression "$env:ChocolateyInstall\chocolateyinstall\chocolatey.ps1 install $package -y"
+
+    Stop-Transcript
+
+    # Now lets check for errors...
+    if (Get-Content $logFile | Select-String -Pattern "Write-Error") {
+        Write-Warning "An error occurred during the last package ($package) install..."
+        Write-Warning "Review the log file: $logFile"
+        Write-Warning "And then decide whether to continue..."
+
+        Read-Host "Press Enter to continue with next package"
+    }
+}
+
+
+Export-ModuleMember Install-DevVmPackage
 Export-ModuleMember Convert-WindowsImage
 Export-ModuleMember Get-HyperVReport
 Export-ModuleMember New-SystemVHDX
