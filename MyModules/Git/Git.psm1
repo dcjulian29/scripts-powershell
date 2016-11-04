@@ -1,5 +1,6 @@
-﻿$script:GIT_INSTALL_ROOT = Find-ProgramFiles "Git\bin"
-$script:GIT = "${script:GIT_INSTALL_ROOT}\git.exe"
+﻿$script:GIT_INSTALL_ROOT = Find-ProgramFiles "Git"
+$script:GIT = "${script:GIT_INSTALL_ROOT}\bin\git.exe"
+$script:GITK = "${script:GIT_INSTALL_ROOT}\cmd\gitk.exe"
 
 Function Add-GitPath {
     if (-not ([String]::IsNullOrWhiteSpace($script:GIT_INSTALL_ROOT))) {
@@ -297,7 +298,8 @@ Function Update-AllGitRepositories {
     param (
         [ValidateNotNullorEmpty()]
         [ValidateScript({Test-Path $_ -PathType 'Container'})] 
-        [string] $Path = $pwd
+        [string] $Path = $pwd,
+        [switch] $Pull
     )
 
     Write-Output "Updating from remote repository for GIT projects in this directory..."
@@ -309,7 +311,35 @@ Function Update-AllGitRepositories {
             Write-Output "== $($folder.Name)"
             Push-Location $folder.FullName
             & "$GIT" remote -v
-            & "$GIT" fetch --all
+            & "$GIT" fetch --all --recurse-submodules
+            if ($Pull) {
+                if ($(& "$GIT" remote)) {
+                    Write-Output "Pulling changes into currently checked out branch..."
+                    & "$GIT" pull
+                }
+            }
+            Pop-Location
+            Write-Output ""
+        }
+    }
+}
+
+Function Clean-AllGitRepositories {
+    param (
+        [ValidateNotNullorEmpty()]
+        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [string] $Path = $pwd
+    )
+
+    Write-Output "Cleaning all GIT repositories in this directory..."
+
+    $folders = Get-ChildItem -Path $Path | Where-Object { $_.PSIsContainer }
+
+    foreach ($folder in $folders) {
+        if (Test-Path "$(Join-Path $folder.FullName ".git")") {
+            Write-Output "== $($folder.Name)"
+            Push-Location $folder.FullName
+            & "$GIT" gc
             Pop-Location
             Write-Output ""
         }
@@ -329,6 +359,50 @@ Function Remove-LastGitCommit {
         & "$GIT" reset --soft HEAD~1
     } else {
         Write-Warning "Commit is already pushed... You will need to revert the changes instead."
+    }
+}
+
+Function Start-GitGraphicalInterface {
+    & "$GITK"
+}
+
+Function Remove-GitChanges {
+    param (
+        [ValidateNotNullorEmpty()]
+        [ValidateScript({Test-Path $_})] 
+        [string] $File
+    )
+
+    & "$GIT" checkout $File
+}
+
+Function Remove-AllGitChanges {
+    & "$GIT" reset HEAD
+    & "$GIT" stash save --keep-index
+    & "$GIT" stash drop
+}
+
+Function Show-GitInformation {
+    if (Test-Path "$(Join-Path $folder.FullName ".git")") {
+        Write-Output "== Remote URLs:"
+        & "$GIT" remote -v
+        Write-Output ""
+
+        Write-Output "== Branches:"
+        & "$GIT" branch -a
+        Write-Output ""
+
+        Write-Output "== Configuration:"
+        & "$GIT" config --local --list
+        Write-Output ""
+
+        Write-Output "== Most Recent Commit"
+        & "$GIT" --no-pager log --max-count=1
+        Write-Output ""
+
+        Write-Output "Type 'git log' for more commits, or 'git show' for full commit details."
+    } else {
+        Write-Warning "Not a git repository."
     }
 }
 
@@ -354,6 +428,10 @@ Export-ModuleMember Update-AllGitRepositories
 Export-ModuleMember Get-GitBranchesThatAreLocal
 Export-ModuleMember Get-GitBranchesThatAreRemote
 Export-ModuleMember Remove-LastGitCommit
+Export-ModuleMember Start-GitGraphicalInterface
+Export-ModuleMember Remove-GitChanges
+Export-ModuleMember Remove-AllGitChanges
+Export-ModuleMember Clean-AllGitRepositories
 
 Set-Alias gb Backup-GitRepository
 Export-ModuleMember -Alias gb
@@ -375,3 +453,12 @@ Export-ModuleMember -Alias gfetch
 
 Set-Alias gs Get-GitRepositoryStatus
 Export-ModuleMember -Alias gs
+
+Set-Alias gitk Start-GitGraphicalInterface
+Export-ModuleMember -Alias gitk
+
+Set-Alias git-gc-all Clean-AllGitRepositories
+Export-ModuleMember -Alias git-gc-all
+
+Set-Alias git-info Show-GitInformation
+Export-ModuleMember -Alias git-info
