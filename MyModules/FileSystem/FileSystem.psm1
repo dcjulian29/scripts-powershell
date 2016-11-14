@@ -110,7 +110,10 @@ Function Download-File {
     $request = [System.Net.HttpWebRequest]::Create($uri) 
     $request.set_Timeout(15000)
     $response = $request.GetResponse() 
-    $totalLength = $response.get_ContentLength() 
+    $totalLength = $response.get_ContentLength()
+    $totalMB = "{0:n2}" -f ($totalLength / 1MB)
+    
+    Write-Verbose "Total Length: $totalLength bytes"
 
     $responseStream = $response.GetResponseStream() 
 
@@ -133,14 +136,18 @@ Function Download-File {
             $to.Write($buffer, 0, $count) 
             $total += $count
 
-            if ($iteration % 10) {
+            if ($iteration % 25) {
                 [int]$percent = ([int]($total / $totalLength * 100))
                 [int]$elapsed = [int]($sw.ElapsedMilliseconds.ToString()) / 1000
 
                 if ( $elapsed -ne 0 ) {
-                    [single]$xferrate = (($total/$elapsed) / 1MB)
+                    [single]$xferrate = (($total/1MB)/$elapsed)
                 } else {
                     [single]$xferrate = 0.0
+                }
+
+                if ($percent -lt 0) {
+                    $percent = 0
                 }
 
                 if ($percent -gt 0) {
@@ -149,12 +156,14 @@ Function Download-File {
                     [int]$remainingTime = 0
                 }
 
-                $activity = "Downloading ${Url}: " + $percent + "% @ " + "{0:n2}" -f $xferrate + " MB/s"
+                $transferMB = "{0:n2}" -f ($total / 1MB)
+
+                $activity = "Downloading ${Url}: " + $percent + "% @ " + "{0:n2}" -f $xferrate + " MB/s $transferMB MB of $totalMB MB"
 
                 Write-Progress -Id 0 -Activity  $activity -status "To $Destination" `
                     -PercentComplete $percent -SecondsRemaining $remainingTime
                 
-                Write-Verbose ("Progress: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s")
+                Write-Verbose ("Progress: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s $transferMB MB of $totalMB MB")
             }
 
             $iteration++
