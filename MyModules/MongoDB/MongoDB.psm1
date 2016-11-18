@@ -1,4 +1,4 @@
-$script:$MongoDBPath = Find-ProgramFiles 'MongoDB\Server\3.2\bin'
+$script:MongoDBPath = Find-ProgramFiles 'MongoDB\Server\3.2\bin'
 
 Function Start-MongoDBServer {
     & sc.exe start MongoDB
