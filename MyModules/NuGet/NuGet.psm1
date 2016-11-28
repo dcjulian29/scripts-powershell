@@ -45,7 +45,7 @@ Function Purge-NugetPackagesFromCache {
 }
 
 Function Purge-AllNugetPackagesFromCache {
-    Purge-NugetPackages -Age 0
+    Purge-NugetPackagesFromCache -Age 0
 }
 
 Function Purge-AllNugetPackages {
