@@ -26,16 +26,19 @@ if (-not $batch) {
   
   # Changing the color of the console window doesn't take effect unless you clear the screen
   clear
-  
+
+  Write-Host "  ____                        ____  _          _ _"
+  Write-Host " |  _ \ _____      _____ _ __/ ___|| |__   ___| | |"
+  Write-Host " | |_) / _ \ \ /\ / / _ \ '__\___ \| '_ \ / _ \ | |"
+  Write-Host " |  __/ (_) \ V  V /  __/ |   ___) | | | |  __/ | |"
+  Write-Host " |_|   \___/ \_/\_/ \___|_|  |____/|_| |_|\___|_|_|"
+  Write-Host ""
   Write-Host "Loading Profile..."
 }
 
 # On domain joined machines, the home variable gets written with the "Home Directory" value
 # from Active Directory.
 Set-Variable -Name Home -Value $env:UserProfile -Force
-
-$env:PSModulePath = "$(Split-Path $profile)\Modules;$($env:PSModulePath)"
-$env:PSModulePath = "$(Split-Path $profile)\MyModules;$($env:PSModulePath)"
 
 # My modules used to be executed once for each module file where the path was updated for various
 # tools. Since they are now being dynamically loaded I have the update the path here...
