@@ -383,7 +383,7 @@ Function Remove-AllGitChanges {
 }
 
 Function Show-GitInformation {
-    if (Test-Path "$(Join-Path $folder.FullName ".git")") {
+    if (Test-Path "$(Join-Path $pwd.Path ".git")") {
         Write-Output "== Remote URLs:"
         & "$GIT" remote -v
         Write-Output ""
@@ -403,6 +403,21 @@ Function Show-GitInformation {
         Write-Output "Type 'git log' for more commits, or 'git show' for full commit details."
     } else {
         Write-Warning "Not a git repository."
+    }
+}
+
+Function Show-AllGitInformation {
+    Get-ChildItem -Directory | % { 
+        if (Test-Path "$(Join-Path $_.FullName ".git")") {
+            Push-Location $_.FullName
+            Write-Output "== $($_.Name)"
+            & "$GIT" status
+            Pop-Location
+        } else {
+            Write-Output "-- $($_.Name)"
+        }
+
+        Write-Output ""
     }
 }
 
@@ -432,6 +447,8 @@ Export-ModuleMember Start-GitGraphicalInterface
 Export-ModuleMember Remove-GitChanges
 Export-ModuleMember Remove-AllGitChanges
 Export-ModuleMember Clean-AllGitRepositories
+Export-ModuleMember Show-GitInformation
+Export-ModuleMember Show-AllGitInformation
 
 Set-Alias gb Backup-GitRepository
 Export-ModuleMember -Alias gb
@@ -462,3 +479,6 @@ Export-ModuleMember -Alias git-gc-all
 
 Set-Alias git-info Show-GitInformation
 Export-ModuleMember -Alias git-info
+
+Set-Alias status-all-projects Show-AllGitInformation
+Export-ModuleMember -Alias status-all-projects
