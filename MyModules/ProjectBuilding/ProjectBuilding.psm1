@@ -24,7 +24,12 @@ $script:vsvarPath = First-Path `
 Function Build-Project {
     $param = "$args"
     if (Test-Path build.cake) {
-        Invoke-Expression ".\build.ps1 $param"
+        if ($args.Count -eq 1) {
+            # Assume a target was passed in
+            Invoke-Expression ".\build.ps1 -target $param"
+        } else {
+            Invoke-Expression ".\build.ps1 $param"
+        }
     } elseif (Test-Path build.ps1) {
         Invoke-Psake .\build.ps1 $param
     } elseif (Test-Path build.bat) {
@@ -64,6 +69,99 @@ Function Where-MSBuild {
     $script:msbuildExe
 }
 
+Function Invoke-ArchiveProject {
+    param (
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path = $pwd
+    )
+
+    Push-Location $Path
+
+    if (Test-Path "build") {
+        Remove-Item -Path "build" -Recurse -Force
+    }
+
+    if (Test-Path "tools") {
+        Remove-Item -Path "tools" -Recurse -Force
+    }
+
+    if (Test-Path "packages") {
+        Remove-Item -Path "packages" -Recurse -Force
+    }
+
+    Get-ChildItem -Filter "*.sln" -Recurse | % { 
+        Invoke-MSBuild "$($_.FullName)" /m /t:clean /p:configuration="Debug"
+    }
+
+    Get-ChildItem -Filter "*.sln" -Recurse | % { 
+        Invoke-MSBuild "$($_.FullName)" /m /t:clean /p:configuration="Release"
+    }
+
+    $destination = $(Join-Path (Split-Path -Path $Path -Parent) `
+        -ChildPath "$(Split-Path -Path $Path.Path -Leaf).7z")
+
+    Write-Output "Archiving $(Split-Path -Path $Path.Path -Leaf)..."
+
+    $zip = Join-Path $(Find-ProgramFiles "7-Zip") -ChildPath "7z.exe"
+
+    & $zip a -t7z -mx9 -y -r $destination .
+}
+
+Function Invoke-CleanProject {
+    param (
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Project = $(Read-Host "Please provide the solution/csproj file to clean."),
+        [string]$Configuration = "Debug"
+    )
+
+    if (Test-Path "build") {
+        Remove-Item -Path "build" -Recurse -Force
+    }
+
+    if (Test-Path "tools") {
+        Remove-Item -Path "tools" -Recurse -Force
+    }
+
+    if (Test-Path "packages") {
+        Remove-Item -Path "packages" -Recurse -Force
+    }
+
+    Invoke-MSBuild "$Project" /m /t:clean /p:configuration="$Configuration"
+}
+
+Function Invoke-CleanAllProjects {
+    param (
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path = $pwd,
+        [string]$Configuration = "Debug"
+    )
+
+    Push-Location $Path
+    Get-ChildItem -Directory | % { 
+        Push-Location $_.FullName
+
+        if (Test-Path "build") {
+            Remove-Item -Path "build" -Recurse -Force
+        }
+
+        if (Test-Path "tools") {
+            Remove-Item -Path "tools" -Recurse -Force
+        }
+
+        if (Test-Path "packages") {
+            Remove-Item -Path "packages" -Recurse -Force
+        }
+
+        Get-ChildItem -Filter "*.sln" -Recurse | % { 
+            Invoke-MSBuild "$($_.FullName)" /m /t:clean /p:configuration="$Configuration"
+        }
+
+        Pop-Location
+    }
+
+    Pop-Location
+}
+
 ##################################################################################################
 
 Export-ModuleMember Build-Project
@@ -71,6 +169,10 @@ Export-ModuleMember Invoke-MSBuild
 Export-ModuleMember Load-VisualStudioVariables
 Export-ModuleMember Where-VisualStudioVariables
 Export-ModuleMember Where-MSBuild
+Export-ModuleMember Invoke-ArchiveProject
+Export-ModuleMember Invoke-CleanProject
+Export-ModuleMember Invoke-CleanAllProjects
+
 
 Set-Alias bp build-project
 Export-ModuleMember -Alias bp
@@ -83,3 +185,12 @@ Export-ModuleMember -Alias vsvars32
 
 Set-Alias Load-VSVariables Load-VisualStudioVariables
 Export-ModuleMember -Alias Load-VSVariables
+
+Set-Alias project-archive Invoke-ArchiveProject
+Export-ModuleMember -Alias project-archive
+
+Set-Alias project-clean Invoke-CleanProject
+Export-ModuleMember -Alias project-clean
+
+Set-Alias project-clean-all Invoke-CleanAllProject
+Export-ModuleMember -Alias project-clean-all
