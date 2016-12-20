@@ -123,6 +123,7 @@ Export-ModuleMember Start-VisualStudio2013
 Export-ModuleMember Start-VisualStudio2015
 Export-ModuleMember Start-VisualStudio2017
 Export-ModuleMember Find-VisualStudioSolutions
+Export-ModuleMember Start-VisualStudioCode
 
 Set-Alias vs2013 Start-VisualStudio2013
 Export-ModuleMember -Alias vs2013
