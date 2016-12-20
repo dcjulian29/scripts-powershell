@@ -110,6 +110,12 @@ Function Start-VisualStudio2013 {
     Start-VisualStudio $Project 2013 -AsAdmin $AsAdmin
 }
 
+Function Start-VisualStudioCode {
+    $code = (Find-ProgramFiles "Microsoft VS Code\Code.exe")
+
+    & $code $args
+}
+
 ###################################################################################################
 
 Export-ModuleMember Start-VisualStudio
@@ -129,3 +135,6 @@ Export-ModuleMember -Alias vs2017
 
 Set-Alias vs-solutions Find-VisualStudioSolutions
 Export-ModuleMember -Alias vs-solutions
+
+Set-Alias code Start-VisualStudioCode
+Export-ModuleMember -Alias code
