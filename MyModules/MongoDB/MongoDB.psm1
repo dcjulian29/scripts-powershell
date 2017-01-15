@@ -1,11 +1,9 @@
-$script:MongoDBPath = Find-ProgramFiles 'MongoDB\Server\3.2\bin'
-
 Function Start-MongoDBServer {
     & sc.exe start MongoDB
 }
 
 Function Start-MongoDBClient {
-    & "$MongoDBPath\mongo.exe"
+    & "$(Find-MongoDbPath)\mongo.exe"
 }
 
 Function Stop-MongoDBServer {
@@ -28,7 +26,7 @@ Function Import-MongoCollectionFromCsv {
 
     $parameters = "--type csv --headerline $CsvFile -d $Database -c $Collection"
  
-    & "$MongoDBPath\mongoimport.exe $parameters"
+    & "$(Find-MongoDbPath)\mongoimport.exe $parameters"
 }
 
 Function Import-MongoCollectionFromDump {
@@ -42,12 +40,11 @@ Function Import-MongoCollectionFromDump {
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Collection
-
     )
 
     $parameters = "--headerline $CsvFile -d $Database -c $Collection"
  
-    & "$MongoDBPath\mongoimport.exe $parameters"
+    & "$(Find-MongoDbPath)\mongoimport.exe $parameters"
 }
 
 Function Export-MongoCollection {
@@ -61,12 +58,11 @@ Function Export-MongoCollection {
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Collection
-
     )
 
     $parameters = "--db $Database --collection $Collection --out $JsonFile"
  
-    & "$MongoDBPath\mongoexport.exe $parameters"
+    & "$(Find-MongoDbPath)\mongoexport.exe $parameters"
 }
 
 ##############################################################################

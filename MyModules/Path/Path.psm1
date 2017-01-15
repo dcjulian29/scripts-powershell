@@ -107,19 +107,9 @@ Function Find-JavaPath {
 }
 
 Function Find-MongoDbPath {
-    $mongo = ""
-    
-    if (Test-Path "C:\Program Files\MongoDB\bin")
-    {
-        $mongo = "C:\Program Files\MongoDB\bin" 
-    }
-
-    if (Test-Path "C:\tools\apps\mongodb")
-    {
-        $mongo = "C:\tools\apps\mongodb"
-    }
-    
-    $mongodb
+    First-Path `
+        (Find-ProgramFiles 'MongoDB\Server\3.4\bin') `
+        (Find-ProgramFiles 'MongoDB\Server\3.2\bin')    
 }
 
 Function Find-NodeJsPath {
