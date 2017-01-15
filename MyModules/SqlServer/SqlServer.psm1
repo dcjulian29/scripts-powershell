@@ -1,11 +1,12 @@
 ﻿Function Find-SqlBinaries {
     First-Path `
-        (Find-ProgramFiles 'Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\Binn') `
-        (Find-ProgramFiles 'Microsoft SQL Server\MSSQL12.MSSQLSERVER\MSSQL\Binn')
+        (Find-ProgramFiles 'Microsoft SQL Server\ClientSDK\ODBC\130\Tool\Binn') `
+        (Find-ProgramFiles 'Microsoft SQL Server\120\Tools\Binn') `
+        (Find-ProgramFiles 'Microsoft SQL Server\110\Tools\Binn')
 }
 
 Function Invoke-SqlCommand {
-    & $(Find-SqlBinaries) $args
+    & "$(Find-SqlBinaries)\sqlcmd.exe" $args
 }
 
 Function Start-MSSqlServer {
