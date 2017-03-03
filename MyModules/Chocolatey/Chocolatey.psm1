@@ -92,13 +92,11 @@ Function Update-ChocolateyPackage {
     )
 
     if (Assert-Elevation) {
-        $choco = "${env:ChocolateyInstall}\chocolateyInstall\chocolatey.ps1"
-
         if ($installArguments) {
             $args = " -installArguments $installArguments"
         }
 
-        Invoke-Expression "$choco update $package$args -y"
+        Invoke-Expression "choco.exe update $package$args -y"
     }
 }
 
@@ -111,8 +109,6 @@ Function Install-ChocolateyPackage {
     )
 
     if (Assert-Elevation) {
-        $choco = "${env:ChocolateyInstall}\chocolateyInstall\chocolatey.ps1"
-
         if ($version.Length) {
             $args = $args + " -version $version"
         }
@@ -121,7 +117,7 @@ Function Install-ChocolateyPackage {
             $args = $args + " -installArguments $installArguments"
         }
 
-        Invoke-Expression "$choco install $package$args -y"
+        Invoke-Expression "choco.exe install $package$args -y"
     }
 }
 
@@ -134,8 +130,6 @@ Function Uninstall-ChocolateyPackage {
     )
 
     if (Assert-Elevation) {
-        $choco = "${env:ChocolateyInstall}\chocolateyInstall\chocolatey.ps1"
-
         if ($version) {
             $args = $args + " -version $version"
         }
@@ -144,7 +138,7 @@ Function Uninstall-ChocolateyPackage {
             $args = $args + " -installArguments $installArguments"
         }
 
-        Invoke-Expression "$choco uninstall $package$args -y"
+        Invoke-Expression "choco.exe uninstall $package$args -y"
     }
 }
 
