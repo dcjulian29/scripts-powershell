@@ -123,25 +123,26 @@ Function Download-File {
         $Url = "from $($request.Address.Host)"
     }
     
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+
+    [byte[]]$buffer = New-Object byte[] 1MB
+    [long]$total = [int]$count = [int]$iteration = 0
+
+    Write-Progress -Id 0 `
+        -Activity "Downloading ${Url}: 0% @ 0.00 MB/s" -Status "To $Destination" -PercentComplete 0
+
     try {
-        $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        [byte[]]$buffer = New-Object byte[] 10MB
-        [long]$total = [int]$count = [int]$iteration = 0
-
-        Write-Progress -Id 0 `
-            -Activity "Downloading ${Url}: 0% @ 0.00 MB/s" -Status "To $Destination" -PercentComplete 0
-
         do {
             $count = $responseStream.Read($buffer,0,$buffer.length) 
             $to.Write($buffer, 0, $count) 
             $total += $count
 
             if ($iteration % 25) {
-                [int]$percent = ([int]($total / $totalLength * 100))
-                [int]$elapsed = [int]($sw.ElapsedMilliseconds.ToString()) / 1000
+                [int]$percent = ($total / $totalLength * 100)
+                [int]$elapsed = ($sw.ElapsedMilliseconds / 1000)
 
                 if ( $elapsed -ne 0 ) {
-                    [single]$xferrate = (($total/1MB)/$elapsed)
+                    [single]$xferrate = (($total / 1MB) / $elapsed)
                 } else {
                     [single]$xferrate = 0.0
                 }
@@ -150,30 +151,20 @@ Function Download-File {
                     $percent = 0
                 }
 
-                if ($percent -gt 0) {
-                    [int]$remainingTime = ((($elapsed / $percent) * 100) - $elapsed)
-                } else {
-                    [int]$remainingTime = 0
-                }
-
                 $transferMB = "{0:n2}" -f ($total / 1MB)
 
-                $activity = "Downloading ${Url}: " + $percent + "% @ " + "{0:n2}" -f $xferrate + " MB/s $transferMB MB of $totalMB MB"
+                $activity = "Downloading ${Url}: $percent% @ {0:n2} MB/s $transferMB MB of $totalMB MB " -f $xferrate
 
-                Write-Progress -Id 0 -Activity  $activity -status "To $Destination" `
-                    -PercentComplete $percent -SecondsRemaining $remainingTime
-                
-                Write-Verbose ("Progress: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s $transferMB MB of $totalMB MB")
+                Write-Progress -Id 0 -Activity  $activity -status "To $Destination" -PercentComplete $percent
             }
 
             $iteration++
         } while ($count -gt 0)
 
         Write-Progress -Id 0 -Activity "Downloading ${Url}" -Completed -Status "All done."
-
+    } finally {
         $sw.Stop()
         $sw.Reset()
-    } finally {
         $to.Flush()
         $to.Close() 
         $to.Dispose() 
