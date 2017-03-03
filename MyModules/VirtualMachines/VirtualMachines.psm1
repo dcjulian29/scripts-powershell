@@ -380,6 +380,28 @@ Function Make-UnattendForStaticIp {
     Dismount-DiskImage -ImagePath $fullPath
 }
 
+Function Inject-FileToVM {
+    [Cmdletbinding()]
+    param (
+        [string] $vhdxFile,
+        [string] $File,
+        [string] $RelativeDestination
+    )
+
+    if (-not $(Assert-Elevation)) { return }
+
+    $fullPath = Get-FullFilePath $vhdxFile
+    $Path = Get-FullFilePath $File
+
+    $drive = Mount-VHDX $fullPath
+
+    Write-Verbose "VHDX file mounted on $($drive)..."
+
+    Copy-File -Path $File -Destination "$drive\$RelativeDestination"
+
+    Dismount-DiskImage -ImagePath $fullPath
+}
+
 Function Inject-StartLayout {
     [Cmdletbinding()]
     param (
@@ -652,8 +674,86 @@ Function Install-DevVmPackage {
     }
 }
 
+Function Create-DevVM {
+    $StartScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
+    $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.xml"
+    $BaseImage = "$((Get-VMHost).VirtualHardDiskPath)\Win10Base.vhdx"
+    $Computer = "$(($env:COMPUTERNAME).ToUpper())DEV"
+    $vhdx = "$Computer.vhdx"
+    $password = $(Get-Credential -Message "Enter Password for VM...")
+    $startLayout = "$($env:SYSTEMDRIVE)\home\vm\etc\StartScreenLayout.xml"
+
+    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+
+    $vm = Get-VM -Name $computerName -ErrorAction SilentlyContinue
+
+    if ($vm) {
+        if ($vm.state -ne "Off") {
+            $vm | Stop-VM
+        }
+    
+        $vm | Remove-VM
+    }
+
+    if (Test-Path "$vhdx") {
+        Remove-Item -Confirm -Path $vhdx
+    }
+
+    if (Test-Path "$vhdx") {
+        throw "VHDX File Still Exists! Can't Continue..."
+    }
+
+    New-DifferencingVHDX -referenceDisk $Base10 -vhdxFile "$vhdx"
+
+    $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)" 
+    Copy-Item -Path $unattend -Destination $unattendFile  -Force
+
+    (Get-Content $unattendFile).replace("P@ssw0rd", $password.GetNetworkCredential().password) `
+        | Set-Content $unattendFile
+
+    Make-UnattendForDhcpIp -vhdxFile $vhdx -unattendTemplate $unattendFile -computerName $computerName
+
+    Inject-VMStartUpScriptFile -vhdxFile $vhdx -scriptFile $StartScript -argument "myvm-development"
+
+    Inject-StartLayout -vhdxFile $vhdx -layoutFile $startLayout
+
+    $Destination = "${env:SystemRoot}\Setup\Scripts"
+    $Source = "${env:SYSTEMDRIVE}\etc\vm"
+    $c = "$Source\${env:COMPUTERNAME}DEV"
+
+    Inject-FileToVM -vhdxFile $vhdx -File "$c.id" -RelativeDestination $Destination
+    Inject-FileToVM -vhdxFile $vhdx -File "$Source\server.id" -RelativeDestination $Destination
+    Inject-FileToVM -vhdxFile $vhdx -File "$Source\server.name" -RelativeDestination $Destination
+    Inject-FileToVM -vhdxFile $vhdx -File "$c.key" -RelativeDestination $Destination
+    Inject-FileToVM -vhdxFile $vhdx -File "$c.cert" -RelativeDestination $Destination
+
+    $numOfCpu = $(Get-WmiObject -class Win32_processor | Select-Object NumberOfLogicalProcessors).NumberOfLogicalProcessors / 2
+    $maxMem = $(Get-WMIObject -class Win32_PhysicalMemory | Measure-Object -Property capacity -Sum `
+        | Select-Object @{N="TotalRam"; E={$_.Sum}}).TotalRam * .60
+
+    $maxMem = [Math]::Round($maxMem)
+    $maxMem = $maxMem - ($maxMem % 2MB)
+
+    if ($maxMem -gt 8GB) { $maxMem = 8GB }
+
+    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName `
+        -memory 2GB -maximumMemory $maxMem -virtualSwitch "VTRUNK" -cpu $numOfCpu -verbose
+
+    Set-VMMemory -VMName $computerName -MaximumBytes $maxMem -MinimumBytes 1GB
+    Set-VM -Name $computerName -AutomaticStartAction Nothing
+    Set-Vm -Name $computerName -AutomaticStopAction Save    
+
+    Pop-Location
+
+    Start-VM -VMName $computerName
+
+    Start-Sleep 5
+
+    & vmconnect.exe localhost $computerName
+}
 
 Export-ModuleMember Install-DevVmPackage
+Export-ModuleMember Create-DevVM
 Export-ModuleMember Convert-WindowsImage
 Export-ModuleMember Get-HyperVReport
 Export-ModuleMember New-SystemVHDX
@@ -663,6 +763,7 @@ Export-ModuleMember New-NanoServerVhdx
 Export-ModuleMember Connect-IsoToVirtual
 Export-ModuleMember Make-UnattendForDhcpIp
 Export-ModuleMember Make-UnattendForStaticIp
+Export-ModuleMember Inject-FileToVM
 Export-ModuleMember Inject-StartLayout
 Export-ModuleMember Inject-VMStartUpScriptFile
 Export-ModuleMember Inject-VMStartUpScriptBlock
