@@ -385,7 +385,7 @@ Function Inject-FileToVM {
     param (
         [string] $vhdxFile,
         [string] $File,
-        [string] $RelativeDestination
+        [string] $Destination
     )
 
     if (-not $(Assert-Elevation)) { return }
@@ -397,7 +397,7 @@ Function Inject-FileToVM {
 
     Write-Verbose "VHDX file mounted on $($drive)..."
 
-    Copy-File -Path $File -Destination "$drive\$RelativeDestination"
+    Copy-Item -Path $Path -Destination "$drive\$Destination"
 
     Dismount-DiskImage -ImagePath $fullPath
 }
@@ -677,15 +677,15 @@ Function Install-DevVmPackage {
 Function Create-DevVM {
     $StartScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
     $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.xml"
-    $BaseImage = "$((Get-VMHost).VirtualHardDiskPath)\Win10Base.vhdx"
-    $Computer = "$(($env:COMPUTERNAME).ToUpper())DEV"
-    $vhdx = "$Computer.vhdx"
+    $BaseImage = "$((Get-VMHost).VirtualHardDiskPath)Win10Base.vhdx"
+    $ComputerName = "$(($env:COMPUTERNAME).ToUpper())DEV"
+    $vhdx = "$ComputerName.vhdx"
     $password = $(Get-Credential -Message "Enter Password for VM...")
     $startLayout = "$($env:SYSTEMDRIVE)\home\vm\etc\StartScreenLayout.xml"
 
     Push-Location $((Get-VMHost).VirtualHardDiskPath)
 
-    $vm = Get-VM -Name $computerName -ErrorAction SilentlyContinue
+    $vm = Get-VM -Name $ComputerName -ErrorAction SilentlyContinue
 
     if ($vm) {
         if ($vm.state -ne "Off") {
@@ -703,7 +703,7 @@ Function Create-DevVM {
         throw "VHDX File Still Exists! Can't Continue..."
     }
 
-    New-DifferencingVHDX -referenceDisk $Base10 -vhdxFile "$vhdx"
+    New-DifferencingVHDX -referenceDisk $BaseImage -vhdxFile "$vhdx"
 
     $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)" 
     Copy-Item -Path $unattend -Destination $unattendFile  -Force
@@ -711,21 +711,21 @@ Function Create-DevVM {
     (Get-Content $unattendFile).replace("P@ssw0rd", $password.GetNetworkCredential().password) `
         | Set-Content $unattendFile
 
-    Make-UnattendForDhcpIp -vhdxFile $vhdx -unattendTemplate $unattendFile -computerName $computerName
+    Make-UnattendForDhcpIp -vhdxFile $vhdx -unattendTemplate $unattendFile -computerName $ComputerName
 
     Inject-VMStartUpScriptFile -vhdxFile $vhdx -scriptFile $StartScript -argument "myvm-development"
 
     Inject-StartLayout -vhdxFile $vhdx -layoutFile $startLayout
 
-    $Destination = "${env:SystemRoot}\Setup\Scripts"
-    $Source = "${env:SYSTEMDRIVE}\etc\vm"
+    $Destination = "Windows\Setup\Scripts"
+    $Source = "${env:SYSTEMDRIVE}\etc\syncthing"
     $c = "$Source\${env:COMPUTERNAME}DEV"
 
-    Inject-FileToVM -vhdxFile $vhdx -File "$c.id" -RelativeDestination $Destination
-    Inject-FileToVM -vhdxFile $vhdx -File "$Source\server.id" -RelativeDestination $Destination
-    Inject-FileToVM -vhdxFile $vhdx -File "$Source\server.name" -RelativeDestination $Destination
-    Inject-FileToVM -vhdxFile $vhdx -File "$c.key" -RelativeDestination $Destination
-    Inject-FileToVM -vhdxFile $vhdx -File "$c.cert" -RelativeDestination $Destination
+    Inject-FileToVM -vhdxFile $vhdx -File "$c.id" -Destination $Destination
+    Inject-FileToVM -vhdxFile $vhdx -File "$Source\server.id" -Destination $Destination
+    Inject-FileToVM -vhdxFile $vhdx -File "$Source\server.name" -Destination $Destination
+    Inject-FileToVM -vhdxFile $vhdx -File "$c.key" -Destination $Destination
+    Inject-FileToVM -vhdxFile $vhdx -File "$c.cert" -Destination $Destination
 
     $numOfCpu = $(Get-WmiObject -class Win32_processor | Select-Object NumberOfLogicalProcessors).NumberOfLogicalProcessors / 2
     $maxMem = $(Get-WMIObject -class Win32_PhysicalMemory | Measure-Object -Property capacity -Sum `
@@ -736,20 +736,20 @@ Function Create-DevVM {
 
     if ($maxMem -gt 8GB) { $maxMem = 8GB }
 
-    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName `
+    New-VirtualMachine -vhdxFile $vhdx -computerName $ComputerName `
         -memory 2GB -maximumMemory $maxMem -virtualSwitch "VTRUNK" -cpu $numOfCpu -verbose
 
-    Set-VMMemory -VMName $computerName -MaximumBytes $maxMem -MinimumBytes 1GB
-    Set-VM -Name $computerName -AutomaticStartAction Nothing
-    Set-Vm -Name $computerName -AutomaticStopAction Save    
+    Set-VMMemory -VMName $ComputerName -MaximumBytes $maxMem -MinimumBytes 1GB
+    Set-VM -Name $ComputerName -AutomaticStartAction Nothing
+    Set-Vm -Name $ComputerName -AutomaticStopAction Save    
 
     Pop-Location
 
-    Start-VM -VMName $computerName
+    Start-VM -VMName $ComputerName
 
     Start-Sleep 5
 
-    & vmconnect.exe localhost $computerName
+    & vmconnect.exe localhost $ComputerName
 }
 
 Export-ModuleMember Install-DevVmPackage
