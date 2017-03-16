@@ -33,7 +33,7 @@ Function Load-OctopusProfile {
 }
 
 Function Invoke-Octopus {
-    & "C:\tools\apps\octopus\octo.exe" $args
+    & "C:\tools\apps\octopusdeploy\octo.exe" $args
 }
 
 Function Create-OctopusRelease {
