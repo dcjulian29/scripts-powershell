@@ -682,7 +682,7 @@ Function Install-DevVmPackage {
 
     Get-Module -ListAvailable | Out-Null
 
-    Invoke-Expression "$env:ChocolateyInstall\chocolateyinstall\chocolatey.ps1 install $package -y"
+    Invoke-Expression "choco.exe install $package -y"
 
     Stop-Transcript
 
