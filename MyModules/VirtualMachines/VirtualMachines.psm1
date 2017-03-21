@@ -705,7 +705,7 @@ Function Create-DevVM {
     $ComputerName = "$(($env:COMPUTERNAME).ToUpper())DEV"
     $vhdx = "$ComputerName.vhdx"
     $password = $(Get-Credential -Message "Enter Password for VM...")
-    $startLayout = "$($env:SYSTEMDRIVE)\home\vm\etc\StartScreenLayout.xml"
+    $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
 
     Push-Location $((Get-VMHost).VirtualHardDiskPath)
 
