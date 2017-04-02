@@ -666,12 +666,9 @@ Function Install-DevVmPackage {
         [string] $package
     )
 
-    $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.log"
+    $date = Get-Date -Format "yyyyMMdd-hhmm"
 
-    if (Test-Path "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.log") {
-        Move-Item "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.log" `
-            "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.old.log" -Force
-    }
+    $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.$date.log"
 
     Start-Transcript $logFile -Verbose
 
@@ -687,10 +684,18 @@ Function Install-DevVmPackage {
     Stop-Transcript
 
     # Now lets check for errors...
-    if (Get-Content $logFile | Select-String -Pattern "Write-Error") {
+    if (Get-Content $logFile | Select-String -Pattern "packages failed.") {
         Write-Warning "An error occurred during the last package ($package) install..."
         Write-Warning "Review the log file: $logFile"
         Write-Warning "And then decide whether to continue..."
+
+        Read-Host "Press Enter to continue with next package"
+    }
+
+    if (Test-PendingReboot) {
+        Write-Warning "One of the packages recently installed has set the PendingReboot flag..."
+        Write-Warning "This may cause future packages to fail silently if they check this flag."
+        Write-Warning "You should probably exit reboot this computer before proceedint with next package..."
 
         Read-Host "Press Enter to continue with next package"
     }
