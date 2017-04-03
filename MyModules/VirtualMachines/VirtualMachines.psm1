@@ -666,25 +666,27 @@ Function Install-DevVmPackage {
         [string] $package
     )
 
-    $date = Get-Date -Format "yyyyMMdd-hhmm"
+    powershell.exe -Command {
+        $date = Get-Date -Format "yyyyMMdd-hhmm"
 
-    $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.$date.log"
+        $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.$date.log"
 
-    Start-Transcript $logFile -Verbose
+        Start-Transcript $logFile -Verbose
 
-    # For some reason, my PSModules environment keeps getting reset installing packages,
-    # so let explictly add it each and everytime
-    $env:PSModulePath = "$(Split-Path $profile)\Modules;$($env:PSModulePath)"
-    $env:PSModulePath = "$(Split-Path $profile)\MyModules;$($env:PSModulePath)"
+        # For some reason, my PSModules environment keeps getting reset installing packages,
+        # so let explictly add it each and everytime
+        $env:PSModulePath = "$(Split-Path $profile)\Modules;$($env:PSModulePath)"
+        $env:PSModulePath = "$(Split-Path $profile)\MyModules;$($env:PSModulePath)"
 
-    Get-Module -ListAvailable | Out-Null
+        Get-Module -ListAvailable | Out-Null
 
-    Invoke-Expression "choco.exe install $package -y"
+        Invoke-Expression "choco.exe install $package -y"
 
-    Stop-Transcript
+        Stop-Transcript
+    }
 
     # Now lets check for errors...
-    if (Get-Content $logFile | Select-String -Pattern "packages failed.") {
+    if (-not (Get-Content $logFile | Select-String -Pattern " 0 packages failed.")) {
         Write-Warning "An error occurred during the last package ($package) install..."
         Write-Warning "Review the log file: $logFile"
         Write-Warning "And then decide whether to continue..."
@@ -695,9 +697,9 @@ Function Install-DevVmPackage {
     if (Test-PendingReboot) {
         Write-Warning "One of the packages recently installed has set the PendingReboot flag..."
         Write-Warning "This may cause future packages to fail silently if they check this flag."
-        Write-Warning "You should probably exit reboot this computer before proceedint with next package..."
 
-        Read-Host "Press Enter to continue with next package"
+        Read-Host "Press Enter to Restart Computer"
+        Restart-Computer -Force -Delay 0 -Wait
     }
 }
 
