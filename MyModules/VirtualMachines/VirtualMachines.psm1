@@ -666,12 +666,12 @@ Function Install-DevVmPackage {
         [string] $package
     )
 
+    $date = Get-Date -Format "yyyyMMdd-hhmm"
+
+    $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$($args[0]).$date.log"
+
     powershell.exe -Command {
-        $date = Get-Date -Format "yyyyMMdd-hhmm"
-
-        $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.$date.log"
-
-        Start-Transcript $logFile -Verbose
+        Start-Transcript $args[1]
 
         # For some reason, my PSModules environment keeps getting reset installing packages,
         # so let explictly add it each and everytime
@@ -680,10 +680,10 @@ Function Install-DevVmPackage {
 
         Get-Module -ListAvailable | Out-Null
 
-        Invoke-Expression "choco.exe install $package -y"
+        Invoke-Expression "choco.exe install $($args[0]) -y"
 
         Stop-Transcript
-    }
+    } -args $package $logFile
 
     # Now lets check for errors...
     if (-not (Get-Content $logFile | Select-String -Pattern " 0 packages failed.")) {
@@ -699,7 +699,7 @@ Function Install-DevVmPackage {
         Write-Warning "This may cause future packages to fail silently if they check this flag."
 
         Read-Host "Press Enter to Restart Computer"
-        Restart-Computer -Force -Delay 0 -Wait
+        Restart-Computer -Force
     }
 }
 
