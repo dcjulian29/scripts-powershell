@@ -33,7 +33,7 @@ Function Find-InstalledChocolateyPackages {
 
 Function Update-AllChocolateyPackages {
     if (Assert-Elevation) {
-        Invoke-Expression "choco.exe update all -y"
+        Invoke-Expression "choco.exe upgrade all -y"
     }
 }
 
@@ -49,7 +49,7 @@ Function Update-ChocolateyPackage {
             $args = " -installArguments $installArguments"
         }
 
-        Invoke-Expression "choco.exe update $package$args -y"
+        Invoke-Expression "choco.exe upgrade $package$args -y"
     }
 }
 

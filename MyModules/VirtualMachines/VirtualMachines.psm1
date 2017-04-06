@@ -666,17 +666,19 @@ Function Install-DevVmPackage {
         [string] $package
     )
 
+    $date = Get-Date -Format "yyyyMMdd-hhmm"
+
+    $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.$date.log"
+
     $Command = @"
-        $date = Get-Date -Format "yyyyMMdd-hhmm"
+        `$logFile = "$logFile"
 
-        $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.$date.log"
-
-        Start-Transcript $logFile
+        Start-Transcript `$logFile
 
         # For some reason, my PSModules environment keeps getting reset installing packages,
         # so let explictly add it each and everytime
-        $env:PSModulePath = "$(Split-Path $profile)\Modules;$($env:PSModulePath)"
-        $env:PSModulePath = "$(Split-Path $profile)\MyModules;$($env:PSModulePath)"
+        `$env:PSModulePath = "`$(Split-Path `$profile)\Modules;`$(`$env:PSModulePath)"
+        `$env:PSModulePath = "`$(Split-Path `$profile)\MyModules;`$(`$env:PSModulePath)"
 
         Get-Module -ListAvailable | Out-Null
 
