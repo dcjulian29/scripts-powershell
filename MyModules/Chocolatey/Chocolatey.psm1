@@ -110,7 +110,7 @@ Function Make-ChocolateyPackage {
         [string] $NuspecFile = "package.nuspec"
     )
 
-    $nuget = "${env:ChocolateyInstall}\chocolateyinstall\nuget.exe"
+    $nuget = "C:\ProgramData\chocolatey\lib\NuGet.CommandLine\tools\nuget.exe"
     $options = "-Verbosity detailed -NoPackageAnalysis -NonInteractive -NoDefaultExcludes"
 
     Invoke-Expression "$nuget pack ""$NuspecFile"" $options"

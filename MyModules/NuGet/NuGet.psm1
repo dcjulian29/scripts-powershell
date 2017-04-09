@@ -28,7 +28,7 @@ Function Restore-NugetPackages {
 }
 
 Function Invoke-Nuget {
-    & "C:\tools\apps\nuget\nuget.exe" $args
+    & "C:\ProgramData\chocolatey\lib\NuGet.CommandLine\tools\nuget.exe" $args
 }
 
 Function Purge-NugetPackagesFromCache {
