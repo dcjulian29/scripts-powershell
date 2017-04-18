@@ -33,7 +33,7 @@ Function Load-OctopusProfile {
 }
 
 Function Invoke-Octopus {
-    & "C:\tools\apps\octopusdeploy\octo.exe" $args
+    & "$env:ChocolateyInstall\bin\octo.exe" $args
 }
 
 Function Create-OctopusRelease {
