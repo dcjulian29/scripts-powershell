@@ -1,25 +1,14 @@
 ﻿Function Find-UpgradableChocolateyPackages {
     Write-Host "Examining Installed Packages..."
-    $installed = choco.exe list -r -localonly
+    $packages = choco.exe upgrade all -r -whatif
 
-    foreach ($line in $installed) {
-        $localVersion = $line.Split('|')[1]
-        $package = $line.Split('|')[0]
+    foreach ($package in $packages) {
+        $Name = $package.Split('|')[0]
+        $localVersion = $package.Split('|')[1]
+        $remoteVersion = $package.Split('|')[2]
 
-        Write-Progress -Activity "Checking $package..."
-            
-        $remotePackage = choco.exe list -r --exact $package
-
-        if ($remotePackage.Length -gt 0) {
-            $remoteVersion = ($remotePackage).Split('|')[1]
-
-            if ($remoteVersion) {
-                if ($localVersion -ne $remoteVersion) {
-                    "{0,-25}Newer version available: $remoteVersion (installed: $localVersion)" -f $package
-                }
-            }
-        } else {
-            "{0,-25}Remote package removed." -f $package
+        if ($localVersion -ne $remoteVersion) {
+            "{0,-25}Newer version available: $remoteVersion (installed: $localVersion)" -f $Name
         }
     }
 }
