@@ -33,7 +33,8 @@ Function Load-OctopusProfile {
 }
 
 Function Invoke-Octopus {
-    & "$env:ChocolateyInstall\bin\octo.exe" $args
+    Start-Process -FilePath "$env:ChocolateyInstall\bin\octo.exe" `
+        -ArgumentList $args -NoNewWindow -Wait
 }
 
 Function Create-OctopusRelease {
@@ -44,9 +45,7 @@ Function Create-OctopusRelease {
         [String]$PackageVersion
     )
 
-    $profile = Get-OctopusProfileArguments
-
-    $parameters = "--project $Project"
+    $parameters = "$(Get-OctopusProfileArguments) --project $Project"
 
     if ($Version) {
         $parameters += " --version $Version"
@@ -56,10 +55,7 @@ Function Create-OctopusRelease {
         $parameters += " --packageversion $PackageVersion"
     }
 
-    if ($profile) {
-        $parameters += " $profile"
-        Invoke-Octopus create-release $parameters
-    }
+    Invoke-Octopus create-release $parameters
 }
 
 Function Deploy-OctopusRelease {
@@ -72,18 +68,13 @@ Function Deploy-OctopusRelease {
         [String]$Environment
     )
 
-    $profile = Get-OctopusProfileArguments
-
-    $parameters = "--project $Project"
+    $parameters = "$(Get-OctopusProfileArguments) --project $Project"
 
     $parameters += " --releaseNumber $Version"
 
     $parameters += " --deployto $Environment"
 
-    if ($profile) {
-        $parameters += " $profile"
-        Invoke-Octopus deploy-release --progress $parameters
-    }
+    Invoke-Octopus deploy-release --progress $parameters
 }
 
 Function Push-OctopusPackage {
@@ -93,12 +84,21 @@ Function Push-OctopusPackage {
         [String]$Package
     )
 
-    $profile = Get-OctopusProfileArguments
+    $parameters = "push $(Get-OctopusProfileArguments) --package $Package"
+    $parameters
+    Invoke-Octopus $parameters
+}
 
-    if ($profile) {
-        $parameters = "--package $Package $profile"
-        Invoke-Octopus push $parameters
-    }
+Function Make-OctopusPackage {
+    Param (
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $NuspecFile = "package.nuspec"
+    )
+
+    $nuget = "C:\ProgramData\chocolatey\lib\NuGet.CommandLine\tools\nuget.exe"
+    $options = "-NoPackageAnalysis -NonInteractive -NoDefaultExcludes"
+
+    Invoke-Expression "$nuget pack ""$NuspecFile"" $options"
 }
 
 ###################################################################################################
@@ -109,6 +109,7 @@ Export-ModuleMember Invoke-Octopus
 Export-ModuleMember Create-OctopusRelease
 Export-ModuleMember Deploy-OctopusRelease
 Export-ModuleMember Push-OctopusPackage
+Export-ModuleMember Make-OctopusPackage
 
 Set-Alias octopus-profile-clear Clear-OctopusProfile
 Export-ModuleMember -Alias octopus-profile-clear
