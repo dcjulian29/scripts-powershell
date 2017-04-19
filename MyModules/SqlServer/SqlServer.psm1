@@ -6,7 +6,8 @@
 }
 
 Function Invoke-SqlCommand {
-    & "$(Find-SqlBinaries)\sqlcmd.exe" $args
+    Start-Process -FilePath "$(Find-SqlBinaries)\sqlcmd.exe" `
+        -ArgumentList $args -NoNewWindow -Wait
 }
 
 Function Start-MSSqlServer {
