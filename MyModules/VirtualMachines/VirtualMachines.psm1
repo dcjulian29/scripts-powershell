@@ -553,7 +553,7 @@ Function StopAndRemoveVM($ComputerName) {
     }
 }
 
-Function Create-DevVM {
+Function New-DevVM {
     $ErrorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
     $StartScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
@@ -621,7 +621,7 @@ Function Create-DevVM {
     $ErrorActionPreference = $ErrorPreviousAction
 }
 
-Function Create-WorkstationVM {
+Function New-WorkstationVM {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -673,7 +673,7 @@ Function Create-WorkstationVM {
     $ErrorActionPreference = $ErrorPreviousAction
 }
 
-Function Create-ServerVM {
+Function New-ServerVM {
     param (
         [string]$ComputerName,
         [Int32]$OsVersion,
@@ -710,27 +710,27 @@ Function Create-ServerVM {
     $ErrorActionPreference = $ErrorPreviousAction
 }
 
-Function Create-Server2012VM {
+Function New-Server2012VM {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         $ComputerName
     )
 
-    Create-ServerVM $ComputerName 2012
+    New-ServerVM $ComputerName 2012
 }
 
-Function Create-Server2016VM {
+Function New-Server2016VM {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         $ComputerName
     )
 
-    Create-ServerVM $ComputerName 2016
+    New-ServerVM $ComputerName 2016
 }
 
-Function Create-VMFromISO {
+Function New-VMFromISO {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -772,11 +772,11 @@ Function Create-VMFromISO {
 }
 
 Export-ModuleMember Install-DevVmPackage
-Export-ModuleMember Create-DevVM
-Export-ModuleMember Create-WorkstationVM
-Export-ModuleMember Create-Server2012VM
-Export-ModuleMember Create-Server2016VM
-Export-ModuleMember Create-VMFromISO
+Export-ModuleMember New-DevVM
+Export-ModuleMember New-WorkstationVM
+Export-ModuleMember New-Server2012VM
+Export-ModuleMember New-Server2016VM
+Export-ModuleMember New-VMFromISO
 
 Export-ModuleMember Convert-WindowsImage
 Export-ModuleMember Get-HyperVReport
