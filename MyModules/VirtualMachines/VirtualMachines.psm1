@@ -531,6 +531,28 @@ Function Install-DevVmPackage {
     }
 }
 
+Function StopAndRemoveVM($ComputerName) {
+    $vm = Get-VM -Name $ComputerName -ErrorAction SilentlyContinue
+
+    if ($vm) {
+        if ($vm.state -ne "Off") {
+            $vm | Stop-VM
+        }
+    
+        $vm | Remove-VM
+    }
+
+    $vhdx = "$((Get-VMHost).VirtualHardDiskPath)$ComputerName.vhdx"
+
+    if (Test-Path "$vhdx") {
+        Remove-Item -Confirm -Path $vhdxx
+    }
+
+    if (Test-Path "$vhdx") {
+        throw "VHDX File Still Exists! Can't Continue..."
+    }
+}
+
 Function Create-DevVM {
     $ErrorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
@@ -542,25 +564,9 @@ Function Create-DevVM {
     $password = $(Get-Credential -Message "Enter Password for VM...")
     $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
 
+    StopAndRemoveVM $ComputerName
+
     Push-Location $((Get-VMHost).VirtualHardDiskPath)
-
-    $vm = Get-VM -Name $computerName -ErrorAction SilentlyContinue
-
-    if ($vm) {
-        if ($vm.state -ne "Off") {
-            $vm | Stop-VM
-        }
-    
-        $vm | Remove-VM
-    }
-
-    if (Test-Path "$vhdx") {
-        Remove-Item -Confirm -Path $vhdx
-    }
-
-    if (Test-Path "$vhdx") {
-        throw "VHDX File Still Exists! Can't Continue..."
-    }
 
     New-DifferencingVHDX -referenceDisk $BaseImage -vhdxFile "$vhdx"
 
@@ -600,7 +606,7 @@ Function Create-DevVM {
     if ($maxMem -gt 8GB) { $maxMem = 8GB }
 
     New-VirtualMachine -vhdxFile $vhdx -computerName $computerName `
-        -memory 2GB -maximumMemory $maxMem -virtualSwitch "VTRUNK" -cpu $numOfCpu -verbose
+        -memory 2GB -maximumMemory $maxMem -cpu $numOfCpu -verbose
 
     Set-VMMemory -VMName $computerName -MaximumBytes $maxMem -MinimumBytes 1GB
     Set-VM -Name $computerName -AutomaticStartAction Nothing
@@ -610,22 +616,173 @@ Function Create-DevVM {
 
     Start-VM -VMName $computerName
 
-    Start-Sleep 5
-
-    & vmconnect.exe localhost $computerName
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $computerName"
 
     $ErrorActionPreference = $ErrorPreviousAction
+}
 
+Function Create-WorkstationVM {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName
+    )
+
+    $computerName = $computerName.ToUpperInvariant()
+
+    $ErrorPreviousAction = $ErrorActionPreference
+    $ErrorActionPreference = "Stop";
+    $StartScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
+    $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.xml"
+    $BaseImage = "$((Get-VMHost).VirtualHardDiskPath)\Win10Base.vhdx"
+    $vhdx = "$ComputerName.vhdx"
+    $password = $(Get-Credential -Message "Enter Password for VM...")
+    $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
+
+    StopAndRemoveVM $ComputerName
+
+    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+
+    New-DifferencingVHDX -referenceDisk $BaseImage -vhdxFile "$vhdx"
+
+    $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)" 
+    Copy-Item -Path $unattend -Destination $unattendFile  -Force
+
+    (Get-Content $unattendFile).replace("P@ssw0rd", $password.GetNetworkCredential().password) `
+        | Set-Content $unattendFile
+
+    Make-UnattendForDhcpIp -vhdxFile $vhdx -unattendTemplate $unattendFile -computerName $computerName
+
+    Inject-VMStartUpScriptFile -vhdxFile $vhdx -scriptFile $StartScript -argument "myvm-workstation"
+
+    Inject-StartLayout -vhdxFile $vhdx -layoutFile $startLayout
+
+    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName -memory 2GB -Verbose
+
+    Set-VMMemory -VMName $computerName -MinimumBytes 1GB
+    Set-Vm -Name $computerName -AutomaticStopAction Save    
+
+    Pop-Location
+
+    Start-VM -VMName $computerName
+
+    Start-Sleep 5
+
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $computerName"
+
+    $ErrorActionPreference = $ErrorPreviousAction
+}
+
+Function Create-ServerVM {
+    param (
+        [string]$ComputerName,
+        [Int32]$OsVersion,
+        [string]$UnattendFile ="${env:SYSTEMDRIVE}\etc\vm\unattend.server.xml"
+    )
+
+    $ErrorPreviousAction = $ErrorActionPreference
+    $ErrorActionPreference = "Stop";
+
+    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+
+    $BaseImage = "$((Get-ChildItem -Path "Win$OsVersion*ServerBase*.vhdx").FullName)"
+
+    $computerName = $computerName.ToUpperInvariant()
+    $vhdx = "$ComputerName.vhdx"
+
+    StopAndRemoveVM $ComputerName
+
+    New-DifferencingVHDX -referenceDisk $BaseImage -vhdxFile "$vhdx"
+
+    Make-UnattendForDhcpIp -vhdxFile $vhdx -unattendTemplate $unattendFile -computerName $computerName
+
+    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName -memory 4GB -Verbose
+
+    Set-VMMemory -VMName $computerName -MinimumBytes 1GB
+    Set-Vm -Name $computerName -AutomaticStopAction Save    
+
+    Pop-Location
+
+    Start-VM -VMName $computerName
+
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $computerName"
+
+    $ErrorActionPreference = $ErrorPreviousAction
+}
+
+Function Create-Server2012VM {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName
+    )
+
+    Create-ServerVM $ComputerName 2012
+}
+
+Function Create-Server2016VM {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName
+    )
+
+    Create-ServerVM $ComputerName 2016
+}
+
+Function Create-VMFromISO {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName,
+        [Parameter(Mandatory=$true)]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $ISOFilePath
+    )
+
+    $ErrorPreviousAction = $ErrorActionPreference
+    $ErrorActionPreference = "Stop";
+
+    $computerName = $computerName.ToUpperInvariant()
+
+    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+
+    $vhdx = "$ComputerName.vhdx"
+
+    StopAndRemoveVM $ComputerName
+
+    New-VHD -Path $vhdx -SizeBytes 80GB -Dynamic
+
+    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName -memory 4GB -Verbose
+
+    Set-VMMemory -VMName $computerName -MinimumBytes 1GB
+    Set-Vm -Name $computerName -AutomaticStopAction Save
+
+    Add-VMDvdDrive -VMName $computerName -Path $ISOFilePath
+    Set-VMFirmware $computerName -FirstBootDevice $(Get-VMDvdDrive $computerName)
+    Set-VMFirmware $computerName -EnableSecureBoot Off
+
+    Pop-Location
+
+    Start-VM -VMName $computerName
+
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $computerName"
+
+    $ErrorActionPreference = $ErrorPreviousAction
 }
 
 Export-ModuleMember Install-DevVmPackage
 Export-ModuleMember Create-DevVM
+Export-ModuleMember Create-WorkstationVM
+Export-ModuleMember Create-Server2012VM
+Export-ModuleMember Create-Server2016VM
+Export-ModuleMember Create-VMFromISO
+
 Export-ModuleMember Convert-WindowsImage
 Export-ModuleMember Get-HyperVReport
 Export-ModuleMember New-SystemVHDX
 Export-ModuleMember New-DifferencingVHDX
 Export-ModuleMember New-DataVHDX
-Export-ModuleMember New-NanoServerVhdx
 Export-ModuleMember Connect-IsoToVirtual
 Export-ModuleMember Make-UnattendForDhcpIp
 Export-ModuleMember Make-UnattendForStaticIp
