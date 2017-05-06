@@ -84,5 +84,3 @@ Function Edit-Profile {
 Function Reload-Profile {
   . $profile
 }
-
-s
