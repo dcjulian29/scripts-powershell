@@ -542,7 +542,7 @@ Function StopAndRemoveVM($ComputerName) {
         $vm | Remove-VM
     }
 
-    $vhdx = "$((Get-VMHost).VirtualHardDiskPath)$ComputerName.vhdx"
+    $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\$ComputerName.vhdx"
 
     if (Test-Path "$vhdx") {
         Remove-Item -Confirm -Path $vhdxx
