@@ -1,7 +1,8 @@
 ﻿$script:vsPath = First-Path `
+  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe') `
   (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\devenv.exe') `
   (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\devenv.exe') 
+  (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\devenv.exe')
 
 Function Find-VisualStudioSolutions {
     param(
@@ -20,7 +21,6 @@ Function Find-VisualStudioSolutions {
                 Write-Output $file
             }
         }
-
     } else {
         foreach ($file in $files) {
             $number++
@@ -51,7 +51,11 @@ Function Start-VisualStudio {
             2013 { $vsv = "12.0" }
         }
 
-        $vs = (Find-ProgramFiles "Microsoft Visual Studio $vsv\Common7\IDE\devenv.exe")
+        if ($Version -eq 2017) {
+            $vs = (Find-ProgramFiles "Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe")
+        } else {
+            $vs = (Find-ProgramFiles "Microsoft Visual Studio $vsv\Common7\IDE\devenv.exe")
+        }
     }
 
     if (Test-Path $vs) {
