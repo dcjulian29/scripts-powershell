@@ -992,6 +992,18 @@ WHERE [Id] = $UserStory
     END { } 
 }
 
+Function Invoke-TfsCommit {
+    tf --% checkin
+}
+
+Function Update-TfsWorkingCopy {
+    tf --% get "$TfsNamespace" /recursive
+}
+
+Function Show-TfsWorkingCopyInfo {
+    tf --% workspaces /collection:"$TfsUrl/$TfsCollection" /format:detailed
+}
+
 ###############################################################################
 
 Export-ModuleMember Get-WorkItems
@@ -1060,3 +1072,15 @@ Export-ModuleMember -Alias tfs-history-thismonth
 Export-ModuleMember Show-TfsHistoryForLastMonth
 Set-Alias tfs-history-lastmonth Show-TfsHistoryForLastMonth
 Export-ModuleMember -Alias tfs-history-lastmonth
+
+Export-ModuleMember Invoke-TfsCommit
+Set-Alias tfs-commit Invoke-TfsCommit
+Export-ModuleMember -Alias tfs-commit
+
+Export-ModuleMember Update-TfsWorkingCopy
+Set-Alias tfs-update Update-TfsWorkingCopy
+Export-ModuleMember -Alias tfs-update
+
+Export-ModuleMember Show-TfsWorkingCopyInfo
+Set-Alias tfs-workspace Show-TfsWorkingCopyInfo
+Export-ModuleMember -Alias tfs-workspace
