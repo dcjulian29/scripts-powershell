@@ -18,7 +18,6 @@ Export-ModuleMember Get-SubNetItems
 Export-ModuleMember Load-Assembly
 Export-ModuleMember midnight
 Export-ModuleMember New-Share
-Export-ModuleMember Notepad
 Export-ModuleMember Set-GUI
 Export-ModuleMember Test-Port
 Export-ModuleMember touch
@@ -30,10 +29,4 @@ Export-ModuleMember Install-WindowsUpdate
 Export-ModuleMember Pin-Taskbar
 Export-ModuleMember Reset-NetworkAdapters
 Export-ModuleMember Watch-DefaultGatewayChangeVpn
-Export-ModuleMember chefdk
 
-# Wintellect
-Export-ModuleMember Compare-Directories
-Export-ModuleMember Get-Hash
-Export-ModuleMember Remove-IntelliTraceFile
-Export-ModuleMember Test-PathReg
