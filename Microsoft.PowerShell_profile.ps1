@@ -43,7 +43,6 @@ Set-Variable -Name Home -Value $env:UserProfile -Force
 # My modules used to be executed once for each module file where the path was updated for various
 # tools. Since they are now being dynamically loaded I have the update the path here...
 Add-DevPath
-Add-GitPath
 
 Function prompt {
   $realLASTEXITCODE = $LASTEXITCODE
@@ -73,6 +72,7 @@ Function prompt {
                 $s.IndexForegroundColor = $s.IndexForegroundBriteColor
                 $s.WorkingForegroundColor = $s.WorkingForegroundBrightColor
                 $s.EnableWindowTitle = ""
+                $s.BeforeText = "["
             }
             
           Write-VcsStatus

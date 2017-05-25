@@ -2,24 +2,6 @@
 $script:GIT = "${script:GIT_INSTALL_ROOT}\bin\git.exe"
 $script:GITK = "${script:GIT_INSTALL_ROOT}\cmd\gitk.exe"
 
-Function Add-GitPath {
-    if (-not ([String]::IsNullOrWhiteSpace($script:GIT_INSTALL_ROOT))) {
-        if (Test-Path "$script:GIT_INSTALL_ROOT") {
-            $env:Path = "$env:Path;$script:GIT_INSTALL_ROOT"
-
-            if (Test-Path "$($env:UserProfile)\Documents\WindowsPowerShell\Modules\posh-git") {
-                Import-Module Posh-Git
-
-                $GitPromptSettings.BeforeText = "["
-            }
-        }
-
-        if (Test-Path "$($env:SYSTEMDRIVE)\Tools\apps\gittfs") {
-          $env:Path = "$($env:SYSTEMDRIVE)\Tools\apps\gittfs;$env:PATH"
-        }
-    }
-}
-
 Function Add-GitIgnoreToLocalRepository {
     param (
         [Parameter(Mandatory=$true)]
