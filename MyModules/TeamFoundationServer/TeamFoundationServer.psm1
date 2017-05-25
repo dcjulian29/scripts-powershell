@@ -2,25 +2,122 @@
 $script:TfsCollection = ''
 $script:TfsNamespace = ''
 $script:tfPath = First-Path `
+  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\TF.exe') `
+  (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\TF.exe') `
   (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\TF.exe') `
   (Find-ProgramFiles 'Microsoft Visual Studio 11.0\Common7\IDE\TF.exe') `
   (Find-ProgramFiles 'Microsoft Visual Studio 10.0\Common7\IDE\TF.exe')
 
-function tf()
-{
-  & $tfPath $args;
+Function tf() {
+    Start-Process -FilePath $tfPath -ArgumentList $args -NoNewWindow -Wait    
 }
 
-function tfHistory($path, $knownGoodVersion)
-{
-  if ($knownGoodVersion)
-  {
-    tf hist $path /noprompt /recursive /stopafter:$knownGoodVersion
-  }
-  else
-  {
-    tf hist $path /noprompt /recursive
-  }
+Function Show-TfsHistory {
+    param(
+        [string]$Project,
+        [string]$Filter
+    )
+
+    Write-Output "Getting history for $TfsNamespace/$Project..."
+
+    tf --% history /server:"$TfsUrl/$TfsCollection" "$TfsNamespace/$Project" /recursive /noprompt /sort:ascending $Filter
+}
+
+Function Show-TfsHistoryForToday {
+    param(
+        [string]$Project
+    )
+    
+    $StartDate = Get-Date -Format "yyyy-MM-dd"
+    Show-TfsHistory -Project $Project -Filter "/version:D$StartDate~ *"
+}
+
+Function Show-TfsHistoryForYesterday {
+    param(
+        [string]$Project
+    )
+    
+    $EndDate = Get-Date -Format "yyyy-MM-dd"
+    $StartDate = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd')
+    Show-TfsHistory -Project $Project -Filter "/version:D$StartDate~D$EndDate *"
+}
+
+Function Show-TfsHistoryForThisWeek {
+    param(
+        [string]$Project
+    )
+    
+    $EndDate = Get-Date -Format "yyyy-MM-dd"
+
+    switch ((Get-Date).DayOfWeek) {
+        "Monday"      { $DayOfWeek = 0 }
+        "Tuesday"     { $DayOfWeek = 1 }
+        "Wednesday"   { $DayOfWeek = 2 }
+        "Thursday"    { $DayOfWeek = 3 }
+        "Friday"      { $DayOfWeek = 4 }
+        "Saturday"    { $DayOfWeek = 5 }
+        "Sunday"      { $DayOfWeek = 6 }
+
+    }
+
+    if ($DayOfWeek -eq 0) {
+        ShowTfsHistoryForToday
+    } else {
+        $StartDate = (Get-Date).AddDays(0-$DayOfWeek).ToString('yyyy-MM-dd')
+        Show-TfsHistory -Project $Project -Filter "/version:D$StartDate~D$EndDate *"
+    }
+}
+
+Function Show-TfsHistoryForLastWeek {
+    param(
+        [string]$Project
+    )
+    
+    switch ((Get-Date).DayOfWeek) {
+        "Monday"      { $DayOfWeek = 0 }
+        "Tuesday"     { $DayOfWeek = 1 }
+        "Wednesday"   { $DayOfWeek = 2 }
+        "Thursday"    { $DayOfWeek = 3 }
+        "Friday"      { $DayOfWeek = 4 }
+        "Saturday"    { $DayOfWeek = 5 }
+        "Sunday"      { $DayOfWeek = 6 }
+
+    }
+
+    if ($DayOfWeek -eq 0) {
+        $EndDate = Get-Date -Format "yyyy-MM-dd"
+    } else {
+        $EndDate = (Get-Date).AddDays($DayOfWeek).ToString('yyyy-MM-dd')
+    }
+
+    $StartDate = (Get-Date).AddDays(0-$DayOfWeek).AddDays(-7).ToString('yyyy-MM-dd')
+
+    Show-TfsHistory -Project $Project -Filter "/version:D$StartDate~D$EndDate *"
+
+}
+
+Function Show-TfsHistoryForThisMonth {
+    param(
+        [string]$Project
+    )
+    
+    $EndDate = Get-Date -Format "yyyy-MM-dd"
+    $StartDate = Get-Date -Format "yyyy-MM-01"
+
+    Show-TfsHistory -Project $Project -Filter "/version:D$StartDate~D$EndDate *"
+
+}
+
+Function Show-TfsHistoryForLastMonth {
+    param(
+        [string]$Project
+    )
+    
+    $EndDate = (Get-Date).AddDays(0-$(Get-Date).Day).ToString('yyyy-MM-dd')
+    $StartDate = (Get-Date).AddDays(0-$(Get-Date).Day).ToString('yyyy-MM-01')
+
+    Show-TfsHistory -Project $Project -Filter "/version:D$StartDate~D$EndDate *"
+
 }
 
 Function Clear-TfsProfile {
@@ -934,3 +1031,32 @@ Export-ModuleMember -Alias gtfs
 Export-ModuleMember -Alias gtwi
 Export-ModuleMember -Alias tfs-profile-clear
 Export-ModuleMember -Alias tfs-profile-load
+
+
+Export-ModuleMember Show-TfsHistory
+Set-Alias tfs-history Show-TfsHistory
+Export-ModuleMember -Alias tfs-history
+
+Export-ModuleMember Show-TfsHistoryForToday
+Set-Alias tfs-history-today Show-TfsHistoryForToday
+Export-ModuleMember -Alias tfs-history-today
+
+Export-ModuleMember Show-TfsHistoryForYesterday
+Set-Alias tfs-history-yesterday Show-TfsHistoryForYesterday
+Export-ModuleMember -Alias tfs-history-yesterday
+
+Export-ModuleMember Show-TfsHistoryForThisWeek
+Set-Alias tfs-history-thisweek Show-TfsHistoryForThisWeek
+Export-ModuleMember -Alias tfs-history-thisweek
+
+Export-ModuleMember Show-TfsHistoryForLastWeek
+Set-Alias tfs-history-lastweek Show-TfsHistoryForLastWeek
+Export-ModuleMember -Alias tfs-history-lastweek
+
+Export-ModuleMember Show-TfsHistoryForThisMonth
+Set-Alias tfs-history-thismonth Show-TfsHistoryForThisMonth
+Export-ModuleMember -Alias tfs-history-thismonth
+
+Export-ModuleMember Show-TfsHistoryForLastMonth
+Set-Alias tfs-history-lastmonth Show-TfsHistoryForLastMonth
+Export-ModuleMember -Alias tfs-history-lastmonth
