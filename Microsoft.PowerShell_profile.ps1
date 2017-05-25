@@ -63,6 +63,18 @@ Function prompt {
       if (-not $pwd.Path.EndsWith('.git')) {
         # Ignore writing VCS status if tools are not loaded.
         if (Get-Command Write-VcsStatus -errorAction SilentlyContinue) {
+            # I like bright colors. The dark green and red are hard to see on black background.
+            $s = $global:GitPromptSettings
+            
+            if ($s.WorkingForegroundColor -ne $s.WorkingForegroundBrightColor) {
+                $s.LocalDefaultStatusForegroundColor = $s.LocalDefaultStatusForegroundBrightColor
+                $s.LocalWorkingStatusForegroundColor = $s.LocalWorkingStatusForegroundBrightColor
+                $s.BeforeIndexForegroundColor = $s.BeforeIndexForegroundBrightColor
+                $s.IndexForegroundColor = $s.IndexForegroundBriteColor
+                $s.WorkingForegroundColor = $s.WorkingForegroundBrightColor
+                $s.EnableWindowTitle = ""
+            }
+            
           Write-VcsStatus
         }
       }
