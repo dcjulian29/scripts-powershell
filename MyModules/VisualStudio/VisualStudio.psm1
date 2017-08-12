@@ -39,20 +39,20 @@ Function Start-VisualStudio {
         
         [string]$Project,
         [int]$Version,
-        [switch]$AsAdmin
+        [bool]$AsAdmin
     )
 
     if (-not $Version) {
         $vs = $script:vsPath
     } else {
         switch ($Version) {
-            2017 { $vsv = "15.0" }
+            2017 { $vsv = "2017" }
             2015 { $vsv = "14.0" }
             2013 { $vsv = "12.0" }
         }
 
-        if ($Version -eq 2017) {
-            $vs = (Find-ProgramFiles "Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe")
+        if ($Version -ge 2017) {
+            $vs = (Find-ProgramFiles "Microsoft Visual Studio\$vsv\Enterprise\Common7\IDE\devenv.exe")
         } else {
             $vs = (Find-ProgramFiles "Microsoft Visual Studio $vsv\Common7\IDE\devenv.exe")
         }
@@ -93,7 +93,7 @@ Function Start-VisualStudio2017 {
         [switch]$AsAdmin
     )
 
-    Start-VisualStudio $Project 2017 -AsAdmin $AsAdmin
+    Start-VisualStudio $Project 2017 -AsAdmin $AsAdmin.IsPresent
 }
 
 Function Start-VisualStudio2015 {
@@ -102,7 +102,7 @@ Function Start-VisualStudio2015 {
         [switch]$AsAdmin
     )
 
-    Start-VisualStudio $Project 2015 -AsAdmin $AsAdmin
+    Start-VisualStudio $Project 2015 -AsAdmin $AsAdmin.IsPresent
 }
 
 Function Start-VisualStudio2013 {
@@ -111,7 +111,7 @@ Function Start-VisualStudio2013 {
         [switch]$AsAdmin
     )
 
-    Start-VisualStudio $Project 2013 -AsAdmin $AsAdmin
+    Start-VisualStudio $Project 2013 -AsAdmin $AsAdmin.IsPresent
 }
 
 Function Start-VisualStudioCode {
