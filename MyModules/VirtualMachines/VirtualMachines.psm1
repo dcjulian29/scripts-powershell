@@ -484,7 +484,8 @@ Function Install-DevVmPackage {
     param(
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
-        [string] $package
+        [string] $Package,
+        [switch] $Debug
     )
 
     $date = Get-Date -Format "yyyyMMdd-hhmm"
@@ -502,11 +503,15 @@ Function Install-DevVmPackage {
         `$env:PSModulePath = "`$(Split-Path `$profile)\MyModules;`$(`$env:PSModulePath)"
 
         Get-Module -ListAvailable | Out-Null
-
-        Invoke-Expression "choco.exe install $package -y"
-
-        Stop-Transcript
 "@
+
+    if ($Debug) {
+        $Command += "Invoke-Expression 'choco.exe install $Package -dv -y\n"
+    } else {
+        $Command += "Invoke-Expression 'choco.exe install $Package -y\n'"
+    }
+
+    $Command += "Stop-Transcript"
 
     $Bytes = [System.Text.Encoding]::Unicode.GetBytes($Command)
     $encodedCommand = [Convert]::ToBase64String($Bytes)
@@ -514,17 +519,15 @@ Function Install-DevVmPackage {
     powershell.exe -encodedCommand $encodedCommand
 
     # Now lets check for errors...
-    if (-not (Get-Content $logFile | Select-String -Pattern " 0 packages failed.")) {
+    if (Get-Content $logFile | Select-String -Pattern "^Failures$") {
         Write-Warning "An error occurred during the last package ($package) install..."
         Write-Warning "Review the log file: $logFile"
         Write-Warning "And then decide whether to continue..."
-
-        Read-Host "Press Enter to continue with next package"
     }
 
     if (Test-PendingReboot) {
         Write-Warning "One of the packages recently installed has set the PendingReboot flag..."
-        Write-Warning "This may cause future packages to fail silently if they check this flag."
+        Write-Warning "This may cause future packages to fail silently if it check this flag."
 
         Read-Host "Press Enter to Restart Computer"
         Restart-Computer -Force
@@ -773,6 +776,7 @@ Function New-VMFromISO {
 
 Export-ModuleMember Install-DevVmPackage
 Export-ModuleMember New-DevVM
+
 Export-ModuleMember New-WorkstationVM
 Export-ModuleMember New-Server2012VM
 Export-ModuleMember New-Server2016VM
