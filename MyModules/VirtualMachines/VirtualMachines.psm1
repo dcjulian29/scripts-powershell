@@ -485,7 +485,8 @@ Function Install-DevVmPackage {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string] $Package,
-        [switch] $Debug
+        [Alias("dv")]
+        [switch] $DebugVerbose
     )
 
     $date = Get-Date -Format "yyyyMMdd-hhmm"
@@ -505,7 +506,7 @@ Function Install-DevVmPackage {
         Get-Module -ListAvailable | Out-Null
 "@
 
-    if ($Debug) {
+    if ($DebugVerbose) {
         $Command += "Invoke-Expression 'choco.exe install $Package -dv -y\n"
     } else {
         $Command += "Invoke-Expression 'choco.exe install $Package -y\n'"
