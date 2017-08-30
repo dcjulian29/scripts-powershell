@@ -507,7 +507,7 @@ Function Install-DevVmPackage {
 "@
 
     if ($DebugVerbose) {
-        $Command += "Invoke-Expression 'choco.exe install $Package -dv -y\n"
+        $Command += "Invoke-Expression 'choco.exe install $Package -dv -y\n'"
     } else {
         $Command += "Invoke-Expression 'choco.exe install $Package -y\n'"
     }
