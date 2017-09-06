@@ -15,6 +15,7 @@
     ("$($env:WINDIR)\Microsoft.NET\Framework\v2.0.50727\MSBuild.exe")
 
 $script:vsvarPath = First-Path `
+  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat' `
   (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\Tools\vsvars32.bat') `
   (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\Tools\vsvars32.bat') `
   (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\Tools\vsvars32.bat') `
@@ -77,24 +78,13 @@ Function Invoke-ArchiveProject {
 
     Push-Location $Path
 
-    if (Test-Path "build") {
-        Remove-Item -Path "build" -Recurse -Force
-    }
 
-    if (Test-Path "tools") {
-        Remove-Item -Path "tools" -Recurse -Force
-    }
-
-    if (Test-Path "packages") {
-        Remove-Item -Path "packages" -Recurse -Force
+    Get-ChildItem -Filter "*.sln" -Recurse | % { 
+        Invoke-CleanAllProjects "$($_.FullName)" -Configuration "Debug"
     }
 
     Get-ChildItem -Filter "*.sln" -Recurse | % { 
-        Invoke-MSBuild "$($_.FullName)" /m /t:clean /p:configuration="Debug"
-    }
-
-    Get-ChildItem -Filter "*.sln" -Recurse | % { 
-        Invoke-MSBuild "$($_.FullName)" /m /t:clean /p:configuration="Release"
+        Invoke-CleanAllProjects "$($_.FullName)" -Configuration "Release"
     }
 
     $destination = $(Join-Path (Split-Path -Path $Path -Parent) `
@@ -105,6 +95,8 @@ Function Invoke-ArchiveProject {
     $zip = Join-Path $(Find-ProgramFiles "7-Zip") -ChildPath "7z.exe"
 
     & $zip a -t7z -mx9 -y -r $destination .
+    
+    Pop-Location
 }
 
 Function Invoke-CleanProject {
@@ -137,23 +129,12 @@ Function Invoke-CleanAllProjects {
     )
 
     Push-Location $Path
+    
     Get-ChildItem -Directory | % { 
         Push-Location $_.FullName
 
-        if (Test-Path "build") {
-            Remove-Item -Path "build" -Recurse -Force
-        }
-
-        if (Test-Path "tools") {
-            Remove-Item -Path "tools" -Recurse -Force
-        }
-
-        if (Test-Path "packages") {
-            Remove-Item -Path "packages" -Recurse -Force
-        }
-
         Get-ChildItem -Filter "*.sln" -Recurse | % { 
-            Invoke-MSBuild "$($_.FullName)" /m /t:clean /p:configuration="$Configuration"
+            Invoke-CleanProject -Project "$($_.FullName)" -Configuration "$Configuration"
         }
 
         Pop-Location
