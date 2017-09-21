@@ -15,7 +15,7 @@
     ("$($env:WINDIR)\Microsoft.NET\Framework\v2.0.50727\MSBuild.exe")
 
 $script:vsvarPath = First-Path `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat' `
+  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat') `
   (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\Tools\vsvars32.bat') `
   (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\Tools\vsvars32.bat') `
   (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\Tools\vsvars32.bat') `
