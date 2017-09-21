@@ -105,15 +105,6 @@ Function Start-VisualStudio2015 {
     Start-VisualStudio $Project 2015 -AsAdmin $AsAdmin.IsPresent
 }
 
-Function Start-VisualStudio2013 {
-    param (
-        [string]$Project,
-        [switch]$AsAdmin
-    )
-
-    Start-VisualStudio $Project 2013 -AsAdmin $AsAdmin.IsPresent
-}
-
 Function Start-VisualStudioCode {
     $code = (Find-ProgramFiles "Microsoft VS Code\Code.exe")
 
@@ -123,7 +114,6 @@ Function Start-VisualStudioCode {
 ###################################################################################################
 
 Export-ModuleMember Start-VisualStudio
-Export-ModuleMember Start-VisualStudio2013
 Export-ModuleMember Start-VisualStudio2015
 Export-ModuleMember Start-VisualStudio2017
 Export-ModuleMember Find-VisualStudioSolutions
