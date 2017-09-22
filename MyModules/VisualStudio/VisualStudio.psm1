@@ -108,7 +108,7 @@ Function Start-VisualStudio2015 {
 Function Start-VisualStudioCode {
     $code = (Find-ProgramFiles "Microsoft VS Code\Code.exe")
 
-    & $code $args
+    Start-Process -FilePath $code -ArgumentList $args
 }
 
 ###################################################################################################
@@ -118,9 +118,6 @@ Export-ModuleMember Start-VisualStudio2015
 Export-ModuleMember Start-VisualStudio2017
 Export-ModuleMember Find-VisualStudioSolutions
 Export-ModuleMember Start-VisualStudioCode
-
-Set-Alias vs2013 Start-VisualStudio2013
-Export-ModuleMember -Alias vs2013
 
 Set-Alias vs2015 Start-VisualStudio2015
 Export-ModuleMember -Alias vs2015
