@@ -57,6 +57,39 @@ Function NewLabServer {
     $ErrorActionPreference = $ErrorPreviousAction
 }
 
+Function New-LabLinuxServer {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName,
+        [string]$iso = "$((Get-VMHost).VirtualHardDiskPath)\ISO\ubuntu-16.04.3-server-amd64.iso"
+    )
+
+    $ErrorPreviousAction = $ErrorActionPreference
+    $ErrorActionPreference = "Stop";
+
+    $computerName = $computerName.ToUpperInvariant()
+    $vhdx = "$ComputerName.vhdx"
+
+    StopAndRemoveVM $ComputerName
+
+    New-VM -Name $computerName -NewVHDPath $vhdx -NewVHDSizeBytes 40GB -Generation 2
+    Add-VMDvdDrive -VMName $computerName -Path $iso
+    Set-VMFirmware $computerName -FirstBootDevice $(Get-VMDvdDrive $computerName)
+    Set-VMFirmware $computerName -EnableSecureBoot Off
+
+    Connect-VMNetworkAdapter -VMName $computerName -SwitchName "Internal"
+
+    Set-VMMemory -VMName $computerName -DynamicMemoryEnabled $true -StartupBytes 1GB
+    Set-VMMemory -VMName $computerName -MinimumBytes 512MB
+
+    Start-VM -VMName $computerName
+
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $computerName"
+
+    $ErrorActionPreference = $ErrorPreviousAction
+}
+
 Function New-LabFirewall {
     param (
         [string]$ComputerName = "FIREWALL",
@@ -322,6 +355,8 @@ Export-ModuleMember New-LabDomainController
 Export-ModuleMember New-LabWorkstation
 Export-ModuleMember New-Lab2012R2Server
 Export-ModuleMember New-Lab2016Server
+
+Export-ModuleMember New-LabLinuxServer
 
 #Export-ModuleMember New-LabWebServer
 #Export-ModuleMember New-LabTeamCityServer
