@@ -359,7 +359,5 @@ Export-ModuleMember New-Lab2016Server
 Export-ModuleMember New-LabLinuxServer
 
 #Export-ModuleMember New-LabWebServer
-#Export-ModuleMember New-LabTeamCityServer
-#Export-ModuleMember New-LabTfsServer
-#Export-ModuleMember New-LabOctopusServer
+
 #Export-ModuleMember New-Lab3TierRedundantPlatform
