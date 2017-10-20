@@ -109,6 +109,7 @@ Function Download-File {
 
     $request = [System.Net.HttpWebRequest]::Create($uri) 
     $request.set_Timeout(15000)
+    $request.set_UserAgent("Mozilla/5.0")
     $response = $request.GetResponse() 
     $totalLength = $response.get_ContentLength()
     $totalMB = "{0:n2}" -f ($totalLength / 1MB)
