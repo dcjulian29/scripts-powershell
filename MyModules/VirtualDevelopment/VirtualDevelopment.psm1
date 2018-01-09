@@ -88,6 +88,72 @@ Function New-DevVM {
     $ErrorActionPreference = $ErrorPreviousAction
 }
 
+Function New-LinuxDevVM {
+    param (
+        [string]$ComputerName,
+        [string]$iso
+    )
+
+    $ErrorPreviousAction = $ErrorActionPreference
+    $ErrorActionPreference = "Stop";
+    
+    if ($ComputerName -eq "") {
+        $ComputerName = "${env:COMPUTERNAME}LNXDEV"
+    }
+
+    $ComputerName = $ComputerName.ToUpperInvariant()
+    $vhdx = "$ComputerName.vhdx"
+
+    if ($iso -eq "") {
+
+        $isoDir = "$((Get-VMHost).VirtualHardDiskPath)\ISO"
+
+        $latest = Get-ChildItem -Filter "xubuntu-*" -Path $isoDir `
+            | Sort-Object Name -Descending `
+            | Select-Object -First 1
+
+        $isoFile = $latest.name
+
+        $iso = "$isoDir\$isoFile"
+    }
+
+    StopAndRemoveVM $ComputerName
+
+    $numOfCpu = $(Get-WmiObject -class Win32_processor `
+        | Select-Object NumberOfLogicalProcessors).NumberOfLogicalProcessors / 2
+    $maxMem = $(Get-WMIObject -class Win32_PhysicalMemory | Measure-Object -Property capacity -Sum `
+        | Select-Object @{N="TotalRam"; E={$_.Sum}}).TotalRam * .60
+
+    $maxMem = [Math]::Round($maxMem)
+    $maxMem = $maxMem - ($maxMem % 2MB)
+
+    if ($maxMem -gt 8GB) { $maxMem = 8GB }
+
+    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+
+    New-VHD -Path $vhdx -SizeBytes 80GB -Dynamic
+
+    New-VirtualMachine -vhdxFile $vhdx -computerName $ComputerName `
+        -memory 2GB -maximumMemory $maxMem -cpu $numOfCpu -verbose
+
+    Connect-IsoToVirtual $ComputerName $iso
+
+    Set-VMFirmware $ComputerName -FirstBootDevice $(Get-VMDvdDrive $ComputerName)
+    Set-VMFirmware $ComputerName -EnableSecureBoot Off
+
+    Set-VMMemory -VMName $ComputerName -MaximumBytes $maxMem -MinimumBytes 1GB
+    Set-VM -Name $ComputerName -AutomaticStartAction Nothing
+    Set-Vm -Name $ComputerName -AutomaticStopAction Save    
+
+    Pop-Location
+
+    Start-VM -VMName $ComputerName
+
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $ComputerName"
+
+    $ErrorActionPreference = $ErrorPreviousAction
+}
+
 Function Install-DevVmPackage {
     param(
         [Parameter(Mandatory=$true)]
@@ -295,8 +361,12 @@ Function New-VMFromISO {
     $ErrorActionPreference = $ErrorPreviousAction
 }
 
+###############################################################################
+
 Export-ModuleMember Install-DevVmPackage
+
 Export-ModuleMember New-DevVM
+Export-ModuleMember New-LinuxDevVM
 
 Export-ModuleMember New-WorkstationVM
 Export-ModuleMember New-Server2012VM
