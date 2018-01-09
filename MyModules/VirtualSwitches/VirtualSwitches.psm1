@@ -41,4 +41,6 @@
     }
 }
 
+###############################################################################
+
 Export-ModuleMember Hide-InternalVirtualSwitches
