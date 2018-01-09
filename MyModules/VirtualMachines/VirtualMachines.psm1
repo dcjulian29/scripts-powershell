@@ -112,9 +112,9 @@ Function Connect-IsoToVirtual {
 
     if (-not $(Assert-Elevation)) { return }
 
-    Set-VMDvdDrive -VMName $virtualMachineName `
-        -ControllerNumber 1  -ControllerLocation 0 `
-        -Path $isoFile
+    Add-VMDvdDrive -VMName $virtualMachineName
+    
+    Set-VMDvdDrive -VMName $virtualMachineName -Path $isoFile
 }
 
 Function Make-UnattendForDhcpIp {
@@ -479,6 +479,8 @@ Function New-VirtualMachineFromName {
 
     Pop-Location
 }
+
+###############################################################################
 
 Export-ModuleMember Convert-WindowsImage
 Export-ModuleMember Get-HyperVReport
