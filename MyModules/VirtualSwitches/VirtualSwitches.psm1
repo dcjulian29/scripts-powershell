@@ -25,6 +25,11 @@
                 "Found Host Network Services Internal Switch, reconfiguring as an endpoint device."
                 New-ItemProperty $node -Name '*NdisDeviceType' -PropertyType dword -Value 1  -ea 0
             }
+
+            if ($name -like "*vEthernet (Default Switch)*") {
+                "Found Hyper-V Default Switch, reconfiguring as an endpoint device."
+                New-ItemProperty $node -Name '*NdisDeviceType' -PropertyType dword -Value 1  -ea 0
+            }
         }  
     }
 
