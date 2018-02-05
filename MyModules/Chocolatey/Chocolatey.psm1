@@ -117,6 +117,10 @@ Export-ModuleMember Uninstall-ChocolateyPackage
 Set-Alias chocoupdate Update-ChocolateyPackage
 Export-ModuleMember -Alias chocoupdate
 
+Set-Alias Upgrade-ChocolateyPackage Update-ChocolateyPackage
+Export-ModuleMember -Alias Upgrade-ChocolateyPackage
+
+
 Export-ModuleMember Make-ChocolateyPackage
 
 Set-Alias choco-make-package Make-ChocolateyPackage
