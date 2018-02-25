@@ -93,7 +93,7 @@ Function New-LabLinuxServer {
 Function New-LabFirewall {
     param (
         [string]$ComputerName = "FIREWALL",
-        [string]$iso = "$((Get-VMHost).VirtualHardDiskPath)\ISO\ipfire-2.19.i586-full-core111.iso"
+        [string]$iso = "$((Get-VMHost).VirtualHardDiskPath)\ISO\ipfire-2.19.i586-full-core118.iso"
     )
 
     $ErrorPreviousAction = $ErrorActionPreference
