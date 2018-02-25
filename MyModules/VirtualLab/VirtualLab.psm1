@@ -129,6 +129,7 @@ Function New-LabDomainController {
     param (
         [string]$ComputerName = "DC01",
         [string]$DomainName = "contoso.local"
+        [psobject]$Credentials = $(Get-Credential -Message "Enter administrative credentials for Domain Controller...")
     )
 
     $ErrorPreviousAction = $ErrorActionPreference
@@ -138,12 +139,10 @@ Function New-LabDomainController {
     $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\$ComputerName.vhdx"
     $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.firstdc.xml"
 
-    $cred = $(Get-Credential -Message "Enter credentials for Lab Domain Controller...")
-
     $NetBIOS = $DomainName.Substring(0, $DomainName.IndexOf('.')).ToUpperInvariant()
 
     $Administrator = New-Object System.Management.Automation.PSCredential "$NetBIOS\Administrator", `
-        $(ConvertTo-SecureString  $cred.GetNetworkCredential().password -AsPlainText -Force)
+        $(ConvertTo-SecureString  $Credentials.GetNetworkCredential().password -AsPlainText -Force)
 
     StopAndRemoveVM $ComputerName
 
@@ -153,7 +152,7 @@ Function New-LabDomainController {
     $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)" 
     Copy-Item -Path $unattend -Destination $unattendFile  -Force
 
-    (Get-Content $unattendFile).replace("P@ssw0rd", $cred.GetNetworkCredential().password) `
+    (Get-Content $unattendFile).replace("P@ssw0rd", $Credentials.GetNetworkCredential().password) `
         | Set-Content $unattendFile
 
     Make-UnattendForStaticIp -vhdxFile $vhdx -unattendTemplate $unattendFile `
