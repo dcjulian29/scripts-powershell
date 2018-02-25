@@ -96,3 +96,8 @@ Function Edit-Profile {
 Function Reload-Profile {
   . $profile
 }
+
+Function Get-LastExecutionTime {
+    $command = Get-History -Count 1    
+    $command.EndExecutionTime - $command.StartExecutionTime
+}
