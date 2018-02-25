@@ -106,6 +106,7 @@ Function New-LabFirewall {
 
     New-VM -Name $computerName -MemoryStartupBytes 512MB -NewVHDPath $vhdx -NewVHDSizeBytes 10GB
     Add-VMDvdDrive -VMName $computerName -Path $iso
+    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
 
     Remove-VMNetworkAdapter -VMName $computerName -Name "Network Adapter"
 
