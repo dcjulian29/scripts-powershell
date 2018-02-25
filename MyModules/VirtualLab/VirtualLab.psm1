@@ -110,11 +110,11 @@ Function New-LabFirewall {
 
     Remove-VMNetworkAdapter -VMName $computerName -Name "Network Adapter"
 
-    Add-VMNetworkAdapter -VMName $computerName -Name "eth0"
-    Add-VMNetworkAdapter -VMName $computerName -Name "eth1"
+    Add-VMNetworkAdapter -VMName $computerName -Name "green0"
+    Add-VMNetworkAdapter -VMName $computerName -Name "red0"
   
-    Connect-VMNetworkAdapter -VMName $computerName -Name "eth0" -SwitchName "Internal"
-    Connect-VMNetworkAdapter -VMName $computerName -Name "eth1" -SwitchName "vTRUNK"
+    Connect-VMNetworkAdapter -VMName $computerName -Name "green0" -SwitchName "Internal"
+    Connect-VMNetworkAdapter -VMName $computerName -Name "red0" -SwitchName "vTRUNK"
   
     Pop-Location
 
