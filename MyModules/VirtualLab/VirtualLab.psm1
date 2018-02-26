@@ -128,7 +128,7 @@ Function New-LabFirewall {
 Function New-LabDomainController {
     param (
         [string]$ComputerName = "DC01",
-        [string]$DomainName = "contoso.local"
+        [string]$DomainName = "contoso.local",
         [psobject]$Credentials = $(Get-Credential -Message "Enter administrative credentials for Domain Controller...")
     )
 
@@ -157,113 +157,165 @@ Function New-LabDomainController {
 
     Make-UnattendForStaticIp -vhdxFile $vhdx -unattendTemplate $unattendFile `
         -computerName $ComputerName -networkAddress "10.10.10.111/24" `
-        -gatewayAddress "10.10.10.10" -nameServer "10.10.10.111"
+        -gatewayAddress "10.10.10.10"
 
-    $script = {
+    $script = @"
     Start-Transcript -OutputDirectory "C:\Windows\Setup\Scripts"
-    Install-Windowsfeature AD-Domain-Services -IncludeManagementTools
-    $password = ConvertTo-SecureString  -string 'P@ssw0rd' -AsPlainText -Force
-    Install-ADDSForest -DomainName "contoso.local" -SafeModeAdministratorPassword $password `
-        -InstallDns -Force -NoRebootOnCompletion
-    Stop-Computer -Force
+
+    Write-Output "Starting SetupComplete at `$([DateTime]::Now)..."
+
+    Set-Content -Path "C:\Windows\Setup\Scripts\install1.ps1" -Encoding Ascii -Value  `@"
+    Start-Transcript -OutputDirectory "C:\Windows\Setup\Scripts"
+
+    Write-Output "Installing Windows Features..."
+    Install-Windowsfeature AD-Domain-Services -IncludeManagementTools -Verbose
+
+    Write-Output "Configuring Active Directory..."
+    ```$password = ConvertTo-SecureString  -string '$($Credentials.GetNetworkCredential().password)' ````
+        -AsPlainText  -Force
+    
+    Install-ADDSForest -DomainName '$DomainName' -SafeModeAdministratorPassword ```$password -InstallDns ````
+        -Force -NoRebootOnCompletion -Verbose
+
+    Set-Content -Path "C:\Windows\Setup\Scripts\startup.bat" -Encoding Ascii -Value  `@"
+    powershell.exe -NoProfile -NoLogo -NoExit -Command "& C:\Windows\Setup\Scripts\install2.ps1"
+"``@
+
     Stop-Transcript
+
+    Restart-Computer -Force -Verbose
+"`@
+
+    Set-Content -Path "C:\Windows\Setup\Scripts\install2.ps1" -Encoding Ascii -Value  `@"
+    Start-Transcript -OutputDirectory "C:\Windows\Setup\Scripts"
+
+    Install-WindowsFeature Rsat-AD-PowerShell, Web-Server -IncludeManagementTools 
+    Install-WindowsFeature DHCP -IncludeManagementTools
+
+    Add-DhcpServerV4Scope -Name $DomainName ````
+        -StartRange 10.10.10.200 -EndRange 10.10.10.225 -SubnetMask 255.255.255.0
+    Set-DhcpServerV4OptionValue -DnsDomain $DomainName -DnsServer 10.10.10.111
+    Add-DhcpServerInDC -DnsName $ComputerName.$DomainName -Verbose
+
+    New-ADUser -SamAccountName 'labuser' -Enable ```$true ````
+        -UserPrincipalName 'labuser@$DomainName' -Name 'Lab User Account' ````
+        -AccountPassword ```$pass -ChangePasswordAtLogon ```$true
+
+    Install-WindowsFeature Web-Scripting-Tools -IncludemanagementTools
+    Install-WindowsFeature AD-Certificate, Adcs-Cert-Authority -IncludemanagementTools
+    Install-WindowsFeature Adcs-Enroll-Web-Svc, Adcs-Web-Enrollment, Adcs-Enroll-Web-Pol -IncludemanagementTools
+
+    ```$username   = "$NetBIOS\Administrator"
+    ```$pass = ConvertTo-SecureString -String '$($Credentials.GetNetworkCredential().password)' -AsPlainText -Force
+    ```$cred = New-Object System.Management.Automation.PSCredential ```$username,```$pass
+
+    Write-Output "Installing CA using ```$(```$cred.UserName)"
+    Install-AdcsCertificationAuthority -CACommonName 'VirtualsCA' -CAType 'EnterpriseRootCA' ````
+        -KeyLength 2048 -Cred ```$cred -OverwriteExistingCAinDS -Force -Verbose 
+
+    Write-Output 'Installing ADCS web enrollment feature'
+
+    Install-AdcsWebEnrollment -Force -Verbose
+
+    New-WebBinding -Name "Default Web Site" -IP "*" -Port 443 -Protocol https
+
+    Write-Output "Waiting for $ComputerName certificate to be created"
+    Gpupdate /Target:Computer /Force | Out-Null
+    Start-Sleep -Seconds 5
+
+    While (! (Get-ChildItem Cert:\LocalMachine\My | Where Subject -Match $ComputerName)) {
+      Write-Output "Sleeping for another 5 seconds waiting for $ComputerName certificate..."
+      Start-sleep -seconds 5
     }
 
-    $script = $script -replace 'P@ssw0rd', $cred.GetNetworkCredential().password
-    $script = $script -replace 'contoso.local', $DomainName
+    ```$cert = (Get-ChildItem Cert:\localmachine\my | Where Subject -Match '$ComputerName')
+    Write-Output "Certificate being used is: [```$(```$cert.thumbprint)]"
+
+    Write-Output "Setting SSL bindings with this certificate"
+    New-Item IIS:\SSLBindings\0.0.0.0!443 -value ```$cert
+
+    Write-Output "######### Active Directory Configuration Complete.\n\n"
+
+    Write-Output "Removing Auto-Logon Registry Keys..."
+    reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /f
+    reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /f
+    reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonSID /f
+    reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultDomainName /f
+    reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultUserName /f
+
+    Remove-Item C:\Windows\Setup\Scripts\*.ps1 -Verbose -Force
+    Remove-Item C:\Windows\Setup\Scripts\*.bat -Verbose -Force
+    Remove-Item C:\Windows\Setup\Scripts\*.cmd -Verbose -Force
+    Remove-Item "`$(`$env:SYSTEMDRIVE)\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\Start.bat" ````
+        -Verbose -Force
+
+    Write-Output "Turning UAC back on..."
+    reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System ````
+        /v EnableLUA /t REG_DWORD /d 1 /f 
+
+    Stop-Transcript
+
+    Restart-Computer -Force -Verbose
+"`@
+
+    Write-Output "Install Scripts Written..."
+
+    Write-Output "Removing 'unattend' Files..."
+
+    if (Test-Path `$env:SYSTEMDRIVE\unattend.xml) {
+        Remove-Item `$env:SYSTEMDRIVE\unattend.xml -Force
+    }
+
+    if (Test-Path `$env:SYSTEMDRIVE\Convert-WindowsImageInfo.txt) {
+        Remove-Item `$env:SYSTEMDRIVE\Convert-WindowsImageInfo.txt -Force
+    }
+
+    Write-Output "Setting PowerShell Execution Policy..."
+    reg add HKLM\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell ``
+        /v ExecutionPolicy /t REG_SZ /d RemoteSigned /f 
+
+    Write-Output "Turning off UAC while startup scripts are running..."
+    reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System ``
+        /v EnableLUA /t REG_DWORD /d 0 /f 
+
+    Set-Content -Path "C:\Windows\Setup\Scripts\startup.bat" -Encoding Ascii -Value  `@"
+    powershell.exe -NoProfile -NoLogo -NoExit -Command "``& C:\Windows\Setup\Scripts\install1.ps1"
+"`@
+
+    Write-Output "Waiting for Global 'Start-Up' Directory to be created..."
+
+    `$fileNotFound = `$true
+    while (`$fileNotFound) {
+        Write-Output "Current Time is `$([DateTime]::Now)..."
+        if (Test-Path "`$(`$env:SYSTEMDRIVE)\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp") {
+            Write-Output "Found Global 'Start-Up' Directory, Inserting Start Script..."
+            Set-Content "`$(`$env:SYSTEMDRIVE)\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\Start.bat" ``
+                "@cmd.exe /c C:\Windows\Setup\Scripts\startup.bat"
+            `$fileNotFound = `$false
+        }
+    
+        Start-Sleep -Seconds 1
+    }
+
+    Write-Output "Finish SetupComplete at `$([DateTime]::Now)..."
+
+    Stop-Transcript
+
+    Restart-Computer -Force
+"@
 
     $scriptBlock = [Scriptblock]::Create($script)
 
-    Inject-VMStartUpScriptBlock -vhdxFile $vhdx -Scriptblock $scriptBlock `
-        -arguments $cred.GetNetworkCredential().password
+    Inject-VMStartUpScriptBlock -vhdxFile $vhdx -Scriptblock $scriptBlock
 
     New-VirtualMachine -vhdxFile $vhdx -computerName $ComputerName -virtualSwitch "Internal" 
 
     Set-VMMemory -VMName $computerName -MaximumBytes 1GB -MinimumBytes 512MB
     Set-VM -Name $computerName -AutomaticStartAction Nothing
     Set-Vm -Name $computerName -AutomaticStopAction Save  
+    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
 
     Start-VM -VMName $ComputerName
-
-    Write-Output "Waiting for Domain Controller VM to complete initial install of Active Directory..."
-    While ((Get-VM -name $ComputerName).State -ne "Off" ) {
-        Start-Sleep -Seconds 5
-    }
-
-    Write-Output "Restarting Domain Controller VM..."
-    Start-VM -VMName $ComputerName
-
-    Write-Output "Waiting for Domain Controller VM to finish starting..."
-
-    Start-Sleep -Seconds 30
-
-    While ($true) {
-        try {
-            Invoke-Command -ComputerName "$ComputerName.$DomainName" -Scriptblock {ipconfig} -Credential $Administrator -ErrorAction Stop | Out-Null
-            break
-        }
-        Catch [system.exception] {
-            Write-Output "Not Yet!!!    ---    $(Get-Date)"
-            Start-Sleep -Seconds 15
-        }
-    }
-
-    $script = {
-    Start-Transcript -OutputDirectory "C:\Windows\Setup\Scripts"
-    Install-WindowsFeature Rsat-AD-PowerShell, Web-Server -IncludeManagementTools 
-    Install-WindowsFeature DHCP -IncludeManagementTools
-
-    Add-DhcpServerV4Scope -Name "contoso.local" `
-        -StartRange 10.10.10.200 -EndRange 10.10.10.225 -SubnetMask 255.255.255.0
-    Set-DhcpServerV4OptionValue -DnsDomain contoso.local -DnsServer 10.10.10.111
-    Add-DhcpServerInDC -DnsName DC01.contoso.local -Verbose
-
-    $username   = "CONTOSO\Administrator"
-    $pass = ConvertTo-SecureString -String 'P@ssw0rd' -AsPlainText -Force
-    $cred = New-Object System.Management.Automation.PSCredential $username,$pass
-
-    New-ADUser -SamAccountName 'labuser' -Enable $true `
-        -UserPrincipalName 'labuser@contoso.local' -Name 'Lab User Account' `
-        -AccountPassword $pass -PasswordNeverExpires $true -ChangePasswordAtLogon $false
-
-    Install-WindowsFeature Web-Scripting-Tools -IncludemanagementTools
-    Install-WindowsFeature AD-Certificate, Adcs-Cert-Authority -IncludemanagementTools
-    Install-WindowsFeature Adcs-Enroll-Web-Svc, Adcs-Web-Enrollment, Adcs-Enroll-Web-Pol -IncludemanagementTools
-
-    Write-Output "Installing CA using $($cred.UserName)"
-    Install-AdcsCertificationAuthority -CACommonName 'VirtualsCA' -CAType 'EnterpriseRootCA' `
-        -KeyLength 2048 -Cred $cred -OverwriteExistingCAinDS -Force -Verbose 
-
-    Write-Output 'Installing ADCS web enrollment feature'
-     Install-AdcsWebEnrollment -Force -Verbose
-    New-WebBinding -Name "Default Web Site" -IP "*" -Port 443 -Protocol https
-
-    Write-Output "Waiting for DC01 certificate to be created"
-    Gpupdate /Target:Computer /Force #| Out-Null
-    Start-Sleep -Seconds 5
-
-    While (! (Get-ChildItem Cert:\LocalMachine\My | Where Subject -Match 'DC01')) {
-      Write-Output "Sleeping for another 5 seconds waiting for DC01 certificate..."
-      Start-sleep -seconds 5
-    }
-
-    $cert = (Get-ChildItem Cert:\localmachine\my | Where Subject -Match 'DC01')
-    Write-Output "Certificate being used is: [$($cert.thumbprint)]"
-
-    Write-Output "Setting SSL bindings with this certificate"
-    New-Item IIS:\SSLBindings\0.0.0.0!443 -value $cert      
-    Stop-Transcript
-    }
-
-    $script = $script -replace 'P@ssword', $cred.GetNetworkCredential().password
-    $script = $script -replace 'labuser', $cred.UserName
-    $script = $script -replace 'DC01', $ComputerName
-    $script = $script -replace 'contoso.local', $DomainName
-    $script = $script -replace 'CONTOSO\\', "$NetBIOS\"
-
-    $scriptBlock = [Scriptblock]::Create($script)
-
-    Invoke-Command -ComputerName $ComputerName -Scriptblock $scriptBlock -Credential $Administrator -verbose
 
     $ErrorActionPreference = $ErrorPreviousAction
 }
