@@ -2,15 +2,30 @@
     Write-Host "Examining Installed Packages..."
     $packages = choco.exe upgrade all -r -whatif
 
+    $output = @()
+
     foreach ($package in $packages) {
         $Name = $package.Split('|')[0]
         $localVersion = $package.Split('|')[1]
         $remoteVersion = $package.Split('|')[2]
 
         if ($localVersion -ne $remoteVersion) {
-            "{0,-25}Newer version available: $remoteVersion (installed: $localVersion)" -f $Name
+            #"{0,-35}Newer version available: $remoteVersion (installed: $localVersion)" -f $Name
+            $item = New-Object PSObject -Property @{
+                'Name' = $Name
+                'RemoteVersion' = $remoteVersion
+                'LocalVersion' = $localVersion
+            }
+
+            $output += $item
         }
     }
+
+    $line = @{Expression={$_.Name};Label="Name";width=40}, `
+            @{Expression={$_.LocalVersion};Label="Installed Version";width=20}, `
+            @{Expression={$_.RemoteVersion};Label="New Version";width=20}
+
+    $Output | Format-Table $line
 }
 
 Function Find-InstalledChocolateyPackages {
