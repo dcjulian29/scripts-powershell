@@ -480,6 +480,142 @@ Function New-VirtualMachineFromName {
     Pop-Location
 }
 
+Function New-ClusteredVirtualMachineFromISO {
+    [Cmdletbinding()]
+    param (
+        [parameter(Mandatory=$true)]
+        [string] $Name,
+        [parameter(Mandatory=$true)]
+        [string] $ClusterNode,
+        [string] $VirtualSwitch = "vTRUNK",
+        [Int64] $StartupMemory = 1024MB,
+        [Int64] $MaximumMemory = 4GB,
+        [Int32] $ProcessorCount = 2,
+        [Int64] $DiskSize = 80GB,
+        [Int32] $VLAN = 0,
+        [Int32] $ClusterVolume = 1,
+        [string] $ISOPath
+    )
+
+    $Name = $Name.ToUpperInvariant()
+    $clusterDirectory = "C:\ClusterStorage\Volume$ClusterVolume"
+
+    $script = @"    
+    if (Test-Path "$clusterDirectory\$Name") {
+        Remove-Item -Recurse -Force "$clusterDirectory\$Name"
+    }
+
+    New-Item -ItemType Directory -Path "$clusterDirectory\$Name"
+    New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Snapshots"
+    New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Hard Disk"
+    New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Machines"    
+
+    New-VM -Name $Name ``
+        -NewVHDPath "$clusterDirectory\$Name\Virtual Hard Disk\$Name.VHDX" ``
+        -NewVHDSizeBytes $DiskSize -Generation 2 -Path "$clusterDirectory"
+
+    Set-VMMemory -VMName $Name -DynamicMemoryEnabled `$true -StartupBytes $StartupMemory
+    Set-VMMemory -VMName $Name -MinimumBytes 1GB -MaximumBytes $MaximumMemory
+    
+    Set-VM -Name $Name -AutomaticStartAction Start
+    Set-VM -Name $Name -AutomaticStopAction Save
+
+    Set-VMProcessor -VMName $Name -CompatibilityForMigrationEnabled 1
+
+    Connect-VMNetworkAdapter -VMName $Name –Switch $VirtualSwitch
+
+    if ($VLAN -gt 0) {
+        Set-VMNetworkAdapterVlan -VMName $Name -Access -VlanId $VLAN
+    }
+    
+    Set-VMProcessor -VMName $Name -Count $ProcessorCount
+   
+    Add-VMDvdDrive -VMName $Name -Path $ISOPath
+    Set-VMFirmware $Name -FirstBootDevice `$(Get-VMDvdDrive $Name)
+    Set-VMFirmware $Name -EnableSecureBoot Off
+
+    Get-VM -Name $Name | Add-ClusterVirtualMachineRole
+"@
+
+    $scriptBlock = [Scriptblock]::Create($script) 
+
+    Invoke-Command -ComputerName $ClusterNode -ScriptBlock $scriptBlock
+}
+
+Function New-ClusteredVMFromWindowsBaseDisk {
+    [Cmdletbinding()]
+    param (
+        [parameter(Mandatory=$true)]
+        [string] $Name,
+        [parameter(Mandatory=$true)]
+        [string] $ClusterNode,
+        [string] $VirtualSwitch = "vTRUNK",
+        [Int64] $StartupMemory = 1024MB,
+        [Int64] $MaximumMemory = 4GB,
+        [Int32] $ProcessorCount = 2,
+        [Int32] $VLAN,
+        [Int32] $ClusterVolume = 1,
+        [Int32] $OsVersion = 2016,
+        [switch] $UseCore,
+        [switch] $CopyDiskFile
+    )
+
+    $Name = $Name.ToUpperInvariant()
+    $clusterDirectory = "C:\ClusterStorage\Volume$ClusterVolume"
+
+    $script = @"    
+    if (Test-Path "$clusterDirectory\$Name") {
+        Remove-Item -Recurse -Force "$clusterDirectory\$Name"
+    }
+
+    New-Item -ItemType Directory -Path "$clusterDirectory\$Name"
+    New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Snapshots"
+    New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Hard Disk"
+    New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Machines"    
+
+    #UseCore
+    if ("$UseCore" -eq "True") {
+        `$BaseImage = "`$((Get-ChildItem -Path "$clusterDirectory\Win$OsVersion*ServerCoreBase*.vhdx").FullName)"
+    } else {
+        `$BaseImage = "`$((Get-ChildItem -Path "$clusterDirectory\Win$OsVersion*ServerBase*.vhdx").FullName)"
+    }
+
+    #CopyDiskFile
+    if ("$CopyDiskFile" -eq "True") {
+        Copy-Item -Path `$BaseImage -Destination "$clusterDirectory\$Name\Virtual Hard Disk\$Name.VHDX" -Verbose
+    } else {
+        New-VHD –Path "$clusterDirectory\$Name\Virtual Hard Disk\$Name.VHDX" ``
+            -Differencing –ParentPath `$BaseImage
+    }
+
+    New-VM -Name $Name ``
+        –VHDPath "$clusterDirectory\$Name\Virtual Hard Disk\$Name.VHDX" ``
+        -Generation 2 -Path "$clusterDirectory"
+
+    Set-VMMemory -VMName $Name -DynamicMemoryEnabled `$true -StartupBytes $StartupMemory
+    Set-VMMemory -VMName $Name -MinimumBytes 1GB -MaximumBytes $MaximumMemory
+    
+    Set-VM -Name $Name -AutomaticStartAction Start
+    Set-VM -Name $Name -AutomaticStopAction Save
+
+    Set-VMProcessor -VMName $Name -CompatibilityForMigrationEnabled 1
+
+    Connect-VMNetworkAdapter -VMName $Name –Switch $VirtualSwitch
+
+    if ($VLAN -gt 0) {
+        Set-VMNetworkAdapterVlan -VMName $Name -Access -VlanId $VLAN
+    }
+    
+    Set-VMProcessor -VMName $Name -Count $ProcessorCount
+    
+    Get-VM -Name $Name | Add-ClusterVirtualMachineRole
+"@
+
+    $scriptBlock = [Scriptblock]::Create($script) 
+
+    Invoke-Command -ComputerName $ClusterNode -ScriptBlock $scriptBlock
+}
+
 ###############################################################################
 
 Export-ModuleMember Convert-WindowsImage
@@ -499,6 +635,8 @@ Export-ModuleMember Inject-UpdatesToVhdx
 Export-ModuleMember New-VirtualMachine
 Export-ModuleMember New-VirtualMachineFromCsv
 Export-ModuleMember New-VirtualMachineFromName
+Export-ModuleMember New-ClusteredVirtualMachineFromISO
+Export-ModuleMember New-ClusteredVMFromWindowsBaseDisk
 
 Set-Alias New-ReferenceVHDX New-SystemVHDX
 Export-ModuleMember -Alias New-ReferenceVHDX
