@@ -20,7 +20,7 @@
     }
 }
 
-Function NewLabServer {
+Function NewLabWindowsServer {
     param (
         [string]$ComputerName,
         [Int32]$OsVersion,
@@ -43,10 +43,12 @@ Function NewLabServer {
 
     Make-UnattendForDhcpIp -vhdxFile $vhdx -unattendTemplate $unattendFile -computerName $computerName
 
-    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName -memory 4GB -Verbose
+    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName -memory 2GB -Verbose
 
     Set-VMMemory -VMName $computerName -MinimumBytes 1GB
-    Set-Vm -Name $computerName -AutomaticStopAction Save    
+    Set-VM -Name $computerName -AutomaticStartAction Nothing
+    Set-Vm -Name $computerName -AutomaticStopAction Save
+    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
 
     Pop-Location
 
@@ -57,31 +59,72 @@ Function NewLabServer {
     $ErrorActionPreference = $ErrorPreviousAction
 }
 
-Function New-LabLinuxServer {
+###############################################################################
+
+Function New-LabUbuntuServer {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         $ComputerName,
-        [string]$iso = "$((Get-VMHost).VirtualHardDiskPath)\ISO\ubuntu-16.04.3-server-amd64.iso"
+        [string]$ISOFilePath
+    )
+    
+    if ($ISOFilePath -eq "") {
+
+        $isoDir = "$((Get-VMHost).VirtualHardDiskPath)\ISO"
+
+        $latest = Get-ChildItem -Filter "ubuntu-16.04*" -Path $isoDir `
+            | Sort-Object Name -Descending `
+            | Select-Object -First 1
+
+        $isoFile = $latest.name
+
+        $ISOFilePath = "$isoDir\$isoFile"
+    }
+
+    New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $ISOFilePath
+}
+
+Function New-LabVMFromISO {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName,
+        [Parameter(Mandatory=$true)]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $ISOFilePath,
+        [string] $Switch = "Internal"
     )
 
     $ErrorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
 
     $computerName = $computerName.ToUpperInvariant()
+
+    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+
     $vhdx = "$ComputerName.vhdx"
 
     StopAndRemoveVM $ComputerName
 
-    New-VM -Name $computerName -NewVHDPath $vhdx -NewVHDSizeBytes 40GB -Generation 2
-    Add-VMDvdDrive -VMName $computerName -Path $iso
-    Set-VMFirmware $computerName -FirstBootDevice $(Get-VMDvdDrive $computerName)
-    Set-VMFirmware $computerName -EnableSecureBoot Off
+    New-VHD -Path $vhdx -SizeBytes 80GB -Dynamic
 
-    Connect-VMNetworkAdapter -VMName $computerName -SwitchName "Internal"
+    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName -Generation 2 -Verbose
 
     Set-VMMemory -VMName $computerName -DynamicMemoryEnabled $true -StartupBytes 1GB
     Set-VMMemory -VMName $computerName -MinimumBytes 512MB
+    
+    Set-VM -Name $ComputerName -AutomaticStartAction Nothing
+    Set-Vm -Name $ComputerName -AutomaticStopAction Save    
+    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
+
+    Add-VMDvdDrive -VMName $computerName -Path $ISOFilePath
+    Set-VMFirmware $computerName -FirstBootDevice $(Get-VMDvdDrive $computerName)
+    Set-VMFirmware $computerName -EnableSecureBoot Off
+
+    Connect-VMNetworkAdapter -VMName $computerName -SwitchName $Switch
+
+    Pop-Location
 
     Start-VM -VMName $computerName
 
@@ -117,6 +160,10 @@ Function New-LabFirewall {
     Connect-VMNetworkAdapter -VMName $computerName -Name "red0" -SwitchName "vTRUNK"
   
     Pop-Location
+
+    Set-VM -Name $computerName -AutomaticStartAction Nothing
+    Set-Vm -Name $computerName -AutomaticStopAction Save  
+    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
 
     Start-VM -VMName $computerName
 
@@ -325,12 +372,11 @@ Function New-LabWorkstation {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         $ComputerName,
-        $Credentials = $(Get-Credentials -Message "Enter Lab Domain Administrator Account (UPN)")
+        $Credentials,
+        [Switch]$DomainJoin,
+        $Switch = "Internal"
     )
 
-
-    #TODO Update script to copy/inject/info similar to DC...
-    #     Update unattend to do domain admin login to run choco commands ???
 
     $ErrorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
@@ -340,10 +386,15 @@ Function New-LabWorkstation {
     $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.workstation.domain.xml"
     $BaseImage = "$((Get-VMHost).VirtualHardDiskPath)\Win10Base.vhdx"
     $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\$ComputerName.vhdx"
-    $password = $(Get-Credential -Message "Enter Password for VM...")
     $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
 
     StopAndRemoveVM $ComputerName
+    
+    if ($DomainJoin -and ($Credentials -eq $null) {
+        $Credentials = $(Get-Credentials -Message "Enter Lab Domain Administrator Account (UPN)")
+    } else {
+        $Credentials = $(Get-Credential -Message "Enter Password for VM..." -Username "Administrator")
+    }
 
     Push-Location $((Get-VMHost).VirtualHardDiskPath)
 
@@ -352,7 +403,7 @@ Function New-LabWorkstation {
     $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)" 
     Copy-Item -Path $unattend -Destination $unattendFile  -Force
 
-    (Get-Content $unattendFile).replace("P@ssw0rd", $password.GetNetworkCredential().password) `
+    (Get-Content $unattendFile).replace("P@ssw0rd", $Credentials.GetNetworkCredential().password) `
         | Set-Content $unattendFile
 
     Make-UnattendForDhcpIp -vhdxFile $vhdx -unattendTemplate $unattendFile -computerName $computerName
@@ -361,10 +412,12 @@ Function New-LabWorkstation {
 
     Inject-StartLayout -vhdxFile $vhdx -layoutFile $startLayout
 
-    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName -memory 2GB -Verbose
+    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName `
+        -virtualSwitch $Switch -memory 2GB -Verbose
 
     Set-VMMemory -VMName $computerName -MinimumBytes 1GB
     Set-Vm -Name $computerName -AutomaticStopAction Save    
+    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
 
     Pop-Location
 
@@ -377,7 +430,7 @@ Function New-LabWorkstation {
     $ErrorActionPreference = $ErrorPreviousAction
 }
 
-Function New-LabServer2012R2VM {
+Function New-LabWindows2012R2Server {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -385,10 +438,10 @@ Function New-LabServer2012R2VM {
         [string]$UnattendFile
     )
 
-    NewLabServerVM $ComputerName 2012R2 $UnattendFile
+    NewLabWindowsServerVM $ComputerName 2012R2 $UnattendFile
 }
 
-Function New-LabServer2016VM {
+Function New-LabWindows2016Server {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -396,7 +449,7 @@ Function New-LabServer2016VM {
         [string]$UnattendFile
     )
 
-    NewLabServerVM $ComputerName 2016 $UnattendFile
+    NewLabWindowsServerVM $ComputerName 2016 $UnattendFile
 }
 
 ###############################################################################
@@ -405,10 +458,13 @@ Export-ModuleMember New-LabFirewall
 Export-ModuleMember New-LabDomainController
 
 Export-ModuleMember New-LabWorkstation
-Export-ModuleMember New-Lab2012R2Server
-Export-ModuleMember New-Lab2016Server
 
-Export-ModuleMember New-LabLinuxServer
+Export-ModuleMember New-LabWindows2012R2Server
+Export-ModuleMember New-LabWindows2016Server
+
+Export-ModuleMember New-LabUbuntuServer
+
+Export-ModuleMember New-LabVMFromISO
 
 #Export-ModuleMember New-LabWebServer
 

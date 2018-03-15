@@ -20,6 +20,8 @@
     }
 }
 
+###############################################################################
+
 Function New-DevVM {
     $ErrorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
@@ -77,8 +79,9 @@ Function New-DevVM {
 
     Set-VMMemory -VMName $computerName -MaximumBytes $maxMem -MinimumBytes 1GB
     Set-VM -Name $computerName -AutomaticStartAction Nothing
-    Set-Vm -Name $computerName -AutomaticStopAction Save    
-
+    Set-Vm -Name $computerName -AutomaticStopAction Save
+    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
+ 
     Pop-Location
 
     Start-VM -VMName $computerName
@@ -144,6 +147,7 @@ Function New-LinuxDevVM {
     Set-VMMemory -VMName $ComputerName -MaximumBytes $maxMem -MinimumBytes 1GB
     Set-VM -Name $ComputerName -AutomaticStartAction Nothing
     Set-Vm -Name $ComputerName -AutomaticStopAction Save    
+    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
 
     Pop-Location
 
@@ -211,156 +215,6 @@ Function Install-DevVmPackage {
     }
 }
 
-Function New-WorkstationVM {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        $ComputerName
-    )
-
-    $computerName = $computerName.ToUpperInvariant()
-
-    $ErrorPreviousAction = $ErrorActionPreference
-    $ErrorActionPreference = "Stop";
-    $StartScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
-    $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.xml"
-    $BaseImage = "$((Get-VMHost).VirtualHardDiskPath)\Win10Base.vhdx"
-    $vhdx = "$ComputerName.vhdx"
-    $password = $(Get-Credential -Message "Enter Password for VM...")
-    $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
-
-    StopAndRemoveVM $ComputerName
-
-    Push-Location $((Get-VMHost).VirtualHardDiskPath)
-
-    New-DifferencingVHDX -referenceDisk $BaseImage -vhdxFile "$vhdx"
-
-    $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)" 
-    Copy-Item -Path $unattend -Destination $unattendFile  -Force
-
-    (Get-Content $unattendFile).replace("P@ssw0rd", $password.GetNetworkCredential().password) `
-        | Set-Content $unattendFile
-
-    Make-UnattendForDhcpIp -vhdxFile $vhdx -unattendTemplate $unattendFile -computerName $computerName
-
-    Inject-VMStartUpScriptFile -vhdxFile $vhdx -scriptFile $StartScript -argument "myvm-workstation"
-
-    Inject-StartLayout -vhdxFile $vhdx -layoutFile $startLayout
-
-    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName -memory 2GB -Verbose
-
-    Set-VMMemory -VMName $computerName -MinimumBytes 1GB
-    Set-Vm -Name $computerName -AutomaticStopAction Save    
-
-    Pop-Location
-
-    Start-VM -VMName $computerName
-
-    Start-Sleep 5
-
-    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $computerName"
-
-    $ErrorActionPreference = $ErrorPreviousAction
-}
-
-Function New-ServerVM {
-    param (
-        [string]$ComputerName,
-        [Int32]$OsVersion,
-        [string]$UnattendFile ="${env:SYSTEMDRIVE}\etc\vm\unattend.server.xml"
-    )
-
-    $ErrorPreviousAction = $ErrorActionPreference
-    $ErrorActionPreference = "Stop";
-
-    Push-Location $((Get-VMHost).VirtualHardDiskPath)
-
-    $BaseImage = "$((Get-ChildItem -Path "Win$OsVersion*ServerBase*.vhdx").FullName)"
-
-    $computerName = $computerName.ToUpperInvariant()
-    $vhdx = "$ComputerName.vhdx"
-
-    StopAndRemoveVM $ComputerName
-
-    New-DifferencingVHDX -referenceDisk $BaseImage -vhdxFile "$vhdx"
-
-    Make-UnattendForDhcpIp -vhdxFile $vhdx -unattendTemplate $unattendFile -computerName $computerName
-
-    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName -memory 2GB -Verbose
-
-    Set-VMMemory -VMName $computerName -MinimumBytes 1GB
-    Set-Vm -Name $computerName -AutomaticStopAction Save    
-
-    Pop-Location
-
-    Start-VM -VMName $computerName
-
-    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $computerName"
-
-    $ErrorActionPreference = $ErrorPreviousAction
-}
-
-Function New-Server2012VM {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        $ComputerName
-    )
-
-    New-ServerVM $ComputerName 2012
-}
-
-Function New-Server2016VM {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        $ComputerName
-    )
-
-    New-ServerVM $ComputerName 2016
-}
-
-Function New-VMFromISO {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        $ComputerName,
-        [Parameter(Mandatory=$true)]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $ISOFilePath
-    )
-
-    $ErrorPreviousAction = $ErrorActionPreference
-    $ErrorActionPreference = "Stop";
-
-    $computerName = $computerName.ToUpperInvariant()
-
-    Push-Location $((Get-VMHost).VirtualHardDiskPath)
-
-    $vhdx = "$ComputerName.vhdx"
-
-    StopAndRemoveVM $ComputerName
-
-    New-VHD -Path $vhdx -SizeBytes 80GB -Dynamic
-
-    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName -memory 4GB -Verbose
-
-    Set-VMMemory -VMName $computerName -MinimumBytes 1GB
-    Set-Vm -Name $computerName -AutomaticStopAction Save
-
-    Add-VMDvdDrive -VMName $computerName -Path $ISOFilePath
-    Set-VMFirmware $computerName -FirstBootDevice $(Get-VMDvdDrive $computerName)
-    Set-VMFirmware $computerName -EnableSecureBoot Off
-
-    Pop-Location
-
-    Start-VM -VMName $computerName
-
-    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $computerName"
-
-    $ErrorActionPreference = $ErrorPreviousAction
-}
-
 ###############################################################################
 
 Export-ModuleMember Install-DevVmPackage
@@ -368,8 +222,3 @@ Export-ModuleMember Install-DevVmPackage
 Export-ModuleMember New-DevVM
 Export-ModuleMember New-LinuxDevVM
 
-Export-ModuleMember New-WorkstationVM
-Export-ModuleMember New-Server2012VM
-Export-ModuleMember New-Server2016VM
-
-Export-ModuleMember New-VMFromISO
