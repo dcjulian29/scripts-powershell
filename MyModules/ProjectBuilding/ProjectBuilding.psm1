@@ -78,19 +78,18 @@ Function Invoke-ArchiveProject {
 
     Push-Location $Path
 
-
     Get-ChildItem -Filter "*.sln" -Recurse | % { 
-        Invoke-CleanAllProjects "$($_.FullName)" -Configuration "Debug"
+        Invoke-CleanProject "$($_.FullName)" -Configuration "Debug"
     }
 
     Get-ChildItem -Filter "*.sln" -Recurse | % { 
-        Invoke-CleanAllProjects "$($_.FullName)" -Configuration "Release"
+        Invoke-CleanProject "$($_.FullName)" -Configuration "Release"
     }
 
     $destination = $(Join-Path (Split-Path -Path $Path -Parent) `
-        -ChildPath "$(Split-Path -Path $Path.Path -Leaf).7z")
+        -ChildPath "$(Split-Path -Path $Path -Leaf).7z")
 
-    Write-Output "Archiving $(Split-Path -Path $Path.Path -Leaf)..."
+    Write-Output "Archiving $(Split-Path -Path $Path -Leaf)..."
 
     $zip = Join-Path $(Find-ProgramFiles "7-Zip") -ChildPath "7z.exe"
 
