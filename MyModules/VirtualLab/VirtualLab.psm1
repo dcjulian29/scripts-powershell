@@ -135,37 +135,50 @@ Function New-LabVMFromISO {
 
 Function New-LabFirewall {
     param (
-        [string]$ComputerName = "FIREWALL",
-        [string]$iso = "$((Get-VMHost).VirtualHardDiskPath)\ISO\ipfire-2.19.i586-full-core118.iso"
+        [string]$ComputerName = "FIREWALL"
     )
 
     $ErrorPreviousAction = $ErrorActionPreference
-    $ErrorActionPreference = "Stop";
+    $ErrorActionPreference = "Stop"
 
-    $computerName = $computerName.ToUpperInvariant()
+    $isoDir = "$((Get-VMHost).VirtualHardDiskPath)\ISO"
+
+    $latest = Get-ChildItem -Filter "pfSense-*" -Path $isoDir `
+        | Sort-Object Name -Descending `
+        | Select-Object -First 1
+
+    $isoFile = $latest.name
+
+    $iso = "$isoDir\$isoFile"
+
+    $ComputerName = $ComputerName.ToUpperInvariant()
     $vhdx = "$ComputerName.vhdx"
 
     StopAndRemoveVM $ComputerName
 
-    New-VM -Name $computerName -MemoryStartupBytes 512MB -NewVHDPath $vhdx -NewVHDSizeBytes 10GB
-    Add-VMDvdDrive -VMName $computerName -Path $iso
-    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
+    New-VM -Name $ComputerName -MemoryStartupBytes 512MB -NewVHDPath $vhdx -NewVHDSizeBytes 10GB -Generation 2
 
-    Remove-VMNetworkAdapter -VMName $computerName -Name "Network Adapter"
+    Add-VMDvdDrive -VMName $ComputerName -Path $iso
+    Set-VMFirmware $ComputerName -FirstBootDevice $(Get-VMDvdDrive $ComputerName)
+    Set-VMFirmware $ComputerName -EnableSecureBoot Off
 
-    Add-VMNetworkAdapter -VMName $computerName -Name "green0"
-    Add-VMNetworkAdapter -VMName $computerName -Name "red0"
+    Remove-VMNetworkAdapter -VMName $ComputerName -Name "Network Adapter"
+
+    Add-VMNetworkAdapter -VMName $ComputerName -Name "LAN"
+    Add-VMNetworkAdapter -VMName $ComputerName -Name "WAN"
   
-    Connect-VMNetworkAdapter -VMName $computerName -Name "green0" -SwitchName "Internal"
-    Connect-VMNetworkAdapter -VMName $computerName -Name "red0" -SwitchName "vTRUNK"
+    Connect-VMNetworkAdapter -VMName $ComputerName -Name "LAN" -SwitchName "Internal"
+    Connect-VMNetworkAdapter -VMName $ComputerName -Name "WAN" -SwitchName "vTRUNK"
   
     Pop-Location
 
-    Set-VM -Name $computerName -AutomaticStartAction Nothing
-    Set-Vm -Name $computerName -AutomaticStopAction Save  
-    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
+    Set-VM -Name $ComputerName -AutomaticStartAction Nothing
+    Set-Vm -Name $ComputerName -AutomaticStopAction Save    
+    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false  
 
-    Start-VM -VMName $computerName
+    Write-Warning "Be sure to eject the ISO File after installation is complete."
+
+    Start-VM -VMName $ComputerName
 
     vmconnect.exe localhost $computername
 
@@ -390,7 +403,7 @@ Function New-LabWorkstation {
 
     StopAndRemoveVM $ComputerName
     
-    if ($DomainJoin -and ($Credentials -eq $null) {
+    if ($DomainJoin -and ($Credentials -eq $null)) {
         $Credentials = $(Get-Credentials -Message "Enter Lab Domain Administrator Account (UPN)")
     } else {
         $Credentials = $(Get-Credential -Message "Enter Password for VM..." -Username "Administrator")
