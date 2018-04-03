@@ -20,7 +20,7 @@
     }
 }
 
-Function NewLabWindowsServer {
+Function NewLabWindowsServerVM {
     param (
         [string]$ComputerName,
         [Int32]$OsVersion,
