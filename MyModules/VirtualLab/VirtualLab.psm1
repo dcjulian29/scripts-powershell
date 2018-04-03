@@ -109,14 +109,14 @@ Function New-LabVMFromISO {
 
     New-VHD -Path $vhdx -SizeBytes 80GB -Dynamic
 
-    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName -Generation 2 -Verbose
+    New-VM -Name $ComputerName -VHDPath $vhdx -Generation 2
 
     Set-VMMemory -VMName $computerName -DynamicMemoryEnabled $true -StartupBytes 1GB
     Set-VMMemory -VMName $computerName -MinimumBytes 512MB
     
     Set-VM -Name $ComputerName -AutomaticStartAction Nothing
-    Set-Vm -Name $ComputerName -AutomaticStopAction Save    
-    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
+    Set-VM -Name $ComputerName -AutomaticStopAction Save    
+    Set-VM -Name $computerName -AutomaticCheckpointsEnabled $false  
 
     Add-VMDvdDrive -VMName $computerName -Path $ISOFilePath
     Set-VMFirmware $computerName -FirstBootDevice $(Get-VMDvdDrive $computerName)
