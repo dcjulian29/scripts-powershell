@@ -262,6 +262,7 @@ Function New-LabDomainController {
     Add-DhcpServerV4Scope -Name $DomainName ````
         -StartRange 10.10.10.200 -EndRange 10.10.10.225 -SubnetMask 255.255.255.0
     Set-DhcpServerV4OptionValue -DnsDomain $DomainName -DnsServer 10.10.10.111
+    Set-DhcpServerV4OptionValue -Router 10.10.10.10
     Add-DhcpServerInDC -DnsName $ComputerName.$DomainName -Verbose
 
     New-ADUser -SamAccountName 'labuser' -Enable ```$true ````
