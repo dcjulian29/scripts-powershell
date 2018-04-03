@@ -227,8 +227,15 @@ Function New-LabDomainController {
     Set-Content -Path "C:\Windows\Setup\Scripts\install1.ps1" -Encoding Ascii -Value  `@"
     Start-Transcript -OutputDirectory "C:\Windows\Setup\Scripts"
 
+    Write-Output "Disabling IPv6 Tunnels..."
+    `$view = [Microsoft.Win32.RegistryView]::Registry64
+
     Write-Output "Installing Windows Features..."
     Install-Windowsfeature AD-Domain-Services -IncludeManagementTools -Verbose
+    `$key = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, `$view)
+
+    `$subKey =  `$key.OpenSubKey("SYSTEM\CurrentControlSet\services\TCPIP6\Parameters", `$true)  
+    `$subKey.SetValue("DisabledComponents", 1)
 
     Write-Output "Configuring Active Directory..."
     ```$password = ConvertTo-SecureString  -string '$($Credentials.GetNetworkCredential().password)' ````
