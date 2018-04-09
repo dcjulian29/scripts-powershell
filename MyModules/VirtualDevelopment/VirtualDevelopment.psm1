@@ -80,7 +80,9 @@ Function New-DevVM {
     Set-VMMemory -VMName $computerName -MaximumBytes $maxMem -MinimumBytes 1GB
     Set-VM -Name $computerName -AutomaticStartAction Nothing
     Set-Vm -Name $computerName -AutomaticStopAction Save
-    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
+    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false
+    
+    Set-VMProcessor -VMName $ComputerName -ExposeVirtualizationExtensions $true
  
     Pop-Location
 
