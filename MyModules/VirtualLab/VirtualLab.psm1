@@ -228,14 +228,15 @@ Function New-LabDomainController {
     Start-Transcript -OutputDirectory "C:\Windows\Setup\Scripts"
 
     Write-Output "Disabling IPv6 Tunnels..."
-    `$view = [Microsoft.Win32.RegistryView]::Registry64
+    ```$view = [Microsoft.Win32.RegistryView]::Registry64
+
+    ```$key = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, ```$view)
+
+    ```$subKey =  ```$key.OpenSubKey("SYSTEM\CurrentControlSet\services\TCPIP6\Parameters", ```$true)  
+    ```$subKey.SetValue("DisabledComponents", 1)
 
     Write-Output "Installing Windows Features..."
     Install-Windowsfeature AD-Domain-Services -IncludeManagementTools -Verbose
-    `$key = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, `$view)
-
-    `$subKey =  `$key.OpenSubKey("SYSTEM\CurrentControlSet\services\TCPIP6\Parameters", `$true)  
-    `$subKey.SetValue("DisabledComponents", 1)
 
     Write-Output "Configuring Active Directory..."
     ```$password = ConvertTo-SecureString  -string '$($Credentials.GetNetworkCredential().password)' ````
@@ -243,6 +244,8 @@ Function New-LabDomainController {
     
     Install-ADDSForest -DomainName '$DomainName' -SafeModeAdministratorPassword ```$password -InstallDns ````
         -Force -NoRebootOnCompletion -Verbose
+
+    Set-DnsServerForwarder -IPAddress "10.10.10.10" -PassThru
 
     Set-Content -Path "C:\Windows\Setup\Scripts\startup.bat" -Encoding Ascii -Value  `@"
     powershell.exe -NoProfile -NoLogo -NoExit -Command "& C:\Windows\Setup\Scripts\install2.ps1"
@@ -267,7 +270,8 @@ Function New-LabDomainController {
 
     New-ADUser -SamAccountName 'labuser' -Enable ```$true ````
         -UserPrincipalName 'labuser@$DomainName' -Name 'Lab User Account' ````
-        -AccountPassword ```$pass -ChangePasswordAtLogon ```$true
+        -AccountPassword '$($Credentials.GetNetworkCredential().password)' `
+        -ChangePasswordAtLogon ```$true
 
     Install-WindowsFeature Web-Scripting-Tools -IncludemanagementTools
     Install-WindowsFeature AD-Certificate, Adcs-Cert-Authority -IncludemanagementTools
@@ -278,7 +282,7 @@ Function New-LabDomainController {
     ```$cred = New-Object System.Management.Automation.PSCredential ```$username,```$pass
 
     Write-Output "Installing CA using ```$(```$cred.UserName)"
-    Install-AdcsCertificationAuthority -CACommonName 'VirtualsCA' -CAType 'EnterpriseRootCA' ````
+    Install-AdcsCertificationAuthority -CACommonName 'ContosoCA' -CAType 'EnterpriseRootCA' ````
         -KeyLength 2048 -Cred ```$cred -OverwriteExistingCAinDS -Force -Verbose 
 
     Write-Output 'Installing ADCS web enrollment feature'
@@ -291,18 +295,18 @@ Function New-LabDomainController {
     Gpupdate /Target:Computer /Force | Out-Null
     Start-Sleep -Seconds 5
 
-    While (! (Get-ChildItem Cert:\LocalMachine\My | Where Subject -Match $ComputerName)) {
+    While (! (Get-ChildItem Cert:\LocalMachine\My | Where Subject -Match 'CN=$ComputerName.$DomainName')) {
       Write-Output "Sleeping for another 5 seconds waiting for $ComputerName certificate..."
       Start-sleep -seconds 5
     }
 
-    ```$cert = (Get-ChildItem Cert:\localmachine\my | Where Subject -Match '$ComputerName')
+    ```$cert = (Get-ChildItem Cert:\localmachine\my | Where Subject -Match 'CN=$ComputerName.$DomainName')
     Write-Output "Certificate being used is: [```$(```$cert.thumbprint)]"
 
     Write-Output "Setting SSL bindings with this certificate"
     New-Item IIS:\SSLBindings\0.0.0.0!443 -value ```$cert
 
-    Write-Output "######### Active Directory Configuration Complete.\n\n"
+    Write-Output "######### Active Directory Configuration Complete."
 
     Write-Output "Removing Auto-Logon Registry Keys..."
     reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /f
@@ -385,6 +389,10 @@ Function New-LabDomainController {
 
     Start-VM -VMName $ComputerName
 
+    Start-Sleep 5
+
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $ComputerName"
+
     $ErrorActionPreference = $ErrorPreviousAction
 }
 
@@ -411,6 +419,10 @@ Function New-LabWorkstation {
 
     StopAndRemoveVM $ComputerName
     
+    if (-not $DomainJoin) {
+        $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.workstation.xml"
+    }
+
     if ($DomainJoin -and ($Credentials -eq $null)) {
         $Credentials = $(Get-Credentials -Message "Enter Lab Domain Administrator Account (UPN)")
     } else {
