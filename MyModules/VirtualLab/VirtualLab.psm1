@@ -412,7 +412,12 @@ Function New-LabWorkstation {
 
     $computerName = $computerName.ToUpperInvariant()
     $StartScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
-    $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.workstation.domain.xml"
+    if ($DomainJoin) {
+        $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.workstation.domain.xml"
+    } else {
+        $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.workstation.xml"
+    }
+    
     $BaseImage = "$((Get-VMHost).VirtualHardDiskPath)\Win10Base.vhdx"
     $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\$ComputerName.vhdx"
     $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
