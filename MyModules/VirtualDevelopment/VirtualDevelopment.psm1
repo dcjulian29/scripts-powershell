@@ -75,7 +75,7 @@ Function New-DevVM {
     if ($maxMem -gt 8GB) { $maxMem = 8GB }
 
     New-VirtualMachine -vhdxFile $vhdx -computerName $computerName `
-        -memory 2GB -maximumMemory $maxMem -cpu $numOfCpu -verbose
+        -memory 4GB -maximumMemory $maxMem -cpu $numOfCpu -verbose
 
     Set-VMMemory -VMName $computerName -MaximumBytes $maxMem -MinimumBytes 1GB
     Set-VM -Name $computerName -AutomaticStartAction Nothing
