@@ -19,19 +19,15 @@
 
     $security = "$java_home\lib\security\java.security"
 
-    $config = Get-Content $security `
-        | ForEach-Object { $_ -replace 'jdk.jar.disabledAlgorithms=MD2, MD5, RSA keySize < 1024', `
-            '#jdk.jar.disabledAlgorithms=MD2, MD5, RSA keySize < 1024' }
+    $config = Get-Content $security
 
-    Set-Content -Path $security -Value $config
+    $config | ForEach-Object { $_ -replace 'jdk.jar.disabledAlgorithms=MD2, MD5, RSA keySize < 1024', `
+            '#jdk.jar.disabledAlgorithms=MD2, MD5, RSA keySize < 1024' } `
+            | Set-Content -Path $security
     
-    if (-not $(Assert-Elevation)) { return }
-
     Start-Process "$java_home/bin/javaws.exe" -ArgumentList $path
 
     Start-Sleep -Seconds 2
 
-    $config = Get-Content $security `
-        | ForEach-Object { $_ -replace '#jdk.jar.disabledAlgorithms=MD2, MD5, RSA keySize < 1024', `
-            'jdk.jar.disabledAlgorithms=MD2, MD5, RSA keySize < 1024' }
+    Set-Content $security -Value $config
 }
