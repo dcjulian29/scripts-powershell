@@ -487,6 +487,8 @@ Function New-ClusteredVirtualMachineFromISO {
         [string] $Name,
         [parameter(Mandatory=$true)]
         [string] $ClusterNode,
+        [parameter(Mandatory=$true)]
+        [string] $ISOPath,
         [string] $VirtualSwitch = "vTRUNK",
         [Int64] $StartupMemory = 1024MB,
         [Int64] $MaximumMemory = 4GB,
@@ -494,7 +496,7 @@ Function New-ClusteredVirtualMachineFromISO {
         [Int64] $DiskSize = 80GB,
         [Int32] $VLAN = 0,
         [Int32] $ClusterVolume = 1,
-        [string] $ISOPath
+        [PSSession]$Session = (New-PSSession -ComputerName $ClusterNode)
     )
 
     $Name = $Name.ToUpperInvariant()
@@ -539,7 +541,11 @@ Function New-ClusteredVirtualMachineFromISO {
 
     $scriptBlock = [Scriptblock]::Create($script) 
 
-    Invoke-Command -ComputerName $ClusterNode -ScriptBlock $scriptBlock
+    if (-not $session) {
+        throw "No Session to Cluster Node $ClusterNode!"
+    } else {
+        Invoke-Command -Session $session -ScriptBlock $scriptBlock
+    }
 }
 
 Function New-ClusteredVMFromWindowsBaseDisk {
@@ -557,7 +563,8 @@ Function New-ClusteredVMFromWindowsBaseDisk {
         [Int32] $ClusterVolume = 1,
         [Int32] $OsVersion = 2016,
         [switch] $UseCore,
-        [switch] $CopyDiskFile
+        [switch] $CopyDiskFile,
+        [PSSession]$Session = (New-PSSession -ComputerName $ClusterNode)
     )
 
     $Name = $Name.ToUpperInvariant()
@@ -613,8 +620,32 @@ Function New-ClusteredVMFromWindowsBaseDisk {
 
     $scriptBlock = [Scriptblock]::Create($script) 
 
-    Invoke-Command -ComputerName $ClusterNode -ScriptBlock $scriptBlock
+    if (-not $session) {
+        throw "No Session to Cluster Node $ClusterNode!"
+    } else {
+        Invoke-Command -Session $session -ScriptBlock $scriptBlock
+    }
 }
+
+Function Compact-VHDX {
+    [Cmdletbinding()]
+    param (
+      [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+      [string] $vhdxFile
+    )
+
+    if (-not $(Assert-Elevation)) { return }
+
+    Write-Output “Attempting to mount $vhdxFile...” 
+    Mount-VHD -Path $vhdxFile -ReadOnly
+
+    Write-Output “Attempting to compact $vhdxFile” 
+    Optimize-VHD -Path $vhdxFile -Mode Full 
+
+    Write-Output “Attempting to dismount $vhdxFile” 
+    Dismount-VHD -path $vhdxFile
+}
+
 
 ###############################################################################
 
@@ -637,6 +668,7 @@ Export-ModuleMember New-VirtualMachineFromCsv
 Export-ModuleMember New-VirtualMachineFromName
 Export-ModuleMember New-ClusteredVirtualMachineFromISO
 Export-ModuleMember New-ClusteredVMFromWindowsBaseDisk
+Export-ModuleMember Compact-VHDX
 
 Set-Alias New-ReferenceVHDX New-SystemVHDX
 Export-ModuleMember -Alias New-ReferenceVHDX
