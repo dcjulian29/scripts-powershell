@@ -375,7 +375,7 @@ Function New-VirtualMachine {
     param (
         [string] $vhdxFile,
         [string] $computerName,
-        [string] $virtualSwitch = "vTRUNK",
+        [string] $virtualSwitch = "Default Switch",
         [Int64] $memory = 1024MB,
         [Int64] $maximumMemory = 4GB,
         [Int32] $cpu = 2,
@@ -401,7 +401,7 @@ Function New-VirtualMachineFromCsv {
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string] $csvFile,
-        [string] $virtualSwitch = "Internal",
+        [string] $virtualSwitch = "LAB",
         [Parameter(Mandatory=$true)]
         [string] $isoFile,
         [Parameter(Mandatory=$true)]
@@ -448,7 +448,7 @@ Function New-VirtualMachineFromName {
         [Parameter(Mandatory=$true)]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string] $isoFile,
-        [string] $virtualSwitch = "Internal",
+        [string] $virtualSwitch = "LAB",
         [Parameter(Mandatory=$true)]
         [string] $networkAddress,
         [string] $gateway,
@@ -646,6 +646,19 @@ Function Compact-VHDX {
     Dismount-VHD -path $vhdxFile
 }
 
+Function Initialize-HyperV {
+    $vm = "${env:SYSTEMDRIVE}\Virtual Machines"
+    
+    if (-not (Test-Path -Path $vm)) {
+        New-Item -Path $vm -ItemType Directory | Out-Null
+    }
+
+    if (-not (Test-Path -Path "$vm\ISO")) {
+        New-Item -Path "$vm\ISO" -ItemType Directory | Out-Null
+    }
+    
+    Set-VMHost -VirtualMachinePath "${env:SYSTEMDRIVE}\" -VirtualHardDiskPath $vm
+}
 
 ###############################################################################
 
@@ -669,6 +682,7 @@ Export-ModuleMember New-VirtualMachineFromName
 Export-ModuleMember New-ClusteredVirtualMachineFromISO
 Export-ModuleMember New-ClusteredVMFromWindowsBaseDisk
 Export-ModuleMember Compact-VHDX
+Export-ModuleMember Initialize-HyperV
 
 Set-Alias New-ReferenceVHDX New-SystemVHDX
 Export-ModuleMember -Alias New-ReferenceVHDX

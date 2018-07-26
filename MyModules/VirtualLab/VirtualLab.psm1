@@ -73,7 +73,7 @@ Function New-LabUbuntuServer {
 
         $isoDir = "$((Get-VMHost).VirtualHardDiskPath)\ISO"
 
-        $latest = Get-ChildItem -Filter "ubuntu-16.04*" -Path $isoDir `
+        $latest = Get-ChildItem -Filter "ubuntu-*" -Path $isoDir `
             | Sort-Object Name -Descending `
             | Select-Object -First 1
 
@@ -92,8 +92,7 @@ Function New-LabVMFromISO {
         $ComputerName,
         [Parameter(Mandatory=$true)]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $ISOFilePath,
-        [string] $Switch = "Internal"
+        [string] $ISOFilePath
     )
 
     $ErrorPreviousAction = $ErrorActionPreference
@@ -122,7 +121,7 @@ Function New-LabVMFromISO {
     Set-VMFirmware $computerName -FirstBootDevice $(Get-VMDvdDrive $computerName)
     Set-VMFirmware $computerName -EnableSecureBoot Off
 
-    Connect-VMNetworkAdapter -VMName $computerName -SwitchName $Switch
+    Connect-VMNetworkAdapter -VMName $computerName -SwitchName "LAB"
 
     Pop-Location
 
@@ -167,8 +166,8 @@ Function New-LabFirewall {
     Add-VMNetworkAdapter -VMName $ComputerName -Name "LAN"
     Add-VMNetworkAdapter -VMName $ComputerName -Name "WAN"
   
-    Connect-VMNetworkAdapter -VMName $ComputerName -Name "LAN" -SwitchName "Internal"
-    Connect-VMNetworkAdapter -VMName $ComputerName -Name "WAN" -SwitchName "vTRUNK"
+    Connect-VMNetworkAdapter -VMName $ComputerName -Name "LAN" -SwitchName "LAB"
+    Connect-VMNetworkAdapter -VMName $ComputerName -Name "WAN" -SwitchName "Default Switch"
   
     Pop-Location
 
@@ -380,7 +379,7 @@ Function New-LabDomainController {
 
     Inject-VMStartUpScriptBlock -vhdxFile $vhdx -Scriptblock $scriptBlock
 
-    New-VirtualMachine -vhdxFile $vhdx -computerName $ComputerName -virtualSwitch "Internal" 
+    New-VirtualMachine -vhdxFile $vhdx -computerName $ComputerName -virtualSwitch "LAB" 
 
     Set-VMMemory -VMName $computerName -MaximumBytes 1GB -MinimumBytes 512MB
     Set-VM -Name $computerName -AutomaticStartAction Nothing
@@ -402,8 +401,7 @@ Function New-LabWorkstation {
         [ValidateNotNullOrEmpty()]
         $ComputerName,
         $Credentials,
-        [Switch]$DomainJoin,
-        $Switch = "Internal"
+        [Switch]$DomainJoin
     )
 
 
@@ -451,7 +449,7 @@ Function New-LabWorkstation {
     Inject-StartLayout -vhdxFile $vhdx -layoutFile $startLayout
 
     New-VirtualMachine -vhdxFile $vhdx -computerName $computerName `
-        -virtualSwitch $Switch -memory 2GB -Verbose
+        -virtualSwitch "LAB" -memory 2GB -Verbose
 
     Set-VMMemory -VMName $computerName -MinimumBytes 1GB
     Set-Vm -Name $computerName -AutomaticStopAction Save    
@@ -490,6 +488,28 @@ Function New-LabWindows2016Server {
     NewLabWindowsServerVM $ComputerName 2016 $UnattendFile
 }
 
+Function New-LabVMSwitch {
+    $lab = Get-VMSwitch -Name LAB -ErrorAction SilentlyContinue
+
+    if (-not $lab) {
+        New-VMSwitch -Name LAB -SwitchType Internal
+        
+        New-NetIPAddress -IPAddress 10.10.10.11 -PrefixLength 24 -InterfaceAlias "vEthernet (LAB)"    
+    } else {
+        Write-Warning "Lab VMSwitch already exists..."
+    }
+}
+
+Function Remove-LabVMSwitch {
+    $lab = Get-VMSwitch -Name LAB -ErrorAction SilentlyContinue
+
+    if ($lab) {
+        Remove-VMSwitch -Name LAB -Force
+    } else {
+        Write-Warning "Lab VMSwitch does not exist..."
+    }
+}
+
 ###############################################################################
 
 Export-ModuleMember New-LabFirewall
@@ -507,3 +527,6 @@ Export-ModuleMember New-LabVMFromISO
 #Export-ModuleMember New-LabWebServer
 
 #Export-ModuleMember New-Lab3TierRedundantPlatform
+
+Export-ModuleMember New-LabVMSwitch
+Export-ModuleMember Remove-LabVMSwitch
