@@ -496,11 +496,19 @@ Function New-ClusteredVirtualMachineFromISO {
         [Int64] $DiskSize = 80GB,
         [Int32] $VLAN = 0,
         [Int32] $ClusterVolume = 1,
-        [PSSession]$Session = (New-PSSession -ComputerName $ClusterNode)
+        [System.Management.Automation.Runspaces.PSSession]$Session
     )
 
     $Name = $Name.ToUpperInvariant()
     $clusterDirectory = "C:\ClusterStorage\Volume$ClusterVolume"
+
+    if (-not $Session) {
+        $Session = New-PSSession -ComputerName $ClusterNode
+    }
+
+    if ($ClusterNode -ne $Session.ComputerName) {
+        throw "Remote Session does not match Cluster Node Name." 
+    }
 
     $script = @"    
     if (Test-Path "$clusterDirectory\$Name") {
@@ -564,11 +572,19 @@ Function New-ClusteredVMFromWindowsBaseDisk {
         [Int32] $OsVersion = 2016,
         [switch] $UseCore,
         [switch] $CopyDiskFile,
-        [PSSession]$Session = (New-PSSession -ComputerName $ClusterNode)
+        [System.Management.Automation.Runspaces.PSSession]$Session
     )
 
     $Name = $Name.ToUpperInvariant()
     $clusterDirectory = "C:\ClusterStorage\Volume$ClusterVolume"
+
+    if (-not $Session) {
+        $Session = New-PSSession -ComputerName $ClusterNode
+    }
+
+    if ($ClusterNode -ne $Session.ComputerName) {
+        throw "Remote Session does not match Cluster Node Name." 
+    }
 
     $script = @"    
     if (Test-Path "$clusterDirectory\$Name") {
