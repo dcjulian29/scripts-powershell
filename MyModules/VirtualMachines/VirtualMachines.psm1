@@ -636,17 +636,17 @@ Function Compact-VHDX {
 
     if (-not $(Assert-Elevation)) { return }
 
-    Write-Output “Attempting to mount $vhdxFile...” 
+    Write-Output "Attempting to mount $vhdxFile..."
     Mount-VHD -Path $vhdxFile -ReadOnly
 
-    Write-Output “Attempting to compact $vhdxFile” 
+    Write-Output "Attempting to compact $vhdxFile"
     Optimize-VHD -Path $vhdxFile -Mode Full 
 
-    Write-Output “Attempting to dismount $vhdxFile” 
+    Write-Output "Attempting to dismount $vhdxFile"
     Dismount-VHD -path $vhdxFile
 }
 
-Function Initialize-HyperV {
+Function Initialize-WorkstationHyperV {
     $vm = "${env:SYSTEMDRIVE}\Virtual Machines"
     
     if (-not (Test-Path -Path $vm)) {
