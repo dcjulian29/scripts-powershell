@@ -517,11 +517,11 @@ Function New-ClusteredVirtualMachineFromISO {
 
     New-Item -ItemType Directory -Path "$clusterDirectory\$Name"
     New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Snapshots"
-    New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Hard Disk"
+    New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Hard Disks"
     New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Machines"    
 
     New-VM -Name $Name ``
-        -NewVHDPath "$clusterDirectory\$Name\Virtual Hard Disk\$Name.VHDX" ``
+        -NewVHDPath "$clusterDirectory\$Name\Virtual Hard Disks\$Name.VHDX" ``
         -NewVHDSizeBytes $DiskSize -Generation 2 -Path "$clusterDirectory"
 
     Set-VMMemory -VMName $Name -DynamicMemoryEnabled `$true -StartupBytes $StartupMemory
@@ -593,7 +593,7 @@ Function New-ClusteredVMFromWindowsBaseDisk {
 
     New-Item -ItemType Directory -Path "$clusterDirectory\$Name"
     New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Snapshots"
-    New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Hard Disk"
+    New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Hard Disks"
     New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Machines"    
 
     #UseCore
@@ -603,16 +603,22 @@ Function New-ClusteredVMFromWindowsBaseDisk {
         `$BaseImage = "`$((Get-ChildItem -Path "$clusterDirectory\Win$OsVersion*ServerBase*.vhdx").FullName)"
     }
 
+    if (-not `$BaseImage) {
+        throw "Unable to find the base image disk."
+    }
+
+    Write-Output "Using `$BaseImage..."
+
     #CopyDiskFile
     if ("$CopyDiskFile" -eq "True") {
-        Copy-Item -Path `$BaseImage -Destination "$clusterDirectory\$Name\Virtual Hard Disk\$Name.VHDX" -Verbose
+        Copy-Item -Path `$BaseImage -Destination "$clusterDirectory\$Name\Virtual Hard Disks\$Name.VHDX" -Verbose
     } else {
-        New-VHD –Path "$clusterDirectory\$Name\Virtual Hard Disk\$Name.VHDX" ``
+        New-VHD –Path "$clusterDirectory\$Name\Virtual Hard Disks\$Name.VHDX" ``
             -Differencing –ParentPath `$BaseImage
     }
 
     New-VM -Name $Name ``
-        –VHDPath "$clusterDirectory\$Name\Virtual Hard Disk\$Name.VHDX" ``
+        –VHDPath "$clusterDirectory\$Name\Virtual Hard Disks\$Name.VHDX" ``
         -Generation 2 -Path "$clusterDirectory"
 
     Set-VMMemory -VMName $Name -DynamicMemoryEnabled `$true -StartupBytes $StartupMemory
