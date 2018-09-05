@@ -556,6 +556,102 @@ Function New-ClusteredVirtualMachineFromISO {
     }
 }
 
+Function New-ClusteredVMFromExistingDisk {
+    [Cmdletbinding()]
+    param (
+        [parameter(Mandatory=$true)]
+        [string] $Name,
+        [parameter(Mandatory=$true)]
+        [string] $ClusterNode,
+        [parameter(Mandatory=$true)]
+        [string] $VHDX,
+        [switch] $KeepExistingDisk,
+        [string] $VirtualSwitch = "vTRUNK",
+        [Int64] $StartupMemory = 1024MB,
+        [Int64] $MaximumMemory = 4GB,
+        [Int32] $ProcessorCount = 2,
+        [Int32] $VLAN,
+        [Int32] $ClusterVolume = 1,
+        [System.Management.Automation.Runspaces.PSSession]$Session
+    )
+    
+    $Name = $Name.ToUpperInvariant()
+    $clusterDirectory = "C:\ClusterStorage\Volume$ClusterVolume"
+
+    if (-not $Session) {
+        $Session = New-PSSession -ComputerName $ClusterNode
+    }
+
+    if ($ClusterNode -ne $Session.ComputerName) {
+        throw "Remote Session does not match Cluster Node Name." 
+    }
+
+    $script = @"
+    `$ErrorActionPreference = "Stop"
+
+    if (`$$KeepExistingDisk) {
+        Remove-Item -Recurse -Force "$clusterDirectory\$Name\Snapshots" -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force -Path "$clusterDirectory\$Name\Virtual Machines" -ErrorAction SilentlyContinue
+
+        New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Snapshots"
+        New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Machines"    
+
+        if (-not (Test-Path "$clusterDirectory\$Name\Virtual Hard Disks")) {
+            New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Hard Disks"
+        }
+    } else {
+        Remove-Item -Recurse -Force "$clusterDirectory\$Name"
+
+        New-Item -ItemType Directory -Path "$clusterDirectory\$Name"
+        New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Snapshots"
+        New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Hard Disks"
+        New-Item -ItemType Directory -Path "$clusterDirectory\$Name\Virtual Machines"    
+   }
+
+    `$ErrorActionPreference = "Stop"
+
+    if (-not (Test-Path "$VHDX")) {
+        throw "Unable to find the image disk."
+    }
+
+    Write-Output "Using $VHDX..."
+
+    if (-not `$$KeepExistingDisk) {
+        Copy-Item -Path "$VHDX" -Destination "$clusterDirectory\$Name\Virtual Hard Disks\$Name.VHDX" -Force -Verbose
+    }
+
+    New-VM -Name $Name ``
+        –VHDPath "$clusterDirectory\$Name\Virtual Hard Disks\$Name.VHDX" ``
+        -Generation 2 -Path "$clusterDirectory"
+
+    Set-VMMemory -VMName $Name -DynamicMemoryEnabled `$true -StartupBytes $StartupMemory
+    Set-VMMemory -VMName $Name -MinimumBytes 1GB -MaximumBytes $MaximumMemory
+    
+    Set-VM -Name $Name -AutomaticStartAction Start
+    Set-VM -Name $Name -AutomaticStopAction Save
+
+    Set-VMProcessor -VMName $Name -CompatibilityForMigrationEnabled 1
+
+    Connect-VMNetworkAdapter -VMName $Name –Switch $VirtualSwitch
+
+    if ($VLAN -gt 0) {
+        Set-VMNetworkAdapterVlan -VMName $Name -Access -VlanId $VLAN
+    }
+    
+    Set-VMProcessor -VMName $Name -Count $ProcessorCount
+    
+    Get-VM -Name $Name | Add-ClusterVirtualMachineRole
+"@
+
+    $scriptBlock = [Scriptblock]::Create($script) 
+
+    if (-not $session) {
+        throw "No Session to Cluster Node $ClusterNode!"
+    } else {
+        Invoke-Command -Session $session -ScriptBlock $scriptBlock
+    }
+}
+
 Function New-ClusteredVMFromWindowsBaseDisk {
     [Cmdletbinding()]
     param (
@@ -703,8 +799,9 @@ Export-ModuleMember New-VirtualMachineFromCsv
 Export-ModuleMember New-VirtualMachineFromName
 Export-ModuleMember New-ClusteredVirtualMachineFromISO
 Export-ModuleMember New-ClusteredVMFromWindowsBaseDisk
+Export-ModuleMember New-ClusteredVMFromExistingDisk
 Export-ModuleMember Compact-VHDX
-Export-ModuleMember Initialize-HyperV
+Export-ModuleMember Initialize-WorkstationHyperV
 
 Set-Alias New-ReferenceVHDX New-SystemVHDX
 Export-ModuleMember -Alias New-ReferenceVHDX
