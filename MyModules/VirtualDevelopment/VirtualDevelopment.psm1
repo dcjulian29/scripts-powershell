@@ -217,9 +217,29 @@ Function Install-DevVmPackage {
     }
 }
 
+function Install-AllDevVmPackages {
+    $packages = @(
+        "mydev-scm"
+        "mydev-tools"
+        "mydev-python"
+        "mydev-database"
+        "mydev-visualstudio"
+        "mysettings-devenv"
+     )
+
+    foreach ($package in $packages) {
+        #Cycle thur packages and determin if install beform calling this method...
+        $results = choco list -lo | Where-object { $_.ToLower().StartsWith($package.ToLower()) }
+        if ($result -eq $null) {
+            Install-DevVmPackage $package
+        }
+    }
+}
+
 ###############################################################################
 
 Export-ModuleMember Install-DevVmPackage
+Export-ModuleMember Install-AllDevVmPackages
 
 Export-ModuleMember New-DevVM
 Export-ModuleMember New-LinuxDevVM
