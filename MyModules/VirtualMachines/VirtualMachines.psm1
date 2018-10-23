@@ -1,5 +1,4 @@
 ﻿. $PSScriptRoot\Convert-WindowsImage.ps1
-. $PSScriptRoot\Get-HyperVReport.ps1
 
 function Mount-Vhdx {
     param (
@@ -714,7 +713,6 @@ function Initialize-WorkstationHyperV {
 ###############################################################################
 
 Export-ModuleMember Convert-WindowsImage
-Export-ModuleMember Get-HyperVReport
 Export-ModuleMember New-SystemVhdx
 Export-ModuleMember New-DifferencingVhdx
 Export-ModuleMember New-DataVhdx
