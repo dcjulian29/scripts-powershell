@@ -1,5 +1,5 @@
-﻿Function StopAndRemoveVM($ComputerName) {
-    $vm = Get-VM -Name $ComputerName -ErrorAction SilentlyContinue
+﻿function StopAndRemoveVM($computerName) {
+    $vm = Get-VM -Name $computerName -ErrorAction SilentlyContinue
 
     if ($vm) {
         if ($vm.state -ne "Off") {
@@ -9,7 +9,7 @@
         $vm | Remove-VM
     }
 
-    $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\$ComputerName.vhdx"
+    $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\$computerName.vhdx"
 
     if (Test-Path "$vhdx") {
         Remove-Item -Confirm -Path $vhdx
@@ -22,22 +22,22 @@
 
 ###############################################################################
 
-Function New-DevVM {
-    $ErrorPreviousAction = $ErrorActionPreference
+function New-DevVM {
+    $errorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
-    $StartScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
+    $startScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
     $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.xml"
-    $BaseImage = "$((Get-VMHost).VirtualHardDiskPath)\Win10Base.vhdx"
-    $ComputerName = "$(($env:COMPUTERNAME).ToUpper())DEV"
-    $vhdx = "$ComputerName.vhdx"
-    $password = $(Get-Credential -Message "Enter Password for VM...")
+    $baseImage = "$((Get-VMHost).VirtualHardDiskPath)\Win10Base.vhdx"
+    $computerName = "$(($env:COMPUTERNAME).ToUpper())DEV"
+    $vhdx = "$computerName.vhdx"
+    $password = $(Get-Credential -Message "Enter Password for VM..." -UserName "julian")
     $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
 
-    StopAndRemoveVM $ComputerName
+    StopAndRemoveVM $computerName
 
     Push-Location $((Get-VMHost).VirtualHardDiskPath)
 
-    New-DifferencingVHDX -referenceDisk $BaseImage -vhdxFile "$vhdx"
+    New-DifferencingVHDX -ReferenceDisk $BaseImage -VhdxFile "$vhdx"
 
     $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)" 
     Copy-Item -Path $unattend -Destination $unattendFile  -Force
@@ -45,28 +45,28 @@ Function New-DevVM {
     (Get-Content $unattendFile).replace("P@ssw0rd", $password.GetNetworkCredential().password) `
         | Set-Content $unattendFile
 
-    Make-UnattendForDhcpIp -vhdxFile $vhdx -unattendTemplate $unattendFile -computerName $computerName
+    New-UnattendFileIp -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $computerName
 
-    Inject-VMStartUpScriptFile -vhdxFile $vhdx -scriptFile $StartScript -argument "myvm-development"
+    Move-VMStartUpScriptFileToVM -VhdxFile $vhdx -ScriptFile $startScript -Argument "myvm-development"
 
-    Inject-StartLayout -vhdxFile $vhdx -layoutFile $startLayout
+    Move-StartLayoutToVM -VhdxFile $vhdx -LayoutFile $startLayout
 
-    $Destination = "Windows\Setup\Scripts\"
-    $Source = "${env:SYSTEMDRIVE}\etc\syncthing"
-    $c = "$Source\$ComputerName"
+    $destination = "Windows\Setup\Scripts\"
+    $source = "${env:SYSTEMDRIVE}\etc\syncthing"
+    $c = "$source\$computerName"
 
     $files = @(
         "$c.id"
-        "$Source\server.id"
-        "$Source\server.name"
+        "$source\server.id"
+        "$source\server.name"
         "$c.key"
         "$c.cert"
     )
 
-    Inject-FilesToVM -vhdxFile $vhdx -Files $files -RelativeDestination $Destination
+    Move-FilesToVM -VhdxFile $vhdx -Files $files -RelativeDestination $destination
 
-    $numOfCpu = $(Get-WmiObject -class Win32_processor | Select-Object NumberOfLogicalProcessors).NumberOfLogicalProcessors / 2
-    $maxMem = $(Get-WMIObject -class Win32_PhysicalMemory | Measure-Object -Property capacity -Sum `
+    $numOfCpu = $(Get-WmiObject -Class Win32_processor | Select-Object NumberOfLogicalProcessors).NumberOfLogicalProcessors / 2
+    $maxMem = $(Get-WMIObject -Class Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum `
         | Select-Object @{N="TotalRam"; E={$_.Sum}}).TotalRam * .60
 
     $maxMem = [Math]::Round($maxMem)
@@ -74,15 +74,15 @@ Function New-DevVM {
 
     if ($maxMem -gt 8GB) { $maxMem = 8GB }
 
-    New-VirtualMachine -vhdxFile $vhdx -computerName $computerName `
-        -memory 4GB -maximumMemory $maxMem -cpu $numOfCpu -verbose
+    New-VirtualMachine -VhdxFile $vhdx -ComputerName $computerName `
+        -Memory 4GB -MaximumMemory $maxMem -CPU $numOfCpu -verbose
 
     Set-VMMemory -VMName $computerName -MaximumBytes $maxMem -MinimumBytes 1GB
     Set-VM -Name $computerName -AutomaticStartAction Nothing
     Set-Vm -Name $computerName -AutomaticStopAction Save
     Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false
     
-    Set-VMProcessor -VMName $ComputerName -ExposeVirtualizationExtensions $true
+    Set-VMProcessor -VMName $computerName -ExposeVirtualizationExtensions $true
  
     Pop-Location
 
@@ -90,43 +90,31 @@ Function New-DevVM {
 
     Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $computerName"
 
-    $ErrorActionPreference = $ErrorPreviousAction
+    $ErrorActionPreference = $errorPreviousAction
 }
 
-Function New-LinuxDevVM {
-    param (
-        [string]$ComputerName,
-        [string]$iso
-    )
-
+function New-LinuxDevVM {
     $ErrorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
     
-    if ($ComputerName -eq "") {
-        $ComputerName = "${env:COMPUTERNAME}LNXDEV"
-    }
+    $computerName = "$(($env:COMPUTERNAME).ToUpper())DEV"
+    $vhdx = "$computerName.vhdx"
 
-    $ComputerName = $ComputerName.ToUpperInvariant()
-    $vhdx = "$ComputerName.vhdx"
+    $isoDir = "$((Get-VMHost).VirtualHardDiskPath)\ISO"
 
-    if ($iso -eq "") {
+    $latest = Get-ChildItem -Filter "xubuntu-*" -Path $isoDir `
+        | Sort-Object Name -Descending `
+        | Select-Object -First 1
 
-        $isoDir = "$((Get-VMHost).VirtualHardDiskPath)\ISO"
+    $isoFile = $latest.name
 
-        $latest = Get-ChildItem -Filter "xubuntu-*" -Path $isoDir `
-            | Sort-Object Name -Descending `
-            | Select-Object -First 1
+    $iso = "$isoDir\$isoFile"
 
-        $isoFile = $latest.name
-
-        $iso = "$isoDir\$isoFile"
-    }
-
-    StopAndRemoveVM $ComputerName
+    StopAndRemoveVM $computerName
 
     $numOfCpu = $(Get-WmiObject -class Win32_processor `
         | Select-Object NumberOfLogicalProcessors).NumberOfLogicalProcessors / 2
-    $maxMem = $(Get-WMIObject -class Win32_PhysicalMemory | Measure-Object -Property capacity -Sum `
+    $maxMem = $(Get-WMIObject -class Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum `
         | Select-Object @{N="TotalRam"; E={$_.Sum}}).TotalRam * .60
 
     $maxMem = [Math]::Round($maxMem)
@@ -138,29 +126,29 @@ Function New-LinuxDevVM {
 
     New-VHD -Path $vhdx -SizeBytes 80GB -Dynamic
 
-    New-VirtualMachine -vhdxFile $vhdx -computerName $ComputerName `
-        -memory 2GB -maximumMemory $maxMem -cpu $numOfCpu -verbose
+    New-VirtualMachine -VhdxFile $vhdx -ComputerName $computerName `
+        -Memory 2GB -MaximumMemory $maxMem -CPU $numOfCpu
 
-    Connect-IsoToVirtual $ComputerName $iso
+    Connect-IsoToVirtual $computerName $iso
 
-    Set-VMFirmware $ComputerName -FirstBootDevice $(Get-VMDvdDrive $ComputerName)
-    Set-VMFirmware $ComputerName -EnableSecureBoot Off
+    Set-VMFirmware $computerName -FirstBootDevice $(Get-VMDvdDrive $computerName)
+    Set-VMFirmware $computerName -EnableSecureBoot Off
 
-    Set-VMMemory -VMName $ComputerName -MaximumBytes $maxMem -MinimumBytes 1GB
-    Set-VM -Name $ComputerName -AutomaticStartAction Nothing
-    Set-Vm -Name $ComputerName -AutomaticStopAction Save    
+    Set-VMMemory -VMName $computerName -MaximumBytes $maxMem -MinimumBytes 1GB
+    Set-VM -Name $computerName -AutomaticStartAction Nothing
+    Set-Vm -Name $computerName -AutomaticStopAction Save    
     Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
 
     Pop-Location
 
-    Start-VM -VMName $ComputerName
+    Start-VM -VMName $computerName
 
-    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $ComputerName"
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $computerName"
 
-    $ErrorActionPreference = $ErrorPreviousAction
+    $ErrorActionPreference = $errorPreviousAction
 }
 
-Function Install-DevVmPackage {
+function Install-DevVmPackage {
     param(
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -174,15 +162,13 @@ Function Install-DevVmPackage {
     $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.$date.log"
 
     if ($DebugVerbose) {
-        $Choco += "Invoke-Expression 'choco.exe install $Package -dv -y'"
+        $choco = "Invoke-Expression 'choco.exe install $Package -dv -y'"
     } else {
-        $Choco += "Invoke-Expression 'choco.exe install $Package -y'"
+        $choco = "Invoke-Expression 'choco.exe install $Package -y'"
     }
 
     $Command = @"
-        `$logFile = "$logFile"
-
-        Start-Transcript `$logFile
+        Start-Transcript "$logFile"
 
         # For some reason, my PSModules environment keeps getting reset installing packages,
         # so let explictly add it each and everytime
@@ -217,29 +203,9 @@ Function Install-DevVmPackage {
     }
 }
 
-function Install-AllDevVmPackages {
-    $packages = @(
-        "mydev-scm"
-        "mydev-tools"
-        "mydev-python"
-        "mydev-database"
-        "mydev-visualstudio"
-        "mysettings-devenv"
-     )
-
-    foreach ($package in $packages) {
-        #Cycle thur packages and determin if install beform calling this method...
-        $results = choco list -lo | Where-object { $_.ToLower().StartsWith($package.ToLower()) }
-        if ($result -eq $null) {
-            Install-DevVmPackage $package
-        }
-    }
-}
-
 ###############################################################################
 
 Export-ModuleMember Install-DevVmPackage
-Export-ModuleMember Install-AllDevVmPackages
 
 Export-ModuleMember New-DevVM
 Export-ModuleMember New-LinuxDevVM

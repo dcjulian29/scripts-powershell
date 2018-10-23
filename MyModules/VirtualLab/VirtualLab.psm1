@@ -41,7 +41,7 @@ function NewLabWindowsServerVM {
 
     New-DifferencingVHDX -referenceDisk $baseImage -vhdxFile "$vhdx"
 
-    Make-UnattendForDhcpIp -vhdxFile $vhdx -unattendTemplate $UnattendFile -computerName $ComputerName
+    New-UnattendFileIp -vhdxFile $vhdx -unattendTemplate $UnattendFile -computerName $ComputerName
 
     New-VirtualMachine -vhdxFile $vhdx -computerName $ComputerName -memory 2GB  -Verbose
 
@@ -236,7 +236,7 @@ function New-LabDomainController {
     (Get-Content $unattendFile).replace("P@ssw0rd", $Credentials.GetNetworkCredential().password) `
         | Set-Content $unattendFile
 
-    Make-UnattendForStaticIp -VhdxFile $vhdx -UnattendTemplate $unattendFile `
+    New-UnattendFile -VhdxFile $vhdx -UnattendTemplate $unattendFile `
         -ComputerName $ComputerName -NetworkAddress "10.10.10.111/24" `
         -GatewayAddress "10.10.10.10"
 
@@ -399,7 +399,7 @@ function New-LabDomainController {
 
     $scriptBlock = [Scriptblock]::Create($script)
 
-    Inject-VMStartUpScriptBlock -VhdxFile $vhdx -ScriptBlock $scriptBlock
+    Move-VMStartUpScriptBlockToVM -VhdxFile $vhdx -ScriptBlock $scriptBlock
 
     New-VirtualMachine -VhdxFile $vhdx -ComputerName $ComputerName -VirtualSwitch "LAB" 
 
@@ -461,11 +461,11 @@ function New-LabWorkstation {
     (Get-Content $unattendFile).replace("P@ssw0rd", $Credentials.GetNetworkCredential().password) `
         | Set-Content $unattendFile
 
-    Make-UnattendForDhcpIp -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $ComputerName
+    New-UnattendFileIp -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $ComputerName
 
-    Inject-VMStartUpScriptFile -VhdxFile $vhdx -ScriptFile $StartScript -Argument "myvm-workstation"
+    Move-VMStartUpScriptFileToVM -VhdxFile $vhdx -ScriptFile $StartScript -Argument "myvm-workstation"
 
-    Inject-StartLayout -VhdxFile $vhdx -LayoutFile $startLayout
+    Move-StartLayoutToVM -VhdxFile $vhdx -LayoutFile $startLayout
 
     New-VirtualMachine -VhdxFile $vhdx -ComputerName $ComputerName `
         -virtualSwitch "LAB" -memory 2GB -Verbose
