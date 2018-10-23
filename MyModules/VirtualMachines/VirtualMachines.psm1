@@ -406,54 +406,10 @@ function New-VirtualMachine {
     Set-Vm -Name $ComputerName -AutomaticStopAction ShutDown -ComputerName $RemoteHost
 }
 
-Function New-VirtualMachineFromCsv {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
-        [Alias("CSV")]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $csvFile,
-        [string] $virtualSwitch = "LAB",
-        [Parameter(Mandatory=$true)]
-        [string] $isoFile,
-        [Parameter(Mandatory=$true)]
-        [string] $baseDisk,
-        [Parameter(Mandatory=$true)]
 function Compress-Vhdx {
     [Cmdletbinding()]
     param (
         [Parameter(Mandatory=$true)]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $virtualStorage = "C:\Virtual Machines"
-    )
-
-    Push-Location $virtualStorage
-
-    foreach ($vm in (Import-Csv -Path $csvFile)) {
-        New-DifferencingVHDX -referenceDisk $baseDisk -vhdxFile "$($vm.ComputerName).vhdx"
-        New-DataVHDX -vhdxFile "$($vm.ComputerName)-DATA.vhdx" -diskSize (0 + $vm.DataDrive)
-
-        Make-UnattendForStaticIp -vhdxFile "$($vm.ComputerName).vhdx" -unattendTemplate $unattend `
-            -computerName "$($vm.ComputerName)" -networkAddress "$($vm.IP)" `
-            -gatewayAddress "$($vm.Gateway)" -nameServer "$($vm.DNS)"
-
-        New-VirtualMachine -vhdxFile "$($vm.ComputerName).vhdx" -computerName "$($vm.ComputerName)" `
-            -virtualSwitch $virtualSwitch -memory (0 + $vm.Memory) #-cpu (0 + $vm.Cpu)
-
-        if (-not ([string]::IsNullOrEmpty($vm.DataDrive))) {
-            Add-VMHardDiskDrive -VMName "$($vm.ComputerName)" `
-                -Path "$($vm.ComputerName)-DATA.vhdx" -diskSize (0 + $vm.DataDrive)
-        }
-
-        if (-not ([string]::IsNullOrEmpty($vm.StartupScript))) {
-            Inject-VMStartUpScriptFile -vhdxFile "$($vm.ComputerName).vhdx" -scriptFile $vm.StartupScript
-        }
-    }
-
-    Pop-Location
-}
-
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
 
@@ -770,7 +726,6 @@ Export-ModuleMember Move-StartLayoutToVM
 Export-ModuleMember Move-VMStartUpScriptFileToVM
 Export-ModuleMember Move-VMStartUpScriptBlockToVM
 Export-ModuleMember New-VirtualMachine
-Export-ModuleMember New-VirtualMachineFromCsv
 Export-ModuleMember New-VirtualMachineFromName
 Export-ModuleMember New-ClusteredVirtualMachineFromISO
 Export-ModuleMember New-ClusteredVMFromWindowsBaseDisk

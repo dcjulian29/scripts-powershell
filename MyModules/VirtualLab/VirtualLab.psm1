@@ -507,6 +507,80 @@ function New-LabWindows2016Server {
     NewLabWindowsServerVM -ComputerName $ComputerName -OsVersion "2016" -UnattendFile $UnattendFile
 }
 
+function New-LabVirtualMachinesFromCsv {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true, ValueFromPipeline=$true, ParameterSetName='BaseDisk')]
+        [Parameter(Mandatory=$true, ValueFromPipeline=$true, ParameterSetName='ISO')]
+        [Alias("CSV")]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $CsvFile,
+        [string] $VirtualSwitch = "LAB",
+        [Parameter(Mandatory=$true, ParameterSetName='ISO')]
+        [string] $IsoFile,
+        [Parameter(Mandatory=$true, ParameterSetName='BaseDisk')]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $BaseDisk,
+        [Parameter(Mandatory=$true, ParameterSetName='BaseDisk')]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $UnattendFile,
+        [Parameter(Mandatory=$true, ParameterSetName='BaseDisk')]
+        [Parameter(Mandatory=$true, ParameterSetName='ISO')]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $virtualStorage = "C:\Virtual Machines"
+    )
+
+    # CSV Format: ComputerName, IP, Gateway, DNS, MEMORY, StartUpScript
+    Push-Location $virtualStorage
+
+    foreach ($vm in (Import-Csv -Path $CsvFile)) {
+        $vhdx = "$($vm.ComputerName).vhdx"
+        if ($PSCmdlet.ParameterSetName -eq 'BaseDisk') {
+            New-DifferencingVhdx -referenceDisk $BaseDisk -VhdxFile "$vhdx"
+
+            New-UnattendFile -VhdxFile $vhdx -unattendTemplate $UnattendFile `
+                -ComputerName "$($vm.ComputerName)" -NetworkAddress "$($vm.IP)" `
+                -GatewayAddress "$($vm.Gateway)" -NameServer "$($vm.DNS)"
+        } else {
+            New-SystemVhdx -IsoFile $IsoFile -VhdxFile $vhdx
+        }
+
+        $memory = 1024MB
+
+        if ($null -eq $vm.Memory) {
+            $memory = (0 + $vm.Memory)
+        }
+
+        New-VirtualMachine -VhdxFile $vhdx -computerName "$($vm.ComputerName)" `
+            -virtualSwitch $VirtualSwitch -memory (0 + $memory) -CPU 2
+
+            if ($PSCmdlet.ParameterSetName -eq 'BaseDisk') {
+                if (-not ([string]::IsNullOrEmpty($vm.DataDrive))) {
+                    New-DataVhdx -VhdxFile "$($vm.ComputerName)-DATA.vhdx" `
+                        -DiskSize (0 + $vm.DataDrive)
+              
+                    Set-VMHardDiskDrive -VMName "$($vm.ComputerName)" `
+                        -Path "$($vm.ComputerName)-DATA.vhdx"
+                }
+
+                if (-not ([string]::IsNullOrEmpty($vm.StartupScript))) {
+                    Move-VMStartUpScriptFileToVM -VhdxFile $vhdx `
+                         -ScriptFile $vm.StartupScript
+                }
+            } else {
+                Add-VMDvdDrive -VMName $vm.ComputerName -Path $IsoFile
+                Set-VMFirmware $vm.ComputerName `
+                    -FirstBootDevice $(Get-VMDvdDrive $vm.ComputerName)            
+            }
+    }
+
+    Pop-Location
+}
+
 function New-LabVMSwitch {
     $lab = Get-VMSwitch -Name LAB -ErrorAction SilentlyContinue
 
@@ -544,9 +618,7 @@ Export-ModuleMember New-LabCentOSServer
 
 Export-ModuleMember New-LabVMFromISO
 
-#Export-ModuleMember New-LabWebServer
-
-#Export-ModuleMember New-Lab3TierRedundantPlatform
+Export-ModuleMember New-LabVirtualMachinesFromCsv
 
 Export-ModuleMember New-LabVMSwitch
 Export-ModuleMember Remove-LabVMSwitch
