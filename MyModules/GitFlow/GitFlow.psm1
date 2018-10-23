@@ -91,10 +91,10 @@ Set-Alias gffs Start-GitFlowFeature
 Export-ModuleMember -Alias gffs
 
 Set-Alias gfff Finish-GitFlowFeature
-Export-ModuleMember -Alias gffs
+Export-ModuleMember -Alias gfff
 
 Set-Alias gfrs Start-GitFlowRelease
-Export-ModuleMember -Alias gffs
+Export-ModuleMember -Alias gfrs
 
 Set-Alias gfrf Finish-GitFlowRelease
-Export-ModuleMember -Alias gffs
+Export-ModuleMember -Alias gfrf
