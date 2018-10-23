@@ -411,24 +411,19 @@ function Compress-Vhdx {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-
-Function Compact-VHDX {
-    [Cmdletbinding()]
-    param (
-      [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-      [string] $vhdxFile
+        [string] $VhdxFile
     )
 
     if (-not $(Assert-Elevation)) { return }
 
-    Write-Output "Attempting to mount $vhdxFile..."
-    Mount-VHD -Path $vhdxFile -ReadOnly
+    Write-Output "Attempting to mount $VhdxFile..."
+    Mount-VHD -Path $VhdxFile -ReadOnly
 
-    Write-Output "Attempting to compact $vhdxFile"
-    Optimize-VHD -Path $vhdxFile -Mode Full 
+    Write-Output "Attempting to compact $VhdxFile"
+    Optimize-VHD -Path $VhdxFile -Mode Full 
 
-    Write-Output "Attempting to dismount $vhdxFile"
-    Dismount-VHD -path $vhdxFile
+    Write-Output "Attempting to dismount $VhdxFile"
+    Dismount-VHD -path $VhdxFile
 }
 
 function Initialize-WorkstationHyperV {
