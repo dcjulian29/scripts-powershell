@@ -1,24 +1,35 @@
-Function Get-OSInstallDate {
-    (Get-CimInstance Win32_OperatingSystem).InstallDate
+function Get-OSInstallDate {
+    param (
+        [switch]$Days
+    )
+
+    $installed = (Get-CimInstance Win32_OperatingSystem).InstallDate
+
+    if ($Days) {
+        $elaspsed = ((Get-Date) - ($installed))
+        return $elaspsed.Days
+    } else {
+        return $installed
+    }
 }
 
-Function Get-OSVersion {
+function Get-OSVersion {
     (Get-CimInstance Win32_OperatingSystem).Version
 }
 
-Function Get-OSRegisteredUser {
+function Get-OSRegisteredUser {
     (Get-CimInstance Win32_OperatingSystem).RegisteredUser
 }
 
-Function Get-OSOrganization {
+function Get-OSOrganization {
     (Get-CimInstance Win32_OperatingSystem).Organization
 }
 
-Function Get-OSBuildNumber {
+function Get-OSBuildNumber {
     (Get-CimInstance Win32_OperatingSystem).BuildNumber
 }
 
-Function Test-PendingReboot {
+function Test-PendingReboot {
     $PendingReboot = $false
 
     Push-Location "HKLM:\Software\Microsoft\Windows\CurrentVersion\"
@@ -44,7 +55,7 @@ Function Test-PendingReboot {
     return $PendingReboot
 }
 
-Function New-RemoteDesktopShortcut {
+function New-RemoteDesktopShortcut {
     param (
         [string]$Path = "$ComputerName.rdp",
         [Parameter(Mandatory=$true)]
