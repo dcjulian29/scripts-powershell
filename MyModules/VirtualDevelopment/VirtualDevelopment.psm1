@@ -45,7 +45,7 @@ function New-DevVM {
     (Get-Content $unattendFile).replace("P@ssw0rd", $password.GetNetworkCredential().password) `
         | Set-Content $unattendFile
 
-    New-UnattendFileIp -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $computerName
+    New-UnattendFile -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $computerName
 
     Move-VMStartUpScriptFileToVM -VhdxFile $vhdx -ScriptFile $startScript -Argument "myvm-development"
 
