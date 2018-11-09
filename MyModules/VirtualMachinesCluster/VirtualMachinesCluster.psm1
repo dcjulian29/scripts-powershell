@@ -25,10 +25,10 @@
     }
 
     if ($ClusterNode -ne $Session.ComputerName) {
-        throw "Remote Session does not match Cluster Node Name." 
+        throw "Remote Session does not match Cluster Node Name."
     }
 
-    $script = @"    
+    $script = @"
     if (Test-Path "$clusterDirectory\$ComputerName") {
         Remove-Item -Recurse -Force "$clusterDirectory\$ComputerName"
     }
@@ -36,7 +36,7 @@
     New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName"
     New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Snapshots"
     New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Virtual Hard Disks"
-    New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Virtual Machines"    
+    New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Virtual Machines"
 
     New-VM -Name $ComputerName ``
         -NewVHDPath "$clusterDirectory\$ComputerName\Virtual Hard Disks\$ComputerName.Vhdx" ``
@@ -44,7 +44,7 @@
 
     Set-VMMemory -VMName $ComputerName -DynamicMemoryEnabled `$true -StartupBytes $StartupMemory
     Set-VMMemory -VMName $ComputerName -MinimumBytes 1GB -MaximumBytes $MaximumMemory
-    
+
     Set-VM -Name $ComputerName -AutomaticStartAction Start
     Set-VM -Name $ComputerName -AutomaticStopAction Save
 
@@ -55,9 +55,9 @@
     if ($VLAN -gt 0) {
         Set-VMNetworkAdapterVlan -VMName $ComputerName -Access -VlanId $VLAN
     }
-    
+
     Set-VMProcessor -VMName $ComputerName -Count $ProcessorCount
-   
+
     Add-VMDvdDrive -VMName $ComputerName -Path $IsoPath
     Set-VMFirmware $ComputerName -FirstBootDevice `$(Get-VMDvdDrive $ComputerName)
     Set-VMFirmware $ComputerName -EnableSecureBoot Off
@@ -65,7 +65,7 @@
     Get-VM -Name $ComputerName | Add-ClusterVirtualMachineRole
 "@
 
-    $scriptBlock = [Scriptblock]::Create($script) 
+    $scriptBlock = [Scriptblock]::Create($script)
 
     if (-not $session) {
         throw "No Session to Cluster Node $ClusterNode!"
@@ -92,7 +92,7 @@ function New-ClusteredVMFromExistingDisk {
         [Int32] $ClusterVolume = 1,
         [System.Management.Automation.Runspaces.PSSession]$Session
     )
-    
+
     $ComputerName = $ComputerName.ToUpperInvariant()
     $clusterDirectory = "C:\ClusterStorage\Volume$ClusterVolume"
 
@@ -101,7 +101,7 @@ function New-ClusteredVMFromExistingDisk {
     }
 
     if ($ClusterNode -ne $Session.ComputerName) {
-        throw "Remote Session does not match Cluster Node Name." 
+        throw "Remote Session does not match Cluster Node Name."
     }
 
     $script = @"
@@ -112,7 +112,7 @@ function New-ClusteredVMFromExistingDisk {
         Remove-Item -Recurse -Force -Path "$clusterDirectory\$ComputerName\Virtual Machines" -ErrorAction SilentlyContinue
 
         New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Snapshots"
-        New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Virtual Machines"    
+        New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Virtual Machines"
 
         if (-not (Test-Path "$clusterDirectory\$ComputerName\Virtual Hard Disks")) {
             New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Virtual Hard Disks"
@@ -123,7 +123,7 @@ function New-ClusteredVMFromExistingDisk {
         New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName"
         New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Snapshots"
         New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Virtual Hard Disks"
-        New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Virtual Machines"    
+        New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Virtual Machines"
    }
 
     `$ErrorActionPreference = "Stop"
@@ -144,7 +144,7 @@ function New-ClusteredVMFromExistingDisk {
 
     Set-VMMemory -VMName $ComputerName -DynamicMemoryEnabled `$true -StartupBytes $StartupMemory
     Set-VMMemory -VMName $ComputerName -MinimumBytes 1GB -MaximumBytes $MaximumMemory
-    
+
     Set-VM -Name $ComputerName -AutomaticStartAction Start
     Set-VM -Name $ComputerName -AutomaticStopAction Save
 
@@ -155,13 +155,13 @@ function New-ClusteredVMFromExistingDisk {
     if ($VLAN -gt 0) {
         Set-VMNetworkAdapterVlan -VMName $ComputerName -Access -VlanId $VLAN
     }
-    
+
     Set-VMProcessor -VMName $ComputerName -Count $ProcessorCount
-    
+
     Get-VM -Name $ComputerName | Add-ClusterVirtualMachineRole
 "@
 
-    $scriptBlock = [Scriptblock]::Create($script) 
+    $scriptBlock = [Scriptblock]::Create($script)
 
     if (-not $session) {
         throw "No Session to Cluster Node $ClusterNode!"
@@ -197,10 +197,10 @@ function New-ClusteredVMFromWindowsBaseDisk {
     }
 
     if ($ClusterNode -ne $Session.ComputerName) {
-        throw "Remote Session does not match Cluster Node Name." 
+        throw "Remote Session does not match Cluster Node Name."
     }
 
-    $script = @"    
+    $script = @"
     if (Test-Path "$clusterDirectory\$ComputerName") {
         Remove-Item -Recurse -Force "$clusterDirectory\$ComputerName"
     }
@@ -208,7 +208,7 @@ function New-ClusteredVMFromWindowsBaseDisk {
     New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName"
     New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Snapshots"
     New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Virtual Hard Disks"
-    New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Virtual Machines"    
+    New-Item -ItemType Directory -Path "$clusterDirectory\$ComputerName\Virtual Machines"
 
     if ("$UseCore" -eq "True") {
         `$BaseImage = "`$((Get-ChildItem -Path "$clusterDirectory\Win$OsVersion*ServerCoreBase*.vhdx").FullName)"
@@ -220,7 +220,7 @@ function New-ClusteredVMFromWindowsBaseDisk {
         throw "Unable to find the base image disk."
     }
 
-    Write-Information "Using `$BaseImage..."
+    Write-Output "Using `$BaseImage..."
 
     if ("$CopyDiskFile" -eq "True") {
         Copy-Item -Path `$BaseImage -Destination "$clusterDirectory\$ComputerName\Virtual Hard Disks\$ComputerName.Vhdx" -Verbose
@@ -235,7 +235,7 @@ function New-ClusteredVMFromWindowsBaseDisk {
 
     Set-VMMemory -VMName $ComputerName -DynamicMemoryEnabled `$true -StartupBytes $StartupMemory
     Set-VMMemory -VMName $ComputerName -MinimumBytes 1GB -MaximumBytes $MaximumMemory
-    
+
     Set-VM -Name $ComputerName -AutomaticStartAction Start
     Set-VM -Name $ComputerName -AutomaticStopAction Save
 
@@ -246,13 +246,13 @@ function New-ClusteredVMFromWindowsBaseDisk {
     if ($VLAN -gt 0) {
         Set-VMNetworkAdapterVlan -VMName $ComputerName -Access -VlanId $VLAN
     }
-    
+
     Set-VMProcessor -VMName $ComputerName -Count $ProcessorCount
-    
+
     Get-VM -Name $ComputerName | Add-ClusterVirtualMachineRole
 "@
 
-    $scriptBlock = [Scriptblock]::Create($script) 
+    $scriptBlock = [Scriptblock]::Create($script)
 
     if (-not $session) {
         throw "No Session to Cluster Node $ClusterNode!"

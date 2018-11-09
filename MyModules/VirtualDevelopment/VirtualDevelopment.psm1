@@ -5,7 +5,7 @@
         if ($vm.state -ne "Off") {
             $vm | Stop-VM
         }
-    
+
         $vm | Remove-VM
     }
 
@@ -39,7 +39,7 @@ function New-DevVM {
 
     New-DifferencingVHDX -ReferenceDisk $BaseImage -VhdxFile "$vhdx"
 
-    $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)" 
+    $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)"
     Copy-Item -Path $unattend -Destination $unattendFile  -Force
 
     (Get-Content $unattendFile).replace("P@ssw0rd", $password.GetNetworkCredential().password) `
@@ -81,9 +81,9 @@ function New-DevVM {
     Set-VM -Name $computerName -AutomaticStartAction Nothing
     Set-Vm -Name $computerName -AutomaticStopAction Save
     Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false
-    
+
     Set-VMProcessor -VMName $computerName -ExposeVirtualizationExtensions $true
- 
+
     Pop-Location
 
     Start-VM -VMName $computerName
@@ -96,7 +96,7 @@ function New-DevVM {
 function New-LinuxDevVM {
     $ErrorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
-    
+
     $computerName = "$(($env:COMPUTERNAME).ToUpper())DEV"
     $vhdx = "$computerName.vhdx"
 
@@ -136,8 +136,8 @@ function New-LinuxDevVM {
 
     Set-VMMemory -VMName $computerName -MaximumBytes $maxMem -MinimumBytes 1GB
     Set-VM -Name $computerName -AutomaticStartAction Nothing
-    Set-Vm -Name $computerName -AutomaticStopAction Save    
-    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false  
+    Set-Vm -Name $computerName -AutomaticStopAction Save
+    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false
 
     Pop-Location
 
@@ -176,9 +176,9 @@ function Install-DevVmPackage {
         `$env:PSModulePath = "`$(Split-Path `$profile)\MyModules;`$(`$env:PSModulePath)"
 
         Get-Module -ListAvailable | Out-Null
-        
+
         $choco
-        
+
         Stop-Transcript
 "@
 

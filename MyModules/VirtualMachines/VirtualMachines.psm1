@@ -48,7 +48,7 @@ function New-SystemVhdx {
     $fullPath = Get-FullFilePath $VhdxFile
     Remove-Item $VhdxFile
 
-    Write-Information "System Vhdx file will be $($fullPath)"
+    Write-Output "System Vhdx file will be $($fullPath)"
 
     if (-not ([string]::IsNullOrEmpty($Edition))) {
         Convert-WindowsImage -SourcePath $IsoFile `
@@ -60,7 +60,7 @@ function New-SystemVhdx {
             -SizeBytes $DiskSize
     }
 
-    Write-Information "Created System Disk [$($VhdxFile)]"
+    Write-Output "Created System Disk [$($VhdxFile)]"
 }
 
 function New-DifferencingVhdx {
@@ -77,7 +77,7 @@ function New-DifferencingVhdx {
 
     if (-not $(Assert-Elevation)) { return }
 
-    Write-Info "Creating a Differencing Disk [$($VhdxFile)] based on [$($ReferenceDisk)]"
+    Write-Output "Creating a Differencing Disk [$($VhdxFile)] based on [$($ReferenceDisk)]"
 
     New-VHD –Path $VhdxFile -Differencing –ParentPath $ReferenceDisk
 }
@@ -93,7 +93,7 @@ function New-DataVhdx {
 
     if (-not $(Assert-Elevation)) { return }
 
-    Write-Info "Creating a Data Disk [$($VhdxFile)] sized [$($DiskSize)]"
+    Write-Infomation "Creating a Data Disk [$($VhdxFile)] sized [$($DiskSize)]"
     New-VHD -Path $VhdxFile -SizeBytes $DiskSize -Dynamic
 
     $fullPath = Get-FullFilePath $VhdxFile
@@ -102,13 +102,13 @@ function New-DataVhdx {
 
     $diskNumber = (Get-DiskImage -ImagePath $fullPath | Get-Disk).Number
 
-    Write-Info "Initializing Data Disk..."
+    Write-Output "Initializing Data Disk..."
 
     Initialize-Disk -Number $diskNumber -PartitionStyle GPT
     $partition = New-Partition -DiskNumber $diskNumber -UseMaximumSize `
         -GptType '{ebd0a0a2-b9e5-4433-87c0-68b6b72699c7}'
 
-    Write-Info "Formatting Data Disk..."
+    Write-Output "Formatting Data Disk..."
 
     Format-Volume -FileSystem NTFS -Partition $partition -Confirm:$false
 
@@ -125,7 +125,7 @@ function New-SqlDataVhdx {
 
     if (-not $(Assert-Elevation)) { return }
 
-    Write-Info "Creating a SQL Data Disk [$($VhdxFile)] sized [$($DiskSize)]"
+    Write-Output "Creating a SQL Data Disk [$($VhdxFile)] sized [$($DiskSize)]"
     New-VHD -Path $VhdxFile -SizeBytes $DiskSize -Dynamic
 
     $fullPath = Get-FullFilePath $VhdxFile
@@ -134,13 +134,13 @@ function New-SqlDataVhdx {
 
     $diskNumber = (Get-DiskImage -ImagePath $fullPath | Get-Disk).Number
 
-    Write-Info "Initializing SQL Data Disk..."
+    Write-Output "Initializing SQL Data Disk..."
 
     Initialize-Disk -Number $diskNumber -PartitionStyle GPT
     $partition = New-Partition -DiskNumber $diskNumber -UseMaximumSize `
         -GptType '{ebd0a0a2-b9e5-4433-87c0-68b6b72699c7}'
 
-    Write-Info "Formatting SQL Data Disk..."
+    Write-Output "Formatting SQL Data Disk..."
 
     Format-Volume -FileSystem ReFS -Partition $partition -Confirm:$false -AllocationUnitSize 64KB
 
@@ -162,7 +162,7 @@ function Connect-IsoToVirtual {
     if (-not $(Assert-Elevation)) { return }
 
     Add-VMDvdDrive -VMName $VirtualMachineName
-    
+
     Set-VMDvdDrive -VMName $VirtualMachineName -Path $IsoFile
 }
 
@@ -420,7 +420,7 @@ function Compress-Vhdx {
     Mount-VHD -Path $VhdxFile -ReadOnly
 
     Write-Output "Attempting to compact $VhdxFile"
-    Optimize-VHD -Path $VhdxFile -Mode Full 
+    Optimize-VHD -Path $VhdxFile -Mode Full
 
     Write-Output "Attempting to dismount $VhdxFile"
     Dismount-VHD -path $VhdxFile
@@ -428,7 +428,7 @@ function Compress-Vhdx {
 
 function Initialize-WorkstationHyperV {
     $vm = "${env:SYSTEMDRIVE}\Virtual Machines"
-    
+
     if (-not (Test-Path -Path $vm)) {
         New-Item -Path $vm -ItemType Directory | Out-Null
     }
@@ -436,7 +436,7 @@ function Initialize-WorkstationHyperV {
     if (-not (Test-Path -Path "$vm\ISO")) {
         New-Item -Path "$vm\ISO" -ItemType Directory | Out-Null
     }
-    
+
     Set-VMHost -VirtualMachinePath "${env:SYSTEMDRIVE}\" -VirtualHardDiskPath $vm
 }
 

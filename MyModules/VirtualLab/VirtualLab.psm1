@@ -41,7 +41,7 @@ function NewLabWindowsServerVM {
 
     New-DifferencingVHDX -referenceDisk $baseImage -vhdxFile "$vhdx"
 
-    New-UnattendFileIp -vhdxFile $vhdx -unattendTemplate $UnattendFile -computerName $ComputerName
+    New-UnattendFile -vhdxFile $vhdx -unattendTemplate $UnattendFile -computerName $ComputerName
 
     New-VirtualMachine -vhdxFile $vhdx -computerName $ComputerName -memory 2GB  -Verbose
 
@@ -461,7 +461,7 @@ function New-LabWorkstation {
     (Get-Content $unattendFile).replace("P@ssw0rd", $Credentials.GetNetworkCredential().password) `
         | Set-Content $unattendFile
 
-    New-UnattendFileIp -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $ComputerName
+    New-UnattendFile -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $ComputerName
 
     Move-VMStartUpScriptFileToVM -VhdxFile $vhdx -ScriptFile $StartScript -Argument "myvm-workstation"
 
