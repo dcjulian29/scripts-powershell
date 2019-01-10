@@ -1,16 +1,18 @@
 ﻿$script:vsPath = First-Path `
   (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe') `
+  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\IDE\devenv.exe') `
+  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\IDE\devenv.exe') `
   (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\devenv.exe') `
   (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe') `
   (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\devenv.exe')
 
-Function Find-VisualStudioSolutions {
+function Find-VisualStudioSolutions {
     param(
         [string]
         $LookingFor
     )
 
-    $files = Get-ChildItem -Filter "*.sln" | % { $_.Name }
+    $files = Get-ChildItem -Filter "*.sln" | ForEach-Object { $_.Name }
 
     $number = 0
     if ($LookingFor) {
@@ -34,9 +36,8 @@ Function Find-VisualStudioSolutions {
     }
 }
 
-Function Start-VisualStudio {
+function Start-VisualStudio {
     param (
-        
         [string]$Project,
         [int]$Version,
         [bool]$AsAdmin
@@ -52,7 +53,10 @@ Function Start-VisualStudio {
         }
 
         if ($Version -ge 2017) {
-            $vs = (Find-ProgramFiles "Microsoft Visual Studio\$vsv\Enterprise\Common7\IDE\devenv.exe")
+            $vs = First-Path `
+                (Find-ProgramFiles 'Microsoft Visual Studio\$vsv\Enterprise\Common7\IDE\devenv.exe') `
+                (Find-ProgramFiles 'Microsoft Visual Studio\$vsv\Professional\Common7\IDE\devenv.exe') `
+                (Find-ProgramFiles 'Microsoft Visual Studio\$vsv\Community\Common7\IDE\devenv.exe')
         } else {
             $vs = (Find-ProgramFiles "Microsoft Visual Studio $vsv\Common7\IDE\devenv.exe")
         }
@@ -78,7 +82,7 @@ Function Start-VisualStudio {
                 }
             } else {
                 Write-Error "$solution does not exists!"
-            }           
+            }
         } else {
             Write-Error "The solution does not exists!"
         }
@@ -87,7 +91,7 @@ Function Start-VisualStudio {
     }
 }
 
-Function Start-VisualStudio2017 {
+function Start-VisualStudio2017 {
     param (
         [string]$Project,
         [switch]$AsAdmin
@@ -96,7 +100,7 @@ Function Start-VisualStudio2017 {
     Start-VisualStudio $Project 2017 -AsAdmin $AsAdmin.IsPresent
 }
 
-Function Start-VisualStudio2015 {
+function Start-VisualStudio2015 {
     param (
         [string]$Project,
         [switch]$AsAdmin
@@ -105,7 +109,7 @@ Function Start-VisualStudio2015 {
     Start-VisualStudio $Project 2015 -AsAdmin $AsAdmin.IsPresent
 }
 
-Function Start-VisualStudioCode {
+function Start-VisualStudioCode {
     $code = (Find-ProgramFiles "Microsoft VS Code\Code.exe")
 
     Start-Process -FilePath $code -ArgumentList $args
@@ -130,3 +134,6 @@ Export-ModuleMember -Alias vs-solutions
 
 Set-Alias code Start-VisualStudioCode
 Export-ModuleMember -Alias code
+
+Set-Alias vscode Start-VisualStudioCode
+Export-ModuleMember -Alias vscode
