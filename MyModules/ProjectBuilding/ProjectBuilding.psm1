@@ -1,4 +1,10 @@
 ﻿$script:msbuildExe = First-Path `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\amd64\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\amd64\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\amd64\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe") `
     ("$($env:SYSTEMDRIVE)\Program Files\MSBuild\15.0\bin\MSBuild.exe") `
     ("$($env:SYSTEMDRIVE)\Program Files (x86)\MSBuild\15.0\bin\MSBuild.exe") `
     ("$($env:SYSTEMDRIVE)\Program Files\MSBuild\14.0\bin\MSBuild.exe") `
@@ -16,6 +22,8 @@
 
 $script:vsvarPath = First-Path `
   (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat') `
+  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\Tools\VsDevCmd.bat') `
+  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat') `
   (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\Tools\vsvars32.bat') `
   (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\Tools\vsvars32.bat') `
   (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\Tools\vsvars32.bat') `
