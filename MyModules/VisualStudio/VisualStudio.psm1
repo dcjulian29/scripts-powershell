@@ -47,19 +47,17 @@ function Start-VisualStudio {
         $vs = $script:vsPath
     } else {
         switch ($Version) {
+            2019 { $vsv = "2019" }
             2017 { $vsv = "2017" }
             2015 { $vsv = "14.0" }
             2013 { $vsv = "12.0" }
         }
 
-        if ($Version -ge 2017) {
-            $vs = First-Path `
-                (Find-ProgramFiles 'Microsoft Visual Studio\$vsv\Enterprise\Common7\IDE\devenv.exe') `
-                (Find-ProgramFiles 'Microsoft Visual Studio\$vsv\Professional\Common7\IDE\devenv.exe') `
-                (Find-ProgramFiles 'Microsoft Visual Studio\$vsv\Community\Common7\IDE\devenv.exe')
-        } else {
-            $vs = (Find-ProgramFiles "Microsoft Visual Studio $vsv\Common7\IDE\devenv.exe")
-        }
+        $vs = First-Path `
+            (Find-ProgramFiles "Microsoft Visual Studio\$vsv\Enterprise\Common7\IDE\devenv.exe") `
+            (Find-ProgramFiles "Microsoft Visual Studio\$vsv\Professional\Common7\IDE\devenv.exe") `
+            (Find-ProgramFiles "Microsoft Visual Studio\$vsv\Community\Common7\IDE\devenv.exe") `
+            (Find-ProgramFiles "Microsoft Visual Studio $vsv\Common7\IDE\devenv.exe")
     }
 
     if (Test-Path $vs) {
@@ -91,6 +89,15 @@ function Start-VisualStudio {
     }
 }
 
+function Start-VisualStudio2019 {
+    param (
+        [string]$Project,
+        [switch]$AsAdmin
+    )
+
+    Start-VisualStudio $Project 2019 -AsAdmin $AsAdmin.IsPresent
+}
+
 function Start-VisualStudio2017 {
     param (
         [string]$Project,
@@ -120,6 +127,7 @@ function Start-VisualStudioCode {
 Export-ModuleMember Start-VisualStudio
 Export-ModuleMember Start-VisualStudio2015
 Export-ModuleMember Start-VisualStudio2017
+Export-ModuleMember Start-VisualStudio2019
 Export-ModuleMember Find-VisualStudioSolutions
 Export-ModuleMember Start-VisualStudioCode
 
@@ -128,6 +136,9 @@ Export-ModuleMember -Alias vs2015
 
 Set-Alias vs2017 Start-VisualStudio2017
 Export-ModuleMember -Alias vs2017
+
+Set-Alias vs2019 Start-VisualStudio2019
+Export-ModuleMember -Alias vs2019
 
 Set-Alias vs-solutions Find-VisualStudioSolutions
 Export-ModuleMember -Alias vs-solutions
