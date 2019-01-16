@@ -1,4 +1,10 @@
 ﻿$script:msbuildExe = First-Path `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\15.0\Bin\amd64\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\15.0\Bin\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\15.0\Bin\amd64\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\15.0\Bin\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\15.0\Bin\amd64\MSBuild.exe") `
+    ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\15.0\Bin\MSBuild.exe") `
     ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\amd64\MSBuild.exe") `
     ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe") `
     ("$($env:SYSTEMDRIVE)\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\amd64\MSBuild.exe") `
@@ -21,16 +27,19 @@
     ("$($env:WINDIR)\Microsoft.NET\Framework\v2.0.50727\MSBuild.exe")
 
 $script:vsvarPath = First-Path `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat') `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\Tools\VsDevCmd.bat') `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat') `
-  (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\Tools\vsvars32.bat') `
-  (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\Tools\vsvars32.bat') `
-  (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\Tools\vsvars32.bat') `
-  (Find-ProgramFiles 'Microsoft Visual Studio 11.0\Common7\Tools\vsvars32.bat') `
-  (Find-ProgramFiles 'Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat')
+    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\Tools\vsvars32.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\Tools\vsvars32.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\Tools\vsvars32.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio 11.0\Common7\Tools\vsvars32.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat')
 
-Function Build-Project {
+Function Invoke-BuildProject {
     $param = "$args"
     if (Test-Path build.cake) {
         if ($args.Count -eq 1) {
@@ -53,7 +62,7 @@ Function Build-Project {
 }
 
 Function Invoke-MSBuild {
-    Load-VisualStudioVariables
+    Register-VisualStudioVariables
     if (Test-Path $script:msbuildExe) {
         & $script:msbuildExe $args
     } else {
@@ -61,7 +70,7 @@ Function Invoke-MSBuild {
     }
 }
 
-Function Load-VisualStudioVariables {
+Function Register-VisualStudioVariables {
     if (Test-Path $script:vsvarPath) {
         cmd /c "`"$script:vsvarPath`" & set" | Foreach-Object {
             $p, $v = $_.split('=')
@@ -70,11 +79,11 @@ Function Load-VisualStudioVariables {
     }
 }
 
-Function Where-VisualStudioVariables {
+Function Find-VisualStudioVariables {
     $script:vsvarPath
 }
 
-Function Where-MSBuild {
+Function Find-MSBuild {
     $script:msbuildExe
 }
 
@@ -86,11 +95,11 @@ Function Invoke-ArchiveProject {
 
     Push-Location $Path
 
-    Get-ChildItem -Filter "*.sln" -Recurse | % { 
+    Get-ChildItem -Filter "*.sln" -Recurse | ForEach-Object {
         Invoke-CleanProject "$($_.FullName)" -Configuration "Debug"
     }
 
-    Get-ChildItem -Filter "*.sln" -Recurse | % { 
+    Get-ChildItem -Filter "*.sln" -Recurse | ForEach-Object { 
         Invoke-CleanProject "$($_.FullName)" -Configuration "Release"
     }
 
@@ -102,7 +111,7 @@ Function Invoke-ArchiveProject {
     $zip = Join-Path $(Find-ProgramFiles "7-Zip") -ChildPath "7z.exe"
 
     & $zip a -t7z -mx9 -y -r $destination .
-    
+
     Pop-Location
 }
 
@@ -136,11 +145,11 @@ Function Invoke-CleanAllProjects {
     )
 
     Push-Location $Path
-    
-    Get-ChildItem -Directory | % { 
+
+    Get-ChildItem -Directory | ForEach-Object {
         Push-Location $_.FullName
 
-        Get-ChildItem -Filter "*.sln" -Recurse | % { 
+        Get-ChildItem -Filter "*.sln" -Recurse | ForEach-Object {
             Invoke-CleanProject -Project "$($_.FullName)" -Configuration "$Configuration"
         }
 
@@ -152,27 +161,30 @@ Function Invoke-CleanAllProjects {
 
 ##################################################################################################
 
-Export-ModuleMember Build-Project
-Export-ModuleMember Invoke-MSBuild
-Export-ModuleMember Load-VisualStudioVariables
-Export-ModuleMember Where-VisualStudioVariables
-Export-ModuleMember Where-MSBuild
+Export-ModuleMember Find-VisualStudioVariables
+Export-ModuleMember Find-MSBuild
 Export-ModuleMember Invoke-ArchiveProject
+Export-ModuleMember Invoke-BuildProject
 Export-ModuleMember Invoke-CleanProject
 Export-ModuleMember Invoke-CleanAllProjects
+Export-ModuleMember Invoke-MSBuild
+Export-ModuleMember Register-VisualStudioVariables
 
 
-Set-Alias bp build-project
+Set-Alias bp Invoke-BuildProject
 Export-ModuleMember -Alias bp
 
 Set-Alias msbuild Invoke-MSBuild
 Export-ModuleMember -Alias msbuild
 
-Set-Alias vsvars32 Load-VisualStudioVariables
+Set-Alias vsvars32 Register-VisualStudioVariables
 Export-ModuleMember -Alias vsvars32
 
-Set-Alias Load-VSVariables Load-VisualStudioVariables
-Export-ModuleMember -Alias Load-VSVariables
+Set-Alias VSVariables Register-VisualStudioVariables
+Export-ModuleMember -Alias VSVariables
+
+Set-Alias Register-VSVariables Register-VisualStudioVariables
+Export-ModuleMember -Alias Register-VSVariables
 
 Set-Alias project-archive Invoke-ArchiveProject
 Export-ModuleMember -Alias project-archive
