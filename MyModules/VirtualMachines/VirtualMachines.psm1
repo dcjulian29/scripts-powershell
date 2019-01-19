@@ -433,11 +433,15 @@ function Initialize-WorkstationHyperV {
         New-Item -Path $vm -ItemType Directory | Out-Null
     }
 
+    if (-not (Test-Path -Path "$vm\Discs")) {
+        New-Item -Path "$vm\Discs" -ItemType Directory | Out-Null
+    }
+
     if (-not (Test-Path -Path "$vm\ISO")) {
         New-Item -Path "$vm\ISO" -ItemType Directory | Out-Null
     }
 
-    Set-VMHost -VirtualMachinePath "${env:SYSTEMDRIVE}\" -VirtualHardDiskPath $vm
+    Set-VMHost -VirtualMachinePath $vm -VirtualHardDiskPath "$vm\Discs"
 }
 
 ###############################################################################
