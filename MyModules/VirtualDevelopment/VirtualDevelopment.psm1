@@ -97,14 +97,20 @@ function New-LinuxDevVM {
     $ErrorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
 
-    $computerName = "$(($env:COMPUTERNAME).ToUpper())DEV"
+    $computerName = "$(($env:COMPUTERNAME).ToUpper())LNXDEV"
     $vhdx = "$computerName.vhdx"
 
-    $isoDir = "$((Get-VMHost).VirtualHardDiskPath)\ISO"
+    $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
 
     $latest = Get-ChildItem -Filter "xubuntu-*" -Path $isoDir `
         | Sort-Object Name -Descending `
         | Select-Object -First 1
+
+    if ($null -eq $latest) {
+        $latest = Get-ChildItem -Filter "linuxmint-*" -Path $isoDir `
+            | Sort-Object Name -Descending `
+            | Select-Object -First 1
+    }
 
     $isoFile = $latest.name
 
