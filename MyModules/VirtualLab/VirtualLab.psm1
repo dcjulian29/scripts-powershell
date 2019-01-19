@@ -5,7 +5,7 @@
         if ($vm.state -ne "Off") {
             $vm | Stop-VM -Force
         }
-    
+
         $vm | Remove-VM -Force
     }
 
@@ -48,7 +48,7 @@ function NewLabWindowsServerVM {
     Set-VMMemory -VMName $ComputerName -MinimumBytes 1GB
     Set-VM -Name $ComputerName -AutomaticStartAction Nothing
     Set-Vm -Name $ComputerName -AutomaticStopAction Save
-    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false  
+    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false
 
     Pop-Location
 
@@ -66,12 +66,12 @@ function New-LabUbuntuServer {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         $ComputerName,
-        [string]$IsoFilePath
+        [string]$IsoFilePath,
+        [switch]$UseDefaultSwitch
     )
-    
-    if ($IsoFilePath -eq "") {
 
-        $isoDir = "$((Get-VMHost).VirtualHardDiskPath)\ISO"
+    if ($IsoFilePath -eq "") {
+        $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
 
         $latest = Get-ChildItem -Filter "ubuntu-*" -Path $isoDir `
             | Sort-Object Name -Descending `
@@ -82,7 +82,7 @@ function New-LabUbuntuServer {
         $IsoFilePath = "$isoDir\$isoFile"
     }
 
-    New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath
+    New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath -UseDefaultSwitch $UseDefaultSwitch.IsPresent
 }
 
 function New-LabCentOSServer {
@@ -90,12 +90,12 @@ function New-LabCentOSServer {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         $ComputerName,
-        [string]$IsoFilePath
+        [string]$IsoFilePath,
+        [switch]$UseDefaultSwitch
     )
-    
-    if ($IsoFilePath -eq "") {
 
-        $isoDir = "$((Get-VMHost).VirtualHardDiskPath)\ISO"
+    if ($IsoFilePath -eq "") {
+        $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
 
         $latest = Get-ChildItem -Filter "CentOS-*" -Path $isoDir `
             | Sort-Object Name -Descending `
@@ -106,7 +106,7 @@ function New-LabCentOSServer {
         $IsoFilePath = "$isoDir\$isoFile"
     }
 
-    New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath
+    New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath -UseDefaultSwitch $UseDefaultSwitch.IsPresent
 }
 
 function New-LabVMFromISO {
@@ -116,7 +116,8 @@ function New-LabVMFromISO {
         $ComputerName,
         [Parameter(Mandatory=$true)]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $IsoFilePath
+        [string] $IsoFilePath,
+        [switch]$UseDefaultSwitch
     )
 
     $errorPreviousAction = $ErrorActionPreference
@@ -136,16 +137,20 @@ function New-LabVMFromISO {
 
     Set-VMMemory -VMName $ComputerName -DynamicMemoryEnabled $true -StartupBytes 1GB
     Set-VMMemory -VMName $ComputerName -MinimumBytes 512MB
-    
+
     Set-VM -Name $ComputerName -AutomaticStartAction Nothing
-    Set-VM -Name $ComputerName -AutomaticStopAction Save    
-    Set-VM -Name $ComputerName -AutomaticCheckpointsEnabled $false  
+    Set-VM -Name $ComputerName -AutomaticStopAction Save
+    Set-VM -Name $ComputerName -AutomaticCheckpointsEnabled $false
 
     Add-VMDvdDrive -VMName $ComputerName -Path $IsoFilePath
     Set-VMFirmware $ComputerName -FirstBootDevice $(Get-VMDvdDrive $ComputerName)
     Set-VMFirmware $ComputerName -EnableSecureBoot Off
 
-    Connect-VMNetworkAdapter -VMName $ComputerName -SwitchName "LAB"
+    if ($UseDefaultSwitch) {
+        Connect-VMNetworkAdapter -VMName $ComputerName -SwitchName "Default Switch"
+    } else {
+        Connect-VMNetworkAdapter -VMName $ComputerName -SwitchName "LAB"
+    }
 
     Pop-Location
 
@@ -164,7 +169,7 @@ function New-LabFirewall {
     $errorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop"
 
-    $isoDir = "$((Get-VMHost).VirtualHardDiskPath)\ISO"
+    $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
 
     $latest = Get-ChildItem -Filter "pfSense-*" -Path $isoDir `
         | Sort-Object Name -Descending `
@@ -189,15 +194,15 @@ function New-LabFirewall {
 
     Add-VMNetworkAdapter -VMName $ComputerName -Name "LAN"
     Add-VMNetworkAdapter -VMName $ComputerName -Name "WAN"
-  
+
     Connect-VMNetworkAdapter -VMName $ComputerName -Name "LAN" -SwitchName "LAB"
     Connect-VMNetworkAdapter -VMName $ComputerName -Name "WAN" -SwitchName "Default Switch"
-  
+
     Pop-Location
 
     Set-VM -Name $ComputerName -AutomaticStartAction Nothing
-    Set-Vm -Name $ComputerName -AutomaticStopAction Save    
-    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false  
+    Set-Vm -Name $ComputerName -AutomaticStopAction Save
+    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false
 
     Write-Warning "Be sure to eject the ISO File after installation is complete."
 
@@ -230,7 +235,7 @@ function New-LabDomainController {
     New-DifferencingVHDX -ReferenceDisk "$((Get-VMHost).VirtualHardDiskPath)\Win2016ServerBase.vhdx" `
         -VhdxFile $vhdx
 
-    $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)" 
+    $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)"
     Copy-Item -Path $unattend -Destination $unattendFile  -Force
 
     (Get-Content $unattendFile).replace("P@ssw0rd", $Credentials.GetNetworkCredential().password) `
@@ -253,7 +258,7 @@ function New-LabDomainController {
 
     ```$key = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, ```$view)
 
-    ```$subKey =  ```$key.OpenSubKey("SYSTEM\CurrentControlSet\services\TCPIP6\Parameters", ```$true)  
+    ```$subKey =  ```$key.OpenSubKey("SYSTEM\CurrentControlSet\services\TCPIP6\Parameters", ```$true)
     ```$subKey.SetValue("DisabledComponents", 1)
 
     Write-Output "Installing Windows Features..."
@@ -262,7 +267,7 @@ function New-LabDomainController {
     Write-Output "Configuring Active Directory..."
     ```$password = ConvertTo-SecureString  -string '$($Credentials.GetNetworkCredential().password)' ````
         -AsPlainText  -Force
-    
+
     Install-ADDSForest -DomainName '$DomainName' -SafeModeAdministratorPassword ```$password -InstallDns ````
         -Force -NoRebootOnCompletion -Verbose
 
@@ -280,7 +285,7 @@ function New-LabDomainController {
     Set-Content -Path "C:\Windows\Setup\Scripts\install2.ps1" -Encoding Ascii -Value  `@"
     Start-Transcript -OutputDirectory "C:\Windows\Setup\Scripts"
 
-    Install-WindowsFeature Rsat-AD-PowerShell, Web-Server -IncludeManagementTools 
+    Install-WindowsFeature Rsat-AD-PowerShell, Web-Server -IncludeManagementTools
     Install-WindowsFeature DHCP -IncludeManagementTools
 
     Add-DhcpServerV4Scope -Name $DomainName ````
@@ -304,7 +309,7 @@ function New-LabDomainController {
 
     Write-Output "Installing CA using ```$(```$cred.UserName)"
     Install-AdcsCertificationAuthority -CACommonName 'ContosoCA' -CAType 'EnterpriseRootCA' ````
-        -KeyLength 2048 -Cred ```$cred -OverwriteExistingCAinDS -Force -Verbose 
+        -KeyLength 2048 -Cred ```$cred -OverwriteExistingCAinDS -Force -Verbose
 
     Write-Output 'Installing ADCS web enrollment feature'
 
@@ -344,7 +349,7 @@ function New-LabDomainController {
 
     Write-Output "Turning UAC back on..."
     reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System ````
-        /v EnableLUA /t REG_DWORD /d 1 /f 
+        /v EnableLUA /t REG_DWORD /d 1 /f
 
     Stop-Transcript
 
@@ -365,11 +370,11 @@ function New-LabDomainController {
 
     Write-Output "Setting PowerShell Execution Policy..."
     reg add HKLM\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell ``
-        /v ExecutionPolicy /t REG_SZ /d RemoteSigned /f 
+        /v ExecutionPolicy /t REG_SZ /d RemoteSigned /f
 
     Write-Output "Turning off UAC while startup scripts are running..."
     reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System ``
-        /v EnableLUA /t REG_DWORD /d 0 /f 
+        /v EnableLUA /t REG_DWORD /d 0 /f
 
     Set-Content -Path "C:\Windows\Setup\Scripts\startup.bat" -Encoding Ascii -Value  `@"
     powershell.exe -NoProfile -NoLogo -NoExit -Command "``& C:\Windows\Setup\Scripts\install1.ps1"
@@ -386,7 +391,7 @@ function New-LabDomainController {
                 "@cmd.exe /c C:\Windows\Setup\Scripts\startup.bat"
             `$fileNotFound = `$false
         }
-    
+
         Start-Sleep -Seconds 1
     }
 
@@ -401,12 +406,12 @@ function New-LabDomainController {
 
     Move-VMStartUpScriptBlockToVM -VhdxFile $vhdx -ScriptBlock $scriptBlock
 
-    New-VirtualMachine -VhdxFile $vhdx -ComputerName $ComputerName -VirtualSwitch "LAB" 
+    New-VirtualMachine -VhdxFile $vhdx -ComputerName $ComputerName -VirtualSwitch "LAB"
 
     Set-VMMemory -VMName $ComputerName -MaximumBytes 1GB -MinimumBytes 512MB
     Set-VM -Name $ComputerName -AutomaticStartAction Nothing
-    Set-Vm -Name $ComputerName -AutomaticStopAction Save  
-    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false  
+    Set-Vm -Name $ComputerName -AutomaticStopAction Save
+    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false
 
     Start-VM -VMName $ComputerName
 
@@ -424,7 +429,7 @@ function New-LabWorkstation {
         $ComputerName,
         [psobject]$Credentials,
         [switch]$DomainJoin,
-        [switch]$DefaultSwitch
+        [switch]$UseDefaultSwitch
     )
 
     $errorActionPreference = "Stop";
@@ -472,7 +477,7 @@ function New-LabWorkstation {
 
     Move-StartLayoutToVM -VhdxFile $vhdx -LayoutFile $startLayout
 
-    if ($DefaultSwitch) {
+    if ($UseDefaultSwitch) {
         $Switch = "Default Switch"
     } else {
         $Switch = "LAB"
@@ -501,10 +506,11 @@ function New-LabWindows2012R2Server {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         $ComputerName,
-        [string]$UnattendFile
+        [string]$UnattendFile,
+        [switch]$UseDefaultSwitch
     )
 
-    NewLabWindowsServerVM -ComputerName $ComputerName -OsVersion "2012R2" -UnattendFile $UnattendFile
+    NewLabWindowsServerVM -ComputerName $ComputerName -OsVersion "2012R2" -UnattendFile $UnattendFile -UnattendFile $UseDefaultSwitch.IsPresent
 }
 
 function New-LabWindows2016Server {
@@ -512,10 +518,11 @@ function New-LabWindows2016Server {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         $ComputerName,
-        [string]$UnattendFile
+        [string]$UnattendFile,
+        [switch]$UseDefaultSwitch
     )
 
-    NewLabWindowsServerVM -ComputerName $ComputerName -OsVersion "2016" -UnattendFile $UnattendFile
+    NewLabWindowsServerVM -ComputerName $ComputerName -OsVersion "2016" -UnattendFile $UnattendFile -UnattendFile $UseDefaultSwitch.IsPresent
 }
 
 function New-LabVirtualMachinesFromCsv {
@@ -527,8 +534,10 @@ function New-LabVirtualMachinesFromCsv {
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string] $CsvFile,
+        [Alias("Switch")]
         [string] $VirtualSwitch = "LAB",
         [Parameter(Mandatory=$true, ParameterSetName='ISO')]
+        [Alias("Iso")]
         [string] $IsoFile,
         [Parameter(Mandatory=$true, ParameterSetName='BaseDisk')]
         [ValidateNotNullOrEmpty()]
@@ -537,23 +546,19 @@ function New-LabVirtualMachinesFromCsv {
         [Parameter(Mandatory=$true, ParameterSetName='BaseDisk')]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $UnattendFile,
-        [Parameter(Mandatory=$true, ParameterSetName='BaseDisk')]
-        [Parameter(Mandatory=$true, ParameterSetName='ISO')]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $virtualStorage = "C:\Virtual Machines"
+        [string] $UnattendFile
     )
 
-    # CSV Format: ComputerName, IP, Gateway, DNS, MEMORY, StartUpScript
-    Push-Location $virtualStorage
+    Push-Location $((Get-VMHost).VirtualHardDiskPath)
 
+    # CSV Format: ComputerName, IP, Gateway, DNS, MEMORY, StartUpScript
     foreach ($vm in (Import-Csv -Path $CsvFile)) {
         $vhdx = "$($vm.ComputerName).vhdx"
+
         if ($PSCmdlet.ParameterSetName -eq 'BaseDisk') {
             New-DifferencingVhdx -referenceDisk $BaseDisk -VhdxFile "$vhdx"
 
-            New-UnattendFile -VhdxFile $vhdx -unattendTemplate $UnattendFile `
+            New-UnattendFile -VhdxFile $vhdx -UnattendTemplate $UnattendFile `
                 -ComputerName "$($vm.ComputerName)" -NetworkAddress "$($vm.IP)" `
                 -GatewayAddress "$($vm.Gateway)" -NameServer "$($vm.DNS)"
         } else {
@@ -566,14 +571,14 @@ function New-LabVirtualMachinesFromCsv {
             $memory = (0 + $vm.Memory)
         }
 
-        New-VirtualMachine -VhdxFile $vhdx -computerName "$($vm.ComputerName)" `
-            -virtualSwitch $VirtualSwitch -memory (0 + $memory) -CPU 2
+        New-VirtualMachine -VhdxFile $vhdx -ComputerName "$($vm.ComputerName)" `
+            -VirtualSwitch $VirtualSwitch -Memory (0 + $memory) -CPU 2
 
             if ($PSCmdlet.ParameterSetName -eq 'BaseDisk') {
                 if (-not ([string]::IsNullOrEmpty($vm.DataDrive))) {
                     New-DataVhdx -VhdxFile "$($vm.ComputerName)-DATA.vhdx" `
                         -DiskSize (0 + $vm.DataDrive)
-              
+
                     Set-VMHardDiskDrive -VMName "$($vm.ComputerName)" `
                         -Path "$($vm.ComputerName)-DATA.vhdx"
                 }
@@ -585,7 +590,7 @@ function New-LabVirtualMachinesFromCsv {
             } else {
                 Add-VMDvdDrive -VMName $vm.ComputerName -Path $IsoFile
                 Set-VMFirmware $vm.ComputerName `
-                    -FirstBootDevice $(Get-VMDvdDrive $vm.ComputerName)            
+                    -FirstBootDevice $(Get-VMDvdDrive $vm.ComputerName)
             }
     }
 
@@ -597,8 +602,8 @@ function New-LabVMSwitch {
 
     if (-not $lab) {
         New-VMSwitch -Name LAB -SwitchType Internal
-        
-        New-NetIPAddress -IPAddress 10.10.10.11 -PrefixLength 24 -InterfaceAlias "vEthernet (LAB)"    
+
+        New-NetIPAddress -IPAddress 10.10.10.11 -PrefixLength 24 -InterfaceAlias "vEthernet (LAB)"
     } else {
         Write-Warning "Lab VMSwitch already exists..."
     }
