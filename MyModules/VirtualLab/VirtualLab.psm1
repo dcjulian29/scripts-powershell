@@ -423,9 +423,9 @@ function New-LabWorkstation {
         [ValidateNotNullOrEmpty()]
         $ComputerName,
         [psobject]$Credentials,
-        [switch]$DomainJoin
+        [switch]$DomainJoin,
+        [switch]$DefaultSwitch
     )
-
 
     $errorActionPreference = "Stop";
 
@@ -454,12 +454,17 @@ function New-LabWorkstation {
     } else {
         $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.workstation.xml"
     }
-    
-   $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)" 
+
+    $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)"
     Copy-Item -Path $unattend -Destination $unattendFile  -Force
 
-    (Get-Content $unattendFile).replace("P@ssw0rd", $Credentials.GetNetworkCredential().password) `
+    (Get-Content $unattendFile).Replace("P@ssw0rd", $Credentials.GetNetworkCredential().password) `
         | Set-Content $unattendFile
+
+    if ($DomainJoin) {
+        (Get-Content $unattendFile).Replace("Administrator", $Credentials.UserName) `
+            | Set-Content $unattendFile
+    }
 
     New-UnattendFile -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $ComputerName
 
@@ -467,12 +472,18 @@ function New-LabWorkstation {
 
     Move-StartLayoutToVM -VhdxFile $vhdx -LayoutFile $startLayout
 
+    if ($DefaultSwitch) {
+        $Switch = "Default Switch"
+    } else {
+        $Switch = "LAB"
+    }
+
     New-VirtualMachine -VhdxFile $vhdx -ComputerName $ComputerName `
-        -virtualSwitch "LAB" -memory 2GB -Verbose
+        -virtualSwitch $Switch -memory 2GB -Verbose
 
     Set-VMMemory -VMName $ComputerName -MinimumBytes 1GB
-    Set-Vm -Name $ComputerName -AutomaticStopAction Save    
-    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false  
+    Set-Vm -Name $ComputerName -AutomaticStopAction Save
+    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false
 
     Pop-Location
 
