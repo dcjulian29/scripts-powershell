@@ -113,6 +113,22 @@ function New-LabCentOSServer {
     New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath -UseDefaultSwitch $UseDefaultSwitch.IsPresent
 }
 
+function New-LabMintWorkstation {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName,
+        [string]$IsoFilePath,
+        [switch]$UseDefaultSwitch
+    )
+
+    if ($IsoFilePath -eq "") {
+        $IsoFilePath = Get-LastestVirtualIsoFile "linuxmint-"
+    }
+
+    New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath -UseDefaultSwitch $UseDefaultSwitch.IsPresent
+}
+
 function New-LabVMFromISO {
     param (
         [Parameter(Mandatory=$true)]
@@ -621,6 +637,7 @@ Export-ModuleMember New-LabFirewall
 Export-ModuleMember New-LabDomainController
 
 Export-ModuleMember New-LabWorkstation
+Export-ModuleMember New-LabMintWorkstation
 
 Export-ModuleMember New-LabWindows2012R2Server
 Export-ModuleMember New-LabWindows2016Server
