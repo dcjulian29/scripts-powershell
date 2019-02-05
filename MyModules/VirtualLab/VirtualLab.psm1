@@ -59,6 +59,26 @@ function NewLabWindowsServerVM {
     $ErrorActionPreference = $errorPreviousAction
 }
 
+function Get-VirtualIsoPath {
+    "$((Get-VMHost).VirtualMachinePath)\ISO"
+}
+
+function Get-LatestVirtualIsoFile {
+    param (
+        [string]$Pattern
+    )
+
+    $isoDir = Get-VirtualIsoPath
+
+    $latest = Get-ChildItem -Filter "$($Pattern)*" -Path $IsoDir `
+        | Sort-Object Name -Descending `
+        | Select-Object -First 1
+
+    $isoFile = $latest.name
+
+    "$isoDir\$isoFile"
+}
+
 ###############################################################################
 
 function New-LabUbuntuServer {
@@ -71,15 +91,7 @@ function New-LabUbuntuServer {
     )
 
     if ($IsoFilePath -eq "") {
-        $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
-
-        $latest = Get-ChildItem -Filter "ubuntu-*" -Path $isoDir `
-            | Sort-Object Name -Descending `
-            | Select-Object -First 1
-
-        $isoFile = $latest.name
-
-        $IsoFilePath = "$isoDir\$isoFile"
+        $IsoFilePath = Get-LastestVirtualIsoFile "ubuntu-"
     }
 
     New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath -UseDefaultSwitch $UseDefaultSwitch.IsPresent
@@ -95,15 +107,7 @@ function New-LabCentOSServer {
     )
 
     if ($IsoFilePath -eq "") {
-        $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
-
-        $latest = Get-ChildItem -Filter "CentOS-*" -Path $isoDir `
-            | Sort-Object Name -Descending `
-            | Select-Object -First 1
-
-        $isoFile = $latest.name
-
-        $IsoFilePath = "$isoDir\$isoFile"
+        $IsoFilePath = Get-LastestVirtualIsoFile "CentOS-"
     }
 
     New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath -UseDefaultSwitch $UseDefaultSwitch.IsPresent
@@ -169,15 +173,7 @@ function New-LabFirewall {
     $errorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop"
 
-    $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
-
-    $latest = Get-ChildItem -Filter "pfSense-*" -Path $isoDir `
-        | Sort-Object Name -Descending `
-        | Select-Object -First 1
-
-    $isoFile = $latest.name
-
-    $iso = "$isoDir\$isoFile"
+    $iso = Get-LatestVirtualIsoFile("pfSense-")
 
     $ComputerName = $ComputerName.ToUpperInvariant()
     $vhdx = "$ComputerName.vhdx"
