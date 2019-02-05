@@ -537,6 +537,18 @@ function New-LabWindows2016Server {
     NewLabWindowsServerVM -ComputerName $ComputerName -OsVersion "2016" -UnattendFile $UnattendFile -UnattendFile $UseDefaultSwitch.IsPresent
 }
 
+function New-LabWindows2019Server {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName,
+        [string]$UnattendFile,
+        [switch]$UseDefaultSwitch
+    )
+
+    NewLabWindowsServerVM -ComputerName $ComputerName -OsVersion "2019" -UnattendFile $UnattendFile -UnattendFile $UseDefaultSwitch.IsPresent
+}
+
 function New-LabVirtualMachinesFromCsv {
     [CmdletBinding()]
     param(
@@ -641,6 +653,7 @@ Export-ModuleMember New-LabMintWorkstation
 
 Export-ModuleMember New-LabWindows2012R2Server
 Export-ModuleMember New-LabWindows2016Server
+Export-ModuleMember New-LabWindows2019Server
 
 Export-ModuleMember New-LabUbuntuServer
 Export-ModuleMember New-LabCentOSServer
