@@ -91,7 +91,7 @@ function New-LabUbuntuServer {
     )
 
     if ($IsoFilePath -eq "") {
-        $IsoFilePath = Get-LastestVirtualIsoFile "ubuntu-"
+        $IsoFilePath = Get-LatestVirtualIsoFile "ubuntu-"
     }
 
     New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath -UseDefaultSwitch $UseDefaultSwitch.IsPresent
@@ -107,7 +107,7 @@ function New-LabCentOSServer {
     )
 
     if ($IsoFilePath -eq "") {
-        $IsoFilePath = Get-LastestVirtualIsoFile "CentOS-"
+        $IsoFilePath = Get-LatestVirtualIsoFile "CentOS-"
     }
 
     New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath -UseDefaultSwitch $UseDefaultSwitch.IsPresent
@@ -123,7 +123,7 @@ function New-LabMintWorkstation {
     )
 
     if ($IsoFilePath -eq "") {
-        $IsoFilePath = Get-LastestVirtualIsoFile "linuxmint-"
+        $IsoFilePath = Get-LatestVirtualIsoFile "linuxmint-"
     }
 
     New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath -UseDefaultSwitch $UseDefaultSwitch.IsPresent
