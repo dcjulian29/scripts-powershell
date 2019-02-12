@@ -194,7 +194,7 @@ function Install-DevVmPackage {
     powershell.exe -encodedCommand $encodedCommand
 
     # Now lets check for errors...
-    if (Get-Content $logFile | Select-String -Pattern "^Failures$") {
+    if (Get-Content $logFile | Select-String -Pattern "^Failures|ERROR:") {
         Write-Warning "An error occurred during the last package ($package) install..."
         Write-Warning "Review the log file: $logFile"
         Write-Warning "And then decide whether to continue..."
@@ -209,9 +209,42 @@ function Install-DevVmPackage {
     }
 }
 
+function Update-DevVmPackages {
+    param(
+        [Alias("dv")]
+        [switch] $DebugVerbose
+    )
+
+    $date = Get-Date -Format "yyyyMMdd-hhmm"
+
+    $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-upgrade.$date.log"
+
+    if ($DebugVerbose) {
+        $choco = "Invoke-Expression 'choco.exe upgrade all -dv -y'"
+    } else {
+        $choco = "Invoke-Expression 'choco.exe upgrade all -y'"
+    }
+
+    $Command = @"
+        Start-Transcript "$logFile"
+        $choco
+        Stop-Transcript
+"@
+
+    $Bytes = [System.Text.Encoding]::Unicode.GetBytes($Command)
+    $encodedCommand = [Convert]::ToBase64String($Bytes)
+
+    powershell.exe -encodedCommand $encodedCommand
+
+    if (Test-PendingReboot) {
+        Write-Warning "One of the packages recently upgraded has set the PendingReboot flag..."
+    }
+}
+
 ###############################################################################
 
 Export-ModuleMember Install-DevVmPackage
+Export-ModuleMember Update-DevVmPackages
 
 Export-ModuleMember New-DevVM
 Export-ModuleMember New-LinuxDevVM
