@@ -22,12 +22,9 @@ $script:vsvarPath = First-Path `
     (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\Tools\VsDevCmd.bat') `
     (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat') `
     (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\Tools\vsvars32.bat') `
-    (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\Tools\vsvars32.bat') `
-    (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\Tools\vsvars32.bat') `
-    (Find-ProgramFiles 'Microsoft Visual Studio 11.0\Common7\Tools\vsvars32.bat') `
-    (Find-ProgramFiles 'Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat')
+    (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\Tools\vsvars32.bat')
 
-Function Invoke-BuildProject {
+function Invoke-BuildProject {
     $param = "$args"
     if (Test-Path build.cake) {
         if ($args.Count -eq 1) {
@@ -49,7 +46,7 @@ Function Invoke-BuildProject {
     }
 }
 
-Function Invoke-MSBuild {
+function Invoke-MSBuild {
     Register-VisualStudioVariables
     if (Test-Path $script:msbuildExe) {
         & $script:msbuildExe $args
@@ -58,7 +55,7 @@ Function Invoke-MSBuild {
     }
 }
 
-Function Register-VisualStudioVariables {
+function Register-VisualStudioVariables {
     if (Test-Path $script:vsvarPath) {
         cmd /c "`"$script:vsvarPath`" & set" | Foreach-Object {
             $p, $v = $_.split('=')
@@ -67,15 +64,15 @@ Function Register-VisualStudioVariables {
     }
 }
 
-Function Find-VisualStudioVariables {
+function Find-VisualStudioVariables {
     $script:vsvarPath
 }
 
-Function Find-MSBuild {
+function Find-MSBuild {
     $script:msbuildExe
 }
 
-Function Invoke-ArchiveProject {
+function Invoke-ArchiveProject {
     param (
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string]$Path = $pwd
@@ -103,7 +100,7 @@ Function Invoke-ArchiveProject {
     Pop-Location
 }
 
-Function Invoke-CleanProject {
+function Invoke-CleanProject {
     param (
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string]$Project = $(Read-Host "Please provide the solution/csproj file to clean."),
