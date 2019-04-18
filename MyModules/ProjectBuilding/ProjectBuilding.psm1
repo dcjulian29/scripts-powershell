@@ -159,6 +159,18 @@ Function Invoke-CleanAllProjects {
     Pop-Location
 }
 
+function Get-CakeBuildBootstrapper {
+    if (Test-Path build.ps1) {
+        Remove-Item -Confirm -Path build.ps1
+    }
+
+    if (Test-Path build.ps1) {
+        throw "Cake.Build Bootstraper File Still Exists! Can't Continue..."
+    }
+
+    Invoke-WebRequest https://cakebuild.net/download/bootstrapper/windows -OutFile build.ps1
+}
+
 ##################################################################################################
 
 Export-ModuleMember Find-VisualStudioVariables
@@ -170,6 +182,7 @@ Export-ModuleMember Invoke-CleanAllProjects
 Export-ModuleMember Invoke-MSBuild
 Export-ModuleMember Register-VisualStudioVariables
 
+Export-ModuleMember Get-CakeBuildBootstrapper
 
 Set-Alias bp Invoke-BuildProject
 Export-ModuleMember -Alias bp
