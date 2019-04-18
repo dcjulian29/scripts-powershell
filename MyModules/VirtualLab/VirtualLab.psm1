@@ -24,7 +24,8 @@ function NewLabWindowsServerVM {
     param (
         [string]$ComputerName,
         [string]$OsVersion,
-        [string]$UnattendFile ="${env:SYSTEMDRIVE}\etc\vm\unattend.server.xml"
+        [string]$UnattendFile ="${env:SYSTEMDRIVE}\etc\vm\unattend.server.xml",
+        [bool]$Switch = "LAB"
     )
 
     $errorPreviousAction = $ErrorActionPreference
@@ -43,7 +44,8 @@ function NewLabWindowsServerVM {
 
     New-UnattendFile -vhdxFile $vhdx -unattendTemplate $UnattendFile -computerName $ComputerName
 
-    New-VirtualMachine -vhdxFile $vhdx -computerName $ComputerName -memory 2GB  -Verbose
+    New-VirtualMachine -vhdxFile $vhdx -computerName $ComputerName `
+        -virtualSwitch $Switch -memory 2GB  -Verbose
 
     Set-VMMemory -VMName $ComputerName -MinimumBytes 1GB
     Set-VM -Name $ComputerName -AutomaticStartAction Nothing
@@ -94,7 +96,11 @@ function New-LabUbuntuServer {
         $IsoFilePath = Get-LatestVirtualIsoFile "ubuntu-"
     }
 
-    New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath -UseDefaultSwitch $UseDefaultSwitch.IsPresent
+    if ($UseDefaultSwitch) {
+        New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath -UseDefaultSwitch
+    } else {
+        New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath
+    }
 }
 
 function New-LabCentOSServer {
@@ -110,7 +116,11 @@ function New-LabCentOSServer {
         $IsoFilePath = Get-LatestVirtualIsoFile "CentOS-"
     }
 
-    New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath -UseDefaultSwitch $UseDefaultSwitch.IsPresent
+    if ($UseDefaultSwitch) {
+        New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath -UseDefaultSwitch
+    } else {
+        New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath
+    }
 }
 
 function New-LabMintWorkstation {
@@ -126,7 +136,11 @@ function New-LabMintWorkstation {
         $IsoFilePath = Get-LatestVirtualIsoFile "linuxmint-"
     }
 
-    New-LabVMFromISO -ComputerName $ComputerName -ISOFilePath $IsoFilePath -UseDefaultSwitch $UseDefaultSwitch.IsPresent
+    if ($UseDefaultSwitch) {
+        New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath -UseDefaultSwitch
+    } else {
+        New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath
+    }
 }
 
 function New-LabVMFromISO {
@@ -136,12 +150,17 @@ function New-LabVMFromISO {
         $ComputerName,
         [Parameter(Mandatory=$true)]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $IsoFilePath,
+        [string]$IsoFilePath,
+        [string]$VirtualSwitch = "LAB",
         [switch]$UseDefaultSwitch
     )
 
     $errorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
+
+    if ($UseDefaultSwitch) {
+        $VirtualSwitch = "Default Switch"
+    }
 
     $ComputerName = $ComputerName.ToUpperInvariant()
 
@@ -434,7 +453,7 @@ function New-LabDomainController {
     $ErrorActionPreference = $errorPreviousAction
 }
 
-function New-LabWorkstation {
+function New-LabWindowsWorkstation {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -444,7 +463,8 @@ function New-LabWorkstation {
         [switch]$UseDefaultSwitch
     )
 
-    $errorActionPreference = "Stop";
+    $errorPreviousAction = $ErrorActionPreference
+    $ErrorActionPreference = "Stop";
 
     $ComputerName = $ComputerName.ToUpperInvariant()
     $startScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
@@ -458,7 +478,7 @@ function New-LabWorkstation {
         if ($DomainJoin) {
             $Credentials = $(Get-Credentials -Message "Enter Lab Domain Administrator Account (UPN)")
         } else {
-            $Credentials = $(Get-Credential -Message "Enter Password for VM..." -Username "Administrator")
+            $Credentials = $(Get-Credential -Message "Enter Username and Password for VM default user...")
         }
     }
 
@@ -478,10 +498,8 @@ function New-LabWorkstation {
     (Get-Content $unattendFile).Replace("P@ssw0rd", $Credentials.GetNetworkCredential().password) `
         | Set-Content $unattendFile
 
-    if ($DomainJoin) {
-        (Get-Content $unattendFile).Replace("Administrator", $Credentials.UserName) `
-            | Set-Content $unattendFile
-    }
+    (Get-Content $unattendFile).Replace("Administrator", $Credentials.UserName) `
+        | Set-Content $unattendFile
 
     New-UnattendFile -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $ComputerName
 
@@ -522,7 +540,14 @@ function New-LabWindows2012R2Server {
         [switch]$UseDefaultSwitch
     )
 
-    NewLabWindowsServerVM -ComputerName $ComputerName -OsVersion "2012R2" -UnattendFile $UnattendFile -UnattendFile $UseDefaultSwitch.IsPresent
+    if ($UseDefaultSwitch) {
+        $switch = "Default Switch"
+    } else {
+        $switch = "LAB"
+    }
+
+    NewLabWindowsServerVM -ComputerName $ComputerName-OsVersion "2012R2" `
+        -UnattendFile $UnattendFile -Switch $switch
 }
 
 function New-LabWindows2016Server {
@@ -534,7 +559,14 @@ function New-LabWindows2016Server {
         [switch]$UseDefaultSwitch
     )
 
-    NewLabWindowsServerVM -ComputerName $ComputerName -OsVersion "2016" -UnattendFile $UnattendFile -UnattendFile $UseDefaultSwitch.IsPresent
+    if ($UseDefaultSwitch) {
+        $switch = "Default Switch"
+    } else {
+        $switch = "LAB"
+    }
+
+    NewLabWindowsServerVM -ComputerName $ComputerName-OsVersion "2016" `
+        -UnattendFile $UnattendFile -Switch $switch
 }
 
 function New-LabWindows2019Server {
@@ -546,79 +578,14 @@ function New-LabWindows2019Server {
         [switch]$UseDefaultSwitch
     )
 
-    NewLabWindowsServerVM -ComputerName $ComputerName -OsVersion "2019" -UnattendFile $UnattendFile -UnattendFile $UseDefaultSwitch.IsPresent
-}
-
-function New-LabVirtualMachinesFromCsv {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true, ValueFromPipeline=$true, ParameterSetName='BaseDisk')]
-        [Parameter(Mandatory=$true, ValueFromPipeline=$true, ParameterSetName='ISO')]
-        [Alias("CSV")]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $CsvFile,
-        [Alias("Switch")]
-        [string] $VirtualSwitch = "LAB",
-        [Parameter(Mandatory=$true, ParameterSetName='ISO')]
-        [Alias("Iso")]
-        [string] $IsoFile,
-        [Parameter(Mandatory=$true, ParameterSetName='BaseDisk')]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $BaseDisk,
-        [Parameter(Mandatory=$true, ParameterSetName='BaseDisk')]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $UnattendFile
-    )
-
-    Push-Location $((Get-VMHost).VirtualHardDiskPath)
-
-    # CSV Format: ComputerName, IP, Gateway, DNS, MEMORY, StartUpScript
-    foreach ($vm in (Import-Csv -Path $CsvFile)) {
-        $vhdx = "$($vm.ComputerName).vhdx"
-
-        if ($PSCmdlet.ParameterSetName -eq 'BaseDisk') {
-            New-DifferencingVhdx -referenceDisk $BaseDisk -VhdxFile "$vhdx"
-
-            New-UnattendFile -VhdxFile $vhdx -UnattendTemplate $UnattendFile `
-                -ComputerName "$($vm.ComputerName)" -NetworkAddress "$($vm.IP)" `
-                -GatewayAddress "$($vm.Gateway)" -NameServer "$($vm.DNS)"
-        } else {
-            New-SystemVhdx -IsoFile $IsoFile -VhdxFile $vhdx
-        }
-
-        $memory = 1024MB
-
-        if ($null -eq $vm.Memory) {
-            $memory = (0 + $vm.Memory)
-        }
-
-        New-VirtualMachine -VhdxFile $vhdx -ComputerName "$($vm.ComputerName)" `
-            -VirtualSwitch $VirtualSwitch -Memory (0 + $memory) -CPU 2
-
-            if ($PSCmdlet.ParameterSetName -eq 'BaseDisk') {
-                if (-not ([string]::IsNullOrEmpty($vm.DataDrive))) {
-                    New-DataVhdx -VhdxFile "$($vm.ComputerName)-DATA.vhdx" `
-                        -DiskSize (0 + $vm.DataDrive)
-
-                    Set-VMHardDiskDrive -VMName "$($vm.ComputerName)" `
-                        -Path "$($vm.ComputerName)-DATA.vhdx"
-                }
-
-                if (-not ([string]::IsNullOrEmpty($vm.StartupScript))) {
-                    Move-VMStartUpScriptFileToVM -VhdxFile $vhdx `
-                         -ScriptFile $vm.StartupScript
-                }
-            } else {
-                Add-VMDvdDrive -VMName $vm.ComputerName -Path $IsoFile
-                Set-VMFirmware $vm.ComputerName `
-                    -FirstBootDevice $(Get-VMDvdDrive $vm.ComputerName)
-            }
+    if ($UseDefaultSwitch) {
+        $switch = "Default Switch"
+    } else {
+        $switch = "LAB"
     }
 
-    Pop-Location
+    NewLabWindowsServerVM -ComputerName $ComputerName-OsVersion "2019" `
+        -UnattendFile $UnattendFile -Switch $switch
 }
 
 function New-LabVMSwitch {
@@ -648,7 +615,7 @@ function Remove-LabVMSwitch {
 Export-ModuleMember New-LabFirewall
 Export-ModuleMember New-LabDomainController
 
-Export-ModuleMember New-LabWorkstation
+Export-ModuleMember New-LabWindowsWorkstation
 Export-ModuleMember New-LabMintWorkstation
 
 Export-ModuleMember New-LabWindows2012R2Server
@@ -659,8 +626,6 @@ Export-ModuleMember New-LabUbuntuServer
 Export-ModuleMember New-LabCentOSServer
 
 Export-ModuleMember New-LabVMFromISO
-
-Export-ModuleMember New-LabVirtualMachinesFromCsv
 
 Export-ModuleMember New-LabVMSwitch
 Export-ModuleMember Remove-LabVMSwitch
