@@ -135,7 +135,11 @@ function Start-VisualStudio2015 {
 function Start-VisualStudioCode {
     $code = (Find-ProgramFiles "Microsoft VS Code\Code.exe")
 
-    Start-Process -FilePath $code -ArgumentList $args
+    if ([String]::IsNullOrWhiteSpace($args)) {
+        Start-Process -FilePath $code -RedirectStandardOutput "NUL"
+    } else {
+        Start-Process -FilePath $code -ArgumentList $args -RedirectStandardOutput "NUL"
+    }
 }
 
 function Find-VisualStudio {
