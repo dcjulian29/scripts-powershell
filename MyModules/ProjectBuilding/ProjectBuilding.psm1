@@ -107,6 +107,10 @@ function Invoke-CleanProject {
         [string]$Configuration = "Debug"
     )
 
+    if (Test-Path ".build") {
+        Remove-Item -Path ".build" -Recurse -Force
+    }
+
     if (Test-Path "build") {
         Remove-Item -Path "build" -Recurse -Force
     }
