@@ -166,6 +166,70 @@ function Get-CakeBuildBootstrapper {
     Invoke-WebRequest https://cakebuild.net/download/bootstrapper/windows -OutFile build.ps1
 }
 
+function Get-CodeCoverageReport {
+    if (-not (Test-Path build.cake)) {
+        Write-Warning "This project doesn't support Cake.Build so cannot generate Code Coverage."
+        return
+    }
+
+    Invoke-BuildProject "-Target Compile -Configuration Debug"
+
+    if (-not (Test-Path "tools")) {
+        return
+    }
+
+    $openCover = (Get-ChildItem -Filter "OpenCover.*" -Path "tools" `
+        | Sort-Object Name -Descending `
+        | Select-Object -First 1).FullName + "\tools\OpenCover.Console.exe"
+
+    $reportGenerator = (Get-ChildItem -Filter "ReportGenerator.*" -Path "tools" `
+        | Sort-Object Name -Descending `
+        | Select-Object -First 1).FullName + "\tools\net47\ReportGenerator.exe"
+
+    $xunit = (Get-ChildItem -Filter "xunit.runner.console.*" -Path "tools" `
+        | Sort-Object Name -Descending `
+        | Select-Object -First 1).FullName + "\tools\net472\xunit.console.exe"
+
+
+    if (-not ($openCover -and $reportGenerator -and $xunit)) {
+        Write-Warning "Code Coverage tools not found."
+        return
+    }
+
+    if (Test-Path ".coverage") {
+        Remove-Item ".coverage" -Recurse -Force
+    }
+
+    New-Item -ItemType Directory -Path ".coverage" | Out-Null
+
+    if (Test-Path "build") {
+        $buildDirectory = "$((Get-Location).Path)\build"
+    }
+
+    if (Test-Path ".build") {
+        $buildDirectory = "$((Get-Location).Path)\.build"
+    }
+
+    $cmd = "$openCover --% " `
+        + "-target:""$xunit"" " `
+        + "-targetargs:""\""$buildDirectory\output\UnitTests.dll\"" -stoponfail -parallel all -noshadow"" " `
+        + "-register:user " `
+        + "-output:.coverage\coverage.xml " `
+        + "-filter:""+[*]* -[UnitTests]* -[xunit.*]*"" " `
+        + "-excludebyattribute:System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute " `
+        + "-excludebyfile:""*Designer.csb*\\*.g.csb*.*.g.i.cs"""
+
+    Invoke-Expression -Command $cmd
+
+    $cmd = "$reportGenerator --% " `
+        + "-reports:""$((Get-Location).Path)\.coverage\coverage.xml"" " `
+        + "-targetdir:""$((Get-Location).Path)\.coverage"""
+
+    Invoke-Expression -Command $cmd
+
+    Start-Process "$((Get-Location).Path)\.coverage\index.htm"
+}
+
 ##################################################################################################
 
 Export-ModuleMember Find-VisualStudioVariables
@@ -178,6 +242,7 @@ Export-ModuleMember Invoke-MSBuild
 Export-ModuleMember Register-VisualStudioVariables
 
 Export-ModuleMember Get-CakeBuildBootstrapper
+Export-ModuleMember Get-CodeCoverageReport
 
 Set-Alias bp Invoke-BuildProject
 Export-ModuleMember -Alias bp
