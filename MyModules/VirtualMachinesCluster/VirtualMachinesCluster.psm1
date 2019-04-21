@@ -1,4 +1,8 @@
-﻿function New-ClusteredVirtualMachineFromISO {
+﻿function isNumeric ($Value) {
+    return $Value -match "^[\d\.]+$"
+}
+
+function New-ClusteredVirtualMachineFromISO {
     [Cmdletbinding()]
     param (
         [parameter(Mandatory=$true)]
@@ -261,8 +265,53 @@ function New-ClusteredVMFromWindowsBaseDisk {
     }
 }
 
+function Move-ClusteredVMToNode {
+    param (
+        [parameter(Mandatory=$true)]
+        [string] $ComputerName,
+        [parameter(Mandatory=$true)]
+        [string] $ClusterNode,
+        [string] $ClusterName = "VMCluster1"
+    )
+
+    if (isNumeric($ClusterNode)) {
+        $ClusterNode = "VMHOST$ClusterNode"
+    }
+
+    $resource = Get-ClusterResource -Cluster $(Get-Cluster $ClusterName) | `
+        Where-Object { $_.ResourceType -eq 'Virtual Machine' } | `
+        Where-Object { $_.OwnerGroup.Name -eq $ComputerName }
+
+    if (-not $resource) {
+        Write-Warning "$ComputerName does not exist on $ClusterName."
+
+        return
+    }
+
+    $owner = $resource.OwnerNode
+    $state = $resource.State
+
+    if ($owner.Name -eq $ClusterNode) {
+        Write-Warning "$ComputerName is already on $ClusterNode."
+
+        return
+    }
+
+    Write-Output "Moving $ComputerName to $ClusterNode..."
+
+    if ($state -eq "Online") {
+        Move-ClusterVirtualMachineRole -MigrationType Live -Cluster $ClusterName `
+            -Name $ComputerName -Node $ClusterNode
+    } else {
+        Move-ClusterVirtualMachineRole -Cluster $ClusterNode `
+            -Name $ComputerName -Node $ClusterNode
+    }
+}
+
 ###############################################################################
 
 Export-ModuleMember New-ClusteredVirtualMachineFromISO
 Export-ModuleMember New-ClusteredVMFromWindowsBaseDisk
 Export-ModuleMember New-ClusteredVMFromExistingDisk
+
+Export-ModuleMember Move-ClusteredVMToNode
