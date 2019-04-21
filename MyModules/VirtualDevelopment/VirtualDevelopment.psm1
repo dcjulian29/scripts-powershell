@@ -94,27 +94,48 @@ function New-DevVM {
 }
 
 function New-LinuxDevVM {
+    param (
+        [Pameter(ParameterSetName = "Ubuntu")]
+        [Switch]$UseUbuntu,
+        [Pameter(ParameterSetName = "Xubuntu")]
+        [Switch]$UseXubuntu,
+        [Pameter(ParameterSetName = "LinuxMint")]
+        [Switch]$UseMint,
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$IsoFilePath
+    )
+
     $ErrorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
 
     $computerName = "$(($env:COMPUTERNAME).ToUpper())LNXDEV"
     $vhdx = "$computerName.vhdx"
 
-    $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
+    if (-not $IsoFilePath) {
+        $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
 
-    $latest = Get-ChildItem -Filter "xubuntu-*" -Path $isoDir `
-        | Sort-Object Name -Descending `
-        | Select-Object -First 1
+        if ($UseUbuntu) {
+            $latest = Get-ChildItem -Filter "ubuntu-mate-*" -Path $isoDir `
+                | Sort-Object Name -Descending `
+                | Select-Object -First 1
+        }
 
-    if ($null -eq $latest) {
-        $latest = Get-ChildItem -Filter "linuxmint-*" -Path $isoDir `
-            | Sort-Object Name -Descending `
-            | Select-Object -First 1
+        if ($UseXubuntu) {
+            $latest = Get-ChildItem -Filter "xubuntu-*" -Path $isoDir `
+                | Sort-Object Name -Descending `
+                | Select-Object -First 1
+        }
+
+        if ($UseMint -or ($null -eq $latest) ) {
+            $latest = Get-ChildItem -Filter "linuxmint-*" -Path $isoDir `
+                | Sort-Object Name -Descending `
+                | Select-Object -First 1
+        }
+
+        $isoFile = $latest.name
+
+        $IsoFilePath = "$isoDir\$isoFile"
     }
-
-    $isoFile = $latest.name
-
-    $iso = "$isoDir\$isoFile"
 
     StopAndRemoveVM $computerName
 
@@ -135,7 +156,7 @@ function New-LinuxDevVM {
     New-VirtualMachine -VhdxFile $vhdx -ComputerName $computerName `
         -Memory 2GB -MaximumMemory $maxMem -CPU $numOfCpu
 
-    Connect-IsoToVirtual $computerName $iso
+    Connect-IsoToVirtual $computerName $IsoFilePath
 
     Set-VMFirmware $computerName -FirstBootDevice $(Get-VMDvdDrive $computerName)
     Set-VMFirmware $computerName -EnableSecureBoot Off
