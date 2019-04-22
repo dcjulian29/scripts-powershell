@@ -27,9 +27,7 @@ $script:vsvarPath = First-Path `
 function Invoke-BuildProject {
     $param = "$args"
     if (Test-Path build.cake) {
-        "===$param==="
         if (-not ($param.Contains('-'))) {
-            "***$param***"
             if ($param) {
                 # Assume a target was passed in
                 Invoke-Expression ".\build.ps1 -target $param"
