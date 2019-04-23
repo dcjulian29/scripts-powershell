@@ -27,14 +27,34 @@ function Invoke-OpenSSH {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
-        [string]$ComputerName,
-        [string]$UserName = $env:USERNAME,
-        [string]$IdentityFile = "$env:SystemDrive\etc\ssh\id_$ComputerName"
+        [string]$Remote,
+        [string]$IdentityFile
     )
 
     $ssh = "$env:windir\System32\OpenSSH\ssh.exe"
     $etc = "$env:SystemDrive\etc\ssh"
-    $arguments = "-F ""$etc\config"" -i ""$IdentityFile"" $UserName@$ComputerName"
+
+    if (-not $IdentityFile) {
+        if ($Remote.Contains("@")) {
+            $ComputerName = $Remote.Split('@')[1]
+        } else {
+            $ComputerName = $Remote
+        }
+
+        $file = "$env:SystemDrive\etc\ssh\id_$ComputerName"
+
+        if (Test-Path $file) {
+            $IdentityFile = $file
+        }
+    }
+
+    $arguments = "-F ""$etc\config"""
+
+    if ($IdentityFile -and Test-Path $IdentityFile) {
+        $arguments = $arguments + " -i ""$IdentityFile"""
+    }
+
+    $arguments = $arguments + " $Remote"
 
     Start-Process -FilePath $ssh -ArgumentList $arguments -NoNewWindow -Wait
 }
