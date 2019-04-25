@@ -94,13 +94,15 @@ function New-DevVM {
 }
 
 function New-LinuxDevVM {
+    [cmdletbinding(DefaultParameterSetName="Default")]
     param (
-        [Pameter(ParameterSetName = "Ubuntu")]
+        [Parameter(ParameterSetName = "Ubuntu")]
         [Switch]$UseUbuntu,
-        [Pameter(ParameterSetName = "Xubuntu")]
+        [Parameter(ParameterSetName = "Xubuntu")]
         [Switch]$UseXubuntu,
-        [Pameter(ParameterSetName = "LinuxMint")]
+        [Parameter(ParameterSetName = "LinuxMint")]
         [Switch]$UseMint,
+        [Parameter(ParameterSetName="Default")]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string]$IsoFilePath
     )
@@ -114,20 +116,20 @@ function New-LinuxDevVM {
     if (-not $IsoFilePath) {
         $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
 
-        if ($UseUbuntu) {
-            $latest = Get-ChildItem -Filter "ubuntu-mate-*" -Path $isoDir `
-                | Sort-Object Name -Descending `
-                | Select-Object -First 1
-        }
-
         if ($UseXubuntu) {
             $latest = Get-ChildItem -Filter "xubuntu-*" -Path $isoDir `
                 | Sort-Object Name -Descending `
                 | Select-Object -First 1
         }
 
-        if ($UseMint -or ($null -eq $latest) ) {
+        if ($UseMint) {
             $latest = Get-ChildItem -Filter "linuxmint-*" -Path $isoDir `
+                | Sort-Object Name -Descending `
+                | Select-Object -First 1
+        }
+
+        if ($UseUbuntu -or ($null -eq $latest)) {
+            $latest = Get-ChildItem -Filter "ubuntu-mate-*" -Path $isoDir `
                 | Sort-Object Name -Descending `
                 | Select-Object -First 1
         }
