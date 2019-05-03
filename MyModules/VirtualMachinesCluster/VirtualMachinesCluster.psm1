@@ -33,6 +33,12 @@ function New-ClusteredVirtualMachineFromISO {
     }
 
     $script = @"
+    if (-not (Test-Path $IsoPath)) {
+        Write-Warning "$IsoPath does not exists!"
+
+        return
+    }
+
     if (Test-Path "$clusterDirectory\$ComputerName") {
         Remove-Item -Recurse -Force "$clusterDirectory\$ComputerName"
     }
@@ -62,11 +68,18 @@ function New-ClusteredVirtualMachineFromISO {
 
     Set-VMProcessor -VMName $ComputerName -Count $ProcessorCount
 
-    Add-VMDvdDrive -VMName $ComputerName -Path $IsoPath
-    Set-VMFirmware $ComputerName -FirstBootDevice `$(Get-VMDvdDrive $ComputerName)
-    Set-VMFirmware $ComputerName -EnableSecureBoot Off
-
     Get-VM -Name $ComputerName | Add-ClusterVirtualMachineRole
+
+    Add-VMDvdDrive -VMName $ComputerName
+
+    `$dvd = Get-VMDvdDrive -VMName $ComputerName
+
+    if (`$dvd) {
+        Write-Output "Setting DVD to be first boot device and disabling SecureBoot..."
+
+        Set-VMFirmware $ComputerName -FirstBootDevice `$dvd
+        Set-VMFirmware $ComputerName -EnableSecureBoot Off
+    }
 "@
 
     $scriptBlock = [Scriptblock]::Create($script)
