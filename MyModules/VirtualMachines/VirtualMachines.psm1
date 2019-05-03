@@ -1,5 +1,48 @@
 ﻿. $PSScriptRoot\Convert-WindowsImage.ps1
 
+function Get-VirtualizationNamespace {
+    param (
+        [String]$ComputerName = $env:COMPUTERNAME
+    )
+
+    $namespace = ""
+
+    $vmms = Get-WmiObject -Namespace root\virtualization `
+        -Class MSVM_VirtualSystemManagementService `
+        -ComputerName $ComputerName `
+        -ErrorAction SilentlyContinue
+
+    if ($null -ne $vmms) {
+        $namespace = "root\virtualization"
+    }
+
+    if (($null -eq $vmms) -and [string]::IsNullOrEmpty($namespace)) {
+        # Windows 2012R2 changed to v2 namespace
+
+        $vmms = Get-WmiObject -Namespace root\virtualization\v2 `
+            -Class MSVM_VirtualSystemManagementService `
+            -ComputerName $ComputerName `
+            -ErrorAction Stop
+
+        if ($null -ne $vmms) {
+            $namespace = "root\virtualization\v2"
+        }
+    }
+
+    return $namespace
+}
+
+function Get-VirtualizationManagementService {
+    param (
+        [String]$ComputerName = $env:COMPUTERNAME
+    )
+
+    Get-WmiObject -Namespace $(Get-VirtualizationNamespace $ComputerName) `
+        -Class MSVM_VirtualSystemManagementService `
+        -ComputerName $ComputerName `
+        -ErrorAction Stop
+}
+
 function Mount-Vhdx {
     param (
         [Parameter(Mandatory=$true)]
@@ -461,6 +504,9 @@ Export-ModuleMember New-VirtualMachine
 Export-ModuleMember New-VirtualMachineFromName
 Export-ModuleMember Compress-Vhdx
 Export-ModuleMember Initialize-WorkstationHyperV
+
+Export-ModuleMember Get-VirtualizationNamespace
+Export-ModuleMember Get-VirtualizationManagementService
 
 Set-Alias New-ReferenceVhdx New-SystemVhdx
 Export-ModuleMember -Alias New-ReferenceVhdx
