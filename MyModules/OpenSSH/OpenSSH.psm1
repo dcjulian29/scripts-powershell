@@ -50,7 +50,7 @@ function Invoke-OpenSSH {
 
     $arguments = "-F ""$etc\config"""
 
-    if ($IdentityFile -and Test-Path $IdentityFile) {
+    if ($IdentityFile -and (Test-Path $IdentityFile)) {
         $arguments = $arguments + " -i ""$IdentityFile"""
     }
 
