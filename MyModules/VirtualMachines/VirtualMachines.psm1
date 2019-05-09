@@ -1,5 +1,98 @@
 ﻿. $PSScriptRoot\Convert-WindowsImage.ps1
 
+function decodeEnabledState ($s) {
+    switch ($s) {
+              1 { "Other"               }
+              2 { "Running"             }
+              3 { "Off"                 }
+              4 { "Shutting Down"       }
+              5 { "Not Applicable"      }
+              6 { "Saved"               }
+              7 { "Saved"               }
+              8 { "Processing Commands" }
+              9 { "Restricted"          }
+             10 { "Starting"            }
+          32768 { "Paused"              }
+          32769 { "Suspended"           }
+          32770 { "Starting"            }
+          32771 { "Snapshotting"        }
+          32773 { "Saving"              }
+          32774 { "Stopping"            }
+          32776 { "Pausing"             }
+          32777 { "Resuming"            }
+        Default { "Unknown"             }
+    }
+}
+
+function convertTime ($s) {
+    $t = New-TimeSpan -Seconds $($s/1000)
+
+    if ($t.TotalSeconds -eq 0) {
+        return ""
+    }
+
+    if ($t.Days -eq 0) {
+        return "{0:2}:{0:2}:{0:2}" -f $t.Days, $t.Hours, $t.Minutes, $t.Seconds
+    }
+
+    return "{0}.{1:d2}:{2:d2}:{3:d2}" -f $t.Days, $t.Hours, $t.Minutes, $t.Seconds
+}
+
+###############################################################################
+
+function Get-VirtualMachineStatus {
+    param (
+        [string]$ComputerName = $env:ComputerName
+    )
+
+    Get-WmiObject -Namespace $(Get-VirtualizationNamespace $ComputerName) -ComputerName $ComputerName `
+        -Query "SELECT * FROM MSVM_ComputerSystem WHERE Caption Like '%virtual%'" `
+        | Sort-Object ElementName `
+        | Select-Object `
+            @{Label="Name"; Expression={$_.ElementName}}, `
+            @{Label="GUID"; Expression={$_.Name}}, `
+            @{Label="State"; Expression={decodeEnabledState $_.EnabledState}},
+            @{Label="UpTime"; Expression={convertTime $_.OnTimeInMilliseconds}} `
+        | Format-Table -AutoSize
+}
+
+function Select-VirtualMachine {
+    [cmdletbinding()]
+    param (
+        [parameter(ValueFromPipeline = $true)]
+        [String[]]$Choice,
+        [string]$ComputerName = $env:ComputerName
+    )
+
+    process {
+        $Global:dae994b3be21 = 0
+
+        $VMs = Get-WmiObject -Namespace $(Get-VirtualizationNamespace $ComputerName) `
+            -ComputerName $ComputerName `
+            -Query "SELECT * FROM MSVM_ComputerSystem WHERE Caption Like '%virtual%'"
+
+        $VMs = $VMs | Sort-Object ElementName
+
+        if ([string]::IsNullOrEmpty($Choice)) {
+            $VMs | Select-Object `
+                    @{Label="ID"; Expression={$Global:dae994b3be21;$Global:dae994b3be21++}}, `
+                    @{Label="Name"; Expression={$_.ElementName}}, `
+                    @{Label="GUID"; Expression={$_.Name}}, `
+                    @{Label="State"; Expression={decodeEnabledState $_.EnabledState}},
+                    @{Label="UpTime"; Expression={convertTime $_.OnTimeInMilliseconds}} `
+                | Format-Table -AutoSize
+        }
+
+        if ($Choice.Length -gt 0) {
+            $Choice | ForEach-Object {
+                return $VMs[$_]
+            }
+        } else {
+            return $VMs[[int[]](Read-Host "Which one(s)? ").Split(",")]
+        }
+    }
+}
+
 function Get-VirtualizationNamespace {
     param (
         [String]$ComputerName = $env:COMPUTERNAME
@@ -507,6 +600,9 @@ Export-ModuleMember Initialize-WorkstationHyperV
 
 Export-ModuleMember Get-VirtualizationNamespace
 Export-ModuleMember Get-VirtualizationManagementService
+
+Export-ModuleMember Get-VirtualMachineStatus
+Export-ModuleMember Select-VirtualMachine
 
 Set-Alias New-ReferenceVhdx New-SystemVhdx
 Export-ModuleMember -Alias New-ReferenceVhdx
