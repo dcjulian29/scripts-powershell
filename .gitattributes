@@ -1,0 +1,21 @@
+* text=auto
+
+*.md                text
+*.gitattributes     text
+
+*.ps1               text  eol=crlf
+*.psm1              text  eol=crlf
+*.psd1              text  eol=crlf
+*.psc1              text  eol=crlf
+*.ps1xml            text  eol=crlf
+*.clixml            text  eol=crlf
+*.xml               text  eol=crlf
+*.txt               text  eol=crlf
+
+*.dll               binary
+*.exe               binary
+*.svg               binary
+
+# npm now seems to be insisting on LF - see https://github.com/npm/npm/issues/17161
+package.json        text eol=lf
+package-lock.json   text eol=lf
