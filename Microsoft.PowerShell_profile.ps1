@@ -8,24 +8,21 @@ $batch = (Get-WmiObject Win32_Process -filter "ProcessID=$pid").CommandLine -mat
 if (-not $batch) {
   $principal = new-object System.Security.principal.windowsprincipal($CurrentUser)
   if ($principal.IsInRole("Administrators")) {
-    $host.UI.RawUI.BackgroundColor = "DarkRed"
-    $host.UI.RawUI.ForegroundColor = "Yellow"
-
     Set-Location C:\
     $host.UI.RawUI.WindowTitle = "Administrator: PowerShell Prompt"
     $PromptAdmin="#"
+    ColorTool.exe Treehouse
   } else {
     $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
-    $host.UI.RawUI.BackgroundColor = "Black"
-    $host.UI.RawUI.ForegroundColor = "Green"
+    ColorTool.exe Andromeda
   }
 
   # Something keeps changing the PowerShell Console font and size from my preference, so
   # we'll enforce the defaults for all console windows.
   Remove-Item HKCU:\Console\* -Force
-  
+
   # Changing the color of the console window doesn't take effect unless you clear the screen
-  clear
+  Clear-Host
 
   Write-Host "  ____                        ____  _          _ _"
   Write-Host " |  _ \ _____      _____ _ __/ ___|| |__   ___| | |"
@@ -48,7 +45,7 @@ Function prompt {
   $realLASTEXITCODE = $LASTEXITCODE
   $originalColor = $Host.UI.RawUI.ForegroundColor
   $username = $currentuser.name.split('\')[1]
-  
+
   Write-Host($username) -nonewline -foregroundcolor Yellow
   Write-Host("@") -nonewline -foregroundcolor $originalColor
   Write-Host($env:ComputerName) -nonewline -foregroundcolor Green
@@ -64,7 +61,7 @@ Function prompt {
         if (Get-Command Write-VcsStatus -errorAction SilentlyContinue) {
             # I like bright colors. The dark green and red are hard to see on black background.
             $s = $global:GitPromptSettings
-            
+
             if ($s.WorkingForegroundColor -ne $s.WorkingForegroundBrightColor) {
                 $s.LocalDefaultStatusForegroundColor = $s.LocalDefaultStatusForegroundBrightColor
                 $s.LocalWorkingStatusForegroundColor = $s.LocalWorkingStatusForegroundBrightColor
@@ -74,14 +71,14 @@ Function prompt {
                 $s.EnableWindowTitle = ""
                 $s.BeforeText = "["
             }
-            
-          Write-VcsStatus
+
+            Write-VcsStatus
         }
       }
   }
 
   Write-Host($PromptAdmin) -nonewline -foregroundcolor Cyan
-  
+
   # Reset color, which can be messed up by Enable-GitColors
   $Host.UI.RawUI.ForegroundColor = $originalColor
 
@@ -98,7 +95,7 @@ Function Reload-Profile {
 }
 
 Function Get-LastExecutionTime {
-    $command = Get-History -Count 1    
+    $command = Get-History -Count 1
     $command.EndExecutionTime - $command.StartExecutionTime
 }
 
