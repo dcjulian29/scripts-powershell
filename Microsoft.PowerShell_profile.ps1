@@ -11,10 +11,10 @@ if (-not $batch) {
     Set-Location C:\
     $host.UI.RawUI.WindowTitle = "Administrator: PowerShell Prompt"
     $PromptAdmin="#"
-    ColorTool.exe Treehouse
+    ColorTool.exe Treehouse.itermcolors
   } else {
     $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
-    ColorTool.exe Andromeda
+    ColorTool.exe purplerpeter.itermcolors
   }
 
   # Something keeps changing the PowerShell Console font and size from my preference, so
