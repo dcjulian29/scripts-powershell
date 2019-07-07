@@ -66,13 +66,44 @@ function Invoke-OpenSCP {
         [string]$SourcePath,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
+        [string]$RemoteHost,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [string]$DestinationPath,
-        [string]$IdentityFile = "$env:SystemDrive\etc\ssh\id_$ComputerName"
+        [string]$RemoteUser,
+        [string]$IdentityFile,
+        [int32]$Port,
+        [switch]$Recurse
     )
 
     $scp = "$env:windir\System32\OpenSSH\scp.exe"
     $etc = "$env:SystemDrive\etc\ssh"
-    $arguments = "-F ""$etc\config"" -i ""$IdentityFile"" $SourcePath $DestinationPath"
+
+    $arguments = "-F ""$etc\config"""
+
+    if (($null = $IdentityFile) -and (Test-Path "$env:SystemDrive\etc\ssh\id_$RemoteHost")) {
+        $IdentityFile = "$env:SystemDrive\etc\ssh\id_$RemoteHost"
+    }
+
+    if ($IdentifyFile) {
+        $arguments += " -i ""$IdentityFile"""
+    }
+
+    if ($Recurse) {
+        $arguments += " -r"
+    }
+
+    if ($Port) {
+        $arguments += " -P $Port"
+    }
+
+    $arguments += " $SourcePath"
+
+    if ($RemoteUser) {
+        $RemoteHost = "$RemoteUser@$RemoteHost"
+    }
+
+    $arguments += " $($RemoteHost):$DestinationPath"
 
     Start-Process -FilePath $scp -ArgumentList $arguments -NoNewWindow -Wait
 }
