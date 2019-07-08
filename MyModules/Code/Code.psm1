@@ -136,3 +136,32 @@ function Update-CodeFolder {
         }
     }
 }
+
+function Show-CodeStatus {
+    [CmdletBinding()]
+    param (
+        [Alias("CodeFolder", "Folder")]
+        [string]$Path = $(Get-DefaultCodeFolder)
+    )
+
+    $projects = (Get-ChildItem -Path $Path -Exclude '_logs' | `
+        Where-Object { $_.PSIsContainer } | `
+        Select-Object Name).Name
+
+    foreach ($project in $projects) {
+        if (Test-Path "$Path\$project\.git") {
+            Write-Output "    ....$project..."
+            Write-Output " "
+
+            Push-Location "$Path\$project"
+
+            Start-Process -FilePath "git.exe" -ArgumentList "fetch --prune" -NoNewWindow -Wait | Out-Null
+
+            Start-Process -FilePath "git.exe" -ArgumentList "status" -NoNewWindow -Wait
+
+            Pop-Location
+
+            Write-Output " "
+        }
+    }
+}
