@@ -14,7 +14,7 @@ if (-not $batch) {
     ColorTool.exe Treehouse.itermcolors
   } else {
     $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
-    ColorTool.exe purplerpeter.itermcolors
+    ColorTool.exe purplepeter.itermcolors
   }
 
   # Something keeps changing the PowerShell Console font and size from my preference, so
