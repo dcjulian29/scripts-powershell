@@ -12,37 +12,32 @@ if (-not $batch) {
     $host.UI.RawUI.WindowTitle = "Administrator: PowerShell Prompt"
     $PromptAdmin="#"
     ColorTool.exe Treehouse.itermcolors
+        $host.UI.RawUI.BackgroundColor = "DarkGray"
+        $host.UI.RawUI.ForegroundColor = "Yello"
   } else {
     $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
     ColorTool.exe purplepeter.itermcolors
   }
 
-  # Something keeps changing the PowerShell Console font and size from my preference, so
-  # we'll enforce the defaults for all console windows.
-  Remove-Item HKCU:\Console\* -Force
-
-  # Changing the color of the console window doesn't take effect unless you clear the screen
-  Clear-Host
-
-  Write-Host "  ____                        ____  _          _ _"
-  Write-Host " |  _ \ _____      _____ _ __/ ___|| |__   ___| | |"
-  Write-Host " | |_) / _ \ \ /\ / / _ \ '__\___ \| '_ \ / _ \ | |"
-  Write-Host " |  __/ (_) \ V  V /  __/ |   ___) | | | |  __/ | |"
-  Write-Host " |_|   \___/ \_/\_/ \___|_|  |____/|_| |_|\___|_|_|"
-  Write-Host ""
-  Write-Host "Loading Profile..."
+  Write-Output "  ____                        ____  _          _ _"
+  Write-Output " |  _ \ _____      _____ _ __/ ___|| |__   ___| | |"
+  Write-Output " | |_) / _ \ \ /\ / / _ \ '__\___ \| '_ \ / _ \ | |"
+  Write-Output " |  __/ (_) \ V  V /  __/ |   ___) | | | |  __/ | |"
+  Write-Output " |_|   \___/ \_/\_/ \___|_|  |____/|_| |_|\___|_|_|"
+  Write-Output ""
+  Write-Output "Loading Profile..."
+  Write-Output ""
 }
 
 # On domain joined machines, the home variable gets written with the "Home Directory" value
 # from Active Directory.
 Set-Variable -Name Home -Value $env:UserProfile -Force
 
-# My modules used to be executed once for each module file where the path was updated for various
-# tools. Since they are now being dynamically loaded I have the update the path here...
-Add-DevPath
+################################################################################
 
 Function prompt {
   $realLASTEXITCODE = $LASTEXITCODE
+  $Host.UI.RawUI.BackgroundColor = $(Get-Host).UI.RawUI.BackgroundColor
   $originalColor = $Host.UI.RawUI.ForegroundColor
   $username = $currentuser.name.split('\')[1]
 
