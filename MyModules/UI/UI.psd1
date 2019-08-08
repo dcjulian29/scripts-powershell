@@ -11,6 +11,7 @@
         "Select-Item"
         "Set-WindowTitle"
         "Set-BingDesktopWallpaper"
+        "Set-BingWallpaperScheduledTask"
         "Set-DesktopWallpaper"
     )
     AliasesToExport = @(
