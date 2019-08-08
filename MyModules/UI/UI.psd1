@@ -7,8 +7,11 @@
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+        "Get-BingWallpaper"
         "Select-Item"
         "Set-WindowTitle"
+        "Set-BingDesktopWallpaper"
+        "Set-DesktopWallpaper"
     )
     AliasesToExport = @(
         "title"
