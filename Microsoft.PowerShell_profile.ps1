@@ -13,7 +13,7 @@ if (-not $batch) {
     $PromptAdmin="#"
     ColorTool.exe Treehouse.itermcolors
         $host.UI.RawUI.BackgroundColor = "DarkGray"
-        $host.UI.RawUI.ForegroundColor = "Yello"
+        $host.UI.RawUI.ForegroundColor = "Yellow"
   } else {
     $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
     ColorTool.exe purplepeter.itermcolors
@@ -25,13 +25,7 @@ if (-not $batch) {
   Write-Output " |  __/ (_) \ V  V /  __/ |   ___) | | | |  __/ | |"
   Write-Output " |_|   \___/ \_/\_/ \___|_|  |____/|_| |_|\___|_|_|"
   Write-Output ""
-  Write-Output "Loading Profile..."
-  Write-Output ""
 }
-
-# On domain joined machines, the home variable gets written with the "Home Directory" value
-# from Active Directory.
-Set-Variable -Name Home -Value $env:UserProfile -Force
 
 ################################################################################
 
