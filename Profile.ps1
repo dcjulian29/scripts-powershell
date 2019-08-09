@@ -21,3 +21,12 @@ Remove-Item alias:wget
 Remove-Item alias:curl
 
 Set-Alias -Name go -Value gd
+
+Function Edit-Profile {
+  notepad $profile
+}
+
+Function Reload-Profile {
+  . $profile
+}
+
