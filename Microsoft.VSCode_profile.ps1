@@ -22,9 +22,9 @@ Function prompt {
   $Host.UI.RawUI.BackgroundColor = $(Get-Host).UI.RawUI.BackgroundColor
   $originalColor = $Host.UI.RawUI.ForegroundColor
 
-  Write-Host($pwd) -foregroundcolor Red
-
-  Write-Host('>') -nonewline -foregroundcolor Cyan
+  Write-Host('§ ') -nonewline -foregroundcolor Yellow
+  Write-Host($pwd) -nonewline -foregroundcolor Green
+  Write-Host(" >") -foregroundcolor $originalColor
 
   $Host.UI.RawUI.ForegroundColor = $originalColor
 
