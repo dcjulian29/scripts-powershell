@@ -11,12 +11,12 @@ if (-not $batch) {
         Set-Location C:\
         $host.UI.RawUI.WindowTitle = "Administrator: PowerShell Prompt"
         $PromptAdmin="#"
-        ColorTool.exe Treehouse.itermcolors
+        ColorTool.exe -q Treehouse.itermcolors
         $host.UI.RawUI.BackgroundColor = "DarkGray"
         $host.UI.RawUI.ForegroundColor = "Yellow"
     } else {
         $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
-        ColorTool.exe purplepeter.itermcolors
+        ColorTool.exe -q purplepeter.itermcolors
     }
 
     Write-Output "  ____                        ____  _          _ _"

@@ -4,14 +4,11 @@
 
 $principal = new-object System.Security.principal.windowsprincipal($CurrentUser)
 if ($principal.IsInRole("Administrators")) {
-    $host.UI.RawUI.WindowTitle = "Administrator: PowerShell Prompt"
-    $PromptAdmin="#"
-    ColorTool.exe Treehouse.itermcolors
+    ColorTool.exe -q Treehouse.itermcolors
     $host.UI.RawUI.BackgroundColor = "DarkGray"
     $host.UI.RawUI.ForegroundColor = "Yellow"
 } else {
-    $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
-    ColorTool.exe purplepeter.itermcolors
+    ColorTool.exe -q purplepeter.itermcolors
 }
 
 ################################################################################
