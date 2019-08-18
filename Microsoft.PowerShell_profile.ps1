@@ -19,6 +19,9 @@ if (-not $batch) {
         ColorTool.exe -q purplepeter.itermcolors
     }
 
+    Set-PSReadLineOption -Colors @{ "Parameter" = "$([char]0x1b)[1;35m"  }
+    Set-PSReadLineOption -Colors @{ "Operator" = "$([char]0x1b)[1;32m"  }
+
     Write-Output "  ____                        ____  _          _ _"
     Write-Output " |  _ \ _____      _____ _ __/ ___|| |__   ___| | |"
     Write-Output " | |_) / _ \ \ /\ / / _ \ '__\___ \| '_ \ / _ \ | |"
