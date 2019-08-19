@@ -1,24 +1,5 @@
 function Get-BingWallpaper {
-    <#
-        .DESCRIPTION
-            Bing Search has fantastic background pictures. This command gets them downloaded to
-            your local pictures folder.
-
-        .PARAMETER Resolution
-            Sets the picture size to look for. If the specified resolution cannot be found,
-            the next lower resolution will be searched. You will get an error showing that
-            the specified resolution cannot be found.
-
-            The default is 1080p, which is usually 1920x1200.
-
-        .PARAMETER Region
-            Sets the region to look for. Bing has 8 regions.
-    #>
-
     param (
-        [Parameter(Mandatory = $false)]
-        [ValidateSet("Standard", "StandardWide", "HD", "1080p")]
-        [String]$Resolution = '1080p',
         [ValidateSet('auto', 'ar-XA', 'bg-BG', 'cs-CZ', 'da-DK', 'de-AT',
             'de-CH', 'de-DE', 'el-GR', 'en-AU', 'en-CA', 'en-GB', 'en-ID',
             'en-IE', 'en-IN', 'en-MY', 'en-NZ', 'en-PH', 'en-SG', 'en-US',
@@ -35,14 +16,6 @@ function Get-BingWallpaper {
 	$localFolder = Join-Path $env:TEMP 'Bing'
 	$bingUrl = 'http://www.bing.com'
 
-    Switch ($Resolution)
-    {
-        'Standard' { $imageResolution = '1024x768' }
-        'StandardWide' { $imageResolution = '1280x720' }
-        'HD' { $imageResolution = '1366x768' }
-        '1080p' { $imageResolution = '1920x1200' }
-    }
-
     $wallpaper = '{0}/HPImageArchive.aspx?format=xml&idx={1}&n=8&mkt={2}' -f $bingUrl, 0, $Region
 
     $request = Invoke-WebRequest -Uri $wallpaper
@@ -50,10 +23,10 @@ function Get-BingWallpaper {
 
     $image = $content.images.image[0]
 
-    $fallbackUrl = '{0}{1}' -f $bingUrl, $image.url
-    $downloadUrl = '{0}{1}_{2}.jpg' -f $bingUrl, $image.urlBase, $imageResolution
+    $downloadUrl = '{0}{1}' -f $bingUrl, $image.url
 
-    $saveAs = $downloadUrl.Substring($downloadUrl.LastIndexOf('/') + 1)
+    $saveAs = $image.url.Substring($image.url.IndexOf('=') + 1)
+    $saveAs = $saveAs.Substring(0,$saveAs.IndexOf('&'))
     $saveAs = [RegEx]::Replace($saveAs, "[{0}]" `
         -f ([RegEx]::Escape([String][System.IO.Path]::GetInvalidFileNameChars())), '')
 
@@ -65,10 +38,6 @@ function Get-BingWallpaper {
 
     if (-not (Test-Path $saveAsPath -PathType Leaf)) {
         Download-File -Url $downloadUrl -Destination $saveAsPath -ErrorAction Continue
-
-        if (-not (Test-Path $saveAsPath -PathType Leaf)) {
-            Download-File -Url $fallbackUrl -Destination $saveAsPath -ErrorAction Continue
-        }
 	}
 
     if ($PassThru) {
