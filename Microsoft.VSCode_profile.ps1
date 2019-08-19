@@ -2,14 +2,6 @@
 # This profile is loaded with the Visual Studio Code "host" is executed.
 ################################################################################
 
-$principal = new-object System.Security.principal.windowsprincipal($CurrentUser)
-if ($principal.IsInRole("Administrators")) {
-    ColorTool.exe -q Treehouse.itermcolors
-    $host.UI.RawUI.BackgroundColor = "DarkGray"
-    $host.UI.RawUI.ForegroundColor = "Yellow"
-} else {
-    ColorTool.exe -q purplepeter.itermcolors
-}
 
 ################################################################################
 
