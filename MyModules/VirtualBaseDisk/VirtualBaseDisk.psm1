@@ -1,4 +1,20 @@
-Function New-BaseVhdxDisk {
+function Get-WindowsImageInWIM {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $WimFile
+    )
+
+    Get-WindowsImage -ImagePath $WimFile `
+    | Sort-Object ImageIndex `
+    | Select-Object `
+        @{Label="#"; Expression={$_.ImageIndex}}, `
+        @{Label="Name"; Expression={$_.ImageName}} `
+    | Format-Table -AutoSize
+}
+
+function New-BaseVhdxDisk {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -7,18 +23,7 @@ Function New-BaseVhdxDisk {
         [string] $VhdxFile,
         [ValidateSet("2008", "2008R2", "2012", "2012R2", "2016", "2019")]
         $OsVersion = "2019",
-        [ValidateSet(
-            "ServerStandardEval",
-            "ServerStandardCoreEval",
-            "ServerStandard",
-            "ServerStandardCore",
-            "ServerDatacenterEval",
-            "ServerDatacenterCoreEval",
-            "ServerDatacenter",
-            "ServerDatacenterCore",
-            "Enterprise"
-        )]
-        [string] $Sku = "ServerStandardEval",
+        [string] $Edition = "Standard (Desktop Experience)",
         [switch] $Force
     )
 
@@ -45,11 +50,11 @@ Function New-BaseVhdxDisk {
 
     Push-Location $((Get-VMHost).VirtualHardDiskPath)
 
-    Write-Output "Creating a base disk using [$WimFile] for $OsVersion [$Sku] to $File..."
+    Write-Output "Creating a base disk using [$WimFile] for $OsVersion [$Edition] to $File..."
 
-    Convert-WindowsImage -SourcePath "$WimFile" -Edition "$Sku" `
-        -DiskLayout $partition  -VHDPath "$file" `
-        -VHDFormat VHDX -SizeBytes 100GB
+    Convert-WindowsImage -SourcePath $WimFile -Edition $Edition `
+        -DiskLayout $partition  -VHDPath $file `
+        -VHDFormat VHDX -SizeBytes 100GB -Verbose
 
     Pop-Location
 }

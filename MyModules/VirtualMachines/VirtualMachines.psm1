@@ -1,6 +1,4 @@
-﻿. $PSScriptRoot\Convert-WindowsImage.ps1
-
-function decodeEnabledState ($s) {
+﻿function decodeEnabledState ($s) {
     switch ($s) {
               1 { "Other"               }
               2 { "Running"             }
