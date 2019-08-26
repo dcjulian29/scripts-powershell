@@ -6,6 +6,9 @@ $Global:PromptAdmin="$"
 
 $batch = (Get-WmiObject Win32_Process -filter "ProcessID=$pid").CommandLine -match "-NonInteractive"
 if (-not $batch) {
+    # Sometimes color settings get set based on subkeys in HKCU:\Console, remove them
+    Remove-ChildItem -Path HKCU:\Console\* -Force
+    
     $principal = new-object System.Security.principal.windowsprincipal($CurrentUser)
     if ($principal.IsInRole("Administrators")) {
         Set-Location C:\
