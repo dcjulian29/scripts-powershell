@@ -88,7 +88,7 @@ function New-DevVM {
 
     Start-VM -VMName $computerName
 
-    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $computerName"
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "localhost $computerName"
 
     $ErrorActionPreference = $errorPreviousAction
 }
@@ -172,7 +172,7 @@ function New-LinuxDevVM {
 
     Start-VM -VMName $computerName
 
-    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $computerName"
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "localhost $computerName"
 
     $ErrorActionPreference = $errorPreviousAction
 }
@@ -271,4 +271,3 @@ Export-ModuleMember Update-DevVmPackages
 
 Export-ModuleMember New-DevVM
 Export-ModuleMember New-LinuxDevVM
-
