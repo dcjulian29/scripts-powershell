@@ -1,4 +1,8 @@
-$Script:UbuntuVersion = 1804
+function Disable-WindowsLinuxSubsystem {
+    if (-not (Get-WindowsOptionalFeature -online | Where-Object { $_.FeatureName -eq 'Microsoft-Windows-Subsystem-Linux' }).State) {
+        Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart
+    }
+}
 
 function Enable-WindowsLinuxSubsystem {
     if (-not (Get-WindowsOptionalFeature -online | Where-Object { $_.FeatureName -eq 'Microsoft-Windows-Subsystem-Linux' }).State) {
@@ -8,78 +12,30 @@ function Enable-WindowsLinuxSubsystem {
     }
 }
 
-function Disable-WindowsLinuxSubsystem {
-    if (-not (Get-WindowsOptionalFeature -online | Where-Object { $_.FeatureName -eq 'Microsoft-Windows-Subsystem-Linux' }).State) {
-        Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart
-    }
-}
-
-function Install-Ubuntu {
-    if (-not (Get-WindowsOptionalFeature -online | Where-Object { $_.FeatureName -eq 'Microsoft-Windows-Subsystem-Linux' }).State) {
-        Write-Warning "You must enable the Windows Linux Subsystem..."
-
-        return
-    }
-
-    Push-Location -Path $env:TEMP
-
-    Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-$Script:UbuntuVersion -OutFile Ubuntu.appx -UseBasicParsing
-
-    Rename-Item Ubuntu.appx Ubuntu.zip
-
-    if (Test-Path $env:SYSTEMDRIVE\Ubuntu) {
-        Remove-Item -Path $env:SYSTEMDRIVE\Ubuntu -Recurse -Force | Out-Null
-    }
-
-    New-Item -Type Directory -Path $env:SYSTEMDRIVE\Ubuntu | Out-Null
-
-    Expand-Archive Ubuntu.zip $env:SYSTEMDRIVE\Ubuntu
-
-    Set-Content $env:SYSTEMDRIVE\Ubuntu\desktop.ini @"
-    [.ShellClassInfo]
-    IconResource=$env:SYSTEMDRIVE\Ubuntu\ubuntu$Script:UbuntuVersion.exe,0
-"@
-
-    attrib +S +H $env:SYSTEMDRIVE\Ubuntu\desktop.ini
-    attrib +S $env:SYSTEMDRIVE\Ubuntu
-
-    Write-Output "Ubuntu Linux has been installed...  Starting final install."
-
-    Pop-Location
-
-    Remove-Item -Path $env:TEMP\ubuntu.zip -Force | Out-Null
-
-    Start-Process -FilePath $env:SYSTEMDRIVE\Ubuntu\ubuntu$Script:UbuntuVersion.exe -NoNewWindow -Wait
-}
-
-function Uninstall-Ubuntu {
-    wslconfig.exe /u ubuntu-$Script:UbuntuVersion
-
-    if (Test-Path $env:SYSTEMDRIVE\Ubuntu) {
-        Remove-Item -Path $env:SYSTEMDRIVE\Ubuntu -Recurse -Force | Out-Null
-    }
-}
-
-function Start-Ubuntu {
-    Start-Process -FilePath $env:SYSTEMDRIVE\Ubuntu\ubuntu$Script:UbuntuVersion.exe -NoNewWindow -Wait
-}
-
 function Install-KaliLinux {
-    if (-not (Get-WindowsOptionalFeature -online | Where-Object { $_.FeatureName -eq 'Microsoft-Windows-Subsystem-Linux' }).State) {
+    if (-not (Test-WindowsLinuxSubsystem)) {
         Write-Warning "You must reboot before using the Linux Subsystem..."
 
         return
     }
 
-    Push-Location -Path $env:TEMP
-
-    Invoke-WebRequest -Uri https://aka.ms/wsl-kali-linux -OutFile Kali.appx -UseBasicParsing
-
-    Rename-Item Kali.appx Kali.zip
-
     if (Test-Path $env:SYSTEMDRIVE\Kali) {
-        Remove-Item -Path $env:SYSTEMDRIVE\Kali -Recurse -Force | Out-Null
+        Write-Warning "Kali Linux is already installed..."
+
+        return
     }
+
+    if (Test-Path $env:TEMP\kali.appx) {
+        Remove-Item -Path $env:TEMP\kali.appx -Force | Out-Null
+    }
+
+    if (Test-Path $env:TEMP\ubuntu.zip) {
+        Remove-Item -Path $env:TEMP\kali.zip -Force | Out-Null
+    }
+
+    Invoke-WebRequest -Uri https://aka.ms/wsl-kali-linux -OutFile $env:TEMP\Kali.appx -UseBasicParsing
+
+    Rename-Item $env:TEMP\Kali.appx $env:TEMP\Kali.zip
 
     New-Item -Type Directory -Path $env:SYSTEMDRIVE\Kali | Out-Null
 
@@ -89,11 +45,11 @@ function Install-KaliLinux {
 
     New-Item -Type Directory -Path $env:TEMP\Kali | Out-Null
 
-    Expand-Archive Kali.zip $env:TEMP\Kali
+    Expand-Archive $env:TEMP\Kali.zip $env:TEMP\Kali
 
-    Rename-Item (Get-ChildItem -Filter "DistroL*x64.appx" -Path .).FullName Kali.zip
+    Rename-Item (Get-ChildItem -Filter "DistroL*x64.appx" -Path $env:TEMP\Kali).FullName $env:TEMP\Kali\Kali.zip
 
-    Expand-Archive Kali.zip $env:SYSTEMDRIVE\Kali
+    Expand-Archive $env:TEMP\Kali\Kali.zip $env:SYSTEMDRIVE\Kali
 
     Set-Content $env:SYSTEMDRIVE\Kali\desktop.ini @"
     [.ShellClassInfo]
@@ -103,15 +59,95 @@ function Install-KaliLinux {
     attrib +S +H $env:SYSTEMDRIVE\Kali\desktop.ini
     attrib +S $env:SYSTEMDRIVE\Kali
 
-    Write-Output "Kali Linux has been installed...  Starting final install."
-
-    Pop-Location
-
     Remove-Item -Path $env:TEMP\Kali -Recurse -Force | Out-Null
     Remove-Item -Path $env:TEMP\kali.zip -Force | Out-Null
 
+    Write-Output "Kali Linux has been installed...  Starting final install."
+
     Start-Process -FilePath $env:SYSTEMDRIVE\Kali\Kali.exe -ArgumentList "install --root" `
         -NoNewWindow -Wait
+}
+
+function Install-Ubuntu {
+    if (-not (Test-WindowsLinuxSubsystem)) {
+        Write-Warning "You must enable the Windows Linux Subsystem..."
+
+        return
+    }
+
+    if (Test-Path $env:SYSTEMDRIVE\Ubuntu) {
+        Write-Output "Ubuntu Linux is already installed..."
+
+        return
+    }
+
+    if (Test-Path $env:TEMP\ubuntu.appx) {
+        Remove-Item -Path $env:TEMP\ubuntu.appx -Force | Out-Null
+    }
+
+    if (Test-Path $env:TEMP\ubuntu.zip) {
+        Remove-Item -Path $env:TEMP\ubuntu.zip -Force | Out-Null
+    }
+
+    Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1804 -OutFile $env:TEMP\Ubuntu.appx -UseBasicParsing
+
+    Rename-Item $env:TEMP\Ubuntu.appx $env:TEMP\Ubuntu.zip
+
+    New-Item -Type Directory -Path $env:SYSTEMDRIVE\Ubuntu | Out-Null
+
+    Expand-Archive $env:TEMP\Ubuntu.zip $env:SYSTEMDRIVE\Ubuntu
+
+    Set-Content $env:SYSTEMDRIVE\Ubuntu\desktop.ini @"
+    [.ShellClassInfo]
+    IconResource=$env:SYSTEMDRIVE\Ubuntu\ubuntu1804.exe,0
+"@
+
+    attrib +S +H $env:SYSTEMDRIVE\Ubuntu\desktop.ini
+    attrib +S $env:SYSTEMDRIVE\Ubuntu
+
+    Remove-Item -Path $env:TEMP\ubuntu.zip -Force | Out-Null
+
+    if (-not (Test-Path $env:SYSTEMDRIVE\Ubuntu\rootfs)) {
+        Write-Output "Ubuntu Linux has been installed...  Starting final install."
+
+        Start-Process -FilePath $env:SYSTEMDRIVE\Ubuntu\ubuntu1804.exe `
+            -ArgumentList "install --root" -NoNewWindow -Wait
+
+        Start-Process -FilePath $env:SYSTEMDRIVE\Ubuntu\ubuntu1804.exe `
+            -ArgumentList "run adduser $($env:USERNAME) --gecos ""First,Last,RoomNumber,WorkPhone,HomePhone"" `
+            --disabled-password" -NoNewWindow -Wait
+
+        Start-Process -FilePath $env:SYSTEMDRIVE\Ubuntu\ubuntu1804.exe `
+            -ArgumentList "run usermod -aG sudo $($env:USERNAME)" -NoNewWindow -Wait
+
+        Start-Process -FilePath $env:SYSTEMDRIVE\Ubuntu\ubuntu1804.exe `
+            -ArgumentList "run echo '$($env:USERNAME) ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo" `
+            -NoNewWindow -Wait
+
+        Start-Process -FilePath $env:SYSTEMDRIVE\Ubuntu\ubuntu1804.exe `
+            -ArgumentList "config --default-user $($env:USERNAME)" -NoNewWindow -Wait
+
+        Start-Process -FilePath $env:SYSTEMDRIVE\Ubuntu\ubuntu1804.exe `
+            -ArgumentList "run curl -sSL http://dl.julianscorner.com/l/init.sh | bash" -NoNewWindow -Wait
+    } else {
+        Write-Warning "Ubuntu Linux has already been installed..."
+    }
+}
+
+function Start-KaliLinux {
+    Start-Process -FilePath $env:SYSTEMDRIVE\Kali\kali.exe -NoNewWindow -Wait
+}
+
+Set-Alias kali Start-KaliLinux
+
+function Start-UbuntuLinux {
+    Start-Process -FilePath $env:SYSTEMDRIVE\Ubuntu\ubuntu$Script:UbuntuVersion.exe -NoNewWindow -Wait
+}
+
+Set-Alias ubuntu Start-UbuntuLinux
+
+function Test-WindowsLinuxSubsystem {
+    return (Get-WindowsOptionalFeature -online | Where-Object { $_.FeatureName -eq 'Microsoft-Windows-Subsystem-Linux' }).State
 }
 
 function Uninstall-KaliLinux {
@@ -122,25 +158,10 @@ function Uninstall-KaliLinux {
     }
 }
 
-function Start-KaliLinux {
-    Start-Process -FilePath $env:SYSTEMDRIVE\Kali\kali.exe -NoNewWindow -Wait
+function Uninstall-Ubuntu {
+    wslconfig.exe /u "Ubuntu-18.04"
+
+    if (Test-Path $env:SYSTEMDRIVE\Ubuntu) {
+        Remove-Item -Path $env:SYSTEMDRIVE\Ubuntu -Recurse -Force | Out-Null
+    }
 }
-
-###############################################################################
-
-Export-ModuleMember Enable-WindowsLinuxSubsystem
-Export-ModuleMember Disable-WindowsLinuxSubsystem
-
-Export-ModuleMember Install-Ubuntu
-Export-ModuleMember Uninstall-Ubuntu
-Export-ModuleMember Start-Ubuntu
-
-Export-ModuleMember Install-KaliLinux
-Export-ModuleMember Uninstall-KaliLinux
-Export-ModuleMember Start-KaliLinux
-
-Set-Alias ubuntu Start-Ubuntu
-Export-ModuleMember -Alias Start-Ubuntu
-
-Set-Alias kali Start-KaliLinux
-Export-ModuleMember -Alias Start-KaliLinux
