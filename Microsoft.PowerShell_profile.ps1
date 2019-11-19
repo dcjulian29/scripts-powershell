@@ -6,24 +6,30 @@ $Global:PromptAdmin="$"
 
 $batch = (Get-WmiObject Win32_Process -filter "ProcessID=$pid").CommandLine -match "-NonInteractive"
 if (-not $batch) {
-    # Sometimes color settings get set based on subkeys in HKCU:\Console, remove them
-    Remove-Item -Path HKCU:\Console\* -Recurse -Force
-
-    $principal = new-object System.Security.principal.windowsprincipal($CurrentUser)
-    if ($principal.IsInRole("Administrators")) {
-        Set-Location C:\
-        $host.UI.RawUI.WindowTitle = "Administrator: PowerShell Prompt"
-        $PromptAdmin="#"
-        ColorTool.exe -q Treehouse.itermcolors
-        $host.UI.RawUI.BackgroundColor = "DarkGray"
-        $host.UI.RawUI.ForegroundColor = "Yellow"
-    } else {
-        $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
-        ColorTool.exe -q purplepeter.itermcolors
-    }
-
-    Set-PSReadLineOption -Colors @{ "Parameter" = "$([char]0x1b)[1;35m"  }
-    Set-PSReadLineOption -Colors @{ "Operator" = "$([char]0x1b)[1;32m"  }
+   # Sometimes color settings get set based on subkeys in HKCU:\Console, remove them
+   Remove-Item -Path HKCU:\Console\* -Recurse -Force
+   $principal = new-object System.Security.principal.windowsprincipal($CurrentUser)
+   if ($principal.IsInRole("Administrators")) {
+       Set-Location C:\
+       $host.UI.RawUI.WindowTitle = "Administrator: PowerShell Prompt"
+       $PromptAdmin="#"
+       ColorTool.exe -q Treehouse.itermcolors
+       $host.UI.RawUI.BackgroundColor = "DarkGray"
+       $host.UI.RawUI.ForegroundColor = "Yellow"
+       if ((Get-Host).Version.Build -lt 18362) {
+           Clear-Host
+       }
+   } else {
+       $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
+       ColorTool.exe -q purplepeter.itermcolors
+   }
+   if ((Get-Command Set-PSReadLineOption).Version.Major -lt 2) {
+       Set-PSReadLineOption -TokenKind Parameter -ForegroundColor Cyan
+       Set-PSReadlineOption -TokenKind Operator -ForegroundColor Green
+   } else {
+       Set-PSReadLineOption -Colors @{ "Parameter" = "$([char]0x1b)[1;35m"  }
+       Set-PSReadLineOption -Colors @{ "Operator" = "$([char]0x1b)[1;32m"  }
+   }
 
     Write-Output "  ____                        ____  _          _ _"
     Write-Output " |  _ \ _____      _____ _ __/ ___|| |__   ___| | |"
