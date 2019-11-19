@@ -21,9 +21,8 @@ function New-BaseVhdxDisk {
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string] $WimFile,
         [string] $VhdxFile,
-        [ValidateSet("2008", "2008R2", "2012", "2012R2", "2016", "2019")]
         $OsVersion = "2019",
-        [string] $Edition = "Standard (Desktop Experience)",
+        [string] $Edition = "1",
         [switch] $Force
     )
 
@@ -58,7 +57,3 @@ function New-BaseVhdxDisk {
 
     Pop-Location
 }
-
-###############################################################################
-
-Export-ModuleMember New-BaseVhdxDisk
