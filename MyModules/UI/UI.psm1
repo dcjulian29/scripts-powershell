@@ -87,7 +87,9 @@ function Select-Item {
 }
 
 function Set-BingDesktopWallpaper {
-    Get-BingWallpaper -PassThru | Set-DesktopWallpaper
+    if ((Test-NetConnection).PingSucceeded) {
+        Get-BingWallpaper -PassThru | Set-DesktopWallpaper
+    }
 }
 
 function Set-BingWallpaperScheduledTask {
@@ -183,8 +185,5 @@ function Set-WindowTitle {
 
     (Get-Host).UI.RawUI.WindowTitle = $Message
 }
-
-
-###################################################################################################
 
 Set-Alias -Name title -Value Set-WindowTitle
