@@ -38,7 +38,7 @@ function Test-PendingReboot {
         $PendingReboot = $true
     }
 
-    if (Get-Item "WindowsUpdate\Auto Update\RebootRequired" -EA Ignore) { 
+    if (Get-Item "WindowsUpdate\Auto Update\RebootRequired" -EA Ignore) {
         $PendingReboot = $true
     }
 
@@ -46,8 +46,8 @@ function Test-PendingReboot {
 
     Push-Location "HKLM:\SYSTEM\CurrentControlSet\Control"
 
-    if (Get-ItemProperty "Session Manager" -Name PendingFileRenameOperations -EA Ignore) { 
-        $PendingReboot = $true 
+    if (Get-ItemProperty "Session Manager" -Name PendingFileRenameOperations -EA Ignore) {
+        $PendingReboot = $true
     }
 
     Pop-Location
@@ -86,19 +86,8 @@ screen mode id:i:1
 use multimon:i:0
 desktopwidth:i:1366
 desktopheight:i:768
+winposstr:s:0,1,0,24,1390,937
 session bpp:i:32
 compression:i:1
 "@
 }
-
-##############################################################################
-
-Export-ModuleMember Get-OSInstallDate
-Export-ModuleMember Get-OSVersion
-Export-ModuleMember Get-OSRegisteredUser
-Export-ModuleMember Get-OSInstallDate
-Export-ModuleMember Get-OSBuildNumber
-
-Export-ModuleMember Test-PendingReboot
-
-Export-ModuleMember New-RemoteDesktopShortcut
