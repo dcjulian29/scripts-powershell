@@ -1,26 +1,15 @@
-﻿$script:vsPath = First-Path `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\VSIXInstaller.exe')
-
-$script:vsix = First-Path `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\VSIXInstaller.exe') `
-  (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\VSIXInstaller.exe')
-
-
+﻿function Find-VisualStudio {
+    First-Path `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\VSIXInstaller.exe')
+}
 
 function Find-VisualStudioSolutions {
     param(
@@ -52,6 +41,21 @@ function Find-VisualStudioSolutions {
     }
 }
 
+Set-Alias vs-solutions Find-VisualStudioSolutions
+
+function Find-VSIX {
+    First-Path `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\VSIXInstaller.exe')
+}
+
 function Start-VisualStudio {
     param (
         [string]$Project,
@@ -60,13 +64,11 @@ function Start-VisualStudio {
     )
 
     if (-not $Version) {
-        $vs = $script:vsPath
+        $vs = Find-VisualStudio
     } else {
         switch ($Version) {
             2019 { $vsv = "2019" }
             2017 { $vsv = "2017" }
-            2015 { $vsv = "14.0" }
-            2013 { $vsv = "12.0" }
         }
 
         $vs = First-Path `
@@ -105,15 +107,6 @@ function Start-VisualStudio {
     }
 }
 
-function Start-VisualStudio2019 {
-    param (
-        [string]$Project,
-        [switch]$AsAdmin
-    )
-
-    Start-VisualStudio $Project 2019 -AsAdmin $AsAdmin.IsPresent
-}
-
 function Start-VisualStudio2017 {
     param (
         [string]$Project,
@@ -123,15 +116,18 @@ function Start-VisualStudio2017 {
     Start-VisualStudio $Project 2017 -AsAdmin $AsAdmin.IsPresent
 }
 
-function Start-VisualStudio2015 {
+Set-Alias vs2017 Start-VisualStudio2017
+
+function Start-VisualStudio2019 {
     param (
         [string]$Project,
         [switch]$AsAdmin
     )
 
-    Start-VisualStudio $Project 2015 -AsAdmin $AsAdmin.IsPresent
+    Start-VisualStudio $Project 2019 -AsAdmin $AsAdmin.IsPresent
 }
 
+Set-Alias vs2019 Start-VisualStudio2019
 function Start-VisualStudioCode {
     $code = (Find-ProgramFiles "Microsoft VS Code\Code.exe")
 
@@ -142,39 +138,16 @@ function Start-VisualStudioCode {
     }
 }
 
-function Find-VisualStudio {
-    $script:vsPath
-}
-
-function Find-VSIX {
-    $script:vsix
-}
-
-###################################################################################################
-
-Export-ModuleMember Start-VisualStudio
-Export-ModuleMember Start-VisualStudio2015
-Export-ModuleMember Start-VisualStudio2017
-Export-ModuleMember Start-VisualStudio2019
-Export-ModuleMember Find-VisualStudioSolutions
-Export-ModuleMember Start-VisualStudioCode
-Export-ModuleMember Find-VisualStudio
-Export-ModuleMember Find-VSIX
-
-Set-Alias vs2015 Start-VisualStudio2015
-Export-ModuleMember -Alias vs2015
-
-Set-Alias vs2017 Start-VisualStudio2017
-Export-ModuleMember -Alias vs2017
-
-Set-Alias vs2019 Start-VisualStudio2019
-Export-ModuleMember -Alias vs2019
-
-Set-Alias vs-solutions Find-VisualStudioSolutions
-Export-ModuleMember -Alias vs-solutions
-
 Set-Alias code Start-VisualStudioCode
-Export-ModuleMember -Alias code
 
 Set-Alias vscode Start-VisualStudioCode
-Export-ModuleMember -Alias vscode
+
+function Update-CodeSnippets {
+    $snippets = First-Path `
+    "$env:USERPROFILE\Documents\Visual Studio 2019\Code Snippets" `
+    "$env:USERPROFILE\Documents\Visual Studio 2017\Code Snippets"
+
+    if (Test-Path $snippets) {
+        Copy-Item -Path $snippets -Destination "$env:SystemDrive\etc\visualstudio" -Recurse -Force
+    }
+}
