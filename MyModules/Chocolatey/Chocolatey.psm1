@@ -140,12 +140,10 @@ function Uninstall-ChocolateyPackage {
 function Update-AllChocolateyPackages {
     $packages = Find-UpgradableChocolateyPackages -PassThru
 
-    $updatePackages = @()
-
     foreach ($package in $packages) {
         if ($package.LocalVersion -ne $package.RemoteVersion) {
             Write-Output "  - Adding $($package.Name) to upgrade queue."
-            $updatePackages += $package.Name
+            $updatePackages += "$($package.Name) "
         }
     }
 
