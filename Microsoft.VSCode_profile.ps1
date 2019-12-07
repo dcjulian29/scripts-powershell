@@ -12,7 +12,7 @@ Function prompt {
 
     Write-Host('§ ') -nonewline -foregroundcolor Yellow
     Write-Host($pwd) -nonewline -foregroundcolor Green
-    Write-Host(" >") -foregroundcolor $originalColor
+    Write-Host(">") -nonewline -foregroundcolor $originalColor
 
     $Host.UI.RawUI.ForegroundColor = $originalColor
 
