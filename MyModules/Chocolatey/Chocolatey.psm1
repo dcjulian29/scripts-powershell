@@ -138,6 +138,9 @@ function Uninstall-ChocolateyPackage {
 }
 
 function Update-AllChocolateyPackages {
+    Start-Transcript `
+        -Path "C:\etc\log\$(Get-Date -Format 'yyyMMdd_HHmmss')-Update-AllChocolateyPackages.log"
+
     $packages = Find-UpgradableChocolateyPackages -PassThru
 
     foreach ($package in $packages) {
@@ -157,6 +160,8 @@ function Update-AllChocolateyPackages {
     } else {
         Write-Output "  - All Chocolatey packages are up-to-date."
     }
+    
+    Stop-Transcript
 }
 
 Set-Alias Upgrade-AllChocolateyPackage Update-AllChocolateyPackages
