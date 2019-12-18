@@ -152,15 +152,12 @@ function Update-AllChocolateyPackages {
 
     if ($updatePackages.Length -gt 0) {
         if (Assert-Elevation) {
-            foreach ($package in $updatePackages) {
-                Write-Output ""
-                Invoke-Expression "choco.exe upgrade $package -y"
-            }
+            Invoke-Expression "choco.exe upgrade $updatePackages -y"
         }
     } else {
         Write-Output "  - All Chocolatey packages are up-to-date."
     }
-    
+
     Stop-Transcript
 }
 
