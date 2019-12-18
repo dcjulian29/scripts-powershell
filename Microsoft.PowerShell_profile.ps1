@@ -53,8 +53,8 @@ Function prompt {
     Write-Host(":") -nonewline -foregroundcolor $originalColor
     Write-Host($pwd) -foregroundcolor Red
 
-    # Don't show Git Status in Admin shell
-    if (-not ($principal.IsInRole("Administrators"))) {
+    # Don't show Git Status in Admin shell but do on Work Laptop with UAC disabled
+    if  ((-not ($principal.IsInRole("Administrators"))) -or ($env:COMPUTERNAME -like "RMT*")) {
         # In prior editions of the Posh GIT modules,
         #    it got confused when in the GIT metadata directory.
         if (-not $pwd.Path.EndsWith('.git')) {
