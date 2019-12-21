@@ -87,7 +87,8 @@ function Update-CodeFolder {
 
             Push-Location "$Path\$project"
 
-            Start-Process -FilePath "git.exe" -ArgumentList "fetch --prune" -NoNewWindow -Wait | Out-Null
+            Start-Process -FilePath "git.exe" -ArgumentList "fetch --prune" `
+                -NoNewWindow -Wait | Out-Null
 
             if (-not $FetchOnly) {
                 $output = (& git.exe status 2>&1) | Out-String
