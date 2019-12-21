@@ -1,34 +1,4 @@
-function Write-PrimaryLog {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string] $Message,
-        [switch] $NoOutput,
-        [switch] $Warning
-    )
-
-    $now = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
-    $file = "$(Get-DefaultCodeFolder)\_logs\UpdateCodeFolder.log"
-
-    if (-not (Test-Path "$(Get-DefaultCodeFolder)\_logs")) {
-        New-Item -Path "$(Get-DefaultCodeFolder)\_logs" -ItemType Directory | Out-Null
-    }
-
-    $text = "$now : $Message"
-
-    if (Test-Path $file) {
-        Add-Content -Path $file -Value $text
-    } else {
-        Set-Content -Path $file -Value $text
-    }
-
-    if (-not $NoOutput) {
-        if ($Warning) {
-            Write-Warning $Message
-        } else {
-            Write-Output $Message
-        }
-    }
-}
+$script:primaryLogFile = "$(Get-LogFolder)\UpdateCodeFolder.log"
 
 function Write-ProjectUpdateLog{
     param (
@@ -104,16 +74,16 @@ function Update-CodeFolder {
         [switch] $FetchOnly
     )
 
-    Write-PrimaryLog "Starting Update-CodeFolder" -NoOutput
+    Write-Log "Starting Update-CodeFolder" -LogFile $script:primaryLogFile -NoOutput
 
     $projects = (Get-ChildItem -Path $Path -Exclude '_logs' | `
         Where-Object { $_.PSIsContainer } | `
         Select-Object Name).Name
 
     foreach ($project in $projects) {
-        Write-PrimaryLog "Using $Path\$project\.git" -NoOutput
+        Write-Log "Using $Path\$project\.git" -LogFile $script:primaryLogFile -NoOutput
         if (Test-Path "$Path\$project\.git") {
-            Write-PrimaryLog "Checking $project..."
+            Write-Log "Checking $project..." -LogFile $script:primaryLogFile
 
             Push-Location "$Path\$project"
 
@@ -123,9 +93,9 @@ function Update-CodeFolder {
                 $output = (& git.exe status 2>&1) | Out-String
 
                 if ($output -match "Your branch is up to date") {
-                    Write-PrimaryLog "    ...project is up to date..."
+                    Write-Log "    ...project is up to date..." -LogFile $script:primaryLogFile
                 } else {
-                    Write-PrimaryLog "    ...pulling changes..."
+                    Write-Log "    ...pulling changes..." -LogFile $script:primaryLogFile
                     $output = (& git.exe merge --verbose --autostash FETCH_HEAD 2>&1) | Out-String
 
                     Write-ProjectUpdateLog -Project $project -Text $output
