@@ -186,9 +186,7 @@ function Install-DevVmPackage {
         [switch] $DebugVerbose
     )
 
-    $date = Get-Date -Format "yyyyMMdd-hhmm"
-
-    $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-$package.$date.log"
+    $logFile = Get-LogFileName -Suffix "$env:COMPUTERNAME-$package"
 
     if ($DebugVerbose) {
         $choco = "Invoke-Expression 'choco.exe install $Package -dv -y'"
@@ -238,10 +236,6 @@ function Update-DevVmPackages {
         [switch] $DebugVerbose
     )
 
-    $date = Get-Date -Format "yyyyMMdd-hhmm"
-
-    $logFile = "$env:SYSTEMDRIVE\etc\logs\$($env:COMPUTERNAME)-upgrade.$date.log"
-
     if ($DebugVerbose) {
         $choco = "Invoke-Expression 'choco.exe upgrade all -dv -y'"
     } else {
@@ -249,7 +243,7 @@ function Update-DevVmPackages {
     }
 
     $Command = @"
-        Start-Transcript "$logFile"
+        Start-Transcript "$(Get-LogFileName -Suffix "$env:COMPUTERNAME-upgrade")"
         $choco
         Stop-Transcript
 "@
