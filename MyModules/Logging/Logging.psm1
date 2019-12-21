@@ -21,6 +21,30 @@ function Get-LogFileName {
         + $Date.ToString("yyyMMdd_HHmmss") + "-$Suffix.log"
 }
 
+function Optimize-LogFolder {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$Filter,
+        [string]$Path = $(Get-LogFolder),
+        [Int32]$NumberToKeep = 5,
+        [switch]$Compress
+    )
+
+    $files = Get-ChildItem -Path $Path -Filter "*$Filter*.log" | `
+        Sort-Object -Property LastWriteTime -Descending | `
+        Select-Object -Skip $NumberToKeep
+
+    if ($Compress) {
+        $files | ForEach-Object {
+            Compress-Archive -Path $_.FullName `
+                -DestinationPath "$($_.DirectoryName)\$($_.BaseName).zip" `
+                -Force
+        }
+    }
+
+    $files | ForEach-Object { Remove-Item -Path $_.FullName -Force }
+}
+
 function Write-Log {
     param (
         [Parameter(Mandatory=$true)]

@@ -9,6 +9,7 @@
     FunctionsToExport = @(
         "Get-LogFolder"
         "Get-LogFileName"
+        "Optimize-LogFolder"
         "Write-Log"
     )
     AliasesToExport = @()
