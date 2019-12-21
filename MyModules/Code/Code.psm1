@@ -1,30 +1,5 @@
 $script:primaryLogFile = "$(Get-LogFolder)\UpdateCodeFolder.log"
 
-function Write-ProjectUpdateLog{
-    param (
-        [Parameter(Mandatory=$true)]
-        [string] $Project,
-        [Parameter(Mandatory=$true)]
-        [string[]] $Text
-    )
-
-    $folder = "$(Get-DefaultCodeFolder)\_logs"
-    $file = "$folder\$Project-$(Get-Date -Format 'yyyMMddHHmmss').log"
-
-    # Only Keep Last 5 Logs.
-    Get-ChildItem -Path $folder -Filter "$Project-*.log" | `
-        Sort-Object -Property LastWriteTime -Descending | `
-        Select-Object -Skip 4 | Remove-Item -Force
-
-    if (Test-Path $file) {
-        Add-Content -Path $file -Value $Text
-    } else {
-        Set-Content -Path $file -Value $Text
-    }
-}
-
-###############################################################################
-
 function Get-DefaultCodeFolder {
     $folder = "$($env:SystemDrive)\code"
 
@@ -99,7 +74,8 @@ function Update-CodeFolder {
                     Write-Log "    ...pulling changes..." -LogFile $script:primaryLogFile
                     $output = (& git.exe merge --verbose --autostash FETCH_HEAD 2>&1) | Out-String
 
-                    Write-ProjectUpdateLog -Project $project -Text $output
+                    Optimize-LogFolder -Filter $Project
+                    Write-Log $output -LogFile $(Get-LogFileName -Suffix $project) -NoOutput
                 }
             }
 
