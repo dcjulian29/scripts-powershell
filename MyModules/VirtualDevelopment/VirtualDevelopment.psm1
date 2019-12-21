@@ -249,9 +249,8 @@ function Update-DevVmPackages {
 "@
 
     $Bytes = [System.Text.Encoding]::Unicode.GetBytes($Command)
-    $encodedCommand = [Convert]::ToBase64String($Bytes)
 
-    powershell.exe -encodedCommand $encodedCommand
+    powershell.exe -encodedCommand [Convert]::ToBase64String($Bytes)
 
     if (Test-PendingReboot) {
         Write-Warning "One of the packages recently upgraded has set the PendingReboot flag..."
