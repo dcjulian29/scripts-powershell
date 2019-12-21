@@ -256,11 +256,3 @@ function Update-DevVmPackages {
         Write-Warning "One of the packages recently upgraded has set the PendingReboot flag..."
     }
 }
-
-###############################################################################
-
-Export-ModuleMember Install-DevVmPackage
-Export-ModuleMember Update-DevVmPackages
-
-Export-ModuleMember New-DevVM
-Export-ModuleMember New-LinuxDevVM
