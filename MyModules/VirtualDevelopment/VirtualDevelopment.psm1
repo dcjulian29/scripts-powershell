@@ -22,6 +22,59 @@
 
 ###############################################################################
 
+function Install-DevVmPackage {
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Package,
+        [Alias("dv")]
+        [switch] $DebugVerbose
+    )
+
+    $logFile = Get-LogFileName -Suffix "$env:COMPUTERNAME-$package"
+
+    if ($DebugVerbose) {
+        $choco = "Invoke-Expression 'choco.exe install $Package -dv -y'"
+    } else {
+        $choco = "Invoke-Expression 'choco.exe install $Package -y'"
+    }
+
+    $Command = @"
+        Start-Transcript "$logFile"
+
+        # For some reason, my PSModules environment keeps getting reset installing packages,
+        # so let explictly add it each and everytime
+        `$env:PSModulePath = "`$(Split-Path `$profile)\Modules;`$(`$env:PSModulePath)"
+        `$env:PSModulePath = "`$(Split-Path `$profile)\MyModules;`$(`$env:PSModulePath)"
+
+        Get-Module -ListAvailable | Out-Null
+
+        $choco
+
+        Stop-Transcript
+"@
+
+    $Bytes = [System.Text.Encoding]::Unicode.GetBytes($Command)
+    $encodedCommand = [Convert]::ToBase64String($Bytes)
+
+    powershell.exe -encodedCommand $encodedCommand
+
+    # Now lets check for errors...
+    if (Get-Content $logFile | Select-String -Pattern "^Failures|ERROR:") {
+        Write-Warning "An error occurred during the last package ($package) install..."
+        Write-Warning "Review the log file: $logFile"
+        Write-Warning "And then decide whether to continue..."
+    }
+
+    if (Test-PendingReboot) {
+        Write-Warning "One of the packages recently installed has set the PendingReboot flag..."
+        Write-Warning "This may cause future packages to fail silently if it check this flag."
+
+        Read-Host "Press Enter to Restart Computer"
+        Restart-Computer -Force
+    }
+}
+
 function New-DevVM {
     $errorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
@@ -175,59 +228,6 @@ function New-LinuxDevVM {
     Start-Process -FilePath "vmconnect.exe" -ArgumentList "localhost $computerName"
 
     $ErrorActionPreference = $errorPreviousAction
-}
-
-function Install-DevVmPackage {
-    param(
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $Package,
-        [Alias("dv")]
-        [switch] $DebugVerbose
-    )
-
-    $logFile = Get-LogFileName -Suffix "$env:COMPUTERNAME-$package"
-
-    if ($DebugVerbose) {
-        $choco = "Invoke-Expression 'choco.exe install $Package -dv -y'"
-    } else {
-        $choco = "Invoke-Expression 'choco.exe install $Package -y'"
-    }
-
-    $Command = @"
-        Start-Transcript "$logFile"
-
-        # For some reason, my PSModules environment keeps getting reset installing packages,
-        # so let explictly add it each and everytime
-        `$env:PSModulePath = "`$(Split-Path `$profile)\Modules;`$(`$env:PSModulePath)"
-        `$env:PSModulePath = "`$(Split-Path `$profile)\MyModules;`$(`$env:PSModulePath)"
-
-        Get-Module -ListAvailable | Out-Null
-
-        $choco
-
-        Stop-Transcript
-"@
-
-    $Bytes = [System.Text.Encoding]::Unicode.GetBytes($Command)
-    $encodedCommand = [Convert]::ToBase64String($Bytes)
-
-    powershell.exe -encodedCommand $encodedCommand
-
-    # Now lets check for errors...
-    if (Get-Content $logFile | Select-String -Pattern "^Failures|ERROR:") {
-        Write-Warning "An error occurred during the last package ($package) install..."
-        Write-Warning "Review the log file: $logFile"
-        Write-Warning "And then decide whether to continue..."
-    }
-
-    if (Test-PendingReboot) {
-        Write-Warning "One of the packages recently installed has set the PendingReboot flag..."
-        Write-Warning "This may cause future packages to fail silently if it check this flag."
-
-        Read-Host "Press Enter to Restart Computer"
-        Restart-Computer -Force
-    }
 }
 
 function Update-DevVmPackages {
