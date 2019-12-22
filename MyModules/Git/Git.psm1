@@ -1,8 +1,4 @@
-﻿$script:GIT_INSTALL_ROOT = Find-ProgramFiles "Git"
-$script:GIT = "${script:GIT_INSTALL_ROOT}\bin\git.exe"
-$script:GITK = "${script:GIT_INSTALL_ROOT}\cmd\gitk.exe"
-
-Function Add-GitIgnoreTemplate {
+﻿Function Add-GitIgnoreTemplate {
     <#
     .Synopsis
         Add the requested .gitignore to current directory.
@@ -97,12 +93,20 @@ Function Backup-GitRepository {
 
 Set-Alias gb Backup-GitRepository
 
+function Find-Git {
+    "$(Find-ProgramFiles "Git")\bin\git.exe"
+}
+
+function Find-GraphicalGit {
+    "$(Find-ProgramFiles "Git")\bin\gitk.exe"
+}
+
 Function Get-GitBranchesThatAreLocal {
-    & "$GIT" for-each-ref --sort refname --format='%(refname:short)' refs/heads
+    & "$(Find-Git)" for-each-ref --sort refname --format='%(refname:short)' refs/heads
 }
 
 Function Get-GitBranchesThatAreRemote {
-    & "$GIT" for-each-ref --sort refname --format='%(refname:short)' refs/remotes
+    & "$(Find-Git)" for-each-ref --sort refname --format='%(refname:short)' refs/remotes
 }
 
 Function Get-GitIgnoreTemplate {
@@ -133,13 +137,13 @@ Function Get-GitIgnoreTemplate {
 }
 
 Function Get-GitRepositoryStatus {
-    & "$GIT" status
+    & "$(Find-Git)" status
 }
 
 Set-Alias gs Get-GitRepositoryStatus
 
 Function Invoke-FetchGitRepository {
-    & "$GIT" fetch --prune --all
+    & "$(Find-Git)" fetch --prune --all
 }
 
 Set-Alias Fetch-GitRepository Invoke-FetchGitRepository
@@ -147,7 +151,7 @@ Set-Alias gfetch Invoke-FetchGitRepository
 
 Function Invoke-PullGitRepository {
     Fetch-GitRepository
-    & "$GIT" pull
+    & "$(Find-Git)" pull
 }
 
 Set-Alias Pull-GitRepository Invoke-PullGitRepository
@@ -168,7 +172,7 @@ Function Optimize-AllGitRepositories {
         if (Test-Path "$(Join-Path $folder.FullName ".git")") {
             Write-Output "== $($folder.Name)"
             Push-Location $folder.FullName
-            & "$GIT" gc
+            & "$(Find-Git)" gc
             Pop-Location
             Write-Output ""
         }
@@ -192,27 +196,27 @@ Function Publish-GitRepositoryToPROD {
 
     $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
 
-    & "$GIT" checkout prod
+    & "$(Find-Git)" checkout prod
 
     if ($FromQA) {
         $commit = "Publish QA to Production on $date"
-        & "$GIT" merge --no-ff qa -m $commit
+        & "$(Find-Git)" merge --no-ff qa -m $commit
     } else {
         $commit = "Publish UAT to Production on $date"
-        & "$GIT" merge --no-ff uat -m $commit
+        & "$(Find-Git)" merge --no-ff uat -m $commit
     }
 }
 
 Function Publish-GitRepositoryToQA {
 
-    $tag = & $GIT lasttag
+    $tag = & $(Find-Git) lasttag
     $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
 
     $commit = "Publish $tag to QA on $date"
 
-    & "$GIT" checkout qa
+    & "$(Find-Git)" checkout qa
 
-    & "$GIT" merge --no-ff master -m $commit
+    & "$(Find-Git)" merge --no-ff master -m $commit
 }
 
 Function Publish-GitRepositoryToUAT {
@@ -220,9 +224,9 @@ Function Publish-GitRepositoryToUAT {
 
     $commit = "Publish QA to UAT on $date"
 
-    & "$GIT" checkout uat
+    & "$(Find-Git)" checkout uat
 
-    & "$GIT" merge --no-ff qa -m $commit
+    & "$(Find-Git)" merge --no-ff qa -m $commit
 }
 
 Function Push-GitRepositoriesThatAreTracked {
@@ -230,36 +234,36 @@ Function Push-GitRepositoriesThatAreTracked {
     $remoteRepositories = @("origin")
 
     foreach ($remote in $remoteRepositories) {
-        $remoteInfo = Invoke-Expression "& '$GIT' remote show origin"
+        $remoteInfo = Invoke-Expression "& '$(Find-Git)' remote show origin"
 
         foreach ($line in $remoteInfo) {
             if ($line -match "\W*(.+) pushes to .+") {
                 "Pushing {0}/{1}..." -f $remote, $Matches[1]
-                Invoke-Expression $("& '{0}' push {1} {2}" -f $GIT, $remote, $Matches[1])
+                Invoke-Expression $("& '{0}' push {1} {2}" -f $(Find-Git), $remote, $Matches[1])
             }
         }
     }
 
     "Pushing tags..."
-    & "$GIT" push --tags
+    & "$(Find-Git)" push --tags
 }
 
 Set-Alias gpushall Push-GitRepositoriesThatAreTracked
 
 Function Push-GitRepository {
-    $remote = & "$GIT" remote
+    $remote = & "$(Find-Git)" remote
     "Pushing to $remote..."
-    & "$GIT" push
+    & "$(Find-Git)" push
     "Pushing tags..."
-    & "$GIT" push --tags
+    & "$(Find-Git)" push --tags
 }
 
 Set-Alias gpush Push-GitRepository
 
 Function Remove-AllGitChanges {
-    & "$GIT" reset HEAD
-    & "$GIT" stash save --keep-index
-    & "$GIT" stash drop
+    & "$(Find-Git)" reset HEAD
+    & "$(Find-Git)" stash save --keep-index
+    & "$(Find-Git)" stash drop
 }
 
 Function Remove-GitChanges {
@@ -269,7 +273,7 @@ Function Remove-GitChanges {
         [string] $File
     )
 
-    & "$GIT" checkout $File
+    & "$(Find-Git)" checkout $File
 }
 
 Function Remove-GitRepositoryBackup {
@@ -306,8 +310,8 @@ Function Remove-GitRepositoryBackup {
 Set-Alias gbr Remove-GitRepositoryBackup
 
 Function Remove-LastGitCommit {
-    if ($(& "$GIT" diff --exit-code) -and $(& "$GIT" diff --cached --exit-code)) {
-        & "$GIT" reset --soft HEAD~1
+    if ($(& "$(Find-Git)" diff --exit-code) -and $(& "$(Find-Git)" diff --cached --exit-code)) {
+        & "$(Find-Git)" reset --soft HEAD~1
     } else {
         Write-Warning "Commit is already pushed... You will need to revert the changes instead."
     }
@@ -352,7 +356,7 @@ Function Show-AllGitInformation {
         if (Test-Path "$(Join-Path $_.FullName ".git")") {
             Push-Location $_.FullName
             Write-Output "== $($_.Name)"
-            & "$GIT" status
+            & "$(Find-Git)" status
             Pop-Location
         } else {
             Write-Output "-- $($_.Name)"
@@ -367,19 +371,19 @@ Set-Alias status-all-projects Show-AllGitInformation
 Function Show-GitInformation {
     if (Test-Path "$(Join-Path $pwd.Path ".git")") {
         Write-Output "== Remote URLs:"
-        & "$GIT" remote -v
+        & "$(Find-Git)" remote -v
         Write-Output ""
 
         Write-Output "== Branches:"
-        & "$GIT" branch -a
+        & "$(Find-Git)" branch -a
         Write-Output ""
 
         Write-Output "== Configuration:"
-        & "$GIT" config --local --list
+        & "$(Find-Git)" config --local --list
         Write-Output ""
 
         Write-Output "== Most Recent Commit"
-        & "$GIT" --no-pager log --max-count=1
+        & "$(Find-Git)" --no-pager log --max-count=1
         Write-Output ""
 
         Write-Output "Type 'git log' for more commits, or 'git show' for full commit details."
@@ -391,7 +395,7 @@ Function Show-GitInformation {
 Set-Alias git-info Show-GitInformation
 
 Function Start-GitGraphicalInterface {
-    & "$GITK"
+    & "$(Find-GraphicalGit)"
 }
 
 Set-Alias gitk Start-GitGraphicalInterface
@@ -413,12 +417,12 @@ Function Update-AllGitRepositories {
         if (Test-Path "$(Join-Path $folder.FullName ".git")") {
             Write-Output "== $($folder.Name)"
             Push-Location $folder.FullName
-            & "$GIT" remote -v
-            & "$GIT" fetch --all --recurse-submodules
+            & "$(Find-Git)" remote -v
+            & "$(Find-Git)" fetch --all --recurse-submodules
             if ($Pull) {
-                if ($(& "$GIT" remote)) {
+                if ($(& "$(Find-Git)" remote)) {
                     Write-Output "Pulling changes into currently checked out branch..."
-                    & "$GIT" pull
+                    & "$(Find-Git)" pull
                 }
             }
             Pop-Location

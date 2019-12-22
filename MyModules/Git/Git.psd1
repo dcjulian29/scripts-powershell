@@ -11,6 +11,8 @@
         "Add-GitIgnoreToLocalRepository"
         "Add-GitIgnoreToRemoteRepository"
         "Backup-GitRepository"
+        "Find-Git"
+        "Find-GraphicGit"
         "Get-GitBranchesThatAreLocal"
         "Get-GitBranchesThatAreRemote"
         "Get-GitIgnoreTemplate"
