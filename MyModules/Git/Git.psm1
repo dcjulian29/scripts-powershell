@@ -178,14 +178,13 @@ Function Optimize-AllGitRepositories {
 Set-Alias git-gc-all Optimize-AllGitRepositories
 
 Function Publish-GitRepositoryToPROD {
+    [CmdletBinding(DefaultParameterSetName="QA")]
     param (
+        [Parameter(ParameterSetName="UAT")]
         [switch] $FromUAT,
+        [Parameter(ParameterSetName="QA")]
         [switch] $FromQA
     )
-
-    if ($FromUAT -and $FromQA) {
-        throw "You cannot publish from both environments."
-    }
 
     if ( -not ($FromUAT -or $FromQA)) {
         throw "You must select an environment to publish from."
