@@ -138,8 +138,7 @@ function Uninstall-ChocolateyPackage {
 }
 
 function Update-AllChocolateyPackages {
-    Start-Transcript `
-        -Path "C:\etc\log\$(Get-Date -Format 'yyyMMdd_HHmmss')-Update-AllChocolateyPackages.log"
+    Start-Transcript -Path $(Get-LogFileName "Update-AllChocolateyPackages")
 
     $packages = Find-UpgradableChocolateyPackages -PassThru
 
