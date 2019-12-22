@@ -201,18 +201,20 @@ Function Push-GitRepository {
 
 Set-Alias gpush Push-GitRepository
 
-Function Pull-GitRepository {
+Function Invoke-PullGitRepository {
     Fetch-GitRepository
     & "$GIT" pull
 }
 
-Set-Alias gpull Pull-GitRepository
+Set-Alias Pull-GitRepository Invoke-PullGitRepository
+Set-Alias gpull Invoke-PullGitRepository
 
-Function Fetch-GitRepository {
+Function Invoke-FetchGitRepository {
     & "$GIT" fetch --prune --all
 }
 
-Set-Alias gfetch Fetch-GitRepository
+Set-Alias Fetch-GitRepository Invoke-FetchGitRepository
+Set-Alias gfetch Invoke-FetchGitRepository
 
 Function Get-GitRepositoryStatus {
     & "$GIT" status
@@ -320,7 +322,7 @@ Function Update-AllGitRepositories {
     }
 }
 
-Function Clean-AllGitRepositories {
+Function Optimize-AllGitRepositories {
     param (
         [ValidateNotNullorEmpty()]
         [ValidateScript({Test-Path $_ -PathType 'Container'})]
@@ -342,7 +344,7 @@ Function Clean-AllGitRepositories {
     }
 }
 
-Set-Alias git-gc-all Clean-AllGitRepositories
+Set-Alias git-gc-all Optimize-AllGitRepositories
 
 Function Get-GitBranchesThatAreLocal {
     & "$GIT" for-each-ref --sort refname --format='%(refname:short)' refs/heads
@@ -409,7 +411,7 @@ Function Show-GitInformation {
 Set-Alias git-info Show-GitInformation
 
 Function Show-AllGitInformation {
-    Get-ChildItem -Directory | % {
+    Get-ChildItem -Directory | ForEach-Object {
         if (Test-Path "$(Join-Path $_.FullName ".git")") {
             Push-Location $_.FullName
             Write-Output "== $($_.Name)"

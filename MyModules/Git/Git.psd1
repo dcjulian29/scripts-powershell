@@ -11,16 +11,16 @@
         "Add-GitIgnoreToLocalRepository"
         "Add-GitIgnoreToRemoteRepository"
         "Backup-GitRepository"
-        "Clean-AllGitRepositories"
-        "Fetch-GitRepository"
         "Get-GitBranchesThatAreLocal"
         "Get-GitBranchesThatAreRemote"
         "Get-GitIgnoreTemplate"
         "Get-GitRepositoryStatus"
+        "Invoke-FetchGitRepository"
+        "Invoke-PullGitRepository"
+        "Optimize-AllGitRepositories"
         "Publish-GitRepositoryToPROD"
         "Publish-GitRepositoryToQA"
         "Publish-GitRepositoryToUAT"
-        "Pull-GitRepository"
         "Push-GitRepositoriesThatAreTracked"
         "Push-GitRepository"
         "Remove-AllGitChanges"
@@ -34,6 +34,7 @@
         "Update-AllGitRepositories"
     )
     AliasesToExport = @(
+        "Fetch-GitRepository"
         "gb"
         "gbr"
         "gfetch"
@@ -44,6 +45,7 @@
         "gpush"
         "gpushall"
         "gs"
+        "Pull-GitRepository"
         "status-all-projects"
     )
 }
