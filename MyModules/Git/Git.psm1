@@ -8,7 +8,7 @@ Function Add-GitIgnoreToLocalRepository {
         [ValidateNotNullorEmpty()]
         [string] $Pattern,
         [ValidateNotNullorEmpty()]
-        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [ValidateScript({Test-Path $_ -PathType 'Container'})]
         [string] $Path = $pwd
     )
 
@@ -27,7 +27,7 @@ Function Add-GitIgnoreToRemoteRepository {
         [ValidateNotNullorEmpty()]
         [string] $Pattern,
         [ValidateNotNullorEmpty()]
-        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [ValidateScript({Test-Path $_ -PathType 'Container'})]
         [string] $Path = $pwd
     )
 
@@ -39,7 +39,7 @@ Function Add-GitIgnoreToRemoteRepository {
     $ignore = [System.IO.Path]::Combine($Path, ".gitignore")
 
     if (-not (Test-Path $ignore)) {
-        Set-Content -Path $ignore -Value "$Pattern"        
+        Set-Content -Path $ignore -Value "$Pattern"
     } else {
         Add-Content -Path $ignore -Value "$Pattern"
     }
@@ -96,7 +96,7 @@ Function Add-GitIgnoreTemplate {
 Function Backup-GitRepository {
     param (
         [ValidateNotNullorEmpty()]
-        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [ValidateScript({Test-Path $_ -PathType 'Container'})]
         [string] $Path = $pwd
     )
 
@@ -122,10 +122,12 @@ Function Backup-GitRepository {
     & robocopy.exe "$Path" "$backup" /MIR /Z /SL /MT /XJ /R:5 /W:5
 }
 
+Set-Alias gb Backup-GitRepository
+
 Function Remove-GitRepositoryBackup {
     param (
         [ValidateNotNullorEmpty()]
-        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [ValidateScript({Test-Path $_ -PathType 'Container'})]
         [string] $Path = $pwd
     )
 
@@ -141,7 +143,7 @@ Function Remove-GitRepositoryBackup {
 
     $foobar = Get-ChildItem -Path $env:TEMP | Where-Object { $_.PSIsContainer } `
         | Where-Object { $_.Name -like "$project-foobar-*" } | Select-Object FullName
-    
+
     foreach ($folder in $backup) {
         Write-Output "Removing backup at $($folder.FullName)"
         Remove-Item -Path $folder.FullName -Recurse -Force
@@ -153,10 +155,12 @@ Function Remove-GitRepositoryBackup {
     }
 }
 
+Set-Alias gbr Remove-GitRepositoryBackup
+
 Function Restore-GitRepositoryBackup {
     param (
         [ValidateNotNullorEmpty()]
-        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [ValidateScript({Test-Path $_ -PathType 'Container'})]
         [string] $Path = $pwd
     )
 
@@ -195,18 +199,26 @@ Function Push-GitRepository {
     & "$GIT" push --tags
 }
 
+Set-Alias gpush Push-GitRepository
+
 Function Pull-GitRepository {
     Fetch-GitRepository
     & "$GIT" pull
 }
 
+Set-Alias gpull Pull-GitRepository
+
 Function Fetch-GitRepository {
     & "$GIT" fetch --prune --all
 }
 
+Set-Alias gfetch Fetch-GitRepository
+
 Function Get-GitRepositoryStatus {
     & "$GIT" status
 }
+
+Set-Alias gs Get-GitRepositoryStatus
 
 Function Push-GitRepositoriesThatAreTracked {
     # TODO: Added support for additional "remote" repositories
@@ -216,7 +228,7 @@ Function Push-GitRepositoriesThatAreTracked {
         $remoteInfo = Invoke-Expression "& '$GIT' remote show origin"
 
         foreach ($line in $remoteInfo) {
-            if ($line -match "\W*(.+) pushes to .+") { 
+            if ($line -match "\W*(.+) pushes to .+") {
                 "Pushing {0}/{1}..." -f $remote, $Matches[1]
                 Invoke-Expression $("& '{0}' push {1} {2}" -f $GIT, $remote, $Matches[1])
             }
@@ -226,6 +238,8 @@ Function Push-GitRepositoriesThatAreTracked {
     "Pushing tags..."
     & "$GIT" push --tags
 }
+
+Set-Alias gpushall Push-GitRepositoriesThatAreTracked
 
 Function Publish-GitRepositoryToQA {
 
@@ -254,15 +268,15 @@ Function Publish-GitRepositoryToPROD {
         [switch] $FromUAT,
         [switch] $FromQA
     )
-    
+
     if ($FromUAT -and $FromQA) {
         throw "You cannot publish from both environments."
     }
-    
+
     if ( -not ($FromUAT -or $FromQA)) {
         throw "You must select an environment to publish from."
     }
-    
+
     $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
 
     & "$GIT" checkout prod
@@ -271,7 +285,7 @@ Function Publish-GitRepositoryToPROD {
         $commit = "Publish QA to Production on $date"
         & "$GIT" merge --no-ff qa -m $commit
     } else {
-        $commit = "Publish UAT to Production on $date"    
+        $commit = "Publish UAT to Production on $date"
         & "$GIT" merge --no-ff uat -m $commit
     }
 }
@@ -279,7 +293,7 @@ Function Publish-GitRepositoryToPROD {
 Function Update-AllGitRepositories {
     param (
         [ValidateNotNullorEmpty()]
-        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [ValidateScript({Test-Path $_ -PathType 'Container'})]
         [string] $Path = $pwd,
         [switch] $Pull
     )
@@ -309,7 +323,7 @@ Function Update-AllGitRepositories {
 Function Clean-AllGitRepositories {
     param (
         [ValidateNotNullorEmpty()]
-        [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+        [ValidateScript({Test-Path $_ -PathType 'Container'})]
         [string] $Path = $pwd
     )
 
@@ -327,6 +341,8 @@ Function Clean-AllGitRepositories {
         }
     }
 }
+
+Set-Alias git-gc-all Clean-AllGitRepositories
 
 Function Get-GitBranchesThatAreLocal {
     & "$GIT" for-each-ref --sort refname --format='%(refname:short)' refs/heads
@@ -348,10 +364,12 @@ Function Start-GitGraphicalInterface {
     & "$GITK"
 }
 
+Set-Alias gitk Start-GitGraphicalInterface
+
 Function Remove-GitChanges {
     param (
         [ValidateNotNullorEmpty()]
-        [ValidateScript({Test-Path $_})] 
+        [ValidateScript({Test-Path $_})]
         [string] $File
     )
 
@@ -388,8 +406,10 @@ Function Show-GitInformation {
     }
 }
 
+Set-Alias git-info Show-GitInformation
+
 Function Show-AllGitInformation {
-    Get-ChildItem -Directory | % { 
+    Get-ChildItem -Directory | % {
         if (Test-Path "$(Join-Path $_.FullName ".git")") {
             Push-Location $_.FullName
             Write-Output "== $($_.Name)"
@@ -403,64 +423,4 @@ Function Show-AllGitInformation {
     }
 }
 
-###################################################################################################
-
-Export-ModuleMember Add-GitPath
-Export-ModuleMember Add-GitIgnoreToLocalRepository
-Export-ModuleMember Add-GitIgnoreToRemoteRepository
-Export-ModuleMember Get-GitIgnoreTemplate
-Export-ModuleMember Add-GitIgnoreTemplate
-Export-ModuleMember Backup-GitRepository
-Export-ModuleMember Remove-GitRepositoryBackup
-Export-ModuleMember Restore-GitRepositoryBackup
-Export-ModuleMember Pull-GitRepository
-Export-ModuleMember Push-GitRepository
-Export-ModuleMember Fetch-GitRepository
-Export-ModuleMember Get-GitRepositoryStatus
-Export-ModuleMember Push-GitRepositoriesThatAreTracked
-Export-ModuleMember Publish-GitRepositoryToQA
-Export-ModuleMember Publish-GitRepositoryToUAT
-Export-ModuleMember Publish-GitRepositoryToPROD
-Export-ModuleMember Update-AllGitRepositories
-Export-ModuleMember Get-GitBranchesThatAreLocal
-Export-ModuleMember Get-GitBranchesThatAreRemote
-Export-ModuleMember Remove-LastGitCommit
-Export-ModuleMember Start-GitGraphicalInterface
-Export-ModuleMember Remove-GitChanges
-Export-ModuleMember Remove-AllGitChanges
-Export-ModuleMember Clean-AllGitRepositories
-Export-ModuleMember Show-GitInformation
-Export-ModuleMember Show-AllGitInformation
-
-Set-Alias gb Backup-GitRepository
-Export-ModuleMember -Alias gb
-
-Set-Alias gbr Remove-GitRepositoryBackup
-Export-ModuleMember -Alias gbr
-
-Set-Alias gpull Pull-GitRepository
-Export-ModuleMember -Alias gpull
-
-Set-Alias gpush Push-GitRepository
-Export-ModuleMember -Alias gpush
-
-Set-Alias gpushall Push-GitRepositoriesThatAreTracked
-Export-ModuleMember -Alias gpushall
-
-Set-Alias gfetch Fetch-GitRepository
-Export-ModuleMember -Alias gfetch
-
-Set-Alias gs Get-GitRepositoryStatus
-Export-ModuleMember -Alias gs
-
-Set-Alias gitk Start-GitGraphicalInterface
-Export-ModuleMember -Alias gitk
-
-Set-Alias git-gc-all Clean-AllGitRepositories
-Export-ModuleMember -Alias git-gc-all
-
-Set-Alias git-info Show-GitInformation
-Export-ModuleMember -Alias git-info
-
 Set-Alias status-all-projects Show-AllGitInformation
-Export-ModuleMember -Alias status-all-projects
