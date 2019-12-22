@@ -1,4 +1,4 @@
-﻿Function Add-GitIgnoreTemplate {
+﻿function Add-GitIgnoreTemplate {
     <#
     .Synopsis
         Add the requested .gitignore to current directory.
@@ -19,7 +19,7 @@
     }
 }
 
-Function Add-GitIgnoreToLocalRepository {
+function Add-GitIgnoreToLocalRepository {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullorEmpty()]
@@ -38,7 +38,7 @@ Function Add-GitIgnoreToLocalRepository {
     Add-Content -Path $ignore -Value "$Pattern"
 }
 
-Function Add-GitIgnoreToRemoteRepository {
+function Add-GitIgnoreToRemoteRepository {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullorEmpty()]
@@ -62,7 +62,7 @@ Function Add-GitIgnoreToRemoteRepository {
     }
 }
 
-Function Backup-GitRepository {
+function Backup-GitRepository {
     param (
         [ValidateNotNullorEmpty()]
         [ValidateScript({Test-Path $_ -PathType 'Container'})]
@@ -101,15 +101,15 @@ function Find-GraphicalGit {
     "$(Find-ProgramFiles "Git")\bin\gitk.exe"
 }
 
-Function Get-GitBranchesThatAreLocal {
+function Get-GitBranchesThatAreLocal {
     & "$(Find-Git)" for-each-ref --sort refname --format='%(refname:short)' refs/heads
 }
 
-Function Get-GitBranchesThatAreRemote {
+function Get-GitBranchesThatAreRemote {
     & "$(Find-Git)" for-each-ref --sort refname --format='%(refname:short)' refs/remotes
 }
 
-Function Get-GitIgnoreTemplate {
+function Get-GitIgnoreTemplate {
     <#
     .Synopsis
         Displays list of supported templates.
@@ -136,20 +136,20 @@ Function Get-GitIgnoreTemplate {
     }
 }
 
-Function Get-GitRepositoryStatus {
+function Get-GitRepositoryStatus {
     & "$(Find-Git)" status
 }
 
 Set-Alias gs Get-GitRepositoryStatus
 
-Function Invoke-FetchGitRepository {
+function Invoke-FetchGitRepository {
     & "$(Find-Git)" fetch --prune --all
 }
 
 Set-Alias Fetch-GitRepository Invoke-FetchGitRepository
 Set-Alias gfetch Invoke-FetchGitRepository
 
-Function Invoke-PullGitRepository {
+function Invoke-PullGitRepository {
     Fetch-GitRepository
     & "$(Find-Git)" pull
 }
@@ -157,7 +157,7 @@ Function Invoke-PullGitRepository {
 Set-Alias Pull-GitRepository Invoke-PullGitRepository
 Set-Alias gpull Invoke-PullGitRepository
 
-Function Optimize-AllGitRepositories {
+function Optimize-AllGitRepositories {
     param (
         [ValidateNotNullorEmpty()]
         [ValidateScript({Test-Path $_ -PathType 'Container'})]
@@ -181,7 +181,7 @@ Function Optimize-AllGitRepositories {
 
 Set-Alias git-gc-all Optimize-AllGitRepositories
 
-Function Publish-GitRepositoryToPROD {
+function Publish-GitRepositoryToPROD {
     [CmdletBinding(DefaultParameterSetName="QA")]
     param (
         [Parameter(ParameterSetName="UAT")]
@@ -207,7 +207,7 @@ Function Publish-GitRepositoryToPROD {
     }
 }
 
-Function Publish-GitRepositoryToQA {
+function Publish-GitRepositoryToQA {
 
     $tag = & $(Find-Git) lasttag
     $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
@@ -219,7 +219,7 @@ Function Publish-GitRepositoryToQA {
     & "$(Find-Git)" merge --no-ff master -m $commit
 }
 
-Function Publish-GitRepositoryToUAT {
+function Publish-GitRepositoryToUAT {
     $date = [DateTime]::Now.ToString("MMMM d, yyyy ""at"" h:mm ""GMT""zzz")
 
     $commit = "Publish QA to UAT on $date"
@@ -229,7 +229,7 @@ Function Publish-GitRepositoryToUAT {
     & "$(Find-Git)" merge --no-ff qa -m $commit
 }
 
-Function Push-GitRepositoriesThatAreTracked {
+function Push-GitRepositoriesThatAreTracked {
     # TODO: Added support for additional "remote" repositories
     $remoteRepositories = @("origin")
 
@@ -250,7 +250,7 @@ Function Push-GitRepositoriesThatAreTracked {
 
 Set-Alias gpushall Push-GitRepositoriesThatAreTracked
 
-Function Push-GitRepository {
+function Push-GitRepository {
     $remote = & "$(Find-Git)" remote
     "Pushing to $remote..."
     & "$(Find-Git)" push
@@ -260,13 +260,13 @@ Function Push-GitRepository {
 
 Set-Alias gpush Push-GitRepository
 
-Function Remove-AllGitChanges {
+function Remove-AllGitChanges {
     & "$(Find-Git)" reset HEAD
     & "$(Find-Git)" stash save --keep-index
     & "$(Find-Git)" stash drop
 }
 
-Function Remove-GitChanges {
+function Remove-GitChanges {
     param (
         [ValidateNotNullorEmpty()]
         [ValidateScript({Test-Path $_})]
@@ -276,7 +276,7 @@ Function Remove-GitChanges {
     & "$(Find-Git)" checkout $File
 }
 
-Function Remove-GitRepositoryBackup {
+function Remove-GitRepositoryBackup {
     param (
         [ValidateNotNullorEmpty()]
         [ValidateScript({Test-Path $_ -PathType 'Container'})]
@@ -309,7 +309,7 @@ Function Remove-GitRepositoryBackup {
 
 Set-Alias gbr Remove-GitRepositoryBackup
 
-Function Remove-LastGitCommit {
+function Remove-LastGitCommit {
     if ($(& "$(Find-Git)" diff --exit-code) -and $(& "$(Find-Git)" diff --cached --exit-code)) {
         & "$(Find-Git)" reset --soft HEAD~1
     } else {
@@ -317,7 +317,7 @@ Function Remove-LastGitCommit {
     }
 }
 
-Function Restore-GitRepositoryBackup {
+function Restore-GitRepositoryBackup {
     param (
         [ValidateNotNullorEmpty()]
         [ValidateScript({Test-Path $_ -PathType 'Container'})]
@@ -351,7 +351,7 @@ Function Restore-GitRepositoryBackup {
     & robocopy.exe "$backup" "$Path" /MIR /Z
 }
 
-Function Show-AllGitInformation {
+function Show-AllGitInformation {
     Get-ChildItem -Directory | ForEach-Object {
         if (Test-Path "$(Join-Path $_.FullName ".git")") {
             Push-Location $_.FullName
@@ -368,7 +368,7 @@ Function Show-AllGitInformation {
 
 Set-Alias status-all-projects Show-AllGitInformation
 
-Function Show-GitInformation {
+function Show-GitInformation {
     if (Test-Path "$(Join-Path $pwd.Path ".git")") {
         Write-Output "== Remote URLs:"
         & "$(Find-Git)" remote -v
@@ -394,14 +394,14 @@ Function Show-GitInformation {
 
 Set-Alias git-info Show-GitInformation
 
-Function Start-GitGraphicalInterface {
+function Start-GitGraphicalInterface {
     & "$(Find-GraphicalGit)"
 }
 
 Set-Alias gitk Start-GitGraphicalInterface
 
 
-Function Update-AllGitRepositories {
+function Update-AllGitRepositories {
     param (
         [ValidateNotNullorEmpty()]
         [ValidateScript({Test-Path $_ -PathType 'Container'})]
