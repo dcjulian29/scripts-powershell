@@ -14,6 +14,7 @@
         "Find-Git"
         "Find-GraphicGit"
         "Get-GitIgnoreTemplate"
+        "Get-GitLastCommit"
         "Get-GitRepositoryBranch"
         "Get-GitRepositoryStatus"
         "Invoke-FetchGitRepository"

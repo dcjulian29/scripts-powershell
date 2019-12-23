@@ -128,6 +128,52 @@ function Get-GitIgnoreTemplate {
     }
 }
 
+function Get-GitLastCommit {
+    [CmdletBinding(DefaultParameterSetName="Id")]
+    param (
+        [Parameter(ParameterSetName="Id")]
+        [Switch]$Id,
+        [Parameter(ParameterSetName="Author")]
+        [Switch]$Author,
+        [Parameter(ParameterSetName="Author")]
+        [Switch]$Email,
+        [Parameter(ParameterSetName="Date")]
+        [Switch]$Date,
+        [Parameter(ParameterSetName="DateTime")]
+        [Switch]$DateTime
+    )
+
+    $parameters = "--no-pager log --max-count=1"
+
+    if ($DateTime) {
+        $parameters += " --pretty=format:""%aD"""
+
+        Get-Date $(cmd /c """$(Find-Git)"" $parameters")
+    } else {
+        if ($Id) {
+            $parameters = "rev-parse $(Get-GitRepositoryBranch)"
+        }
+
+        if ($Author) {
+            $parameters += " --pretty=format:""%an"""
+        }
+
+        if ($Email) {
+            $parameters += " --pretty=format:""%ae"""
+        }
+
+        if ($Author -and $Email) {
+            $parameters += " --pretty=format:""%an <%ae>"""
+        }
+
+        if ($Date) {
+            $parameters += " --pretty=format:""%ad"""
+        }
+
+        cmd /c """$(Find-Git)"" $parameters"
+    }
+}
+
 function Get-GitRepositoryBranch {
     [CmdletBinding(DefaultParameterSetName="Local")]
     param (
