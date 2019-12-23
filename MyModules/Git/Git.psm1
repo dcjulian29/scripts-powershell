@@ -101,14 +101,6 @@ function Find-GraphicalGit {
     "$(Find-ProgramFiles "Git")\bin\gitk.exe"
 }
 
-function Get-GitBranchesThatAreLocal {
-    & "$(Find-Git)" for-each-ref --sort refname --format='%(refname:short)' refs/heads
-}
-
-function Get-GitBranchesThatAreRemote {
-    & "$(Find-Git)" for-each-ref --sort refname --format='%(refname:short)' refs/remotes
-}
-
 function Get-GitIgnoreTemplate {
     <#
     .Synopsis
@@ -134,6 +126,34 @@ function Get-GitIgnoreTemplate {
     } else {
         $webClient.DownloadString("https://api.github.com/gitignore/templates") | ConvertFrom-Json
     }
+}
+
+function Get-GitRepositoryBranch {
+    [CmdletBinding(DefaultParameterSetName="Local")]
+    param (
+        [Parameter(ParameterSetName="Local")]
+        [switch]$Local,
+        [Parameter(ParameterSetName="Remote")]
+        [switch]$Remote,
+        [Parameter(ParameterSetName="Upstream")]
+        [switch]$Upstream
+    )
+
+    $parameters = "symbolic-ref --short HEAD" # Current Branch
+
+    if ($Local) {
+        $parameters = "for-each-ref --sort refname --format=%(refname:short) refs/heads"
+    }
+
+    if ($Remote) {
+        $parameters = "for-each-ref --sort refname --format=%(refname:short) refs/remotes"
+    }
+
+    if ($Upstream) {
+        $parameters = "rev-parse --symbolic-full-name $(Get-GitBranch)@{u}"
+    }
+
+    cmd /c """$(Find-Git)"" $parameters"
 }
 
 function Get-GitRepositoryStatus {
