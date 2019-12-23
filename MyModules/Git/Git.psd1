@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2019.12.21.1'
+    ModuleVersion = '2019.12.23.1'
     GUID = '099256ed-ac18-4e56-8017-bb9d9077fb74'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -34,6 +34,7 @@
         "Show-GitInformation"
         "Start-GitGraphicalInterface"
         "Update-AllGitRepositories"
+        "Update-GitRepository"
     )
     AliasesToExport = @(
         "Fetch-GitRepository"
@@ -47,6 +48,7 @@
         "gpush"
         "gpushall"
         "gs"
+        "gup"
         "Pull-GitRepository"
         "status-all-projects"
     )

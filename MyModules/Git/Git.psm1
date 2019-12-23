@@ -496,3 +496,67 @@ function Update-AllGitRepositories {
         }
     }
 }
+
+function Update-GitRepository {
+        [CmdletBinding(DefaultParameterSetName="Update")]
+    param (
+        [Parameter(Mandatory=$true,ParameterSetName="Update")]
+        [Parameter(Mandatory=$true,ParameterSetName="Reset")]
+        [ValidateNotNullOrEmpty()]
+        [string]$Repository,
+        [Parameter(Mandatory=$true,ParameterSetName="Update")]
+        [Parameter(ParameterSetName="Reset")]
+        [string[]]$Branches,
+        [Parameter(ParameterSetName="Reset")]
+        [Switch]$Reset,
+        [Parameter(Mandatory=$true,ParameterSetName="Reset")]
+        [string]$Url
+    )
+
+    Write-Output " "
+    Write-Output "===================================================> $Repository"
+
+    if ($Branches.Length -eq 0) {
+        $Branches = @($(Get-GitRepositoryBranch))
+    }
+
+    if ($Reset) {
+        if (Test-Path $Repository) {
+            Write-Output "Resetting $Repository..."
+
+            #Backup-GitRepository -Path $Repository
+
+            Remove-Item -Path $Repository -Recurse -Force
+        }
+
+        git.exe clone "$Url/$Repository" "$Repository"
+    }
+
+    if (-not (Test-Path $Repository)) {
+        Write-Error "There was an error cloning the reposiory!"
+    } else {
+        Push-Location $Repository
+
+        $orignalBranch = git.exe branch --show-current
+
+        Write-Output "    Original Branch: $orignalBranch"
+
+        foreach ($branch in $Branches) {
+            Write-Output "--> $branch"
+            git.exe checkout $branch
+            Write-Output " "
+            git.exe pull
+            Write-Output " "
+        }
+
+        $currentBranch = git.exe branch --show-current
+
+        if ($currentBranch -ne $orignalBranch) {
+            git.exe checkout $orignalBranch
+        }
+
+        Pop-Location
+    }
+}
+
+Set-Alias gup Update-GitRepository
