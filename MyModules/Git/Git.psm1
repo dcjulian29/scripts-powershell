@@ -498,13 +498,13 @@ function Update-AllGitRepositories {
 }
 
 function Update-GitRepository {
-        [CmdletBinding(DefaultParameterSetName="Update")]
+    [CmdletBinding(DefaultParameterSetName="Update")]
     param (
         [Parameter(Mandatory=$true,ParameterSetName="Update")]
         [Parameter(Mandatory=$true,ParameterSetName="Reset")]
         [ValidateNotNullOrEmpty()]
         [string]$Repository,
-        [Parameter(Mandatory=$true,ParameterSetName="Update")]
+        [Parameter(ParameterSetName="Update")]
         [Parameter(ParameterSetName="Reset")]
         [string[]]$Branches,
         [Parameter(ParameterSetName="Reset")]
@@ -515,10 +515,6 @@ function Update-GitRepository {
 
     Write-Output " "
     Write-Output "===================================================> $Repository"
-
-    if ($Branches.Length -eq 0) {
-        $Branches = @($(Get-GitRepositoryBranch))
-    }
 
     if ($Reset) {
         if (Test-Path $Repository) {
@@ -537,7 +533,11 @@ function Update-GitRepository {
     } else {
         Push-Location $Repository
 
-        $orignalBranch = git.exe branch --show-current
+        $orignalBranch = $(Get-GitRepositoryBranch)
+
+        if ($Branches.Length -eq 0) {
+            $Branches = @($orignalBranch)
+        }
 
         Write-Output "    Original Branch: $orignalBranch"
 
