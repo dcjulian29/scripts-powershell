@@ -30,7 +30,7 @@ function convertTime ($s) {
     }
 
     if ($t.Days -eq 0) {
-        return "{0:2}:{0:2}:{0:2}" -f $t.Days, $t.Hours, $t.Minutes, $t.Seconds
+        return "{0:d2}:{1:d2}:{2:d2}" -f $t.Hours, $t.Minutes, $t.Seconds
     }
 
     return "{0}.{1:d2}:{2:d2}:{3:d2}" -f $t.Days, $t.Hours, $t.Minutes, $t.Seconds
