@@ -1,3 +1,35 @@
+function Get-OSArchitecture {
+    (Get-CimInstance Win32_OperatingSystem).OSArchitecture
+}
+
+function Get-OSBoot {
+    param (
+        [switch]$Elaspsed,
+        [switch]$Passthru
+    )
+
+    $date = (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
+
+    if ($Elaspsed) {
+        $t = ((Get-Date) - ($date))
+        if ($Passthru) {
+            return $t
+        } else {
+            if ($t.Days -eq 0) {
+                return "{0:d2}:{1:d2}:{2:d2}" -f $t.Hours, $t.Minutes, $t.Seconds
+            }
+
+            return "{0}.{1:d2}:{2:d2}:{3:d2}" -f $t.Days, $t.Hours, $t.Minutes, $t.Seconds
+        }
+    } else {
+        return $date
+    }
+}
+
+function Get-OSCaption {
+    (Get-CimInstance Win32_OperatingSystem).Caption
+}
+
 function Get-OSInstallDate {
     param (
         [switch]$Days
@@ -65,6 +97,42 @@ session bpp:i:32
 compression:i:1
 "@
 }
+
+function Test-DaylightSavingsInEffect {
+    return (Get-WmiObject -Class Win32_ComputerSystem).DaylightInEffect
+}
+
+function Test-DomainJoined {
+    return (Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain
+}
+
+function Test-NormalBoot {
+    if ((Get-WmiObject -Class Win32_ComputerSystem).BootupState -eq "Normal boot") {
+        return $true
+    } else {
+        return $false
+    }
+}
+
+function Test-OS64Bit {
+    if (Get-OSArchitecture -eq "64-bit") {
+        return $true
+    } else {
+        return $false
+    }
+}
+function Test-OSClient {
+    return ((Get-CimInstance Win32_OperatingSystem).ProductType -eq 1)
+}
+
+function Test-OSDomainController {
+    return ((Get-CimInstance Win32_OperatingSystem).ProductType -eq 2)
+}
+
+function Test-OSServer {
+    return ((Get-CimInstance Win32_OperatingSystem).ProductType -eq 3)
+}
+
 
 function Test-PendingReboot {
     $PendingReboot = $false

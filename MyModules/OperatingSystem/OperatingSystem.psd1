@@ -7,12 +7,23 @@
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+        "Get-OSArchitecture"
+        "Get-OSBoot"
+        "Get-OSCaption"
         "Get-OSInstallDate"
         "Get-OSVersion"
         "Get-OSRegisteredUser"
+        "Get-OSRegisteredOrganization"
         "Get-OSInstallDate"
         "Get-OSBuildNumber"
         "New-RemoteDesktopShortcut"
+        "Test-DaylightSavingsInEffect"
+        "Test-DomainJoined"
+        "Test-NormalBoot"
+        "Test-Os64Bit"
+        "Test-OsClient"
+        "Test-OsDomainController"
+        "Test-OsServer"
         "Test-PendingReboot"
     )
 }
