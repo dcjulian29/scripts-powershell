@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2019.12.25.1'
+    ModuleVersion = '2019.12.26.1'
     GUID = '099256ed-ac18-4e56-8017-bb9d9077fb74'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -9,6 +9,7 @@
         "GitBranches.psm1"
         "GitCommits.psm1"
         "GitEnvironments.psm1"
+        "GitFiles.psm1"
         "GitIgnores.psm1"
     )
     TypesToProcess = @()
@@ -20,6 +21,10 @@
         "Backup-GitRepository"
         "Find-Git"
         "Find-GraphicGit"
+        "Get-GitFilesFromCommit"
+        "Get-GitFilesFromLastCommit"
+        "Get-GitFilesSinceLastTag"
+        "Get-GitFilesSinceTag"
         "Get-GitIgnoreTemplate"
         "Get-LastGitCommit"
         "Get-LastGitTag"
