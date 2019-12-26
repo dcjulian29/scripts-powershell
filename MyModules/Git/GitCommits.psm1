@@ -1,4 +1,4 @@
-function Get-GitLastCommit {
+function Get-LastGitCommit {
     [CmdletBinding(DefaultParameterSetName="Id")]
     param (
         [Parameter(ParameterSetName="Id")]
@@ -42,6 +42,18 @@ function Get-GitLastCommit {
 
         cmd /c """$(Find-Git)"" $parameters"
     }
+}
+
+function Get-LastGitTag {
+    param (
+        [string] $Filter = ""
+    )
+
+    $tags = cmd /c """$(Find-Git)"" log --tags --simplify-by-decoration --pretty=format:""%d"""
+
+    $tags = $tags -like "*tag:*$filter*"
+
+    return [regex]::Match($tags[0], '^\s\(tag:\s([^,)]+).*$').Groups[1].Value
 }
 
 function Remove-AllGitChanges {
