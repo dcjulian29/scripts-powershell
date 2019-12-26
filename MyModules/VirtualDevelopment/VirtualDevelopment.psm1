@@ -98,11 +98,11 @@ function New-DevVM {
     (Get-Content $unattendFile).replace("P@ssw0rd", $password.GetNetworkCredential().password) `
         | Set-Content $unattendFile
 
-    New-UnattendFile -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $computerName
+    New-UnattendFile -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $computerName | Out-Null
 
-    Move-VMStartUpScriptFileToVM -VhdxFile $vhdx -ScriptFile $startScript -Argument "myvm-development"
+    Move-VMStartUpScriptFileToVM -VhdxFile $vhdx -ScriptFile $startScript -Argument "myvm-development" | Out-Null
 
-    Move-StartLayoutToVM -VhdxFile $vhdx -LayoutFile $startLayout
+    Move-StartLayoutToVM -VhdxFile $vhdx -LayoutFile $startLayout | Out-Null
 
     $destination = "Windows\Setup\Scripts\"
     $source = "${env:SYSTEMDRIVE}\etc\syncthing"
@@ -116,7 +116,7 @@ function New-DevVM {
         "$c.cert"
     )
 
-    Move-FilesToVM -VhdxFile $vhdx -Files $files -RelativeDestination $destination
+    Move-FilesToVM -VhdxFile $vhdx -Files $files -RelativeDestination $destination | Out-Null
 
     $numOfCpu = $(Get-WmiObject -Class Win32_processor | Select-Object NumberOfLogicalProcessors).NumberOfLogicalProcessors / 2
     $maxMem = $(Get-WMIObject -Class Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum `
@@ -126,6 +126,9 @@ function New-DevVM {
     $maxMem = $maxMem - ($maxMem % 2MB)
 
     if ($maxMem -gt 8GB) { $maxMem = 8GB }
+
+    Write-Output "Creating $computerName VM..."
+    Write-Output " "
 
     New-VirtualMachine -VhdxFile $vhdx -ComputerName $computerName `
         -Memory 4GB -MaximumMemory $maxMem -CPU $numOfCpu -verbose
