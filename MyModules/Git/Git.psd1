@@ -1,9 +1,16 @@
 @{
-    ModuleVersion = '2019.12.23.1'
+    ModuleVersion = '2019.12.25.1'
     GUID = '099256ed-ac18-4e56-8017-bb9d9077fb74'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
     RootModule = 'Git.psm1'
+    NestedModules = @(
+        "GitBackups.psm1"
+        "GitBranches.psm1"
+        "GitCommits.psm1"
+        "GitEnvironments.psm1"
+        "GitIgnores.psm1"
+    )
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
@@ -15,6 +22,7 @@
         "Find-GraphicGit"
         "Get-GitIgnoreTemplate"
         "Get-GitLastCommit"
+        "Get-GitLastTag"
         "Get-GitRepositoryBranch"
         "Get-GitRepositoryStatus"
         "Invoke-FetchGitRepository"
