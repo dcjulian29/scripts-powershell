@@ -116,6 +116,48 @@ function New-ChocolateyPackage {
 Set-Alias choco-make-package Make-ChocolateyPackage
 Set-Alias Make-ChocolateyPackage New-ChocolateyPackage
 
+function Optimize-ChocolateyCache {
+    param (
+        [string]$Path = "$env:SystemDrive\etc\choco-package-cache",
+        [switch]$WhatIf
+    )
+
+    $files = (Get-ChildItem -Path $Path -Filter "*.nupkg").Name
+
+    for ($i = 0; $i -lt ($files.Count - 1); $i++) {
+        $current = $files[$i].Split('.')
+        $next = $files[$i + 1].Split('.')
+
+        $currentFile = $current[0]
+        $nextFile = $next[0]
+
+        # dotnet and netfx packages (possibly others) don't follow
+        #   the same file name conventions as other packages
+        if (($current[0] -eq "DotNet4") -or ($current[0] -eq "netfx-4")) {
+            $currentFile = "$current[0].$current[1].$current[2]"
+        }
+
+        if (($next[0] -eq "DotNet4") -or ($next[0] -eq "netfx-4")) {
+            $nextFile = "$next[0].$next[1].$next[2]"
+        }
+
+        if ($currentFile -eq $nextFile) {
+            if ($current.Length -eq $next.Length) {
+                $j = $current.Length
+                if (    ($current[$j - 2] -ne $next[$j - 2]) -or
+                        ($current[$j - 3] -ne $next[$j - 3]) -or
+                        ($current[$j - 4] -ne $next[$j - 4])) {
+                    if ($WhatIf) {
+                        Write-Output """$($files[$i])"" is superseeded by ""$($files[$i + 1])""."
+                    } else {
+                        Remove-Item -Path "$Path\$($files[$i])" -Force
+                    }
+                }
+            }
+        }
+    }
+}
+
 function Restore-ChocolateyCache {
     param (
         [string]$PackageList = "$env:SystemDrive\etc\choco-package-cache\packages.json",

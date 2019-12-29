@@ -11,6 +11,7 @@
         "Find-UpgradableChocolateyPackages"
         "Install-ChocolateyPackage"
         "New-ChocolateyPackage"
+        "Optimize-ChocolateyCache"
         "Restore-ChocolateyCache"
         "Update-AllChocolateyPackages"
         "Update-ChocolateyPackage"
