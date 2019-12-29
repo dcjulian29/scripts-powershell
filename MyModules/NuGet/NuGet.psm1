@@ -1,20 +1,41 @@
 $script:NuGetUrl = ''
 $script:NuGetApi = ''
 
-Function Clear-NuGetProfile {
+function Clear-NuGetProfile {
     $script:NuGetUrl = ''
     $script:NuGetApi = ''
 }
 
-Function Load-NuGetProfile {
-    param (
-        [string]$ProfileName = $(Read-Host "Enter the Nuget Profile")
+Set-Alias nuget-profile-clear Clear-NuGetProfile
+
+function New-NuGetPackage {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateScript({Test-Path -Path $_ })]
+        [String]$NuGetPackage
     )
-    
+
+    Invoke-NuGet pack $NuGetPackage -Verbosity detailed
+}
+
+Set-Alias Create-NuGetPackage New-NuGetPackage
+Set-Alias nuget-make-package New-NuGetPackage
+
+function Find-NuGet {
+    First-Path `
+        "$env:ALLUSERSPROFILE\chocolatey\lib\NuGet.CommandLine\tools\nuget.exe" `
+        "$env:ALLUSERSPROFILE\chocolatey\bin\NuGet.exe"
+}
+
+function Import-NuGetProfile {
+    param (
+        [string]$ProfileName = $(Read-Host "Enter the NuGet Profile")
+    )
+
     $profileFile = Join-Path -Path "$($env:SystemDrive)/etc/nuget" -ChildPath "$ProfileName.json"
 
     if (-not (Test-Path $profileFile)) {
-        Write-Error "Nuget Profile does not exist!"
+        Write-Error "NuGet Profile does not exist!"
     } else {
         $json = Get-Content -Raw -Path $profileFile | ConvertFrom-Json
 
@@ -23,18 +44,47 @@ Function Load-NuGetProfile {
     }
 }
 
-Function Restore-NugetPackages {
-    Invoke-Nuget restore $args
+Set-Alias Load-NuGetProfile Import-NuGetProfile
+Set-Alias nuget-profile-load Import-NuGetProfile
+
+function Invoke-NuGet {
+    cmd /c "$(Find-NuGet) $args"
 }
 
-Function Invoke-Nuget {
-    & "C:\ProgramData\chocolatey\lib\NuGet.CommandLine\tools\nuget.exe" $args
+function Push-NuGetPackage {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateScript({Test-Path -Path $_ })]
+        [String]$NuGetSpec
+    )
+
+    if ($script:NuGetUrl -eq '') {
+        Write-Error "A NuGet profile is not loaded."
+        return
+    }
+
+    Invoke-NuGet push $NuGetSpec $script:NuGetApi -Source $script:NuGetUrl
 }
 
-Function Purge-NugetPackagesFromCache {
+Set-Alias nuget-publish Push-NuGetPackage
+
+function Remove-AllNuGetPackages {
+    Get-ChildItem *.nupkg -recurse | Remove-Item -Verbose
+}
+
+Set-Alias Purge-AllNuGetPackage Remove-AllNuGetPackages
+Set-Alias nuget-package-clean Remove-AllNuGetPackages
+
+function Remove-AllNuGetPackagesFromCache {
+    Remove-NuGetPackagesFromCache -Age 0
+}
+
+Set-Alias Purge-AllNugetPackagesFromCache Remove-AllNuGetPackagesFromCache
+
+function Remove-NuGetPackagesFromCache {
     param (
         [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]        
+        [ValidateNotNullOrEmpty()]
         [int]$Age
     )
 
@@ -44,65 +94,8 @@ Function Purge-NugetPackagesFromCache {
     Purge-Files -Folder $cache -Filter $filter -Age $Age
 }
 
-Function Purge-AllNugetPackagesFromCache {
-    Purge-NugetPackagesFromCache -Age 0
+Set-Alias Purge-NuGetPackagesFromCache Remove-NuGetPackagesFromCache
+
+function Restore-NuGetPackages {
+    Invoke-NuGet restore $args
 }
-
-Function Purge-AllNugetPackages {
-    Get-ChildItem *.nupkg -recurse | Remove-Item -Verbose
-}
-
-Function Create-NugetPackage {
-    param(
-        [Parameter(Mandatory = $true)]
-        [ValidateScript({Test-Path -Path $_ })]
-        [String]$NugetPackage
-    )
-
-    Invoke-Nuget pack $NugetPackage -Verbosity detailed
-}
-
-Function Push-NugetPackage {
-    param(
-        [Parameter(Mandatory = $true)]
-        [ValidateScript({Test-Path -Path $_ })]
-        [String]$NugetSpec
-    )
-
-    if ($script:NuGetUrl -eq '') {
-        Write-Error "A Nuget profile is not loaded."
-        return
-    }
-
-    Invoke-Nuget push $NugetSpec $script:NuGetApi -Source $script:NuGetUrl
-}
-
-###################################################################################################
-
-Export-ModuleMember Clear-NuGetProfile
-Export-ModuleMember Load-NuGetProfile
-Export-ModuleMember Restore-NugetPackages
-Export-ModuleMember Invoke-Nuget
-Export-ModuleMember Purge-NugetPackagesFromCache
-Export-ModuleMember Purge-AllNugetPackagesFromCache
-Export-ModuleMember Purge-AllNugetPackages
-Export-ModuleMember Create-NugetPackage
-Export-ModuleMember Push-NugetPackage
-
-Set-Alias nuget-profile-clear Clear-NuGetProfile
-Export-ModuleMember -Alias nuget-profile-clear
-
-Set-Alias nuget-profile-load Load-NuGetProfile
-Export-ModuleMember -Alias nuget-profile-load
-
-Set-Alias nuget Invoke-Nuget
-Export-ModuleMember -Alias nuget
-
-Set-Alias nuget-package-clean Purge-AllNugetPackages
-Export-ModuleMember -Alias nuget-package-clean
-
-Set-Alias nuget-make-package Create-NugetPackage
-Export-ModuleMember -Alias nuget-make-package
-
-Set-Alias nuget-publish Push-NugetPackage
-Export-ModuleMember -Alias nuget-publish
