@@ -116,6 +116,58 @@ function New-ChocolateyPackage {
 Set-Alias choco-make-package Make-ChocolateyPackage
 Set-Alias Make-ChocolateyPackage New-ChocolateyPackage
 
+function Restore-ChocolateyCache {
+    param (
+        [string]$PackageList = "$env:SystemDrive\etc\choco-package-cache\packages.json",
+        [string]$Destination = "$env:SystemDrive\etc\choco-package-cache",
+        [string]$Config = "$env:SystemDrive\etc\choco-package-cache\nuget.config",
+        [switch]$Reset
+    )
+
+    Start-Transcript -Path $(Get-LogFileName "Cache-ChocolateyPackages")
+
+    $chocoCache = "$env:TEMP\choco-cache"
+
+    if (Test-Path $chocoCache) {
+        Remove-Item $chocoCache -Recurse -Force
+    }
+
+    New-Item $chocoCache -ItemType Directory | Out-Null
+
+    if ($Reset) {
+        if (Test-Path $Destination) {
+            Get-Childitem -Filter "*.nupkg" -Path $Destination -Recurse | Remove-Item -Force
+        }
+    }
+
+    (Get-Content -Raw -Path $PackageList | ConvertFrom-Json).Packages | ForEach-Object {
+        Write-Output " "
+        Write-Output "===================================================> $_"
+        Write-Output " "
+
+        $nuget = "install $_ -NonInteractive -OutputDirectory $chocoCache " + `
+            "-ConfigFile ""$Config"" -Verbosity Detailed -DependencyVersion Highest"
+
+        Invoke-Nuget $nuget
+
+        Get-Childitem -Filter "*.nupkg" -Path $chocoCache -Recurse | ForEach-Object {
+            if (-not (Test-Path "$Destination\$($_.Name)")) {
+                Copy-Item -Path $_.FullName -Destination $Destination
+            } else {
+                $sourceHash = Get-Sha256 -File "$($_.FullName)"
+                $destinationHash = Get-Sha256 -File "$Destination\$($_.Name)"
+                if ($sourceHash -ne $destinationHash) {
+                    Copy-Item -Path $_.FullName -Destination $Destination -Force
+                }
+            }
+        }
+    }
+
+    Remove-Item $chocoCache -Recurse -Force
+
+    Stop-Transcript
+}
+
 function Uninstall-ChocolateyPackage {
     param (
         [string]$version,
