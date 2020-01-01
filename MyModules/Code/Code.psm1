@@ -14,6 +14,35 @@ function Get-DefaultCodeFolder {
     }
 }
 
+function Import-DevelopmentPowerShellModule {
+    param (
+        [string]$Module,
+        [string]$Path = $(Get-DefaultCodeFolder)
+    )
+
+    $moduleFolder = (Get-ChildItem -Path $Path -Filter "MyModules" -Recurse).FullName
+
+    if (Test-Path "$moduleFolder\$Module\$Module.psd1") {
+        $moduleFile = "$Module.psd1"
+    } else {
+        if (Test-Path "$moduleFolder\$Module\$Module.psm1") {
+            $moduleFile = "$Module.psm1"
+        }
+    }
+
+    if  ($moduleFile) {
+        if (Get-Module $Module) {
+            Get-Module -Name $Module -All | ForEach-Object {
+                Remove-Module -Name $_.Name -Force
+            }
+        }
+
+        Import-Module "$moduleFolder\$module\$moduleFile" -Verbose
+    }
+}
+
+Set-Alias -Name idpsm -Value Import-DevelopmentPowerShellModule
+
 function Import-DevelopmentPowerShellModules {
     param (
         [string]$Path = $(Get-DefaultCodeFolder)

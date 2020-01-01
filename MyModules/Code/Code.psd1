@@ -8,10 +8,13 @@
     FormatsToProcess = @()
     FunctionsToExport = @(
         "Get-DefaultCodeFolder"
+        "Import-DevelopmentPowerShellModule"
         "Import-DevelopmentPowerShellModules"
         "New-CodeFolder"
         "Show-CodeStatus"
         "Update-CodeFolder"
     )
-    AliasesToExport = @()
+    AliasesToExport = @(
+        "idpsm"
+    )
 }
