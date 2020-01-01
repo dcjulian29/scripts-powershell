@@ -8,6 +8,7 @@
     FormatsToProcess = @()
     FunctionsToExport = @(
         "Get-DefaultCodeFolder"
+        "Import-DevelopmentPowerShellModules"
         "New-CodeFolder"
         "Show-CodeStatus"
         "Update-CodeFolder"

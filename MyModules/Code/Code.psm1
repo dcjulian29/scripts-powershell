@@ -14,6 +14,48 @@ function Get-DefaultCodeFolder {
     }
 }
 
+function Import-DevelopmentPowerShellModules {
+    param (
+        [string]$Path = $(Get-DefaultCodeFolder)
+    )
+
+    $ErrorPreviousAction = $ErrorActionPreference
+
+    try {
+        $moduleFolder = (Get-ChildItem -Path $Path -Filter "MyModules" -Recurse).FullName
+        $modules = (Get-ChildItem -Path $moduleFolder).Name
+        $ErrorActionPreference = "Stop"
+
+        foreach ($module in $modules) {
+            if ($module -eq "GlobalScripts") {
+                continue
+            }
+
+            if (Test-Path "$moduleFolder\$module\$module.psd1") {
+                $moduleFile = "$module.psd1"
+            } else {
+                if (Test-Path "$moduleFolder\$module\$module.psm1") {
+                    $moduleFile = "$module.psm1"
+                }
+            }
+
+            if  ($moduleFile) {
+                Get-Module -Name $module | ForEach-Object {
+                    Remove-Module -Name $_.Name -Force
+                }
+
+                Import-Module "$moduleFolder\$module\$moduleFile"
+            }
+        }
+    }
+    finally {
+        $ErrorActionPreference = $errorPreviousAction
+    }
+
+    Get-Module -All | Select-Object Name, Version, Path | `
+        Where-Object { $_.Path -like "$moduleFolder*"} | Format-Table
+}
+
 function New-CodeFolder {
     param (
         [Alias("CodeFolder", "Folder")]
