@@ -98,6 +98,30 @@ compression:i:1
 "@
 }
 
+function Remove-EnvironmentVariable {
+    param (
+        [string]$Name,
+        [string]$Scope = "Machine"
+    )
+
+    if (Test-Path "env:$Name") {
+        Remove-Item "env:$Name" -Force
+    }
+
+    [Environment]::SetEnvironmentVariable($Name, $null, $Scope)
+}
+
+function Set-EnvironmentVariable {
+    param (
+        [string]$Name,
+        [string]$Value,
+        [string]$Scope = "Machine"
+    )
+
+    Invoke-Expression "`$env:$Name = ""$Value"""
+    [Environment]::SetEnvironmentVariable($Name, $Value, $Scope)
+}
+
 function Test-DaylightSavingsInEffect {
     return (Get-WmiObject -Class Win32_ComputerSystem).DaylightInEffect
 }
