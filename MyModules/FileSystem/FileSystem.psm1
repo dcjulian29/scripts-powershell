@@ -1,4 +1,4 @@
-Function Copy-File {
+function Copy-File {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]
@@ -30,7 +30,7 @@ Function Copy-File {
             $Destination, `
             [Microsoft.VisualBasic.FileIO.UIOption]::AllDialogs, `
             [Microsoft.VisualBasic.FileIO.UICancelOption]::ThrowException)
-    } else {    
+    } else {
         $from = [IO.File]::OpenRead($Path)
         $to = [IO.File]::OpenWrite($Destination)
 
@@ -82,7 +82,125 @@ Function Copy-File {
     }
 }
 
-Function Download-File {
+function Find-FirstPath {
+    foreach ($arg in $args) {
+        if ($arg -is [ScriptBlock]) {
+            $path = & $arg
+        } else {
+            $path = $arg
+        }
+
+        if (Test-Path "$path") {
+            return $path
+        }
+    }
+}
+
+Set-Alias -Name First-Path -Value Find-FirstPath
+
+function Find-ProgramFiles {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Path
+    )
+
+    if  (Test-Path "$env:ProgramFiles\$Path") {
+        return "$env:ProgramFiles\$Path"
+    }
+
+    if  (Test-Path "${env:ProgramFiles(x86)}\$Path") {
+        return "${env:ProgramFiles(x86)}\$Path"
+    }
+}
+
+function Get-FullDirectoryPath {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Path
+    )
+
+    if ($Path.Substring($Path.Length) -ne [IO.Path]::DirectorySeparatorChar) {
+        $Path = "$Path\"
+    }
+
+    $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($path)
+}
+
+function Get-FullFilePath {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Path
+    )
+
+    $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($path)
+}
+
+function Get-Md5 {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path
+    )
+
+    (Get-FileHash -Path $(Get-FullFilePath $Path) -Algorithm MD5).Hash
+}
+
+Set-Alias -Name md5 -Value Get-Sha1
+
+function Get-Path {
+    param (
+        [switch]$Positions
+    )
+
+    if (($env:Path).Length -eq 0) {
+        return @()
+    }
+
+    $pathList = ($env:Path).Split(';')
+
+    if ($Positions) {
+        $p = @()
+        for ($i = 0; $i -lt $pathList.Count; $i++) {
+           $p += "{0,3} $($pathList[$i])" -f $i
+        }
+
+        $pathList = $p
+    }
+
+    return $pathList
+}
+
+function Get-Sha1 {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path
+    )
+
+    (Get-FileHash -Path $(Get-FullFilePath $Path) -Algorithm SHA1).Hash
+}
+
+Set-Alias -Name sha1 -Value Get-Sha1
+
+function Get-Sha256 {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path
+    )
+
+    (Get-FileHash -Path $(Get-FullFilePath $Path) -Algorithm SHA256).Hash
+}
+
+Set-Alias -Name sha256 -Value Get-Sha256
+
+function Invoke-DownloadFile {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]
@@ -105,25 +223,25 @@ Function Download-File {
 
     Write-Verbose "Downloading --> $Url"
 
-    $uri = New-Object "System.Uri" "$Url" 
+    $uri = New-Object "System.Uri" "$Url"
 
-    $request = [System.Net.HttpWebRequest]::Create($uri) 
+    $request = [System.Net.HttpWebRequest]::Create($uri)
     $request.set_Timeout(15000)
     $request.set_UserAgent("Mozilla/5.0")
-    $response = $request.GetResponse() 
+    $response = $request.GetResponse()
     $totalLength = $response.get_ContentLength()
     $totalMB = "{0:n2}" -f ($totalLength / 1MB)
-    
+
     Write-Verbose "Total Length: $totalLength bytes"
 
-    $responseStream = $response.GetResponseStream() 
+    $responseStream = $response.GetResponseStream()
 
-    $to = New-Object -TypeName System.IO.FileStream -ArgumentList $Destination, Create 
+    $to = New-Object -TypeName System.IO.FileStream -ArgumentList $Destination, Create
 
     if (-not $ShowHostOnly) {
         $Url = "from $($request.Address.Host)"
     }
-    
+
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
 
     [byte[]]$buffer = New-Object byte[] 1MB
@@ -134,8 +252,8 @@ Function Download-File {
 
     try {
         do {
-            $count = $responseStream.Read($buffer,0,$buffer.length) 
-            $to.Write($buffer, 0, $count) 
+            $count = $responseStream.Read($buffer,0,$buffer.length)
+            $to.Write($buffer, 0, $count)
             $total += $count
 
             if ($iteration % 25) {
@@ -167,15 +285,72 @@ Function Download-File {
         $sw.Stop()
         $sw.Reset()
         $to.Flush()
-        $to.Close() 
-        $to.Dispose() 
-        $responseStream.Dispose() 
+        $to.Close()
+        $to.Dispose()
+        $responseStream.Dispose()
     }
 
     Write-Verbose "Saved --> $Destination"
 }
 
-Function Unzip-File {
+Set-Alias -Name Download-File -Value Invoke-DownloadFile
+
+function Invoke-PurgeFiles {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Folder,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Filter,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [int]$Age,
+        [switch]$Quiet
+    )
+
+    $attempts = 0
+    $done = $false
+
+    while (($attempts -lt 20) -and (-not $done)) {
+        $files = Get-ChildItem -Path $Folder -Filter $Filter -Recurse | `
+            Where-Object { [Datetime]::Now -gt $_.LastWriteTime.AddDays($Age) }
+
+        if ($null -eq $files) {
+            $done = $true
+        } else {
+            if (-not $Quiet) {
+                Write-Output "Attempt $($attempts + 1)..."
+            }
+
+            $files | Remove-Item  -Force -Recurse -ErrorAction SilentlyContinue
+            $attempts++
+        }
+    }
+
+    if ($attempts -eq 20) {
+        if (-not $Quiet) {
+            Write-Output ""
+            Write-Warning "Unable to complete the purge process... The following file were not purged:"
+            $files = 	Get-ChildItem -Path $Folder -Filter $filter -Recurse `
+                | Where-Object { [Datetime]::Now -gt $_.LastWriteTime.AddDays($Age) }
+
+            foreach ($file in $files) {
+                Write-Warning "   $($file.FullName)"
+            }
+        }
+    } else {
+        if (-not $Quiet) {
+            Write-Output ""
+            Write-Output "Purge operation complete..."
+        }
+    }
+}
+
+Set-Alias -Name Purge-Files -Value Invoke-PurgeFiles
+
+function Invoke-UnzipFile {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]
@@ -207,206 +382,129 @@ Function Unzip-File {
     Write-Verbose "Destination --> $Destination"
 
     [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
-    
+
     [System.IO.Compression.ZipFile]::ExtractToDirectory($File, $Destination)
 }
 
-Function Get-FullFilePath {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $Path
-    )
+Set-Alias -Name Unzip-File -Value Invoke-UnzipFile
 
-    $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($path)
+function Optimize-Path {
+    Get-Path | ForEach-Object {
+        if (Test-Path $_) {
+            $list += "$_;"
+        }
+    }
+
+    $list = $list.Substring(0,$list.Length -1)
+
+    if (($env:Path).Length -ne ($list.Length)) {
+        Set-EnvironmentVariable "Path" $list
+    }
 }
 
-Function Get-FullDirectoryPath {
+Set-Alias -Name Clean-Path -Value Optimize-Path
+
+function Remove-Path {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string]$Path
     )
 
-    if ($Path.Substring($Path.Length) -ne [IO.Path]::DirectorySeparatorChar) {
-        $Path = "$Path\"
+    if (Test-InPath $Path) {
+        $pathList = {[System.Collections.ArrayList](Get-Path)}.Invoke()
+        $pathList.Remove($Path) | Out-Null
+        $pathString = $pathList -join ';'
+
+        Set-EnvironmentVariable "Path" $pathString
     }
-
-    $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($path)
 }
 
-Function Reset-Path {
-    $windowsPath = "C:\WINDOWS;C:\WINDOWS\system32;C:\WINDOWS\System32\Wbem"
-    $powershellPath = "C:\WINDOWS\System32\WindowsPowerShell\v1.0"
-    $binaryPath = "C:\Tools\binaries"
-    $chocolateyPath = "C:\ProgramData\chocolatey\bin"
-
-    $path = "$binaryPath;$windowsPath;$powershellPath"
-
-    $env:Path = $path
-    setx.exe /m PATH $path
-}
-
-Function Find-ProgramFiles {
+function Reset-Path {
     param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$folderName
+        [switch]$Empty
     )
 
-    $location1 = "C:\Program Files\$folderName"
-    
-    if (!(Test-Path $location1)) {
-        $location2 = "C:\Program Files (x86)\$folderName"
-        
-        if (!(Test-Path $location2)) {
-            ""
-        } else {
-            $location2
-        }
+    if ($Empty) {
+        Remove-EnvironmentVariable "Path"
     } else {
-        $location1
+        $windowsPath = "C:\WINDOWS;C:\WINDOWS\system32;C:\WINDOWS\System32\Wbem"
+        $powershellPath = "C:\WINDOWS\System32\WindowsPowerShell\v1.0"
+
+        Set-EnvironmentVariable "Path" "$windowsPath;$powershellPath"
     }
 }
 
-Function First-Path {
-    $result = $null
-  
-    foreach ($arg in $args) {
-        if ($arg -is [ScriptBlock]) {
-            $result = & $arg
-        } else {
-            $result = $arg
-        }
-    
-        if ($result) {
-            if (Test-Path "$result") {
-                break
+function Set-Path {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Path,
+        [ValidateScript({
+            if ($_ -lt 0) {
+                throw [System.Management.Automation.ValidationMetadataException] "Positions start at 0!"
             }
-        }
+
+            if (($_ -gt (Get-Path).Length)) {
+                throw [System.Management.Automation.ValidationMetadataException] "'${_}' exceeds the number of paths."
+            }
+
+            return $true
+        })]
+        [int]$Position = 0
+    )
+
+    if (($Position -ne (Get-Path).Length) -and (Test-InPathAtPosition -Path $Path -Position $Position)) {
+        return
     }
-  
-    $result
-}
 
-Function Purge-Files {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]        
-        [string]$Folder,
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]        
-        [string]$Filter,
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]        
-        [int]$Age,
-        [switch]$Quiet
-    )
+    $pathList = New-Object -TypeName System.Collections.ArrayList
 
-    if (Test-Path $folder) {
-        $attemps = 0
-        $done = $false
-
-        while (($attempts -lt 20) -and (-not $done)) {
-            $files = 	Get-ChildItem -Path $folder -Filter $filter -Recurse `
-                | where { [Datetime]::Now -gt $_.LastWriteTime.AddDays($age) }
-
-            if ($files -eq $null) {
-                $done = $true
-            } else {
-                if (-not $Quiet) {
-                    Write-Output "Attempt $($attempts + 1)..."
-                }
-                
-                $files | Remove-Item  -Force -Recurse -ErrorAction SilentlyContinue
-                $attempts++
-            }
-        }
-
-        if ($attempts -eq 20) {
-            if (-not $Quiet) {
-                Write-Output ""
-                Write-Warning "Unable to complete the purge process... The following file were not purged:"
-                $files = 	Get-ChildItem -Path $folder -Filter $filter -Recurse `
-                    | where { [Datetime]::Now -gt $_.LastWriteTime.AddDays($age) }
-          
-                foreach ($file in $files) {
-                    Write-Warning "   $($file.FullName)"
-                }
-            }
-        } else {
-            if (-not $Quiet) {
-                Write-Output ""
-                Write-Output "Purge operation complete..."
-            }
-        }
+    Get-Path | ForEach-Object {
+        $pathList.Add($_) | Out-Null
     }
+
+    if (Test-InPath $Path) {
+        $pathList.Remove($Path) | Out-Null
+    }
+
+    $pathList.Insert($Position, $Path)
+    $pathString = $pathList -join ';'
+    # $pathString
+    # if ($pathString)
+    # $pathString = $pathString.Substring(0, $pathString.Length - 1)
+    # $pathString
+    Set-EnvironmentVariable "Path" $pathString
 }
 
-Function Get-Sha1 {
-    [CmdletBinding()]
+function Test-InPath {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
-        [string]$File
+        [string]$Path
     )
 
-    $File = Get-FullFilePath $File
-
-    Write-Verbose "Calculating SHA1 for $File..."
-
-    (Get-FileHash -Path $file -Algorithm SHA1).Hash
+    return ((-not ($null -eq (Get-Path))) -and ((Get-Path).Contains($Path)))
 }
 
-Function Get-Sha256 {
-    [CmdletBinding()]
+function Test-InPathAtPosition {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
-        [string]$File
-    )
-
-    $File = Get-FullFilePath $File
-
-    Write-Verbose "Calculating SHA256 for $File..."
-
-    (Get-FileHash -Path $file -Algorithm SHA256).Hash
-}
-
-Function Get-Md5 {
-    [CmdletBinding()]
-    param (
+        [string]$Path,
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
-        [string]$File
+        [ValidateScript({
+            if ($_ -lt 0) {
+                throw [System.Management.Automation.ValidationMetadataException] "Positions start at 0!"
+            }
+
+            return $true
+        })]
+        [int]$Position
     )
 
-    $File = Get-FullFilePath $File
-
-    Write-Verbose "Calculating MD5 for $File..."
-
-    (Get-FileHash -Path $file -Algorithm MD5).Hash
+    return ((-not ($null -eq (Get-Path))) `
+        -and (-not ($Position -ge (Get-Path).Length)) `
+        -and ((Get-Path)[$Position] -eq $Path))
 }
-
-##############################################################################
-
-Export-ModuleMember Copy-File
-Export-ModuleMember Download-File
-Export-ModuleMember Unzip-File
-Export-ModuleMember Get-FullFilePath
-Export-ModuleMember Get-FullDirectoryPath
-Export-ModuleMember Reset-Path
-Export-ModuleMember Find-ProgramFiles
-Export-ModuleMember First-Path
-Export-ModuleMember Purge-Files
-Export-ModuleMember Get-Sha1
-Export-ModuleMember Get-Sha256
-Export-ModuleMember Get-Md5
-
-Set-Alias -Name sha1 -Value Get-Sha1
-Set-Alias -Name sha256 -Value Get-Sha1
-Set-Alias -Name md5 -Value Get-Sha1
-
-Export-ModuleMember -Alias sha1
-Export-ModuleMember -Alias sha256
-Export-ModuleMember -Alias md5
