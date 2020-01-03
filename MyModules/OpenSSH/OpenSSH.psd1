@@ -7,12 +7,19 @@
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
-        "Disable-OpenSSHClient"
+        "Add-OpenSSHClient"
+        "Add-OpenSSHServer"
+        "Get-OpenSSHDefaultShell"
+        "Get-OpenSSHDefaultShellOptions"
         "Disable-OpenSSHServer"
-        "Enable-OpenSSHClient"
-        "Enable-OpenSSHServer"
         "Invoke-OpenSCP"
         "Invoke-OpenSSH"
+        "Remove-OpenSSHClient"
+        "Remove-OpenSSHServer"
+        "Set-OpenSSHDefaultShell"
+        "Test-OpenSSHClient"
+        "Test-OpenSSHServer"
+        "Test-OpenSSHService"
     )
     AliasesToExport = @(
         "scp"

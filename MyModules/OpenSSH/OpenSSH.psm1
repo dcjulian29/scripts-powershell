@@ -1,26 +1,72 @@
-#Windows Server... Need to figure out Windows 10.
-function Disable-OpenSSHClient {
-    Remove-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
+function getServerPackageName {
+    return (Get-WindowsCapability -online `
+        | Where-Object { $_.Name -like "*OpenSSH.Server*" }).Name
+}
+
+function getClientPackageName {
+    return (Get-WindowsCapability -online `
+        | Where-Object { $_.Name -like "*OpenSSH.Client*" }).Name
+}
+
+###############################################################################
+
+function Add-OpenSSHClient {
+    if (-not (Test-OpenSSHClient)) {
+        if (Test-Elevation) {
+            Add-WindowsCapability -Online -Name $(getClientPackageName)
+        }
+    }
+}
+
+function Add-OpenSSHServer {
+    if (-not (Test-OpenSSHServer)) {
+        if (Test-Elevation) {
+            Add-WindowsCapability -Online -Name $(getServerPackageName)
+
+            if (Test-OpenSSHServer) {
+                Set-OpenSSHDefaultShell "$env:windir\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+                if (Get-Service -Name 'sshd') {
+                    Set-Service -Name 'sshd' -StartupType 'Automatic'
+                    Start-Service -Name 'sshd'
+                }
+            }
+        }
+    }
+ }
+
+function Get-OpenSSHDefaultShell {
+    if (Test-OpenSSHServer) {
+        if (Test-Path "HKLM:\SOFTWARE\OpenSSH") {
+            (Get-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell).DefaultShell
+        }
+    }
+}
+
+function Get-OpenSSHDefaultShellOptions {
+    if (Test-Path "HKLM:\SOFTWARE\OpenSSH") {
+        $present = Get-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" `
+            | Select-Object -ExpandProperty 'DefaultShellCommandOption' `
+                -ErrorAction SilentlyContinue | Out-Null
+
+        if ($present) {
+            (Get-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" `
+                -Name DefaultShellCommandOption).DefaultShellCommandOption
+        }
+    }
 }
 
 function Disable-OpenSSHServer {
-    Remove-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
-}
-
-function Enable-OpenSSHClient {
-    Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
-}
-
-function Enable-OpenSSHServer {
-    Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
-
-    Start-Service sshd
-
-    Set-Service -Name sshd -StartupType 'Automatic'
-
-    New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell `
-        -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-        -PropertyType String -Force
+     if (Test-OpenSSHServer) {
+        if (Test-Elevation) {
+            if (Get-Service -Name 'sshd') {
+                Set-Service -Name 'sshd' -StartupType 'Disabled'
+                if (Test-OpenSSHService) {
+                    Stop-Service -Name 'sshd'
+                }
+            }
+        }
+    }
 }
 
 function Invoke-OpenSCP {
@@ -72,6 +118,8 @@ function Invoke-OpenSCP {
     Start-Process -FilePath $scp -ArgumentList $arguments -NoNewWindow -Wait
 }
 
+Set-Alias scp Invoke-OpenSCP
+
 function Invoke-OpenSSH {
     param (
         [Parameter(Mandatory=$true)]
@@ -108,8 +156,72 @@ function Invoke-OpenSSH {
     Start-Process -FilePath $ssh -ArgumentList $arguments -NoNewWindow -Wait
 }
 
-###################################################################################################
-
-Set-Alias scp Invoke-OpenSCP
 Set-Alias ssh Invoke-OpenSSH
 Set-Alias sshell Invoke-OpenSSH
+
+function Remove-OpenSSHClient {
+    if (Test-OpenSSHClient) {
+        if (Test-Elevation) {
+            Remove-WindowsCapability -Online -Name $(getClientPackageName)
+        }
+    }
+}
+
+function Remove-OpenSSHServer {
+     if (Test-OpenSSHServer) {
+        if (Test-Elevation) {
+            if (Get-Service -Name 'sshd') {
+                Stop-Service -Name 'sshd' -Force
+            }
+
+            Remove-WindowsCapability -Online -Name $(getServerPackageName) | Out-Null
+        }
+    }
+}
+
+function Set-OpenSSHDefaultShell {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path,
+        [string]$Options = $null
+    )
+
+    if (-not (Test-OpenSSHServer)) {
+        return
+    }
+
+    if (-not (Test-Path "HKLM:\SOFTWARE\OpenSSH")) {
+        New-Item -Path "HKLM:\SOFTWARE" -Name "OpenSSH" -Force | out-null
+    }
+
+    New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" `
+        -Name 'DefaultShell' -Value "$Path" `
+        -PropertyType 'String' -Force | Out-Null
+
+    if ($Options) {
+        New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" `
+            -Name 'DefaultShellCommandOption' `
+            -Value "$Options" -PropertyType 'String' -Force  | Out-Null
+    } else {
+        Remove-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" `
+            -Name 'DefaultShellCommandOption' -ErrorAction 'SilentlyContinue'
+    }
+}
+
+function Test-OpenSSHClient {
+    return ((Get-WindowsCapability -Online -Name $(getClientPackageName)).State -eq "Installed")
+}
+
+function Test-OpenSSHServer {
+    return ((Get-WindowsCapability -Online -Name $(getServerPackageName)).State -eq "Installed")
+}
+
+function Test-OpenSSHService {
+    if (Get-Service -Name 'sshd' -ErrorAction SilentlyContinue) {
+        return ((Get-Service -Name 'sshd').Status -eq "Running")
+    } else {
+        return $false
+    }
+}
