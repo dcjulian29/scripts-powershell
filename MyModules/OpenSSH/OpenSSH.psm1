@@ -159,6 +159,22 @@ function Invoke-OpenSSH {
 Set-Alias ssh Invoke-OpenSSH
 Set-Alias sshell Invoke-OpenSSH
 
+function New-OpenSSHHostShortcut {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$ComputerName,
+        [string]$Path = "$ComputerName.lnk"
+    )
+
+    Set-FileShortCut -Path $Path.ToUpper() `
+    -TargetPath "${env:WINDIR}\System32\OpenSSH\ssh.exe"  `
+    -Arguments "-F ""${env:SystemDrive}\etc\ssh\config"" $($ComputerName.ToLower())" `
+    -Description "Open SSH Console to $($ComputerName.ToUpper())" `
+    -IconPath "${env:SystemRoot}\System32\SHELL32.dll,92" `
+    -WorkingDirectory "${env:WINDIR}\System32\OpenSSH"
+
+}
 function Remove-OpenSSHClient {
     if (Test-OpenSSHClient) {
         if (Test-Elevation) {
