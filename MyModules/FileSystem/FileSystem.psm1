@@ -435,6 +435,57 @@ function Reset-Path {
     }
 }
 
+function Set-FileShortCut {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Path,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$TargetPath,
+        [string]$Arguments,
+        [string]$IconPath,
+        [string]$Description,
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$WorkingDirectory
+    )
+
+    if (-not ([System.IO.Path]::HasExtension($Path))) {
+        $Path = "$Path.lnk"
+    }
+
+    if (-not ([System.IO.Path]::IsPathRooted($Path))) {
+        $Path = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($pwd, $Path))
+    }
+
+    $shell = New-Object -comObject WScript.Shell
+
+    $shortcut = $shell.CreateShortcut($Path)
+
+    $shortcut.TargetPath = $TargetPath
+
+    if ($Arguments) {
+        $shortcut.Arguments = $Arguments
+    }
+
+    if ($IconPath) {
+        $shortcut.IconLocation = $IconPath
+    }
+
+    if ($Description) {
+        $shortcut.Description = $Description
+    }
+
+    if ($WorkingDirectory) {
+        $shortcut.WorkingDirectory = $WorkingDirectory
+    }
+
+    $shortcut.Save()
+}
+
+Set-Alias -Name New-FileShortCut -Value Set-FileShortCut
+
 function Set-Path {
     param (
         [Parameter(Mandatory=$true)]
