@@ -350,6 +350,27 @@ function Invoke-PurgeFiles {
 
 Set-Alias -Name Purge-Files -Value Invoke-PurgeFiles
 
+function Invoke-TouchFile {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Path
+    )
+
+    if (-not ([System.IO.Path]::IsPathRooted($Path))) {
+        $Path = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($pwd, $Path))
+    }
+
+    if (Test-Path $Path) {
+        $file = Get-Item $Path
+        $file.LastWriteTime = Get-Date
+    } else {
+        "" | Out-File -FilePath $Path -Encoding ASCII
+    }
+}
+
+Set-Alias -Name touch -Value Invoke-TouchFile
+
 function Invoke-UnzipFile {
     [CmdletBinding()]
     param (

@@ -1,6 +1,6 @@
 @{
     RootModule = 'FileSystem.psm1'
-    ModuleVersion = '2020.1.20.1'
+    ModuleVersion = '2020.1.20.2'
     GUID = 'aaad40aa-30a0-495c-8377-53e89ea1ec11'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -20,6 +20,7 @@
         "Get-Sha256"
         "Invoke-DownloadFile"
         "Invoke-PurgeFiles"
+        "Invoke-TouchFile"
         "Invoke-UnzipFile"
         "Optimize-Path"
         "Remove-Path"
@@ -38,6 +39,7 @@
         "Purge-Files"
         "sha1"
         "sha256"
+        "touch"
         "Unzip-File"
     )
 }

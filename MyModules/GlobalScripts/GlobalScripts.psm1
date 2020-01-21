@@ -20,7 +20,6 @@ Export-ModuleMember midnight
 Export-ModuleMember New-Share
 Export-ModuleMember Set-GUI
 Export-ModuleMember Test-Port
-Export-ModuleMember touch
 Export-ModuleMember Calculate-Folder-Size
 Export-ModuleMember Compare-OPML
 Export-ModuleMember Enable-RemoteDesktop
