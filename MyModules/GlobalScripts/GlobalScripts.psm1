@@ -16,7 +16,6 @@ Export-ModuleMember Get-Hash
 Export-ModuleMember Get-Share
 Export-ModuleMember Get-SubNetItems
 Export-ModuleMember Load-Assembly
-Export-ModuleMember midnight
 Export-ModuleMember New-Share
 Export-ModuleMember Set-GUI
 Export-ModuleMember Test-Port

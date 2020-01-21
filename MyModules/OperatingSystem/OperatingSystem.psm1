@@ -1,3 +1,9 @@
+function Get-Midnight {
+    (Get-Date).Date
+}
+
+Set-Alias -Name midnight -Value Get-Midnight
+
 function Get-OSArchitecture {
     (Get-CimInstance Win32_OperatingSystem).OSArchitecture
 }
