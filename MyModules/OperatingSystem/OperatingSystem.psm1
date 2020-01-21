@@ -1,3 +1,29 @@
+function Find-FolderSize {
+    param (
+        [String]$Path = $pwd.Path
+    )
+
+    $width = (Get-Host).UI.RawUI.MaxWindowSize.Width - 5
+    $files = Get-ChildItem $Path -Recurse
+
+    $total = 0
+
+    for ($i = 1; $i -le $files.Count-1; $i++) {
+        $name = $files[$i].FullName
+        $name = $name.Substring(0, [System.Math]::Min($width, $name.Length))
+        Write-Progress -Activity "Calculating total size..." `
+            -Status $name `
+            -PercentComplete ($i / $files.Count * 100)
+        $total += $files[$i].Length
+    }
+
+    "Total size of '$Path': {0:N2} MB" -f ($total / 1MB)
+
+}
+
+Set-Alias -Name Calculate-Folder-Size -Value Find-FolderSize
+Set-Alias -Name Calculate-FolderSize -Value Find-FolderSize
+
 function Get-Midnight {
     (Get-Date).Date
 }

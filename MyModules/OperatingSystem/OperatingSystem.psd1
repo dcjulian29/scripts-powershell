@@ -7,6 +7,7 @@
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+        "Find-FolderSize"
         "Get-Midnight"
         "Get-OSArchitecture"
         "Get-OSBoot"
@@ -30,6 +31,8 @@
         "Test-PendingReboot"
     )
     AliasesToExport = @(
+        "Calculate-Folder-Size"
+        "Calculate-FolderSize"
         "midnight"
     )
 }
