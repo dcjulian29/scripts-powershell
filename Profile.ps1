@@ -19,14 +19,6 @@ if (-not ($env:PATH).Contains($binarydirectory)) {
 
 Remove-Item alias:wget
 Remove-Item alias:curl
+Remove-Item Alias:ssh
 
 Set-Alias -Name go -Value gd
-
-Function Edit-Profile {
-  notepad $profile
-}
-
-Function Reload-Profile {
-  . $profile
-}
-

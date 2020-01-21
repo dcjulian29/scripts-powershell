@@ -12,10 +12,8 @@ Get-ChildItem -Path $PSScriptRoot -Filter *.psm1 -Recurse | % `
 
 Export-ModuleMember Check-Url
 Export-ModuleMember Count-Object
-Export-ModuleMember Get-Hash
 Export-ModuleMember Get-Share
 Export-ModuleMember Get-SubNetItems
-Export-ModuleMember Load-Assembly
 Export-ModuleMember New-Share
 Export-ModuleMember Set-GUI
 Export-ModuleMember Test-Port
@@ -27,4 +25,3 @@ Export-ModuleMember Install-WindowsUpdate
 Export-ModuleMember Pin-Taskbar
 Export-ModuleMember Reset-NetworkAdapters
 Export-ModuleMember Watch-DefaultGatewayChangeVpn
-

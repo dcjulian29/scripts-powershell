@@ -87,11 +87,6 @@ Function prompt {
     return "  `b"
 }
 
-Function Get-LastExecutionTime {
-    $command = Get-History -Count 1
-    $command.EndExecutionTime - $command.StartExecutionTime
-}
-
 # Load the Posh-GIT module if it exist
 if (Test-Path "C:\tools\poshgit") {
     $poshgit = Get-ChildItem -Path "C:\tools\poshgit" |  `
