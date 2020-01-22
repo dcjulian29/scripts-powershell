@@ -20,7 +20,6 @@ Export-ModuleMember Test-Port
 Export-ModuleMember Compare-OPML
 Export-ModuleMember Enable-RemoteDesktop
 Export-ModuleMember Find-NoRssPostInMonths
-Export-ModuleMember Install-WindowsUpdate
 Export-ModuleMember Pin-Taskbar
 Export-ModuleMember Reset-NetworkAdapters
 Export-ModuleMember Watch-DefaultGatewayChangeVpn

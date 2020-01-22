@@ -18,6 +18,7 @@
         "Get-OSRegisteredOrganization"
         "Get-OSInstallDate"
         "Get-OSBuildNumber"
+        "Install-WindowsUpdates"
         "New-RemoteDesktopShortcut"
         "Remove-EnvironmentVariable"
         "Set-EnvironmentVariable"

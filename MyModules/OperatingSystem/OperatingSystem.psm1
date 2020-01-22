@@ -93,6 +93,99 @@ function Get-OSBuildNumber {
     (Get-CimInstance Win32_OperatingSystem).BuildNumber
 }
 
+function Install-WindowsUpdates {
+    $session = New-Object -ComObject 'Microsoft.Update.Session'
+    $searcher = $session.CreateUpdateSearcher()
+    $search = 'IsInstalled = 0'
+
+    Write-Output "Looking for Windows Updates..."
+
+    $results = $searcher.Search($search)
+    $updates = $results.Updates
+    $numberUpdates = 1
+    $updateCount = $updates.Count
+
+    if ($updateCount -gt 0) {
+        Write-Output "The following updates will be attempted:"
+
+        ($updates | Select-Object Title).Title | ForEach-Object { Write-Output "  --> $_" }
+
+        Write-Output " "
+
+        $collectionDownload = New-Object -ComObject 'Microsoft.Update.UpdateColl';
+
+        Write-Output "Downloading:"
+        foreach ($update in $updates) {
+            Write-Output "  --> [$numberUpdates/$updateCount]: $($update.Title)"
+
+            $update.AcceptEula();
+            $tempCollection = New-Object -ComObject 'Microsoft.Update.UpdateColl'
+            $tempCollection.Add($Update) | Out-Null
+
+            $Downloader = $session.CreateUpdateDownloader()
+            $Downloader.Updates = $tempCollection
+
+            try {
+                $downloadResult = $downloader.Download()
+            } catch {
+                if ($_ -match 'HRESULT: 0x80240044') {
+                    Write-Warning 'Your security policy do not allow a non-administator identity to perform this task';
+                }
+
+                return
+            }
+
+            if ($downloadResult.ResultCode -eq 2) {
+                $collectionDownload.Add($Update) | Out-Null;
+            } else {
+                Write-Warning "Error downloading update: $($downloadResult.ResultCode)"
+            }
+
+            $numberUpdates++;
+        }
+
+        $readyToInstall = $collectionDownload.count;
+        $needReboot = $false;
+
+        if ($readyToInstall -gt 0) {
+            Write-Output "`nDownloaded $readyToInstall updates."
+
+            $numberUpdates = 1;
+
+            Write-Output "`nInstalling:"
+            foreach ($update in $collectionDownload) {
+                Write-Output "  --> [$numberUpdates/$readyToInstall] $($update.Title)"
+
+                $tempCollection = New-Object -ComObject 'Microsoft.Update.UpdateColl'
+                $tempCollection.Add($Update) | Out-Null
+
+                $installer = $session.CreateUpdateInstaller()
+                $installer.Updates = $tempCollection
+
+                try {
+                    $installResult = $installer.Install()
+                } catch {
+                    if ($_ -match 'HRESULT: 0x80240044') {
+                        Write-Warning `
+                            'Your security policy do not allow a non-administator identity to perform this task'
+                    }
+
+                    return;
+                }
+
+                if (!$needReboot) {
+                    $needReboot = $installResult.RebootRequired;
+                }
+
+                $numberUpdates++;
+            }
+
+            if ($needReboot) {
+                Write-Output "`n`nA reboot is required to finish the update process.`n"
+            }
+        }
+    }
+}
 function New-RemoteDesktopShortcut {
     param (
         [string]$Path = "$ComputerName.rdp",
