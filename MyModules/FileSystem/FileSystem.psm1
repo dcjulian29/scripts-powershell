@@ -90,8 +90,10 @@ function Find-FirstPath {
             $path = $arg
         }
 
-        if (Test-Path "$path") {
-            return $path
+        if ($path) {
+            if (Test-Path "$path") {
+                return $path
+            }
         }
     }
 }
@@ -143,6 +145,7 @@ function Get-Md5 {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [Alias("File")]
         [string]$Path
     )
 
@@ -179,6 +182,7 @@ function Get-Sha1 {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [Alias("File")]
         [string]$Path
     )
 
@@ -192,6 +196,7 @@ function Get-Sha256 {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [Alias("File")]
         [string]$Path
     )
 
