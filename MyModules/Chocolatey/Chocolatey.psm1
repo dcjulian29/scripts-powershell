@@ -196,8 +196,8 @@ function Restore-ChocolateyCache {
             if (-not (Test-Path "$Destination\$($_.Name)")) {
                 Copy-Item -Path $_.FullName -Destination $Destination
             } else {
-                $sourceHash = Get-Sha256 -File "$($_.FullName)"
-                $destinationHash = Get-Sha256 -File "$Destination\$($_.Name)"
+                $sourceHash = Get-Sha256 -Path "$($_.FullName)"
+                $destinationHash = Get-Sha256 -Path "$Destination\$($_.Name)"
                 if ($sourceHash -ne $destinationHash) {
                     Copy-Item -Path $_.FullName -Destination $Destination -Force
                 }
