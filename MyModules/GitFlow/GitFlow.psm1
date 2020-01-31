@@ -1,100 +1,96 @@
-﻿$script:GIT_INSTALL_ROOT = Find-ProgramFiles "Git\bin"
-$script:GIT = "${script:GIT_INSTALL_ROOT}\git.exe"
-
-Function Initialize-GitFlow {
-   & "$GIT" flow init -d
+﻿function Initialize-GitFlow {
+   & "$(Find-Git)" flow init -d
 }
 
-Function Start-GitFlowFeature {
+function Pop-GitFlowFeature {
     param (
         [string] $Name = "$(Read-Host 'What is the name of the feature')"
     )
 
-   & "$GIT" flow feature start $Name
+    & "$(Find-Git)"  flow feature pull $Name
 }
 
-Function Finish-GitFlowFeature {
-   & "$GIT" flow feature finish
-}
-
-Function Publish-GitFlowFeature {
+function Publish-GitFlowFeature {
     param (
         [string] $Name
     )
 
-   & "$GIT" flow feature publish $Name
+   & "$(Find-Git)"  flow feature publish $Name
 }
 
-Function Pull-GitFlowFeature {
+function Remove-GitFlowFeature {
+   & "$(Find-Git)" fetch
+   & "$(Find-Git)" flow feature delete --remote
+   & "$(Find-Git)" checkout develop
+   & "$(Find-Git)" pull
+}
+
+function Remove-GitFlowRelease {
+   & "$(Find-Git)" fetch
+   & "$(Find-Git)" flow release delete --remote
+   & "$(Find-Git)" checkout develop
+   & "$(Find-Git)" pull
+}
+
+function Start-GitFlowFeature {
     param (
         [string] $Name = "$(Read-Host 'What is the name of the feature')"
     )
 
-   & "$GIT" flow feature pull $Name
+   & "$(Find-Git)"  flow feature start $Name
 }
 
-Function Update-GitFlowFeature {
-    $branch = Invoke-Expression "& `"$GIT`" rev-parse --abbrev-ref HEAD"
-    $branchNormalized = $branch.ToLowerInvariant()
-    
-    if (-not $branchNormalized.StartsWith("feature/")) {
-        Write-Error "You are not in a GitFlow Feature branch."
-    } else {
-        Write-Output "Making Sure that local branches or up-to-date..."
-        & "$GIT" checkout develop
-        & "$GIT" pull origin
-        & "$GIT" checkout $branch
-        & "$GIT" pull origin
-        & "$GIT" merge develop --no-ff
-    }
-}
-
-Function Start-GitFlowRelease {
-    param (
-        [string] $Name = "$(Read-Host 'What is the name of the release')"
-    )
-
-   & "$GIT" flow release start $Name
-}
-
-Function Finish-GitFlowRelease {
-   & "$GIT" flow release finish -m "Release"
-}
-
-Function Start-GitFlowHotfix {
+function Start-GitFlowHotfix {
     param (
         [string] $Name = "$(Read-Host 'What is the name of the hotfix')"
     )
 
-   & "$GIT" flow hotfix start $Name
+   & "$(Find-Git)"  flow hotfix start $Name
 }
 
-Function Finish-GitFlowHotfix {
-   & "$GIT" flow hotfix finish
+function Start-GitFlowRelease {
+    param (
+        [string] $Name = "$(Read-Host 'What is the name of the release')"
+    )
+
+   & "$(Find-Git)"  flow release start $Name
+}
+
+function Stop-GitFlowFeature {
+   & "$(Find-Git)"  flow feature finish
+}
+
+function Stop-GitFlowHotfix {
+   & "$(Find-Git)"  flow hotfix finish
+}
+
+function Stop-GitFlowRelease {
+   & "$(Find-Git)"  flow release finish -m "Release"
+}
+
+function Update-GitFlowFeature {
+    $branch = $(Get-GitRepositoryBranch).ToLowerInvariant()
+
+    if (-not $branch.StartsWith("feature/")) {
+        Write-Error "You are not in a GitFlow Feature branch."
+    } else {
+        Write-Output "Making Sure that local branches or up-to-date..."
+        & "$(Find-Git)"  checkout develop
+        & "$(Find-Git)"  pull origin
+        & "$(Find-Git)"  checkout $branch
+        & "$(Find-Git)"  pull origin
+        & "$(Find-Git)"  merge develop --no-ff
+    }
 }
 
 ###################################################################################################
 
-Export-ModuleMember Initialize-GitFlow
-Export-ModuleMember Start-GitFlowFeature
-Export-ModuleMember Finish-GitFlowFeature
-Export-ModuleMember Publish-GitFlowFeature
-Export-ModuleMember Pull-GitFlowFeature
-Export-ModuleMember Update-GitFlowFeature
-Export-ModuleMember Start-GitFlowRelease
-Export-ModuleMember Finish-GitFlowRelease
-Export-ModuleMember Start-GitFlowHotfix
-Export-ModuleMember Finish-GitFlowHotfix
-
-
+Set-Alias Abort-GitFlowFeature Remove-GitFlowFeature
+Set-Alias Abort-GitFlowRelease Remove-GitFlowRelease
+Set-Alias Finish-GitFlowFeature Stop-GitFlowFeature
+Set-Alias Finish-GitFlowRelease Stop-GitFlowRelease
+Set-Alias gfff Stop-GitFlowFeature
 Set-Alias gffs Start-GitFlowFeature
-Export-ModuleMember -Alias gffs
-
-Set-Alias gfff Finish-GitFlowFeature
-Export-ModuleMember -Alias gfff
-
+Set-Alias gfrf Stop-GitFlowRelease
 Set-Alias gfrs Start-GitFlowRelease
-Export-ModuleMember -Alias gfrs
-
-Set-Alias gfrf Finish-GitFlowRelease
-Export-ModuleMember -Alias gfrf
+Set-Alias Pull-GitFlowFeature Pop-GitFlowFeature
