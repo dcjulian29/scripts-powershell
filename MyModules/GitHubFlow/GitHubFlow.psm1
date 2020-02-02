@@ -72,7 +72,7 @@ Set-Alias -Name Pull-GitHubFlowFeature -Value Pop-GitHubFlowFeature
 
 function Publish-GitHubFlowFeature {
     param (
-        [string] $Name
+        [string] $Name = $(Get-GitRepositoryBranch)
     )
 
     if (-not ($name.StartsWith("feature/"))) {
