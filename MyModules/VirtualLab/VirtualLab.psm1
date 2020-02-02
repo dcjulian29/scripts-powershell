@@ -39,110 +39,30 @@ function LatestIsoFile {
 
 ###############################################################################
 
-function New-LabUbuntuServer {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        $ComputerName,
-        [string]$IsoFilePath,
-        [switch]$UseDefaultSwitch
-    )
-
-    if ($IsoFilePath -eq "") {
-        $IsoFilePath = LatestIsoFile "ubuntu-"
-    }
-
-    if ($UseDefaultSwitch) {
-        New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath -UseDefaultSwitch
-    } else {
-        New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath
-    }
-}
-
 function New-LabCentOSServer {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         $ComputerName,
-        [string]$IsoFilePath,
         [switch]$UseDefaultSwitch
     )
 
-    if ($IsoFilePath -eq "") {
-        $IsoFilePath = LatestIsoFile "CentOS-"
-    }
-
-    if ($UseDefaultSwitch) {
-        New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath -UseDefaultSwitch
-    } else {
-        New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath
-    }
+    $IsoFilePath = LatestIsoFile "CentOS-"
+    New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath `
+        -UseDefaultSwitch:$UseDefaultSwitch.IsPresent
 }
 
-function New-LabMintWorkstation {
+function New-LabDebianServer {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         $ComputerName,
-        [string]$IsoFilePath,
         [switch]$UseDefaultSwitch
     )
 
-    if ($IsoFilePath -eq "") {
-        $IsoFilePath = LatestIsoFile "linuxmint-"
-    }
-
-    if ($UseDefaultSwitch) {
-        New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath -UseDefaultSwitch
-    } else {
-        New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath
-    }
-}
-
-#----------------------------------------------------------------------------------------
-
-function New-LabFirewall {
-    param (
-        [string]$ComputerName = "FIREWALL"
-    )
-
-    $errorPreviousAction = $ErrorActionPreference
-    $ErrorActionPreference = "Stop"
-
-    $iso = LatestIsoFile("pfSense-")
-
-    $ComputerName = $ComputerName.ToUpperInvariant()
-    $vhdx = "$ComputerName.vhdx"
-
-    StopAndRemoveVM $ComputerName
-
-    New-VM -Name $ComputerName -MemoryStartupBytes 512MB -NewVHDPath $vhdx -NewVHDSizeBytes 10GB -Generation 2
-
-    Add-VMDvdDrive -VMName $ComputerName -Path $iso
-    Set-VMFirmware $ComputerName -FirstBootDevice $(Get-VMDvdDrive $ComputerName)
-    Set-VMFirmware $ComputerName -EnableSecureBoot Off
-
-    Remove-VMNetworkAdapter -VMName $ComputerName -Name "Network Adapter"
-
-    Add-VMNetworkAdapter -VMName $ComputerName -Name "LAN"
-    Add-VMNetworkAdapter -VMName $ComputerName -Name "WAN"
-
-    Connect-VMNetworkAdapter -VMName $ComputerName -Name "LAN" -SwitchName "LAB"
-    Connect-VMNetworkAdapter -VMName $ComputerName -Name "WAN" -SwitchName "Default Switch"
-
-    Pop-Location
-
-    Set-VM -Name $ComputerName -AutomaticStartAction Nothing
-    Set-Vm -Name $ComputerName -AutomaticStopAction Save
-    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false
-
-    Write-Warning "Be sure to eject the ISO File after installation is complete."
-
-    Start-VM -VMName $ComputerName
-
-    vmconnect.exe localhost $ComputerName
-
-    $ErrorActionPreference = $errorPreviousAction
+    $IsoFilePath = LatestIsoFile "debian-"
+    New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath `
+        -UseDefaultSwitch:$UseDefaultSwitch.IsPresent
 }
 
 function New-LabDomainController {
@@ -354,6 +274,89 @@ function New-LabDomainController {
     $ErrorActionPreference = $errorPreviousAction
 }
 
+function New-LabFirewall {
+    param (
+        [string]$ComputerName = "FIREWALL"
+    )
+
+    $errorPreviousAction = $ErrorActionPreference
+    $ErrorActionPreference = "Stop"
+
+    $iso = LatestIsoFile("pfSense-")
+
+    $ComputerName = $ComputerName.ToUpperInvariant()
+    $vhdx = "$ComputerName.vhdx"
+
+    StopAndRemoveVM $ComputerName
+
+    New-VM -Name $ComputerName -MemoryStartupBytes 512MB -NewVHDPath $vhdx -NewVHDSizeBytes 10GB -Generation 2
+
+    Add-VMDvdDrive -VMName $ComputerName -Path $iso
+    Set-VMFirmware $ComputerName -FirstBootDevice $(Get-VMDvdDrive $ComputerName)
+    Set-VMFirmware $ComputerName -EnableSecureBoot Off
+
+    Remove-VMNetworkAdapter -VMName $ComputerName -Name "Network Adapter"
+
+    Add-VMNetworkAdapter -VMName $ComputerName -Name "LAN"
+    Add-VMNetworkAdapter -VMName $ComputerName -Name "WAN"
+
+    Connect-VMNetworkAdapter -VMName $ComputerName -Name "LAN" -SwitchName "LAB"
+    Connect-VMNetworkAdapter -VMName $ComputerName -Name "WAN" -SwitchName "Default Switch"
+
+    Pop-Location
+
+    Set-VM -Name $ComputerName -AutomaticStartAction Nothing
+    Set-Vm -Name $ComputerName -AutomaticStopAction Save
+    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false
+
+    Write-Warning "Be sure to eject the ISO File after installation is complete."
+
+    Start-VM -VMName $ComputerName
+
+    vmconnect.exe localhost $ComputerName
+
+    $ErrorActionPreference = $errorPreviousAction
+}
+
+function New-LabMintWorkstation {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName,
+        [switch]$UseDefaultSwitch
+    )
+
+    $IsoFilePath = LatestIsoFile "linuxmint-"
+    New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath `
+        -UseDefaultSwitch:$UseDefaultSwitch.IsPresent
+}
+
+function New-LabUbuntuServer {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName,
+        [switch]$UseDefaultSwitch
+    )
+
+    $IsoFilePath = LatestIsoFile "ubuntu-\d"
+    New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath `
+        -UseDefaultSwitch:$UseDefaultSwitch.IsPresent
+}
+
+function New-LabUbuntuWorkstation {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName,
+        [switch]$UseDefaultSwitch
+    )
+
+    $IsoFilePath = LatestIsoFile "ubuntu-mate-"
+    New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath `
+        -UseDefaultSwitch:$UseDefaultSwitch.IsPresent
+}
+
 function New-LabVMFromISO {
     param (
         [Parameter(Mandatory=$true)]
@@ -409,6 +412,18 @@ function New-LabVMFromISO {
     Start-Process -FilePath "vmconnect.exe" -ArgumentList "${env:COMPUTERNAME} $ComputerName"
 
     $ErrorActionPreference = $errorPreviousAction
+}
+
+function New-LabVMSwitch {
+    $lab = Get-VMSwitch -Name LAB -ErrorAction SilentlyContinue
+
+    if (-not $lab) {
+        New-VMSwitch -Name LAB -SwitchType Internal
+
+        New-NetIPAddress -IPAddress 10.10.10.11 -PrefixLength 24 -InterfaceAlias "vEthernet (LAB)"
+    } else {
+        Write-Warning "Lab VMSwitch already exists..."
+    }
 }
 
 function New-LabWindowsServer {
@@ -568,18 +583,6 @@ function New-LabWindowsWorkstation {
     Start-Process -FilePath "vmconnect.exe" -ArgumentList "${env:COMPUTERNAME} $ComputerName"
 
     $ErrorActionPreference = $errorPreviousAction
-}
-
-function New-LabVMSwitch {
-    $lab = Get-VMSwitch -Name LAB -ErrorAction SilentlyContinue
-
-    if (-not $lab) {
-        New-VMSwitch -Name LAB -SwitchType Internal
-
-        New-NetIPAddress -IPAddress 10.10.10.11 -PrefixLength 24 -InterfaceAlias "vEthernet (LAB)"
-    } else {
-        Write-Warning "Lab VMSwitch already exists..."
-    }
 }
 
 function Remove-LabVMSwitch {
