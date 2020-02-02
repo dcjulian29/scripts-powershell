@@ -34,13 +34,19 @@ function Pop-GitHubFlowFeature {
         $Name = "feature/$Name"
     }
 
-    $branch = Get-GitRepositoryBranch
+    $remote = & "$(Find-Git)" ls-remote --heads origin $Name
 
-    if ($branch -eq $Name) {
-        & "$(Find-Git)" pull
+    if (-not $remote) {
+        Write-Error "The feature does not exist on the remote repository."
     } else {
-        & "$(Find-Git)" fetch
-        & "$(Find-Git)" checkout $Name
+        $branch = Get-GitRepositoryBranch
+
+        if ($branch -eq $Name) {
+            & "$(Find-Git)" pull
+        } else {
+            & "$(Find-Git)" fetch
+            & "$(Find-Git)" checkout $Name
+        }
     }
 }
 
