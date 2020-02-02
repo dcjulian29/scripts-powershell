@@ -28,7 +28,7 @@ function LatestIsoFile {
     $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
 
     $latest = Get-ChildItem -Path $IsoDir `
-        | Where-Object { $_.Name -match "$($Pattern).*" } `
+        | Where-Object { $_.Name -match "^$($Pattern).*" } `
         | Sort-Object Name -Descending `
         | Select-Object -First 1
 
