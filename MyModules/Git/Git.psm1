@@ -3,7 +3,11 @@
 }
 
 function Find-GraphicalGit {
-    "$(Find-ProgramFiles "Git")\bin\gitk.exe"
+    "$(Find-ProgramFiles "Git")\cmd\git-gui.exe"
+}
+
+function Find-GraphicalGitHistory {
+    "$(Find-ProgramFiles "Git")\cmd\gitk.exe"
 }
 
 function Get-GitRepositoryStatus {
@@ -18,6 +22,34 @@ function Invoke-FetchGitRepository {
 
 Set-Alias Fetch-GitRepository Invoke-FetchGitRepository
 Set-Alias gfetch Invoke-FetchGitRepository
+
+function Invoke-GraphicalGit {
+    param (
+        [ValidateNotNullorEmpty()]
+        [ValidateScript({Test-Path $_ -PathType 'Container'})]
+        [string] $Path = $pwd
+    )
+
+    Push-Location $Path
+    & "$(Find-GraphicalGit)" citool
+    Pop-Location
+}
+
+Set-Alias -Name gitg -Value Invoke-GraphicalGit
+
+function Invoke-GraphicalGitHistory {
+    param (
+        [ValidateNotNullorEmpty()]
+        [ValidateScript({Test-Path $_ -PathType 'Container'})]
+        [string] $Path = $pwd
+    )
+
+    Push-Location $Path
+    & "$(Find-GraphicalGitHistory)"
+    Pop-Location
+}
+
+Set-Alias -Name gitk -Value Invoke-GraphicalGitHistory
 
 function Invoke-PullGitRepository {
     Fetch-GitRepository
