@@ -1,43 +1,42 @@
-$script:GIT_INSTALL_ROOT = Find-ProgramFiles "Git\bin"
-$script:GIT = "${script:GIT_INSTALL_ROOT}\git.exe"
-
-Function Start-GitHubFlowFeature {
+function Start-GitHubFlowFeature {
     param (
         [string] $Name = "$(Read-Host 'What is the name of the feature')",
         [switch] $Force
     )
 
-    $branch = Invoke-Expression "& `"$GIT`" rev-parse --abbrev-ref HEAD"
-    
-    if ((-not ($branch -in @( "master", "develop", "dev" ))) -and (-not $force)) {
-        Write-Error "You are not in one of these branches: master, develop, dev. Use -Force to create a new feature from this branch if that is what you want."
+    $branch = Get-GitRepositoryBranch
+
+    if ((-not ($branch -eq "master")) -and (-not $force)) {
+        Write-Error "You are not in the master branch. Use -Force to create a new feature from this branch if that is what you want."
     } else {
-        & "$GIT" checkout -b $Name
+        & "$(Find-Git)" checkout -b $Name
     }
 }
 
-Function Publish-GitHubFlowFeature {
-    param (
-        [string] $Name
-    )
+Set-Alias ghffs Start-GitHubFlowFeature
 
-   & "$GIT" push $Name
+function Stop-GitHubFlowFeature {
+
 }
 
-Function Pull-GitHubFlowFeature {
+Set-Alias -Name Finish-GitHubFlowFeature -Value Stop-GitHubFlowFeature
+Set-Alias -Name ghfff -Value Stop-GitHubFlowFeature
+
+function Pop-GitHubFlowFeature {
     param (
         [string] $Name = "$(Read-Host 'What is the name of the feature')"
     )
 
-   & "$GIT" fetch 
-   & "$GIT" checkout $Name
+   & "$(Find-Git)" fetch
+   & "$(Find-Git)" checkout $Name
 }
 
-###################################################################################################
+Set-Alias -Name Pull-GitHubFlowFeature -Value Pop-GitHubFlowFeature
 
-Export-ModuleMember Start-GitHubFlowFeature
-Export-ModuleMember Publish-GitHubFlowFeature
-Export-ModuleMember Pull-GitHubFlowFeature
+function Publish-GitHubFlowFeature {
+    param (
+        [string] $Name
+    )
 
-Set-Alias ghffs Start-GitHubFlowFeature
-Export-ModuleMember -Alias ghffs
+   & "$(Find-Git)" push $Name
+}
