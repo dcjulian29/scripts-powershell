@@ -87,3 +87,37 @@ function Publish-GitHubFlowFeature {
         & "$(Find-Git)" push --set-upstream origin $Name
     }
 }
+
+function Update-GitHubFlowFeature {
+    param (
+        [switch]$Push
+    )
+
+    $branch = $(Get-GitRepositoryBranch).ToLowerInvariant()
+
+    if (-not $branch.StartsWith("feature/")) {
+        Write-Error "You are not in a feature branch."
+    } else {
+        & "$(Find-Git)"  checkout master
+        & "$(Find-Git)"  pull origin
+        & "$(Find-Git)"  checkout $branch
+
+        $remote = & "$(Find-Git)" ls-remote --heads origin $Name
+
+        if ($remote) {
+            & "$(Find-Git)"  pull origin
+        }
+
+        & "$(Find-Git)"  merge master --no-ff
+
+        if ($Push) {
+            if ($remote) {
+                & "$(Find-Git)" push -u origin $Name
+            } else {
+                & "$(Find-Git)" push --set-upstream origin $Name
+            }
+        }
+    }
+}
+
+Set-Alias -Name ghffu -Value Update-GitHubFlowFeature
