@@ -30,10 +30,17 @@ function Pop-GitHubFlowFeature {
         [string] $Name = "$(Read-Host 'What is the name of the feature')"
     )
 
-   & "$(Find-Git)" fetch
-   & "$(Find-Git)" checkout $Name
     if (-not ($name.StartsWith("feature/"))) {
         $Name = "feature/$Name"
+    }
+
+    $branch = Get-GitRepositoryBranch
+
+    if ($branch -eq $Name) {
+        & "$(Find-Git)" pull
+    } else {
+        & "$(Find-Git)" fetch
+        & "$(Find-Git)" checkout $Name
     }
 }
 
