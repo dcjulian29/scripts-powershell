@@ -31,7 +31,8 @@ function Import-DevelopmentPowerShellModule {
     }
 
     if  ($moduleFile) {
-        Import-Module -Global "$moduleFolder\$module\$moduleFile" -Force -Verbose
+        Get-Module  | Where-Object { $_.Name -eq $Module } | Remove-Module
+        Import-Module -Global "$moduleFolder\$Module\$moduleFile" -Force -Verbose
     }
 }
 
