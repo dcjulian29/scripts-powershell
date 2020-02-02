@@ -20,52 +20,11 @@
     }
 }
 
-function NewLabWindowsServerVM {
-    param (
-        [string]$ComputerName,
-        [string]$OsVersion,
-        [string]$UnattendFile ="${env:SYSTEMDRIVE}\etc\vm\unattend.server.xml",
-        [bool]$Switch = "LAB"
-    )
-
-    $errorPreviousAction = $ErrorActionPreference
-    $ErrorActionPreference = "Stop";
-
-    Push-Location $((Get-VMHost).VirtualHardDiskPath)
-
-    $baseImage = "$((Get-ChildItem -Path "Win$OsVersion*ServerBase*.vhdx").FullName)"
-
-    $ComputerName = $ComputerName.ToUpperInvariant()
-    $vhdx = "$ComputerName.vhdx"
-
-    StopAndRemoveVM $ComputerName
-
-    New-DifferencingVHDX -referenceDisk $baseImage -vhdxFile "$vhdx"
-
-    New-UnattendFile -vhdxFile $vhdx -unattendTemplate $UnattendFile -computerName $ComputerName
-
-    New-VirtualMachine -vhdxFile $vhdx -computerName $ComputerName `
-        -virtualSwitch $Switch -memory 2GB  -Verbose
-
-    Set-VMMemory -VMName $ComputerName -MinimumBytes 1GB
-    Set-VM -Name $ComputerName -AutomaticStartAction Nothing
-    Set-Vm -Name $ComputerName -AutomaticStopAction Save
-    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false
-
-    Pop-Location
-
-    Start-VM -VMName $ComputerName
-
-    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $ComputerName"
-
-    $ErrorActionPreference = $errorPreviousAction
-}
-
 function Get-VirtualIsoPath {
     "$((Get-VMHost).VirtualMachinePath)\ISO"
 }
 
-function Get-LatestVirtualIsoFile {
+function LatestIsoFile {
     param (
         [string]$Pattern
     )
@@ -93,7 +52,7 @@ function New-LabUbuntuServer {
     )
 
     if ($IsoFilePath -eq "") {
-        $IsoFilePath = Get-LatestVirtualIsoFile "ubuntu-"
+        $IsoFilePath = LatestIsoFile "ubuntu-"
     }
 
     if ($UseDefaultSwitch) {
@@ -113,7 +72,7 @@ function New-LabCentOSServer {
     )
 
     if ($IsoFilePath -eq "") {
-        $IsoFilePath = Get-LatestVirtualIsoFile "CentOS-"
+        $IsoFilePath = LatestIsoFile "CentOS-"
     }
 
     if ($UseDefaultSwitch) {
@@ -133,7 +92,7 @@ function New-LabMintWorkstation {
     )
 
     if ($IsoFilePath -eq "") {
-        $IsoFilePath = Get-LatestVirtualIsoFile "linuxmint-"
+        $IsoFilePath = LatestIsoFile "linuxmint-"
     }
 
     if ($UseDefaultSwitch) {
@@ -143,62 +102,7 @@ function New-LabMintWorkstation {
     }
 }
 
-function New-LabVMFromISO {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        $ComputerName,
-        [Parameter(Mandatory=$true)]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string]$IsoFilePath,
-        [string]$VirtualSwitch = "LAB",
-        [switch]$UseDefaultSwitch
-    )
-
-    $errorPreviousAction = $ErrorActionPreference
-    $ErrorActionPreference = "Stop";
-
-    if ($UseDefaultSwitch) {
-        $VirtualSwitch = "Default Switch"
-    }
-
-    $ComputerName = $ComputerName.ToUpperInvariant()
-
-    Push-Location $((Get-VMHost).VirtualHardDiskPath)
-
-    $vhdx = "$ComputerName.vhdx"
-
-    StopAndRemoveVM $ComputerName
-
-    New-VHD -Path $vhdx -SizeBytes 80GB -Dynamic
-
-    New-VM -Name $ComputerName -VHDPath $vhdx -Generation 2
-
-    Set-VMMemory -VMName $ComputerName -DynamicMemoryEnabled $true -StartupBytes 1GB
-    Set-VMMemory -VMName $ComputerName -MinimumBytes 512MB
-
-    Set-VM -Name $ComputerName -AutomaticStartAction Nothing
-    Set-VM -Name $ComputerName -AutomaticStopAction Save
-    Set-VM -Name $ComputerName -AutomaticCheckpointsEnabled $false
-
-    Add-VMDvdDrive -VMName $ComputerName -Path $IsoFilePath
-    Set-VMFirmware $ComputerName -FirstBootDevice $(Get-VMDvdDrive $ComputerName)
-    Set-VMFirmware $ComputerName -EnableSecureBoot Off
-
-    if ($UseDefaultSwitch) {
-        Connect-VMNetworkAdapter -VMName $ComputerName -SwitchName "Default Switch"
-    } else {
-        Connect-VMNetworkAdapter -VMName $ComputerName -SwitchName "LAB"
-    }
-
-    Pop-Location
-
-    Start-VM -VMName $ComputerName
-
-    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $ComputerName"
-
-    $ErrorActionPreference = $errorPreviousAction
-}
+#----------------------------------------------------------------------------------------
 
 function New-LabFirewall {
     param (
@@ -208,7 +112,7 @@ function New-LabFirewall {
     $errorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop"
 
-    $iso = Get-LatestVirtualIsoFile("pfSense-")
+    $iso = LatestIsoFile("pfSense-")
 
     $ComputerName = $ComputerName.ToUpperInvariant()
     $vhdx = "$ComputerName.vhdx"
@@ -453,6 +357,141 @@ function New-LabDomainController {
     $ErrorActionPreference = $errorPreviousAction
 }
 
+function New-LabVMFromISO {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName,
+        [Parameter(Mandatory=$true)]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$IsoFilePath,
+        [string]$VirtualSwitch = "LAB",
+        [switch]$UseDefaultSwitch
+    )
+
+    $errorPreviousAction = $ErrorActionPreference
+    $ErrorActionPreference = "Stop";
+
+    if ($UseDefaultSwitch) {
+        $VirtualSwitch = "Default Switch"
+    }
+
+    $ComputerName = $ComputerName.ToUpperInvariant()
+
+    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+
+    $vhdx = "$ComputerName.vhdx"
+
+    StopAndRemoveVM $ComputerName
+
+    New-VHD -Path $vhdx -SizeBytes 80GB -Dynamic
+
+    Write-Output "Creating Virtual Machine...`n"
+    New-VM -Name $ComputerName -VHDPath $vhdx -Generation 2
+
+    Set-VMMemory -VMName $ComputerName -DynamicMemoryEnabled $true -StartupBytes 1GB
+    Set-VMMemory -VMName $ComputerName -MinimumBytes 512MB
+
+    Set-VM -Name $ComputerName -AutomaticStartAction Nothing
+    Set-VM -Name $ComputerName -AutomaticStopAction Save
+    Set-VM -Name $ComputerName -AutomaticCheckpointsEnabled $false
+
+    Add-VMDvdDrive -VMName $ComputerName -Path $IsoFilePath
+    Set-VMFirmware $ComputerName -FirstBootDevice $(Get-VMDvdDrive $ComputerName)
+    Set-VMFirmware $ComputerName -EnableSecureBoot Off
+
+    Connect-VMNetworkAdapter -VMName $ComputerName -SwitchName $VirtualSwitch
+
+    Pop-Location
+
+    Write-Output "Starting Virtual Macine..."
+    Start-VM -VMName $ComputerName
+
+    Start-Sleep -Seconds 2
+
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "${env:COMPUTERNAME} $ComputerName"
+
+    $ErrorActionPreference = $errorPreviousAction
+}
+
+function New-LabWindowsServer {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName,
+        [psobject]$Credentials,
+        [switch]$DomainJoin,
+        [switch]$UseDefaultSwitch,
+        [alias("UseDesktop", "WithGui", "Gui")]
+        [switch]$UseDesktopExperience
+    )
+
+    $errorPreviousAction = $ErrorActionPreference
+    $ErrorActionPreference = "Stop";
+
+    $ComputerName = $ComputerName.ToUpperInvariant()
+    $vhdx = "$ComputerName.vhdx"
+
+    StopAndRemoveVM $ComputerName
+
+    if ($UseDefaultSwitch) {
+        $switch = "Default Switch"
+    } else {
+        $switch = "LAB"
+    }
+
+    $baseImage = "$((Get-ChildItem -Path "Win2019ServerCoreBase.vhdx").FullName)"
+
+    if ($UseDesktopExperience) {
+        $baseImage = "$((Get-ChildItem -Path "Win2019ServerBase.vhdx").FullName)"
+    }
+
+    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+
+    New-DifferencingVHDX -referenceDisk $baseImage -vhdxFile "$vhdx"
+
+    if ($DomainJoin) {
+        if ($null -eq $Credentials) {
+            $Credentials = $(Get-Credentials -Message "Enter Lab Domain Administrator Account (UPN)")
+        }
+
+        $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.server.domain.xml"
+        $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)"
+        Copy-Item -Path $unattend -Destination $unattendFile  -Force
+
+        (Get-Content $unattendFile).Replace("P@ssw0rd", $Credentials.GetNetworkCredential().password) `
+            | Set-Content $unattendFile
+
+        (Get-Content $unattendFile).Replace("Administrator", $Credentials.UserName) `
+            | Set-Content $unattendFile
+    } else {
+        $unattendFile = "${env:SYSTEMDRIVE}\etc\vm\unattend.server.xml"
+    }
+
+    Write-Output "Inserting Unattend File...`n"
+    New-UnattendFile -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $ComputerName | Out-Null
+
+    Write-Output "Creating Virtual Machine...`n"
+    New-VirtualMachine -vhdxFile $vhdx -computerName $ComputerName `
+        -virtualSwitch $switch -memory 2GB  -Verbose
+
+    Set-VMMemory -VMName $ComputerName -MinimumBytes 1GB
+    Set-VM -Name $ComputerName -AutomaticStartAction Nothing
+    Set-Vm -Name $ComputerName -AutomaticStopAction Save
+    Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false
+
+    Pop-Location
+
+    Write-Output "Starting Virtual Macine..."
+    Start-VM -VMName $ComputerName
+
+    Start-Sleep -Seconds 2
+
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "${env:COMPUTERNAME} $ComputerName"
+
+    $ErrorActionPreference = $errorPreviousAction
+}
+
 function New-LabWindowsWorkstation {
     param (
         [Parameter(Mandatory=$true)]
@@ -473,6 +512,12 @@ function New-LabWindowsWorkstation {
     $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
 
     StopAndRemoveVM $ComputerName
+
+    if ($UseDefaultSwitch) {
+        $Switch = "Default Switch"
+    } else {
+        $Switch = "LAB"
+    }
 
     if ($null -eq $Credentials) {
         if ($DomainJoin) {
@@ -498,21 +543,17 @@ function New-LabWindowsWorkstation {
     (Get-Content $unattendFile).Replace("P@ssw0rd", $Credentials.GetNetworkCredential().password) `
         | Set-Content $unattendFile
 
-    (Get-Content $unattendFile).Replace("Administrator", $Credentials.UserName) `
+    (Get-Content $unattendFile) -Replace "\bAdministrator\b", $Credentials.UserName `
         | Set-Content $unattendFile
 
-    New-UnattendFile -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $ComputerName
+    Write-Output "Inserting unattend file, start script, and start layout...`n"
+    New-UnattendFile -VhdxFile $vhdx -UnattendTemplate $unattendFile -ComputerName $ComputerName | Out-Null
 
-    Move-VMStartUpScriptFileToVM -VhdxFile $vhdx -ScriptFile $StartScript -Argument "myvm-workstation"
+    Move-VMStartUpScriptFileToVM -VhdxFile $vhdx -ScriptFile $StartScript -Argument "myvm-workstation" | Out-Null
 
-    Move-StartLayoutToVM -VhdxFile $vhdx -LayoutFile $startLayout
+    Move-StartLayoutToVM -VhdxFile $vhdx -LayoutFile $startLayout | Out-Null
 
-    if ($UseDefaultSwitch) {
-        $Switch = "Default Switch"
-    } else {
-        $Switch = "LAB"
-    }
-
+    Write-Output "Creating Virtual Machine...`n"
     New-VirtualMachine -VhdxFile $vhdx -ComputerName $ComputerName `
         -virtualSwitch $Switch -memory 2GB -Verbose
 
@@ -522,70 +563,14 @@ function New-LabWindowsWorkstation {
 
     Pop-Location
 
+    Write-Output "Starting Virtual Macine..."
     Start-VM -VMName $ComputerName
 
-    Start-Sleep 5
+    Start-Sleep -Seconds 2
 
-    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $ComputerName"
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "${env:COMPUTERNAME} $ComputerName"
 
     $ErrorActionPreference = $errorPreviousAction
-}
-
-function New-LabWindows2012R2Server {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        $ComputerName,
-        [string]$UnattendFile,
-        [switch]$UseDefaultSwitch
-    )
-
-    if ($UseDefaultSwitch) {
-        $switch = "Default Switch"
-    } else {
-        $switch = "LAB"
-    }
-
-    NewLabWindowsServerVM -ComputerName $ComputerName-OsVersion "2012R2" `
-        -UnattendFile $UnattendFile -Switch $switch
-}
-
-function New-LabWindows2016Server {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        $ComputerName,
-        [string]$UnattendFile,
-        [switch]$UseDefaultSwitch
-    )
-
-    if ($UseDefaultSwitch) {
-        $switch = "Default Switch"
-    } else {
-        $switch = "LAB"
-    }
-
-    NewLabWindowsServerVM -ComputerName $ComputerName-OsVersion "2016" `
-        -UnattendFile $UnattendFile -Switch $switch
-}
-
-function New-LabWindows2019Server {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        $ComputerName,
-        [string]$UnattendFile,
-        [switch]$UseDefaultSwitch
-    )
-
-    if ($UseDefaultSwitch) {
-        $switch = "Default Switch"
-    } else {
-        $switch = "LAB"
-    }
-
-    NewLabWindowsServerVM -ComputerName $ComputerName-OsVersion "2019" `
-        -UnattendFile $UnattendFile -Switch $switch
 }
 
 function New-LabVMSwitch {
@@ -609,23 +594,3 @@ function Remove-LabVMSwitch {
         Write-Warning "Lab VMSwitch does not exist..."
     }
 }
-
-###############################################################################
-
-Export-ModuleMember New-LabFirewall
-Export-ModuleMember New-LabDomainController
-
-Export-ModuleMember New-LabWindowsWorkstation
-Export-ModuleMember New-LabMintWorkstation
-
-Export-ModuleMember New-LabWindows2012R2Server
-Export-ModuleMember New-LabWindows2016Server
-Export-ModuleMember New-LabWindows2019Server
-
-Export-ModuleMember New-LabUbuntuServer
-Export-ModuleMember New-LabCentOSServer
-
-Export-ModuleMember New-LabVMFromISO
-
-Export-ModuleMember New-LabVMSwitch
-Export-ModuleMember Remove-LabVMSwitch
