@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2019.12.26.1'
+    ModuleVersion = '2020.2.1.1'
     GUID = '099256ed-ac18-4e56-8017-bb9d9077fb74'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -21,6 +21,7 @@
         "Backup-GitRepository"
         "Find-Git"
         "Find-GraphicGit"
+        "Find-GraphicGitHistory"
         "Get-GitFilesFromCommit"
         "Get-GitFilesFromLastCommit"
         "Get-GitFilesSinceLastTag"
@@ -31,6 +32,8 @@
         "Get-GitRepositoryBranch"
         "Get-GitRepositoryStatus"
         "Invoke-FetchGitRepository"
+        "Invoke-GraphicGit"
+        "Invoke-GraphicGitHistory"
         "Invoke-PullGitRepository"
         "Optimize-AllGitRepositories"
         "Publish-GitRepositoryToPROD"
@@ -54,6 +57,7 @@
         "gb"
         "gbr"
         "gfetch"
+        "gitg"
         "gitk"
         "git-gc-all"
         "git-info"
