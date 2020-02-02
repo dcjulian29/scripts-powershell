@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.2.1.1'
+    ModuleVersion = '2020.2.1.2'
     GUID = 'cde0e14e-0368-45f8-8d13-618442f9a9aa'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -8,12 +8,13 @@
     FormatsToProcess = @()
     FunctionsToExport = @(
         "Start-GitHubFlowFeature"
-        "Finish-GitHubFlowFeature"
+        "Stop-GitHubFlowFeature"
         "Publish-GitHubFlowFeature"
         "Pop-GitHubFlowFeature"
         "Update-GitHubFlowFeature"
     )
     AliasesToExport = @(
+        "Finish-GitHubFlowFeature"
         "Pull-GitHubFlowFeature"
         "ghffs"
         "ghfff"
