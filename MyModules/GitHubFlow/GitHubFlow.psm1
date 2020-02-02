@@ -51,8 +51,9 @@ function Publish-GitHubFlowFeature {
         [string] $Name
     )
 
-   & "$(Find-Git)" push $Name
     if (-not ($name.StartsWith("feature/"))) {
         $Name = "feature/$Name"
     }
+
+    & "$(Find-Git)" push $Name
 }
