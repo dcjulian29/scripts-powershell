@@ -20,18 +20,15 @@
     }
 }
 
-function Get-VirtualIsoPath {
-    "$((Get-VMHost).VirtualMachinePath)\ISO"
-}
-
 function LatestIsoFile {
     param (
         [string]$Pattern
     )
 
-    $isoDir = Get-VirtualIsoPath
+    $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
 
-    $latest = Get-ChildItem -Filter "$($Pattern)*" -Path $IsoDir `
+    $latest = Get-ChildItem -Path $IsoDir `
+        | Where-Object { $_.Name -match "$($Pattern).*" } `
         | Sort-Object Name -Descending `
         | Select-Object -First 1
 
