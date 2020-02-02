@@ -1,12 +1,11 @@
 function Start-GitHubFlowFeature {
     param (
-        [string] $Name = "$(Read-Host 'What is the name of the feature')",
-        [switch] $Force
+        [string] $Name = "$(Read-Host 'What is the name of the feature')"
     )
 
     $branch = Get-GitRepositoryBranch
 
-    if ((-not ($branch -eq "master")) -and (-not $force)) {
+    if (-not ($branch -eq "master")) {
         Write-Error "You are not in the master branch. Use -Force to create a new feature from this branch if that is what you want."
     } else {
         & "$(Find-Git)" checkout -b $Name
