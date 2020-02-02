@@ -19,7 +19,25 @@ function Start-GitHubFlowFeature {
 Set-Alias ghffs Start-GitHubFlowFeature
 
 function Stop-GitHubFlowFeature {
+    $branch = Get-GitRepositoryBranch
 
+    if (-not ($branch.StartsWith("feature/"))) {
+        Write-Error "You are not in a feature branch."
+    } else {
+        $remote = & "$(Find-Git)" ls-remote --heads origin $branch
+
+        if ($remote) {
+            & "$(Find-Git)" pull
+        }
+
+        & "$(Find-Git)" checkout master
+        & "$(Find-Git)" merge --no-ff $branch
+        & "$(Find-Git)" branch --delete $branch
+
+        if ($remote) {
+            & "$(Find-Git)" push origin --delete $branch
+        }
+    }
 }
 
 Set-Alias -Name Finish-GitHubFlowFeature -Value Stop-GitHubFlowFeature
