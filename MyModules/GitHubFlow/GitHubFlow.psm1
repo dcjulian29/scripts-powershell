@@ -8,6 +8,10 @@ function Start-GitHubFlowFeature {
     if (-not ($branch -eq "master")) {
         Write-Error "You are not in the master branch. Use -Force to create a new feature from this branch if that is what you want."
     } else {
+        if (-not ($name.StartsWith("feature/"))) {
+            $Name = "feature/$Name"
+        }
+
         & "$(Find-Git)" checkout -b $Name
     }
 }
@@ -28,6 +32,9 @@ function Pop-GitHubFlowFeature {
 
    & "$(Find-Git)" fetch
    & "$(Find-Git)" checkout $Name
+    if (-not ($name.StartsWith("feature/"))) {
+        $Name = "feature/$Name"
+    }
 }
 
 Set-Alias -Name Pull-GitHubFlowFeature -Value Pop-GitHubFlowFeature
@@ -38,4 +45,7 @@ function Publish-GitHubFlowFeature {
     )
 
    & "$(Find-Git)" push $Name
+    if (-not ($name.StartsWith("feature/"))) {
+        $Name = "feature/$Name"
+    }
 }
