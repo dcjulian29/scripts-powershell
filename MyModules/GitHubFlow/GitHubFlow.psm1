@@ -55,5 +55,11 @@ function Publish-GitHubFlowFeature {
         $Name = "feature/$Name"
     }
 
-    & "$(Find-Git)" push $Name
+    $remote = & "$(Find-Git)" ls-remote --heads origin $Name
+
+    if ($remote) {
+        & "$(Find-Git)" push -u origin $Name
+    } else {
+        & "$(Find-Git)" push --set-upstream origin $Name
+    }
 }
