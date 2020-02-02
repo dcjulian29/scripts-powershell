@@ -11,10 +11,12 @@
         "Finish-GitHubFlowFeature"
         "Publish-GitHubFlowFeature"
         "Pop-GitHubFlowFeature"
+        "Update-GitHubFlowFeature"
     )
     AliasesToExport = @(
         "Pull-GitHubFlowFeature"
         "ghffs"
         "ghfff"
+        "ghffu"
     )
 }
