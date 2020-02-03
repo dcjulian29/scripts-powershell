@@ -1,4 +1,18 @@
-﻿function decodeEnabledState ($s) {
+﻿function convertTime ($s) {
+    $t = New-TimeSpan -Seconds $($s/1000)
+
+    if ($t.TotalSeconds -eq 0) {
+        return ""
+    }
+
+    if ($t.Days -eq 0) {
+        return "{0:d2}:{1:d2}:{2:d2}" -f $t.Hours, $t.Minutes, $t.Seconds
+    }
+
+    return "{0}.{1:d2}:{2:d2}:{3:d2}" -f $t.Days, $t.Hours, $t.Minutes, $t.Seconds
+}
+
+function decodeEnabledState ($s) {
     switch ($s) {
               1 { "Other"               }
               2 { "Running"             }
@@ -22,73 +36,55 @@
     }
 }
 
-function convertTime ($s) {
-    $t = New-TimeSpan -Seconds $($s/1000)
-
-    if ($t.TotalSeconds -eq 0) {
-        return ""
-    }
-
-    if ($t.Days -eq 0) {
-        return "{0:d2}:{1:d2}:{2:d2}" -f $t.Hours, $t.Minutes, $t.Seconds
-    }
-
-    return "{0}.{1:d2}:{2:d2}:{3:d2}" -f $t.Days, $t.Hours, $t.Minutes, $t.Seconds
-}
-
 ###############################################################################
 
-function Get-VirtualMachineStatus {
+function Compress-Vhdx {
     param (
-        [string]$ComputerName = $env:ComputerName
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $VhdxFile
     )
 
-    Get-WmiObject -Namespace $(Get-VirtualizationNamespace $ComputerName) -ComputerName $ComputerName `
-        -Query "SELECT * FROM MSVM_ComputerSystem WHERE Caption Like '%virtual%'" `
-        | Sort-Object ElementName `
-        | Select-Object `
-            @{Label="Name"; Expression={$_.ElementName}}, `
-            @{Label="GUID"; Expression={$_.Name}}, `
-            @{Label="State"; Expression={decodeEnabledState $_.EnabledState}},
-            @{Label="UpTime"; Expression={convertTime $_.OnTimeInMilliseconds}} `
-        | Format-Table -AutoSize
+    if (-not $(Assert-Elevation)) { return }
+
+    Write-Output "Attempting to mount $VhdxFile..."
+    Mount-VHD -Path $VhdxFile -ReadOnly
+
+    Write-Output "Attempting to compact $VhdxFile"
+    Optimize-VHD -Path $VhdxFile -Mode Full
+
+    Write-Output "Attempting to dismount $VhdxFile"
+    Dismount-VHD -path $VhdxFile
 }
 
-function Select-VirtualMachine {
-    [cmdletbinding()]
+function Connect-IsoToVirtual {
     param (
-        [parameter(ValueFromPipeline = $true)]
-        [String[]]$Choice,
-        [string]$ComputerName = $env:ComputerName
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $VirtualMachineName,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $IsoFile
     )
 
-    process {
-        $Global:dae994b3be21 = 0
+    if (-not $(Assert-Elevation)) { return }
 
-        $VMs = Get-WmiObject -Namespace $(Get-VirtualizationNamespace $ComputerName) `
-            -ComputerName $ComputerName `
-            -Query "SELECT * FROM MSVM_ComputerSystem WHERE Caption Like '%virtual%'"
+    Add-VMDvdDrive -VMName $VirtualMachineName
 
-        $VMs = $VMs | Sort-Object ElementName
+    Set-VMDvdDrive -VMName $VirtualMachineName -Path $IsoFile
+}
 
-        if ([string]::IsNullOrEmpty($Choice)) {
-            $VMs | Select-Object `
-                    @{Label="ID"; Expression={$Global:dae994b3be21;$Global:dae994b3be21++}}, `
-                    @{Label="Name"; Expression={$_.ElementName}}, `
-                    @{Label="GUID"; Expression={$_.Name}}, `
-                    @{Label="State"; Expression={decodeEnabledState $_.EnabledState}},
-                    @{Label="UpTime"; Expression={convertTime $_.OnTimeInMilliseconds}} `
-                | Format-Table -AutoSize
-        }
+function Get-VirtualizationManagementService {
+    param (
+        [String]$ComputerName = $env:COMPUTERNAME
+    )
 
-        if ($Choice.Length -gt 0) {
-            $Choice | ForEach-Object {
-                return $VMs[$_]
-            }
-        } else {
-            return $VMs[[int[]](Read-Host "Which one(s)? ").Split(",")]
-        }
-    }
+    Get-WmiObject -Namespace $(Get-VirtualizationNamespace $ComputerName) `
+        -Class MSVM_VirtualSystemManagementService `
+        -ComputerName $ComputerName `
+        -ErrorAction Stop
 }
 
 function Get-VirtualizationNamespace {
@@ -123,15 +119,38 @@ function Get-VirtualizationNamespace {
     return $namespace
 }
 
-function Get-VirtualizationManagementService {
+function Get-VirtualMachineStatus {
     param (
-        [String]$ComputerName = $env:COMPUTERNAME
+        [string]$ComputerName = $env:ComputerName
     )
 
-    Get-WmiObject -Namespace $(Get-VirtualizationNamespace $ComputerName) `
-        -Class MSVM_VirtualSystemManagementService `
-        -ComputerName $ComputerName `
-        -ErrorAction Stop
+    Get-WmiObject -Namespace $(Get-VirtualizationNamespace $ComputerName) -ComputerName $ComputerName `
+        -Query "SELECT * FROM MSVM_ComputerSystem WHERE Caption Like '%virtual%'" `
+        | Sort-Object ElementName `
+        | Select-Object `
+            @{Label="Name"; Expression={$_.ElementName}}, `
+            @{Label="GUID"; Expression={$_.Name}}, `
+            @{Label="State"; Expression={decodeEnabledState $_.EnabledState}},
+            @{Label="UpTime"; Expression={convertTime $_.OnTimeInMilliseconds}} `
+        | Format-Table -AutoSize
+}
+
+function Initialize-WorkstationHyperV {
+    $vm = "${env:SYSTEMDRIVE}\Virtual Machines"
+
+    if (-not (Test-Path -Path $vm)) {
+        New-Item -Path $vm -ItemType Directory | Out-Null
+    }
+
+    if (-not (Test-Path -Path "$vm\Discs")) {
+        New-Item -Path "$vm\Discs" -ItemType Directory | Out-Null
+    }
+
+    if (-not (Test-Path -Path "$vm\ISO")) {
+        New-Item -Path "$vm\ISO" -ItemType Directory | Out-Null
+    }
+
+    Set-VMHost -VirtualMachinePath $vm -VirtualHardDiskPath "$vm\Discs"
 }
 
 function Mount-Vhdx {
@@ -156,8 +175,234 @@ function Mount-Vhdx {
     "$($driveLetter):"
 }
 
-function New-SystemVhdx {
+function Move-FileToVM {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $VhdxFile,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $File,
+        [string] $RelativeDestination = ""
+    )
+
+    if (-not $(Assert-Elevation)) { return }
+
+    $fullPath = Get-FullFilePath $VhdxFile
+    $drive = Mount-Vhdx $fullPath
+
+    Write-Verbose "Vhdx file mounted on $($drive)..."
+
+    $File = Get-FullFilePath $File
+    Copy-Item -Path $File -Destination "$drive\$RelativeDestination"
+
+    Dismount-DiskImage -ImagePath $fullPath
+}
+
+function Move-FilesToVM {
     [Cmdletbinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $VhdxFile,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string[]] $Files,
+        [string] $RelativeDestination = ""
+    )
+
+    if (-not $(Assert-Elevation)) { return }
+
+    $fullPath = Get-FullFilePath $VhdxFile
+    $drive = Mount-Vhdx $fullPath
+
+    Write-Verbose "Vhdx file mounted on $($drive)..."
+
+    foreach ($file in $files) {
+        $File = Get-FullFilePath $File
+        Copy-Item -Path $File -Destination "$drive\$RelativeDestination"
+    }
+
+    Dismount-DiskImage -ImagePath $fullPath
+}
+
+function Move-StartLayoutToVM {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $VhdxFile,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $LayoutFile
+    )
+
+    if (-not $(Assert-Elevation)) { return }
+
+    $fullPath = Get-FullFilePath $VhdxFile
+    $layoutPath = Get-FullFilePath $LayoutFile
+
+    $drive = Mount-Vhdx $fullPath
+
+    Write-Verbose "Vhdx file mounted on $($drive)..."
+
+    if (Test-Path $layoutPath ) {
+        Import-StartLayout -LayoutPath $layoutPath -MountPath $drive
+    }
+
+    Dismount-DiskImage -ImagePath $fullPath
+}
+
+function Move-VMStartUpScriptBlockToVM {
+    param (
+        [parameter(Mandatory=$true)]
+        [string] $VhdxFile,
+        [string] $Arguments,
+        [parameter(Mandatory=$true)]
+        [ScriptBlock] $ScriptBlock
+    )
+
+    $ScriptFile =  `
+        [IO.Path]::GetTempFileName() | Rename-Item -NewName { $_ -replace 'tmp$', 'ps1' } –PassThru
+
+    Write-Verbose "Creating temporary script file for injection: $($ScriptFile.FullName)"
+    Write-Output $ScriptBlock | Out-File $ScriptFile.FullName -Encoding Ascii
+
+    Move-VMStartUpScriptFileToVM -VhdxFile $VhdxFile -ScriptFile $ScriptFile -Arguments $Arguments
+
+    Remove-Item $ScriptFile
+}
+
+function Move-VMStartUpScriptFileToVM {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $VhdxFile,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $ScriptFile,
+        [string] $Arguments
+    )
+
+    if (-not $(Assert-Elevation)) { return }
+
+    $fullPath = Get-FullFilePath $VhdxFile
+
+    $drive = Mount-Vhdx $fullPath
+
+    Write-Verbose "Vhdx file mounted on $($drive)..."
+
+    $scriptName = "$((Get-Item -Path $ScriptFile).Name)"
+    $virtualRoot = "$($drive)\Windows\Setup\Scripts"
+    $virtualCommand = "$($virtualRoot)\SetupComplete.cmd"
+    $virtualScript = "$($virtualRoot)\$($scriptName)"
+
+    if (-not (Test-Path $virtualRoot)) {
+        New-Item -Type Directory -Path $drive -Name "\Windows\Setup\Scripts" | Out-Null
+    }
+
+    Copy-Item -Path $ScriptFile -Destination $virtualScript
+
+    $pshellexe = "%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe"
+    $pshellcmd = "%WINDIR%\Setup\Scripts\$($scriptName) $Arguments"
+
+    Set-Content -Path $virtualCommand -Encoding Ascii `
+        -Value "@$($pshellexe) -ExecutionPolicy unrestricted -NoLogo -Command $($pshellcmd)"
+
+    Dismount-DiskImage -ImagePath $fullPath
+}
+
+function New-DataVhdx {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $VhdxFile,
+        [UInt64] $DiskSize = 80GB
+    )
+
+    if (-not $(Assert-Elevation)) { return }
+
+    Write-Infomation "Creating a Data Disk [$($VhdxFile)] sized [$($DiskSize)]"
+    New-VHD -Path $VhdxFile -SizeBytes $DiskSize -Dynamic
+
+    $fullPath = Get-FullFilePath $VhdxFile
+
+    Mount-DiskImage -ImagePath $fullPath
+
+    $diskNumber = (Get-DiskImage -ImagePath $fullPath | Get-Disk).Number
+
+    Write-Output "Initializing Data Disk..."
+
+    Initialize-Disk -Number $diskNumber -PartitionStyle GPT
+    $partition = New-Partition -DiskNumber $diskNumber -UseMaximumSize `
+        -GptType '{ebd0a0a2-b9e5-4433-87c0-68b6b72699c7}'
+
+    Write-Output "Formatting Data Disk..."
+
+    Format-Volume -FileSystem NTFS -Partition $partition -Confirm:$false
+
+    Dismount-DiskImage -ImagePath $fullPath
+}
+
+function New-DifferencingVhdx {
+    [Cmdletbinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $ReferenceDisk,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $VhdxFile
+    )
+
+    if (-not $(Assert-Elevation)) { return }
+
+    Write-Output "Creating a Differencing Disk [$($VhdxFile)] based on [$($ReferenceDisk)]"
+
+    New-VHD –Path $VhdxFile -Differencing –ParentPath $ReferenceDisk
+}
+
+function New-SqlDataVhdx {
+    [Cmdletbinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $VhdxFile,
+        [UInt64] $DiskSize = 100GB
+    )
+
+    if (-not $(Assert-Elevation)) { return }
+
+    Write-Output "Creating a SQL Data Disk [$($VhdxFile)] sized [$($DiskSize)]"
+    New-VHD -Path $VhdxFile -SizeBytes $DiskSize -Dynamic
+
+    $fullPath = Get-FullFilePath $VhdxFile
+
+    Mount-DiskImage -ImagePath $fullPath
+
+    $diskNumber = (Get-DiskImage -ImagePath $fullPath | Get-Disk).Number
+
+    Write-Output "Initializing SQL Data Disk..."
+
+    Initialize-Disk -Number $diskNumber -PartitionStyle GPT
+    $partition = New-Partition -DiskNumber $diskNumber -UseMaximumSize `
+        -GptType '{ebd0a0a2-b9e5-4433-87c0-68b6b72699c7}'
+
+    Write-Output "Formatting SQL Data Disk..."
+
+    Format-Volume -FileSystem ReFS -Partition $partition -Confirm:$false -AllocationUnitSize 64KB
+
+    Dismount-DiskImage -ImagePath $fullPath
+}
+
+function New-SystemVhdx {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -197,108 +442,7 @@ function New-SystemVhdx {
     Write-Output "Created System Disk [$($VhdxFile)]"
 }
 
-function New-DifferencingVhdx {
-    [Cmdletbinding()]
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $ReferenceDisk,
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $VhdxFile
-    )
-
-    if (-not $(Assert-Elevation)) { return }
-
-    Write-Output "Creating a Differencing Disk [$($VhdxFile)] based on [$($ReferenceDisk)]"
-
-    New-VHD –Path $VhdxFile -Differencing –ParentPath $ReferenceDisk
-}
-
-function New-DataVhdx {
-    [Cmdletbinding()]
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $VhdxFile,
-        [UInt64] $DiskSize = 80GB
-    )
-
-    if (-not $(Assert-Elevation)) { return }
-
-    Write-Infomation "Creating a Data Disk [$($VhdxFile)] sized [$($DiskSize)]"
-    New-VHD -Path $VhdxFile -SizeBytes $DiskSize -Dynamic
-
-    $fullPath = Get-FullFilePath $VhdxFile
-
-    Mount-DiskImage -ImagePath $fullPath
-
-    $diskNumber = (Get-DiskImage -ImagePath $fullPath | Get-Disk).Number
-
-    Write-Output "Initializing Data Disk..."
-
-    Initialize-Disk -Number $diskNumber -PartitionStyle GPT
-    $partition = New-Partition -DiskNumber $diskNumber -UseMaximumSize `
-        -GptType '{ebd0a0a2-b9e5-4433-87c0-68b6b72699c7}'
-
-    Write-Output "Formatting Data Disk..."
-
-    Format-Volume -FileSystem NTFS -Partition $partition -Confirm:$false
-
-    Dismount-DiskImage -ImagePath $fullPath
-}
-function New-SqlDataVhdx {
-    [Cmdletbinding()]
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $VhdxFile,
-        [UInt64] $DiskSize = 100GB
-    )
-
-    if (-not $(Assert-Elevation)) { return }
-
-    Write-Output "Creating a SQL Data Disk [$($VhdxFile)] sized [$($DiskSize)]"
-    New-VHD -Path $VhdxFile -SizeBytes $DiskSize -Dynamic
-
-    $fullPath = Get-FullFilePath $VhdxFile
-
-    Mount-DiskImage -ImagePath $fullPath
-
-    $diskNumber = (Get-DiskImage -ImagePath $fullPath | Get-Disk).Number
-
-    Write-Output "Initializing SQL Data Disk..."
-
-    Initialize-Disk -Number $diskNumber -PartitionStyle GPT
-    $partition = New-Partition -DiskNumber $diskNumber -UseMaximumSize `
-        -GptType '{ebd0a0a2-b9e5-4433-87c0-68b6b72699c7}'
-
-    Write-Output "Formatting SQL Data Disk..."
-
-    Format-Volume -FileSystem ReFS -Partition $partition -Confirm:$false -AllocationUnitSize 64KB
-
-    Dismount-DiskImage -ImagePath $fullPath
-}
-
-function Connect-IsoToVirtual {
-    [Cmdletbinding()]
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $VirtualMachineName,
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $IsoFile
-    )
-
-    if (-not $(Assert-Elevation)) { return }
-
-    Add-VMDvdDrive -VMName $VirtualMachineName
-
-    Set-VMDvdDrive -VMName $VirtualMachineName -Path $IsoFile
-}
+Set-Alias New-ReferenceVhdx New-SystemVhdx
 
 function New-UnattendFile {
     [Cmdletbinding()]
@@ -365,155 +509,7 @@ function New-UnattendFile {
     Dismount-DiskImage -ImagePath $fullPath
 }
 
-function Move-FileToVM {
-    [Cmdletbinding()]
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $VhdxFile,
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $File,
-        [string] $RelativeDestination = ""
-    )
-
-    if (-not $(Assert-Elevation)) { return }
-
-    $fullPath = Get-FullFilePath $VhdxFile
-    $drive = Mount-Vhdx $fullPath
-
-    Write-Verbose "Vhdx file mounted on $($drive)..."
-
-    $File = Get-FullFilePath $File
-    Copy-Item -Path $File -Destination "$drive\$RelativeDestination"
-
-    Dismount-DiskImage -ImagePath $fullPath
-}
-
-function Move-FilesToVM {
-    [Cmdletbinding()]
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $VhdxFile,
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string[]] $Files,
-        [string] $RelativeDestination = ""
-    )
-
-    if (-not $(Assert-Elevation)) { return }
-
-    $fullPath = Get-FullFilePath $VhdxFile
-    $drive = Mount-Vhdx $fullPath
-
-    Write-Verbose "Vhdx file mounted on $($drive)..."
-
-    foreach ($file in $files) {
-        $File = Get-FullFilePath $File
-        Copy-Item -Path $File -Destination "$drive\$RelativeDestination"
-    }
-
-    Dismount-DiskImage -ImagePath $fullPath
-}
-
-function Move-StartLayoutToVM {
-    [Cmdletbinding()]
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $VhdxFile,
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $LayoutFile
-    )
-
-    if (-not $(Assert-Elevation)) { return }
-
-    $fullPath = Get-FullFilePath $VhdxFile
-    $layoutPath = Get-FullFilePath $LayoutFile
-
-    $drive = Mount-Vhdx $fullPath
-
-    Write-Verbose "Vhdx file mounted on $($drive)..."
-
-    if (Test-Path $layoutPath ) {
-        Import-StartLayout -LayoutPath $layoutPath -MountPath $drive
-    }
-
-    Dismount-DiskImage -ImagePath $fullPath
-}
-
-function Move-VMStartUpScriptFileToVM {
-    [Cmdletbinding()]
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $VhdxFile,
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $ScriptFile,
-        [string] $Arguments
-    )
-
-    if (-not $(Assert-Elevation)) { return }
-
-    $fullPath = Get-FullFilePath $VhdxFile
-
-    $drive = Mount-Vhdx $fullPath
-
-    Write-Verbose "Vhdx file mounted on $($drive)..."
-
-    $scriptName = "$((Get-Item -Path $ScriptFile).Name)"
-    $virtualRoot = "$($drive)\Windows\Setup\Scripts"
-    $virtualCommand = "$($virtualRoot)\SetupComplete.cmd"
-    $virtualScript = "$($virtualRoot)\$($scriptName)"
-
-    if (-not (Test-Path $virtualRoot)) {
-        New-Item -Type Directory -Path $drive -Name "\Windows\Setup\Scripts" | Out-Null
-    }
-
-    Copy-Item -Path $ScriptFile -Destination $virtualScript
-
-    $pshellexe = "%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe"
-    $pshellcmd = "%WINDIR%\Setup\Scripts\$($scriptName) $Arguments"
-
-    Set-Content -Path $virtualCommand -Encoding Ascii `
-        -Value "@$($pshellexe) -ExecutionPolicy unrestricted -NoLogo -Command $($pshellcmd)"
-
-    Dismount-DiskImage -ImagePath $fullPath
-}
-
-function Move-VMStartUpScriptBlockToVM {
-    [Cmdletbinding()]
-    param (
-        [parameter(Mandatory=$true)]
-        [string] $VhdxFile,
-        [string] $Arguments,
-        [parameter(Mandatory=$true)]
-        [ScriptBlock] $ScriptBlock
-    )
-
-    $ScriptFile =  `
-        [IO.Path]::GetTempFileName() | Rename-Item -NewName { $_ -replace 'tmp$', 'ps1' } –PassThru
-
-    Write-Verbose "Creating temporary script file for injection: $($ScriptFile.FullName)"
-    Write-Output $ScriptBlock | Out-File $ScriptFile.FullName -Encoding Ascii
-
-    Move-VMStartUpScriptFileToVM -VhdxFile $VhdxFile -ScriptFile $ScriptFile -Arguments $Arguments
-
-    Remove-Item $ScriptFile
-}
-
 function New-VirtualMachine {
-    [Cmdletbinding()]
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -539,68 +535,69 @@ function New-VirtualMachine {
     Set-Vm -Name $ComputerName -AutomaticStopAction ShutDown -ComputerName $RemoteHost
 }
 
-function Compress-Vhdx {
-    [Cmdletbinding()]
+function Select-VirtualMachine {
+    [cmdletbinding()]
+    param (
+        [parameter(ValueFromPipeline = $true)]
+        [String[]]$Choice,
+        [string]$ComputerName = $env:ComputerName
+    )
+
+    process {
+        $Global:dae994b3be21 = 0
+
+        $VMs = Get-WmiObject -Namespace $(Get-VirtualizationNamespace $ComputerName) `
+            -ComputerName $ComputerName `
+            -Query "SELECT * FROM MSVM_ComputerSystem WHERE Caption Like '%virtual%'"
+
+        $VMs = $VMs | Sort-Object ElementName
+
+        if ([string]::IsNullOrEmpty($Choice)) {
+            $VMs | Select-Object `
+                    @{Label="ID"; Expression={$Global:dae994b3be21;$Global:dae994b3be21++}}, `
+                    @{Label="Name"; Expression={$_.ElementName}}, `
+                    @{Label="GUID"; Expression={$_.Name}}, `
+                    @{Label="State"; Expression={decodeEnabledState $_.EnabledState}},
+                    @{Label="UpTime"; Expression={convertTime $_.OnTimeInMilliseconds}} `
+                | Format-Table -AutoSize
+        }
+
+        if ($Choice.Length -gt 0) {
+            $Choice | ForEach-Object {
+                return $VMs[$_]
+            }
+        } else {
+            return $VMs[[int[]](Read-Host "Which one(s)? ").Split(",")]
+        }
+    }
+}
+
+function Uninstall-VirtualMachine {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $VhdxFile
+        [string]$ComputerName,
+        [switch]$Force
     )
 
-    if (-not $(Assert-Elevation)) { return }
+    $vm = Get-VM -Name $ComputerName -ErrorAction SilentlyContinue
 
-    Write-Output "Attempting to mount $VhdxFile..."
-    Mount-VHD -Path $VhdxFile -ReadOnly
+    if ($vm) {
+        if ($vm.state -ne "Off") {
+            $vm | Stop-VM -Force
+        }
 
-    Write-Output "Attempting to compact $VhdxFile"
-    Optimize-VHD -Path $VhdxFile -Mode Full
+        $vm | Remove-VM -Force
+    }
 
-    Write-Output "Attempting to dismount $VhdxFile"
-    Dismount-VHD -path $VhdxFile
+    $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\$ComputerName.vhdx"
+
+    if (Test-Path "$vhdx") {
+        if ($Force) {
+            Remove-Item -Path $vhdx -Force
+        } else {
+            Remove-Item -Path $vhdx -Confirm
+        }
+    }
+
 }
-
-function Initialize-WorkstationHyperV {
-    $vm = "${env:SYSTEMDRIVE}\Virtual Machines"
-
-    if (-not (Test-Path -Path $vm)) {
-        New-Item -Path $vm -ItemType Directory | Out-Null
-    }
-
-    if (-not (Test-Path -Path "$vm\Discs")) {
-        New-Item -Path "$vm\Discs" -ItemType Directory | Out-Null
-    }
-
-    if (-not (Test-Path -Path "$vm\ISO")) {
-        New-Item -Path "$vm\ISO" -ItemType Directory | Out-Null
-    }
-
-    Set-VMHost -VirtualMachinePath $vm -VirtualHardDiskPath "$vm\Discs"
-}
-
-###############################################################################
-
-Export-ModuleMember Convert-WindowsImage
-Export-ModuleMember New-SystemVhdx
-Export-ModuleMember New-DifferencingVhdx
-Export-ModuleMember New-DataVhdx
-Export-ModuleMember Connect-IsoToVirtual
-Export-ModuleMember New-UnattendFile
-Export-ModuleMember Move-FileToVM
-Export-ModuleMember Move-FilesToVM
-Export-ModuleMember Move-StartLayoutToVM
-Export-ModuleMember Move-VMStartUpScriptFileToVM
-Export-ModuleMember Move-VMStartUpScriptBlockToVM
-Export-ModuleMember New-VirtualMachine
-Export-ModuleMember New-VirtualMachineFromName
-Export-ModuleMember Compress-Vhdx
-Export-ModuleMember Initialize-WorkstationHyperV
-
-Export-ModuleMember Get-VirtualizationNamespace
-Export-ModuleMember Get-VirtualizationManagementService
-
-Export-ModuleMember Get-VirtualMachineStatus
-Export-ModuleMember Select-VirtualMachine
-
-Set-Alias New-ReferenceVhdx New-SystemVhdx
-Export-ModuleMember -Alias New-ReferenceVhdx
