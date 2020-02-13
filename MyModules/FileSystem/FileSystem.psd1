@@ -1,6 +1,6 @@
 @{
     RootModule = 'FileSystem.psm1'
-    ModuleVersion = '2020.1.24.1'
+    ModuleVersion = '2020.2.13.1'
     GUID = 'aaad40aa-30a0-495c-8377-53e89ea1ec11'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -10,6 +10,7 @@
         "Copy-File"
         "Get-FullFilePath"
         "Get-FullDirectoryPath"
+        "Get-FileEncoding"
         "Reset-Path"
         "Separator"
         "Find-FirstPath"
