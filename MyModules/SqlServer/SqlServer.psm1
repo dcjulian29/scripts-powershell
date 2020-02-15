@@ -60,3 +60,15 @@ function Register-SqlCmdSqlCredentials {
     $env:SQLCMDUSER = $Credentials.UserName
     $env:SQLCMDPASSWORD = $Credentials.GetNetworkCredential().password
 }
+
+function Start-MSSqlServer {
+    & sc.exe start MSSQLSERVER
+}
+
+Set-Alias -Name mssql-start -Value Start-MSSqlServer
+
+function Stop-MSSqlServer {
+    & sc.exe stop MSSQLSERVER
+}
+
+Set-Alias -Name mssql-stop -Value Stop-MSSqlServer
