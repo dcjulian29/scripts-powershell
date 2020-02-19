@@ -30,6 +30,46 @@ function Get-Midnight {
 
 Set-Alias -Name midnight -Value Get-Midnight
 
+function Get-OSActivationStatus {
+    param (
+        [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [string]$ComputerName = $Env:COMPUTERNAME
+    )
+
+    try {
+        $wpa = Get-WmiObject SoftwareLicensingProduct -ComputerName $ComputerName `
+            -Filter "ApplicationID = '55c92734-d682-4d71-983e-d6ec3f16059f'" `
+            -Property LicenseStatus -ErrorAction Stop
+    } catch {
+        $status = New-Object ComponentModel.Win32Exception ($_.Exception.ErrorCode)
+        $wpa = $null
+    }
+
+    $output = New-Object psobject -Property @{
+        ComputerName = $ComputerName;
+        Status = [string]::Empty;
+    }
+
+    if ($wpa) {
+        :outer foreach($item in $wpa) {
+            switch ($item.LicenseStatus) {
+                0 {$output.Status = "Unlicensed"}
+                1 {$output.Status = "Licensed"; break outer}
+                2 {$output.Status = "Out-Of-Box Grace Period"; break outer}
+                3 {$output.Status = "Out-Of-Tolerance Grace Period"; break outer}
+                4 {$output.Status = "Non-Genuine Grace Period"; break outer}
+                5 {$output.Status = "Notification"; break outer}
+                6 {$output.Status = "Extended Grace"; break outer}
+                default {$output.Status = "Unknown value"}
+            }
+        }
+    } else {
+        $output.Status = $status.Message
+    }
+
+    return $output
+}
+
 function Get-OSArchitecture {
     (Get-CimInstance Win32_OperatingSystem).OSArchitecture
 }
