@@ -98,6 +98,10 @@ function Get-OSBoot {
     }
 }
 
+function Get-OSBuildNumber {
+    (Get-CimInstance Win32_OperatingSystem).BuildNumber
+}
+
 function Get-OSCaption {
     (Get-CimInstance Win32_OperatingSystem).Caption
 }
@@ -117,20 +121,16 @@ function Get-OSInstallDate {
     }
 }
 
-function Get-OSVersion {
-    (Get-CimInstance Win32_OperatingSystem).Version
+function Get-OSRegisteredOrganization {
+    (Get-CimInstance Win32_OperatingSystem).Organization
 }
 
 function Get-OSRegisteredUser {
     (Get-CimInstance Win32_OperatingSystem).RegisteredUser
 }
 
-function Get-OSOrganization {
-    (Get-CimInstance Win32_OperatingSystem).Organization
-}
-
-function Get-OSBuildNumber {
-    (Get-CimInstance Win32_OperatingSystem).BuildNumber
+function Get-OSVersion {
+    (Get-CimInstance Win32_OperatingSystem).Version
 }
 
 function Install-WindowsUpdates {
