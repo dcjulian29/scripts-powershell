@@ -10,12 +10,28 @@ function Pop-GitFlowFeature {
     & "$(Find-Git)"  flow feature pull $Name
 }
 
+function Pop-GitFlowHotfix {
+    param (
+        [string] $Name = "$(Read-Host 'What is the name of the hotfix')"
+    )
+
+    & "$(Find-Git)"  flow hotfix pull $Name
+}
+
 function Publish-GitFlowFeature {
     param (
         [string] $Name
     )
 
    & "$(Find-Git)"  flow feature publish $Name
+}
+
+function Publish-GitFlowHotfix {
+    param (
+        [string] $Name
+    )
+
+   & "$(Find-Git)"  flow hotfix publish $Name
 }
 
 function Remove-GitFlowFeature {
@@ -61,7 +77,7 @@ function Stop-GitFlowFeature {
 }
 
 function Stop-GitFlowHotfix {
-   & "$(Find-Git)"  flow hotfix finish
+   & "$(Find-Git)"  flow hotfix finish -m "Hotfix"
 }
 
 function Stop-GitFlowRelease {
@@ -91,6 +107,9 @@ Set-Alias Finish-GitFlowFeature Stop-GitFlowFeature
 Set-Alias Finish-GitFlowRelease Stop-GitFlowRelease
 Set-Alias gfff Stop-GitFlowFeature
 Set-Alias gffs Start-GitFlowFeature
+Set-Alias gfhf Stop-GitFlowHotfix
+Set-Alias gfhs Start-GitFlowHotfix
 Set-Alias gfrf Stop-GitFlowRelease
 Set-Alias gfrs Start-GitFlowRelease
 Set-Alias Pull-GitFlowFeature Pop-GitFlowFeature
+Set-Alias Pull-GitFlowHotfix Pop-GitFlowHotfix
