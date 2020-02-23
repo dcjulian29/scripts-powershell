@@ -10,6 +10,7 @@
     FunctionsToExport = @(
         "Initialize-GitFlow"
         "Pop-GitFlowFeature"
+        "Pop-GitFlowHotfix"
         "Publish-GitFlowFeature"
         "Publish-GitFlowHotfix"
         "Remove-GitFlowFeature"
@@ -23,14 +24,18 @@
         "Update-GitFlowFeature"
     )
     AliasesToExport = @(
+        "Abort-GitFlowFeature"
+        "Abort-GitFlowRelease"
         "Finish-GitFlowFeature"
         "Finish-GitFlowHotfix"
         "Finish-GitFlowRelease"
-        "gffff"
+        "gfff"
         "gffs"
         "gfhs"
         "gfhf"
         "gfrf"
         "gfrs"
+        "Pull-GitFlowFeature"
+        "Pull-GitFlowHotfix"
     )
 }
