@@ -42,7 +42,7 @@ function Get-RdpSession {
 
     process {
         foreach ($computer in $ComputerName) {
-            Write-Progress ` #-Activity "Get RDP Sessions" `
+            Write-Progress -Activity "Get RDP Sessions" `
                 -Status "Querying RDP Sessions on $computer" `
                 -PercentComplete (($counter / $total) * 100)
 
