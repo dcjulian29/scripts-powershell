@@ -8,6 +8,19 @@ Function Get-LastExecutionTime {
     return $command.EndExecutionTime - $command.StartExecutionTime
 }
 
+function Get-PowerShellVerb {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $Verb
+   )
+
+   Get-Verb | Where-Object { $_.Verb -eq $Verb }
+}
+
+function Get-PowerShellVerbs {
+    Get-Verb | Sort-Object -Property Verb
+}
+
 function Get-Profile {
     Get-Content $profile
 }
@@ -36,6 +49,19 @@ function Search-Command {
 }
 
 Set-Alias -Name Find-PSCommand -Value Search-Command
+
+function Test-PowerShellVerb {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $Verb
+   )
+
+    if (Get-PowerShellVerb $Verb) {
+        return $true
+    }
+
+    return $false
+}
 
 function Update-Profile {
     . $profile
