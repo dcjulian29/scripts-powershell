@@ -1,3 +1,12 @@
+function disableRdpFile($computers) {
+    if ($computers) {
+        $computers = $computers | Where-Object { $_.Status -eq "Unreachable" }
+
+        foreach ($computer in $computers) {
+            Move-Item -Path $computer.File -Destination "$($computer.File).disabled"
+        }
+    }
+}
 function Get-ActiveRdpSession {
     [CmdletBinding()]
     param (
@@ -94,3 +103,229 @@ function Close-RdpSession {
 }
 
 Set-Alias -Name rdpkick -Value Close-RdpSession
+
+function Disable-RdpHostFile {
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $Path,
+        [string] $ExcludeFilter
+    )
+
+    if ($ExcludeFilter) {
+        $computers = Find-RdpHostFile -Path $files -ExcludeFilter $ExcludeFilter
+    } else {
+        $computers = Find-RdpHostFile -Path $files
+    }
+
+    disableRdpFile($computers)
+}
+
+function Disable-RdpHostFileDirectory {
+    param (
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $Path = "$env:SystemDrive\etc\rdp",
+        [string] $ExcludeFilter
+    )
+
+    $files = (Get-ChildItem -Path $(Resolve-Path $Path) -Filter "*.rdp" -Recurse).FullName
+
+    if ($files) {
+        if ($ExcludeFilter) {
+            $computers = Find-RdpHostFile -Path $files -ExcludeFilter $ExcludeFilter
+        } else {
+            $computers = Find-RdpHostFile -Path $files
+        }
+    }
+
+    disableRdpFile($computers)
+}
+
+function Find-RdpHost {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string[]] $ComputerName,
+        [string] $ExcludeFilter
+    )
+
+    begin {
+        $table = New-Object System.Data.DataTable("RdpHost")
+
+        "ComputerName", "IPAddress", "Status" | ForEach-Object {
+            $column = New-Object System.Data.DataColumn $_
+            $table.Columns.Add($column)
+        }
+
+        $counter = 1
+        $total = $ComputerName.Length
+    }
+
+    process {
+        foreach ($computer in $ComputerName) {
+            Write-Progress -Activity "Finding RDP Host Information" `
+                -Status "Looking for $computer" `
+                -PercentComplete (($counter / $total) * 100)
+
+            $row = $table.NewRow();
+
+            $row["ComputerName"] = $computer
+
+            if (Test-Connection -ComputerName $computer -Quiet -Count 1) {
+                $row["IPAddress"] = (Test-NetConnection -ComputerName $computer).RemoteAddress.IPAddressToString
+                $row["Status"] = "Online"
+            } else {
+                $row["IPAddress"] = ""
+                $row["Status"] = "Unreachable"
+            }
+
+            $table.Rows.Add($row)
+            $counter++
+        }
+    }
+
+    end {
+        return $table
+    }
+}
+
+Set-Alias -Name Validate-RdpHost -Value Find-RdpHost
+
+function Find-RdpHostFile {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string[]] $Path,
+        [string] $ExcludeFilter
+    )
+
+    begin {
+        $table = New-Object System.Data.DataTable("RdpHost")
+
+        "File", "ComputerName", "IPAddress", "UserName", "Status" | ForEach-Object {
+            $column = New-Object System.Data.DataColumn $_
+            $table.Columns.Add($column)
+        }
+
+        $counter = 1
+        $total = $Path.Length
+    }
+
+    process {
+        foreach ($file in $Path) {
+            $file = Resolve-Path -Path $file
+
+            Write-Progress -Activity "Finding RDP Host Information" `
+                -Status "Looking for $file" `
+                -PercentComplete (($counter / $total) * 100)
+
+            $content = Get-Content $file
+
+            $hostLine = $content -match '^full address:s:(.*)$'
+
+            if (-not $hostLine) {
+                continue
+            }
+
+            $hostAddress = $hostLine.Split(':')[2]
+
+            if ($ExcludeFilter -and ($hostAddress -imatch $ExcludeFilter)) {
+                continue
+            }
+
+            $row = $table.NewRow();
+
+            $row["File"] = $file
+            $row["ComputerName"] = $hostAddress
+
+            $userLine = $content -match '^username:s:(.*)$'
+            if ($userLine) {
+                $row["UserName"] = $userLine.Split(':')[2]
+            }
+
+            if (Test-Connection -ComputerName $hostAddress -Quiet -Count 1) {
+                $row["IPAddress"] = (Test-NetConnection -ComputerName $hostAddress).RemoteAddress.IPAddressToString
+                $row["Status"] = "Online"
+            } else {
+                $row["IPAddress"] = ""
+                $row["Status"] = "Unreachable"
+            }
+
+            $table.Rows.Add($row)
+            $counter++
+        }
+    }
+
+    end {
+        return $table
+    }
+}
+
+Set-Alias -Name Validate-RdpHostFile -Value Find-RdpHostFile
+
+function Find-RdpHostFileDirectory {
+    param (
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $Path = "$env:SystemDrive\etc\rdp",
+        [string] $ExcludeFilter
+    )
+
+    $files = (Get-ChildItem -Path $(Resolve-Path $Path) -Filter "*.rdp" -Recurse).FullName
+
+    if ($files) {
+        if ($ExcludeFilter) {
+            Find-RdpHostFile -Path $files -ExcludeFilter $ExcludeFilter
+        } else {
+            Find-RdpHostFile -Path $files
+        }
+    }
+}
+
+Set-Alias -Name Validate-RdpHostFileDirectory -Value Find-RdpHostFileDirectory
+
+function Restore-RdpHostFile {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string[]] $Path,
+        [string] $ExcludeFilter
+    )
+
+        $Path = Resolve-Path $Path
+        foreach ($file in $Path) {
+            if ($ExcludeFilter -and ($file -imatch $ExcludeFilter)) {
+                continue
+            }
+
+            if ($file -like "*.rdp.disabled") {
+               Move-Item -Path $file -Destination "$($file -replace '.disabled', '')"
+            }
+        }
+}
+
+function Restore-RdpHostFileDirectory {
+    param (
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $Path = "$env:SystemDrive\etc\rdp",
+        [string] $ExcludeFilter
+    )
+
+    $files = (Get-ChildItem -Path $(Resolve-Path $Path) -Filter "*.rdp.disabled" -Recurse).FullName
+
+    if ($files) {
+        if ($ExcludeFilter) {
+            Restore-RdpHostFile -Path $files -ExcludeFilter $ExcludeFilter
+        } else {
+            Restore-RdpHostFile -Path $files
+        }
+    }
+
+}
