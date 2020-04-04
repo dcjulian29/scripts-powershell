@@ -197,10 +197,10 @@ function Update-AllGitRepositories {
 function Update-GitRepository {
     [CmdletBinding(DefaultParameterSetName="Update")]
     param (
-        [Parameter(Mandatory=$true,ParameterSetName="Update")]
-        [Parameter(Mandatory=$true,ParameterSetName="Reset")]
+        [Parameter(ParameterSetName="Update", Position = 0)]
+        [Parameter(ParameterSetName="Reset", Position = 0)]
         [ValidateNotNullOrEmpty()]
-        [string]$Repository,
+        [string]$Path = $pwd,
         [Parameter(ParameterSetName="Update")]
         [Parameter(ParameterSetName="Reset")]
         [string[]]$Branches,
@@ -210,48 +210,59 @@ function Update-GitRepository {
         [string]$Url
     )
 
-    Write-Output " "
-    Write-Output "===================================================> $Repository"
+    $directory = (Get-Item (Resolve-Path $Path))
+    $repository = $directory.BaseName
 
-    if ($Reset) {
-        if (Test-Path $Repository) {
-            Write-Output "Resetting $Repository..."
-
-            #Backup-GitRepository -Path $Repository
-
-            Remove-Item -Path $Repository -Recurse -Force
-        }
-
-        git.exe clone "$Url/$Repository" "$Repository"
+    if ($pwd.Path -ne $directory.FullName) {
+        Push-Location $directory.FullName
+        $startedOutside = $true
     }
 
-    if (-not (Test-Path $Repository)) {
-        Write-Error "There was an error cloning the reposiory!"
-    } else {
-        Push-Location $Repository
+    Write-Output " "
+    Write-Output "===================================================> $repository"
 
-        $orignalBranch = $(Get-GitRepositoryBranch)
+    if ($Reset) {
+        Pop-Location ..
 
-        if ($Branches.Length -eq 0) {
-            $Branches = @($orignalBranch)
+        if (Test-Path $repository) {
+            Write-Output "Resetting $repository in '$($directory.FullName)'..."
+
+            Backup-GitRepository -Path $repository
+
+            Remove-Item -Path $repository -Recurse -Force
         }
 
-        Write-Output "    Original Branch: $orignalBranch"
+        & "$(Find-Git)" clone "$Url/$repository" "$repository"
+        if (-not (Test-Path $Repository)) {
+            Write-Error "There was an error cloning the reposiory!"
 
-        foreach ($branch in $Branches) {
-            Write-Output "--> $branch"
-            git.exe checkout $branch
-            Write-Output " "
-            git.exe pull
-            Write-Output " "
+            return
         }
+    }
 
-        $currentBranch = git.exe branch --show-current
+    $orignalBranch = $(Get-GitRepositoryBranch)
 
-        if ($currentBranch -ne $orignalBranch) {
-            git.exe checkout $orignalBranch
-        }
+    if ($Branches.Length -eq 0) {
+        $Branches = @($orignalBranch)
+    }
 
+    Write-Output "    Original Branch: $orignalBranch"
+
+    foreach ($branch in $Branches) {
+        Write-Output "--> $branch"
+        & "$(Find-Git)" checkout $branch
+        Write-Output " "
+        & "$(Find-Git)" pull
+        Write-Output " "
+    }
+
+    $currentBranch = $(Get-GitRepositoryBranch)
+
+    if ($currentBranch -ne $orignalBranch) {
+        & "$(Find-Git)" checkout $orignalBranch
+    }
+
+    if ($startedOutside) {
         Pop-Location
     }
 }

@@ -29,17 +29,21 @@ function Get-GitRepositoryBranch {
 function Merge-GitRepository {
     param (
         [string]$Path = $pwd,
+        [Parameter(Mandatory=$true)]
         [string]$SourceBranch,
+        [Parameter(Mandatory=$true)]
         [string]$DestinationBranch,
         [switch]$Push
     )
 
-    if ($pwd -ne $Path) {
-        Push-Location $Path
+    Update-GitRepository -Repository $Path -Branches @($SourceBranch, $DestinationBranch)
+
+    $directory = (Get-Item (Resolve-Path $Path))
+
+    if ($pwd.Path -ne $directory.FullName) {
+        Push-Location $directory.FullName
         $startedOutside = $true
     }
-
-    Update-GitRepository -Repository $Path -Branches @($SourceBranch, $DestinationBranch)
 
     $current = Get-GitRepositoryBranch
 
