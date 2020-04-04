@@ -35,6 +35,7 @@
         "Invoke-GraphicGit"
         "Invoke-GraphicGitHistory"
         "Invoke-PullGitRepository"
+        "Merge-GitRepository"
         "Optimize-AllGitRepositories"
         "Publish-GitRepositoryToPROD"
         "Publish-GitRepositoryToQA"
