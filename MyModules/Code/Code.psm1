@@ -1,19 +1,5 @@
 $script:primaryLogFile = "$(Get-LogFolder)\UpdateCodeFolder.log"
 
-function Get-DefaultCodeFolder {
-    $folder = "$($env:SystemDrive)\code"
-
-    if ($null -ne $env:CodeFolder) {
-        $folder = $env:CodeFolder
-    }
-
-    if (Test-Path $folder) {
-        $folder
-    } else {
-        "C:\code"
-    }
-}
-
 function Import-DevelopmentPowerShellModule {
     param (
         [string]$Module,
