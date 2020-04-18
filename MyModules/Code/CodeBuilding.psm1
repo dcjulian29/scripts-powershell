@@ -30,12 +30,13 @@ function Invoke-BuildProject {
         if (-not ($param.Contains('-'))) {
             if ($param) {
                 # Assume a target was passed in
-                Invoke-Expression ".\build.ps1 -target $param"
+                Invoke-Expression ".\build.ps1 -target $param `
+                    | Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
             } else {
-                Invoke-Expression ".\build.ps1"
+                Invoke-Expression ".\build.ps1 | Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
             }
         } else {
-            Invoke-Expression ".\build.ps1 $param"
+            Invoke-Expression ".\build.ps1 $param | Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
         }
     } elseif (Test-Path build.ps1) {
         Invoke-Psake .\build.ps1 $param
@@ -88,7 +89,7 @@ function Invoke-ArchiveProject {
         Invoke-CleanProject "$($_.FullName)" -Configuration "Debug"
     }
 
-    Get-ChildItem -Filter "*.sln" -Recurse | ForEach-Object { 
+    Get-ChildItem -Filter "*.sln" -Recurse | ForEach-Object {
         Invoke-CleanProject "$($_.FullName)" -Configuration "Release"
     }
 
