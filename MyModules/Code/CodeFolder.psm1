@@ -60,3 +60,52 @@ function Set-DefaultCodeFolder {
 function Test-DefaultCodeFolder {
     return Test-Path $(Get-DefaultCodeFolder)
 }
+
+function Update-CodeFolder {
+    [CmdletBinding()]
+    param (
+        [Alias("CodeFolder", "Folder")]
+        [string]$Path = $(Get-DefaultCodeFolder),
+        [switch] $FetchOnly
+    )
+
+    $logFile = Get-LogFileName -Suffix "UpdateCodeFolder"
+
+    Write-Log "Starting Update-CodeFolder" -LogFile $logFile -NoOutput
+
+    $projects = (Get-ChildItem -Path $Path | `
+        Where-Object { $_.PSIsContainer } | `
+        Select-Object Name).Name
+
+    foreach ($project in $projects) {
+        Write-Log "Using $Path\$project\.git" -LogFile $logFile -NoOutput
+
+        if (Test-Path "$Path\$project\.git") {
+            Write-Log "Checking $project..." -LogFile $logFile
+
+            Push-Location "$Path\$project"
+
+            $output = & "$(Find-Git)" "fetch --prune"
+
+            Write-Log $output -LogFile $logFile -NoOutput
+
+            if (-not $FetchOnly) {
+                $output = (& "$(Find-Git)" status 2>&1) | Out-String
+
+                if ($output -match "Your branch is up to date") {
+                    Write-Log "    ...project is up to date..." -LogFile $logFile
+                } else {
+                    Write-Log "    ...pulling changes..." -LogFile $logFile
+
+                    $output = (& "$(Find-Git)" merge --verbose --autostash FETCH_HEAD 2>&1) | Out-String
+
+                    Optimize-LogFolder -Filter $Project
+
+                    Write-Log $output -LogFile $(Get-LogFileName -Suffix $project) -NoOutput
+                }
+            }
+
+            Pop-Location
+        }
+    }
+}
