@@ -57,6 +57,34 @@ function Set-DefaultCodeFolder {
     Set-EnvironmentVariable -Name "CodeFolder" -Value $Path
 }
 
+function Show-CodeStatus {
+    [CmdletBinding()]
+    param (
+        [Alias("CodeFolder", "Folder")]
+        [string]$Path = $(Get-DefaultCodeFolder)
+    )
+
+    $projects = (Get-ChildItem -Path $Path | `
+        Where-Object { $_.PSIsContainer } | `
+        Select-Object Name).Name
+
+    foreach ($project in $projects) {
+        if (Test-Path "$Path\$project\.git") {
+            Write-Output "    ....$project..."
+            Write-Output " "
+
+            Push-Location "$Path\$project"
+
+            Invoke-FetchGitRepository 2>&1 | Out-Null
+            Get-GitRepositoryStatus
+
+            Pop-Location
+
+            Write-Output " "
+        }
+    }
+}
+
 function Test-DefaultCodeFolder {
     return Test-Path $(Get-DefaultCodeFolder)
 }
@@ -85,7 +113,7 @@ function Update-CodeFolder {
 
             Push-Location "$Path\$project"
 
-            $output = & "$(Find-Git)" "fetch --prune"
+            $output = Invoke-FetchGitRepository | Out-String
 
             Write-Log $output -LogFile $logFile -NoOutput
 
