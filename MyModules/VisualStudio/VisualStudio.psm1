@@ -1,14 +1,14 @@
 ﻿function Find-VisualStudio {
     First-Path `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\VSIXInstaller.exe')
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\IDE\devenv.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\IDE\devenv.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\devenv.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\devenv.exe')
 }
 
 function Find-VisualStudioSolutions {
