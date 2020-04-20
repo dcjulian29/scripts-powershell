@@ -14,16 +14,6 @@
     (Find-ProgramFiles 'MSBuild\15.0\bin\MSBuild.exe') `
     (Find-ProgramFiles 'MSBuild\14.0\bin\MSBuild.exe')
 
-$script:vsvarPath = First-Path `
-    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat') `
-    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\Tools\VsDevCmd.bat') `
-    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat') `
-    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat') `
-    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\Tools\VsDevCmd.bat') `
-    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat') `
-    (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\Tools\vsvars32.bat') `
-    (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\Tools\vsvars32.bat')
-
 function Invoke-BuildProject {
     $param = "$args"
     if (Test-Path build.cake) {
@@ -67,10 +57,6 @@ function Register-VisualStudioVariables {
             Set-Item -path env:$p -value $v
         }
     }
-}
-
-function Find-VisualStudioVariables {
-    $script:vsvarPath
 }
 
 function Find-MSBuild {

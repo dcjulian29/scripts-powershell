@@ -21,6 +21,7 @@
     )
     AliasesToExport = @(
         "code"
+        "Find-VisualStudioVariables"
         "vs-solutions"
         "vs2017"
         "vs2019"

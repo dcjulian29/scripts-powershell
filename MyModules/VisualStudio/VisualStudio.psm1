@@ -66,6 +66,8 @@ function Find-VSVars {
         (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat')
 }
 
+Set-Alias Find-VisualStudioVariables Find-VSVars
+
 function Get-VSVars {
     if ($global:VSVariables) {
         return $global:VSVariables
