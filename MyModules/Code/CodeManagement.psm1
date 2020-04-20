@@ -26,6 +26,28 @@ function Invoke-ArchiveProject {
     Pop-Location
 }
 
+function Invoke-CleanAllProjects {
+    param (
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path = $pwd,
+        [string]$Configuration = "Debug"
+    )
+
+    Push-Location $Path
+
+    Get-ChildItem -Directory | ForEach-Object {
+        Push-Location $_.FullName
+
+        Get-ChildItem -Filter "*.sln" -Recurse | ForEach-Object {
+            Invoke-CleanProject -Project "$($_.FullName)" -Configuration "$Configuration"
+        }
+
+        Pop-Location
+    }
+
+    Pop-Location
+}
+
 function Invoke-CleanProject {
     param (
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
@@ -50,26 +72,4 @@ function Invoke-CleanProject {
     }
 
     Invoke-MSBuild "$Project" /m /t:clean /p:configuration="$Configuration"
-}
-
-Function Invoke-CleanAllProjects {
-    param (
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string]$Path = $pwd,
-        [string]$Configuration = "Debug"
-    )
-
-    Push-Location $Path
-
-    Get-ChildItem -Directory | ForEach-Object {
-        Push-Location $_.FullName
-
-        Get-ChildItem -Filter "*.sln" -Recurse | ForEach-Object {
-            Invoke-CleanProject -Project "$($_.FullName)" -Configuration "$Configuration"
-        }
-
-        Pop-Location
-    }
-
-    Pop-Location
 }
