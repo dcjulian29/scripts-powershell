@@ -26,6 +26,8 @@ function Invoke-ArchiveProject {
     Pop-Location
 }
 
+Set-Alias project-archive Invoke-ArchiveProject
+
 function Invoke-CleanAllProjects {
     param (
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
@@ -47,6 +49,8 @@ function Invoke-CleanAllProjects {
 
     Pop-Location
 }
+
+Set-Alias project-clean-all Invoke-CleanAllProject
 
 function Invoke-CleanProject {
     param (
@@ -73,3 +77,5 @@ function Invoke-CleanProject {
 
     Invoke-MSBuild "$Project" /m /t:clean /p:configuration="$Configuration"
 }
+
+Set-Alias project-clean Invoke-CleanProject
