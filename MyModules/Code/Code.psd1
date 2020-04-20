@@ -1,20 +1,41 @@
 @{
-    ModuleVersion = '2020.1.20.1'
+    ModuleVersion = '2020.4.18.1'
     GUID = '6aa69e5b-f92d-41ba-947b-7840504d31da'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
     RootModule = 'Code.psm1'
+    NestedModules = @(
+        "CodeBuilding.psm1"
+        "CodeFolder.psm1"
+        "CodeManagement.psm1"
+    )
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+        "Get-CakeBuildBootstrapper"
+        "Get-CodeCoverageReport"
         "Get-DefaultCodeFolder"
+        "Find-MSBuild"
         "Import-DevelopmentPowerShellModule"
         "Import-DevelopmentPowerShellModules"
+        "Invoke-ArchiveProject"
+        "Invoke-BuildProject"
+        "Invoke-CleanAllProjects"
+        "Invoke-CleanProject"
+        "Invoke-MSBuild"
         "New-CodeFolder"
+        "Set-CodeFolder"
+        "Set-DefaultCodeFolder"
         "Show-CodeStatus"
+        "Test-DefaultCodeFolder"
         "Update-CodeFolder"
     )
     AliasesToExport = @(
+        "bp"
         "idpsm"
+        "msbuild"
+        "project-archive"
+        "project-clean"
+        "project-clean-all"
     )
 }

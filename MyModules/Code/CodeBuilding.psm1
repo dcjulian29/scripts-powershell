@@ -1,59 +1,4 @@
-﻿function Find-MSBuild
-    return First-Path `
-        (Find-ProgramFiles '\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\amd64\MSBuild.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\amd64\MSBuild.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\amd64\MSBuild.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\amd64\MSBuild.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe') `
-        (Find-ProgramFiles 'MSBuild\15.0\bin\MSBuild.exe') `
-        (Find-ProgramFiles 'MSBuild\14.0\bin\MSBuild.exe')
-}
-
-function Invoke-BuildProject {
-    $param = "$args"
-    if (Test-Path build.cake) {
-        if (-not ($param.Contains('-'))) {
-            if ($param) {
-                # Assume a target was passed in
-                Invoke-Expression ".\build.ps1 -target $param `
-                    | Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
-            } else {
-                Invoke-Expression ".\build.ps1 | Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
-            }
-        } else {
-            Invoke-Expression ".\build.ps1 $param | Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
-        }
-    } elseif (Test-Path build.ps1) {
-        Invoke-Psake .\build.ps1 $param
-    } elseif (Test-Path build.bat) {
-        .\build.bat $param
-    } elseif (Test-Path build.cmd) {
-        .\build.cmd $param
-    } elseif (Test-Path build.xml) {
-        C:\tools\apps\nant\bin\nant.exe -buildfile:build.xml $param
-    } else {
-        Write-Host "This directory does not include build script to build the project"
-    }
-}
-
-function Invoke-MSBuild {
-    Register-VisualStudioVariables
-    if (Test-Path $(Find-MSBuild)) {
-        & "$(Find-MSBuild)" $args
-    } else {
-        Write-Error "Unable to locate MSBuild executable..."
-    }
-}
-
-
-function Get-CakeBuildBootstrapper {
+﻿function Get-CakeBuildBootstrapper {
     if (Test-Path build.ps1) {
         Remove-Item -Confirm -Path build.ps1
     }
@@ -129,40 +74,60 @@ function Get-CodeCoverageReport {
     Start-Process "$((Get-Location).Path)\.coverage\index.htm"
 }
 
-##################################################################################################
+function Find-MSBuild
+    return First-Path `
+        (Find-ProgramFiles '\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\amd64\MSBuild.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\amd64\MSBuild.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\amd64\MSBuild.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\amd64\MSBuild.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe') `
+        (Find-ProgramFiles 'MSBuild\15.0\bin\MSBuild.exe') `
+        (Find-ProgramFiles 'MSBuild\14.0\bin\MSBuild.exe')
+}
 
-Export-ModuleMember Find-VisualStudioVariables
-Export-ModuleMember Find-MSBuild
-Export-ModuleMember Invoke-ArchiveProject
-Export-ModuleMember Invoke-BuildProject
-Export-ModuleMember Invoke-CleanProject
-Export-ModuleMember Invoke-CleanAllProjects
-Export-ModuleMember Invoke-MSBuild
-Export-ModuleMember Register-VisualStudioVariables
-
-Export-ModuleMember Get-CakeBuildBootstrapper
-Export-ModuleMember Get-CodeCoverageReport
+function Invoke-BuildProject {
+    $param = "$args"
+    if (Test-Path build.cake) {
+        if (-not ($param.Contains('-'))) {
+            if ($param) {
+                # Assume a target was passed in
+                Invoke-Expression ".\build.ps1 -target $param `
+                    | Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+            } else {
+                Invoke-Expression ".\build.ps1 | Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+            }
+        } else {
+            Invoke-Expression ".\build.ps1 $param | Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+        }
+    } elseif (Test-Path build.ps1) {
+        Invoke-Psake .\build.ps1 $param
+    } elseif (Test-Path build.bat) {
+        .\build.bat $param
+    } elseif (Test-Path build.cmd) {
+        .\build.cmd $param
+    } elseif (Test-Path build.xml) {
+        C:\tools\apps\nant\bin\nant.exe -buildfile:build.xml $param
+    } else {
+        Write-Host "This directory does not include build script to build the project"
+    }
+}
 
 Set-Alias bp Invoke-BuildProject
-Export-ModuleMember -Alias bp
+
+function Invoke-MSBuild {
+    Register-VisualStudioVariables
+    if (Test-Path $(Find-MSBuild)) {
+        & "$(Find-MSBuild)" $args
+    } else {
+        Write-Error "Unable to locate MSBuild executable..."
+    }
+}
 
 Set-Alias msbuild Invoke-MSBuild
-Export-ModuleMember -Alias msbuild
-
-Set-Alias vsvars32 Register-VisualStudioVariables
-Export-ModuleMember -Alias vsvars32
-
-Set-Alias VSVariables Register-VisualStudioVariables
-Export-ModuleMember -Alias VSVariables
-
-Set-Alias Register-VSVariables Register-VisualStudioVariables
-Export-ModuleMember -Alias Register-VSVariables
-
-Set-Alias project-archive Invoke-ArchiveProject
-Export-ModuleMember -Alias project-archive
-
-Set-Alias project-clean Invoke-CleanProject
-Export-ModuleMember -Alias project-clean
-
-Set-Alias project-clean-all Invoke-CleanAllProject
-Export-ModuleMember -Alias project-clean-all
