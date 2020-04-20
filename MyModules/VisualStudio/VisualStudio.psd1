@@ -23,9 +23,12 @@
         "code"
         "Find-VisualStudioVariables"
         "Register-VisualStudioVariables"
+        "Register-VSVariables"
         "vs-solutions"
         "vs2017"
         "vs2019"
         "vscode"
+        "vsvars32"
+        "VSVariables"
     )
 }

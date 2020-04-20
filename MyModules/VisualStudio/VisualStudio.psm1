@@ -103,6 +103,9 @@ function Set-VSVars {
 }
 
 Set-Alias Register-VisualStudioVariables Set-VsVars
+Set-Alias Register-VSVariables Set-VsVars
+Set-Alias vsvars32 Set-VsVars
+Set-Alias VSVariables Set-VsVars
 
 function Start-VisualStudio {
     param (
