@@ -52,15 +52,6 @@ function Invoke-MSBuild {
     }
 }
 
-function Register-VisualStudioVariables {
-    if (Test-Path $script:vsvarPath) {
-        cmd /c "`"$script:vsvarPath`" & set" | Foreach-Object {
-            $p, $v = $_.split('=')
-            Set-Item -path env:$p -value $v
-        }
-    }
-}
-
 function Invoke-ArchiveProject {
     param (
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]

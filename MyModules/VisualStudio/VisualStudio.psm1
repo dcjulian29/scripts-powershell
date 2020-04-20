@@ -102,6 +102,8 @@ function Set-VSVars {
     }
 }
 
+Set-Alias Register-VisualStudioVariables Set-VsVars
+
 function Start-VisualStudio {
     param (
         [string]$Project,

@@ -22,6 +22,7 @@
     AliasesToExport = @(
         "code"
         "Find-VisualStudioVariables"
+        "Register-VisualStudioVariables"
         "vs-solutions"
         "vs2017"
         "vs2019"
