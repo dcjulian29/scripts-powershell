@@ -1,28 +1,4 @@
-﻿function StopAndRemoveVM($computerName) {
-    $vm = Get-VM -Name $computerName -ErrorAction SilentlyContinue
-
-    if ($vm) {
-        if ($vm.state -ne "Off") {
-            $vm | Stop-VM
-        }
-
-        $vm | Remove-VM
-    }
-
-    $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\$computerName.vhdx"
-
-    if (Test-Path "$vhdx") {
-        Remove-Item -Confirm -Path $vhdx
-    }
-
-    if (Test-Path "$vhdx") {
-        throw "VHDX File Still Exists! Can't Continue..."
-    }
-}
-
-###############################################################################
-
-function Install-DevVmPackage {
+﻿function Install-DevVmPackage {
     param(
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -86,7 +62,7 @@ function New-DevVM {
     $password = $(Get-Credential -Message "Enter Password for VM..." -UserName "julian")
     $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
 
-    StopAndRemoveVM $computerName
+    Uninstall-VirtualMachine $computerName
 
     Push-Location $((Get-VMHost).VirtualHardDiskPath)
 
@@ -195,7 +171,7 @@ function New-LinuxDevVM {
         $IsoFilePath = "$isoDir\$isoFile"
     }
 
-    StopAndRemoveVM $computerName
+    Uninstall-VirtualMachine $computerName
 
     $numOfCpu = $(Get-WmiObject -class Win32_processor `
         | Select-Object NumberOfLogicalProcessors).NumberOfLogicalProcessors / 2
@@ -223,6 +199,7 @@ function New-LinuxDevVM {
     Set-VM -Name $computerName -AutomaticStartAction Nothing
     Set-Vm -Name $computerName -AutomaticStopAction Save
     Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false
+    Set-VM -VMName $computerName -EnhancedSessionTransportType HvSocket
 
     Pop-Location
 
