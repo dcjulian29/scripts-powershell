@@ -317,7 +317,20 @@ function New-LabUbuntuServer {
         [switch]$UseDefaultSwitch
     )
 
-    $IsoFilePath = LatestIsoFile "ubuntu-\d"
+    $IsoFilePath = LatestIsoFile "ubuntu-\d.*-server"
+    New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath `
+        -UseDefaultSwitch:$UseDefaultSwitch.IsPresent
+}
+
+function New-LabUbuntuMateWorkstation {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName,
+        [switch]$UseDefaultSwitch
+    )
+
+    $IsoFilePath = LatestIsoFile "ubuntu-mate-"
     New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath `
         -UseDefaultSwitch:$UseDefaultSwitch.IsPresent
 }
@@ -330,7 +343,7 @@ function New-LabUbuntuWorkstation {
         [switch]$UseDefaultSwitch
     )
 
-    $IsoFilePath = LatestIsoFile "ubuntu-mate-"
+    $IsoFilePath = LatestIsoFile "ubuntu-\d.*-desktop"
     New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath `
         -UseDefaultSwitch:$UseDefaultSwitch.IsPresent
 }
@@ -431,13 +444,13 @@ function New-LabWindowsServer {
         $switch = "LAB"
     }
 
+    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+
     $baseImage = "$((Get-ChildItem -Path "Win2019ServerCoreBase.vhdx").FullName)"
 
     if ($UseDesktopExperience) {
         $baseImage = "$((Get-ChildItem -Path "Win2019ServerBase.vhdx").FullName)"
     }
-
-    Push-Location $((Get-VMHost).VirtualHardDiskPath)
 
     New-DifferencingVHDX -referenceDisk $baseImage -vhdxFile "$vhdx"
 
