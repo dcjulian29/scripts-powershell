@@ -74,7 +74,7 @@ function Get-CodeCoverageReport {
     Start-Process "$((Get-Location).Path)\.coverage\index.htm"
 }
 
-function Find-MSBuild
+function Find-MSBuild {
     return First-Path `
         (Find-ProgramFiles '\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe') `
