@@ -95,16 +95,16 @@ function Find-MSBuild {
 function Invoke-BuildProject {
     $param = "$args"
     if (Test-Path build.cake) {
+        $tee = "| Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
         if (-not ($param.Contains('-'))) {
             if ($param) {
                 # Assume a target was passed in
-                Invoke-Expression ".\build.ps1 -target $param `
-                    | Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+                Invoke-Expression ".\build.ps1 -target $param $tee"
             } else {
-                Invoke-Expression ".\build.ps1 | Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+                Invoke-Expression ".\build.ps1 $tee"
             }
         } else {
-            Invoke-Expression ".\build.ps1 $param | Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+            Invoke-Expression ".\build.ps1 $param $tee"
         }
     } elseif (Test-Path build.ps1) {
         Invoke-Psake .\build.ps1 $param
