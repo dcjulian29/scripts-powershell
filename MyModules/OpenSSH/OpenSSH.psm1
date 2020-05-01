@@ -33,7 +33,20 @@ function Add-OpenSSHServer {
             }
         }
     }
- }
+}
+
+function Disable-OpenSSHServer {
+     if (Test-OpenSSHServer) {
+        if (Test-Elevation) {
+            if (Get-Service -Name 'sshd') {
+                Set-Service -Name 'sshd' -StartupType 'Disabled'
+                if (Test-OpenSSHService) {
+                    Stop-Service -Name 'sshd'
+                }
+            }
+        }
+    }
+}
 
 function Get-OpenSSHDefaultShell {
     if (Test-OpenSSHServer) {
@@ -52,19 +65,6 @@ function Get-OpenSSHDefaultShellOptions {
         if ($present) {
             (Get-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" `
                 -Name DefaultShellCommandOption).DefaultShellCommandOption
-        }
-    }
-}
-
-function Disable-OpenSSHServer {
-     if (Test-OpenSSHServer) {
-        if (Test-Elevation) {
-            if (Get-Service -Name 'sshd') {
-                Set-Service -Name 'sshd' -StartupType 'Disabled'
-                if (Test-OpenSSHService) {
-                    Stop-Service -Name 'sshd'
-                }
-            }
         }
     }
 }
