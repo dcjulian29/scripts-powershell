@@ -139,3 +139,13 @@ function Set-OctopusProfile {
     $env:OctopusURL = $Url
     $env:OctopusAPIKey = $ApiKey
 }
+
+function Test-OctopusProfile {
+    return ((Test-Path env:OctopusURL) -and (Test-Path env:OctopusAPIKey))
+}
+
+function Use-OctopusProfile {
+    if (-not (Test-OctopusProfile)) {
+        throw "Octopus Profile is not loaded or set"
+    }
+}
