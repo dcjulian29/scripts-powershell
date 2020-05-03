@@ -1,20 +1,17 @@
-$script:OctopusUrl = ''
-$script:OctopusApi = ''
-
 function getOctoProfileArguments {
-    if ($script:OctopusUrl -eq '') {
+    if ($env:OctopusUrl -eq '') {
         Write-Error "Octopus Profile is not loaded"
         return
     }
 
-    "--server $($script:OctopusUrl) --apiKey $($script:OctopusApi)"
+    "--server $env:OctopusURL --apiKey $env:OctopusAPIKey"
 }
 
 ###############################################################################
 
 function Clear-OctopusProfile {
-    $script:OctopusUrl = ''
-    $script:OctopusApi = ''
+    Remove-Item $env:OctopusURL
+    Remove-Item $env:OctopusAPIKey
 }
 
 Set-Alias octopus-profile-clear Clear-OctopusProfile
@@ -42,8 +39,8 @@ function Import-OctopusProfile {
     } else {
         $json = Get-Content -Raw -Path $profileFile | ConvertFrom-Json
 
-        $script:OctopusUrl = $json.Url
-        $script:OctopusApi = $json.Api
+        $env:OctopusURL = $json.Url
+        $env:OctopusAPIKey = $json.Api
     }
 }
 
@@ -67,7 +64,7 @@ function Invoke-DeployOctopusRelease {
 
     $parameters += " --deployto $Environment"
 
-    Invoke-Octopus deploy-release --progress $parameters
+    Invoke-Octo deploy-release --progress $parameters
 }
 
 Set-Alias -Name Deploy-OctopusRelease -Value Invoke-DeployOctopusRelease
@@ -125,8 +122,20 @@ function Push-OctopusPackage {
 
     $parameters = "push $(getOctoProfileArguments) --package $Package"
 
-    Invoke-Octopus $parameters
+    Invoke-Octo $parameters
 }
 
 Set-Alias octo-publish Push-OctopusPackage
 Set-Alias octopus-publish Push-OctopusPackage
+
+function Set-OctopusProfile {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Url,
+        [Parameter(Mandatory = $true)]
+        [string] $ApiKey
+    )
+
+    $env:OctopusURL = $Url
+    $env:OctopusAPIKey = $ApiKey
+}

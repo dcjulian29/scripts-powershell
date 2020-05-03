@@ -15,6 +15,7 @@
         "New-OctopusPackage"
         "New-OctopusRelease"
         "Push-OctopusPackage"
+        "Set-OctopusProfile"
     )
     AliasesToExport = @(
         "Create-OctopusRelease"
