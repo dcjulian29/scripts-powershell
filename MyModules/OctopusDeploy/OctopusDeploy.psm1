@@ -78,6 +78,41 @@ function Invoke-Octo {
 Set-Alias octopus Invoke-Octopus
 Set-Alias octo Invoke-Octopus
 
+function Invoke-OctopusApi {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $Method,
+        [string] $Body,
+        [ValidateSet("GET", "POST", "PUT", "DELETE")]
+        [string] $HttpMethod = "GET"
+    )
+
+    Use-OctopusProfile
+
+    $header = @{
+        "X-Octopus-ApiKey" = $env:OctopusAPIKey
+        "Accept" = "application/json"
+    }
+
+    $uri = "$env:OctopusUrl/api/$Method"
+
+    if ($HttpMethod -ne "GET") {
+        $response = Invoke-WebRequest -Uri $uri -Method $HttpMethod -Header $header -Body $Body
+    } else {
+        $response = Invoke-WebRequest -Uri $uri -Method $HttpMethod -Header $header
+    }
+
+    if ($response) {
+        $response = $response | ConvertFrom-Json
+
+        return $response
+    }
+}
+
+Set-Alias octoapi Invoke-OctopusApi
+Set-Alias octopusapi Invoke-OctopusApi
+Set-Alias octopus-api Invoke-OctopusApi
+
 function New-OctopusPackage {
     Param (
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
