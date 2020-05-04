@@ -6,6 +6,7 @@
     RootModule = 'OctopusDeploy.psm1'
     NestedModules = @(
         "OctopusEnvironments.psm1"
+        "OctopusProjects.psm1"
         "OctopusServer.psm1"
     )
     TypesToProcess = @()
@@ -15,6 +16,8 @@
         "Find-Octo"
         "Get-OctopusEnvironment"
         "Get-OctopusEnvironments"
+        "Get-OctopusProject"
+        "Get-OctopusProjects"
         "Get-OctopusServerUptime"
         "Get-OctopusServerVersion"
         "Import-OctopusProfile"
