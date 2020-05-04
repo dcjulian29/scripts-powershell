@@ -4,14 +4,23 @@
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
     RootModule = 'OctopusDeploy.psm1'
+    NestedModules = @(
+        "OctopusEnvironments.psm1"
+        "OctopusServer.psm1"
+    )
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
         "Clear-OctopusProfile"
         "Find-Octo"
+        "Get-OctopusEnvironment"
+        "Get-OctopusEnvironments"
+        "Get-OctopusServerUptime"
+        "Get-OctopusServerVersion"
         "Import-OctopusProfile"
         "Invoke-DeployOctopusRelease"
         "Invoke-Octo"
+        "Invoke-OctopusApi"
         "New-OctopusPackage"
         "New-OctopusRelease"
         "Push-OctopusPackage"
@@ -23,12 +32,15 @@
         "Create-OctopusRelease"
         "Load-OctoputProfile"
         "octo"
+        "octoapi"
         "octo-profile-clear"
         "octo-profile-load"
         "octo-publish"
         "octo-release-create"
         "octo-release-deploy"
         "octopus"
+        "octopusapi"
+        "octopus-api"
         "octopus-profile-clear"
         "octopus-profile-load"
         "octopus-publish"
