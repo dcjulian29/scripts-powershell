@@ -17,6 +17,7 @@
         "Get-OctopusEnvironment"
         "Get-OctopusEnvironments"
         "Get-OctopusProject"
+        "Get-OctopusProjectById"
         "Get-OctopusProjects"
         "Get-OctopusRelease"
         "Get-OctopusReleases"
