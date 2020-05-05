@@ -7,6 +7,7 @@
     NestedModules = @(
         "OctopusEnvironments.psm1"
         "OctopusProjects.psm1"
+        "OctopusReleases.psm1"
         "OctopusServer.psm1"
     )
     TypesToProcess = @()
@@ -20,6 +21,7 @@
         "Get-OctopusProjectById"
         "Get-OctopusProjects"
         "Get-OctopusRelease"
+        "Get-OctopusReleaseById"
         "Get-OctopusReleases"
         "Get-OctopusReleasesForEnvironment"
         "Get-OctopusReleasesForProjectInEnvironment"

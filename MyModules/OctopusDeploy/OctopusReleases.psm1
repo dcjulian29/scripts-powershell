@@ -11,6 +11,15 @@ function Get-OctopusRelease {
     return $releases | Where-Object { $_.Version -eq $Version}
 }
 
+function Get-OctopusReleaseById {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $Id
+    )
+
+    Invoke-OctopusApi "releases/$Id"
+}
+
 function Get-OctopusReleases {
     param (
         [Parameter(Mandatory = $true)]
