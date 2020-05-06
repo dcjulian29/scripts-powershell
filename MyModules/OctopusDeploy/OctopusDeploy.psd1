@@ -5,6 +5,7 @@
     PowerShellVersion = '3.0'
     RootModule = 'OctopusDeploy.psm1'
     NestedModules = @(
+        "OctopusDeployments.psm1"
         "OctopusEnvironments.psm1"
         "OctopusProjects.psm1"
         "OctopusReleases.psm1"
@@ -15,8 +16,10 @@
     FunctionsToExport = @(
         "Clear-OctopusProfile"
         "Find-Octo"
+        "Get-OctopusDeploymentsForEnvironment"
         "Get-OctopusEnvironment"
         "Get-OctopusEnvironments"
+        "Get-OctopusLastDeploymentsForEnvironment"
         "Get-OctopusProject"
         "Get-OctopusProjectById"
         "Get-OctopusProjects"
