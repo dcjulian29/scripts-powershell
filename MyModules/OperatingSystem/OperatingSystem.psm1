@@ -295,6 +295,14 @@ function Test-DomainJoined {
     return (Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain
 }
 
+function Test-EnvironmentVariable {
+    param (
+        [string]$Name
+    )
+
+    return Test-Path env:$Name
+}
+
 function Test-NormalBoot {
     if ((Get-WmiObject -Class Win32_ComputerSystem).BootupState -eq "Normal boot") {
         return $true
