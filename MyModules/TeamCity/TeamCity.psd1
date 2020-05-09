@@ -4,11 +4,18 @@
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
     RootModule = 'TeamCity.psm1'
-    NestedModules = @()
+    NestedModules = @(
+        "TeamCityProjects.psm1"
+    )
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
         "Clear-TeamCityProfile"
+        "Get-TeamCityBuildConfiguration"
+        "Get-TeamCityBuildConfigurations"
+        "Get-TeamCityProject"
+        "Get-TeamCityProjectById"
+        "Get-TeamCityProjects"
         "Get-TeamCityServerUptime"
         "Get-TeamCityServerVersion"
         "Import-TeamCityProfile"
