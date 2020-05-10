@@ -5,14 +5,21 @@
     PowerShellVersion = '3.0'
     RootModule = 'TeamCity.psm1'
     NestedModules = @(
+        "TeamCityBuilds.psm1"
         "TeamCityProjects.psm1"
     )
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
         "Clear-TeamCityProfile"
+        "Get-TeamCityBuild"
+        "Get-TeamCityBuilds"
         "Get-TeamCityBuildConfiguration"
         "Get-TeamCityBuildConfigurations"
+        "Get-TeamCityBuildQueue"
+        "Get-TeamCityBuildQueueDetail"
+        "Get-TeamCityBuildStatistics"
+        "Get-TeamCityBuildTests"
         "Get-TeamCityProject"
         "Get-TeamCityProjectById"
         "Get-TeamCityProjects"
@@ -21,6 +28,8 @@
         "Import-TeamCityProfile"
         "Invoke-TeamCityApi"
         "Set-TeamCityProfile"
+        "Start-TeamCityBuild"
+        "Stop-TeamCityBuild"
         "Test-TeamCityProfile"
         "Use-TeamCityProfile"
     )

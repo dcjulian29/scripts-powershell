@@ -51,7 +51,8 @@ function Invoke-TeamCityApi {
         [string] $Method,
         [string] $Body,
         [ValidateSet("GET", "POST", "PUT", "DELETE")]
-        [string] $HttpMethod = "GET"
+        [string] $HttpMethod = "GET",
+        [string] $BodyType = "application/xml"
     )
 
     Use-TeamCityProfile
@@ -64,6 +65,7 @@ function Invoke-TeamCityApi {
     $uri = "$env:TeamCityUrl/app/rest/$Method"
 
     if ($HttpMethod -ne "GET") {
+        $header.Add("Content-Type", $BodyType)
         $response = Invoke-WebRequest -Uri $uri -Method $HttpMethod -Header $header -Body $Body
     } else {
         $response = Invoke-WebRequest -Uri $uri -Method $HttpMethod -Header $header
