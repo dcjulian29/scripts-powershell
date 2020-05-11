@@ -68,3 +68,51 @@ function Get-OctopusReleasesForProjectInEnvironment {
 
     return $deployments
 }
+
+function Invoke-DeployOctopusRelease {
+    param(
+        [Parameter(Mandatory = $true)]
+        [String]$Project,
+        [Parameter(Mandatory = $true)]
+        [String]$Version,
+        [Parameter(Mandatory = $true)]
+        [String]$Environment
+    )
+
+    $parameters = "$(getOctoProfileArguments) --project $Project"
+
+    $parameters += " --releaseNumber $Version"
+
+    $parameters += " --deployto $Environment"
+
+    Invoke-Octo deploy-release --progress $parameters
+}
+
+Set-Alias -Name Deploy-OctopusRelease -Value Invoke-DeployOctopusRelease
+Set-Alias -Name octo-release-deploy -Value Invoke-DeployOctopusRelease
+Set-Alias -Name octopus-release-deploy -Value Invoke-DeployOctopusRelease
+
+function New-OctopusRelease {
+    param(
+        [Parameter(Mandatory = $true)]
+        [String]$Project,
+        [String]$Version,
+        [String]$PackageVersion
+    )
+
+    $parameters = "$(getOctoProfileArguments) --project $Project"
+
+    if ($Version) {
+        $parameters += " --version $Version"
+    }
+
+    if ($PackageVersion) {
+        $parameters += " --packageversion $PackageVersion"
+    }
+
+    Invoke-Octo create-release $parameters
+}
+
+Set-Alias -Name Create-OctopusRelease -Value New-OctopusRelease
+Set-Alias -Name octo-release-create -Value New-OctopusRelease
+Set-Alias -Name octopus-release-create -Value New-OctopusRelease

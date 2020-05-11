@@ -48,29 +48,6 @@ Set-Alias -Name Load-OctopusProfile -Value Import-OctopusProfile
 Set-Alias -Name octo-profile-load -Value Import-OctopusProfile
 Set-Alias -Name octopus-profile-load -Value Import-OctopusProfile
 
-function Invoke-DeployOctopusRelease {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Project,
-        [Parameter(Mandatory = $true)]
-        [String]$Version,
-        [Parameter(Mandatory = $true)]
-        [String]$Environment
-    )
-
-    $parameters = "$(getOctoProfileArguments) --project $Project"
-
-    $parameters += " --releaseNumber $Version"
-
-    $parameters += " --deployto $Environment"
-
-    Invoke-Octo deploy-release --progress $parameters
-}
-
-Set-Alias -Name Deploy-OctopusRelease -Value Invoke-DeployOctopusRelease
-Set-Alias -Name octo-release-deploy -Value Invoke-DeployOctopusRelease
-Set-Alias -Name octopus-release-deploy -Value Invoke-DeployOctopusRelease
-
 function Invoke-Octo {
     Start-Process -FilePath $(Find-Octo) -ArgumentList $args -NoNewWindow -Wait
 }
@@ -125,31 +102,6 @@ function New-OctopusPackage {
         -NonInteractive -NoDefaultExcludes -Verbosity detailed
 }
 
-function New-OctopusRelease {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Project,
-        [String]$Version,
-        [String]$PackageVersion
-    )
-
-    $parameters = "$(getOctoProfileArguments) --project $Project"
-
-    if ($Version) {
-        $parameters += " --version $Version"
-    }
-
-    if ($PackageVersion) {
-        $parameters += " --packageversion $PackageVersion"
-    }
-
-    Invoke-Octo create-release $parameters
-}
-
-Set-Alias -Name Create-OctopusRelease -Value New-OctopusRelease
-Set-Alias -Name octo-release-create -Value New-OctopusRelease
-Set-Alias -Name octopus-release-create -Value New-OctopusRelease
-
 function Push-OctopusPackage {
     param(
         [Parameter(Mandatory = $true)]
@@ -161,7 +113,7 @@ function Push-OctopusPackage {
 
     Use-OctopusProfile
 
-    $package = New-Object IO.FileStream $Path, 'Open', 'Read', 'Read'
+    $package = New-Object IO.FileStream (Resolve-Path $Path).Path, 'Open', 'Read', 'Read'
 
     if ($ReplaceExisting) {
         $replace = "?replace=true"
@@ -196,7 +148,8 @@ function Push-OctopusPackage {
 
     $response = $request.GetResponse()
 
-    Write-Output $response.StatusCode $response.StatusDescription
+    Write-Output $response.StatusDescription
+
     $response.Dispose()
 }
 
