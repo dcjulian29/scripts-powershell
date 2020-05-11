@@ -144,7 +144,7 @@ function Get-TeamCityAgentPool {
 }
 
 function Get-TeamCityAgentPools {
-    (Invoke-TeamCityApi "agentPools/id:$Id").agentPool
+    (Invoke-TeamCityApi "agentPools").agentPool
 }
 
 function Get-TeamCityAgents {

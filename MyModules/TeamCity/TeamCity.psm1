@@ -12,10 +12,17 @@ function Get-TeamCityServerLicense {
         $detail = New-Object PSObject
         $detail | Add-Member -Type NoteProperty -Name 'MaximumAgents' -Value $info.maxAgents
         $detail | Add-Member -Type NoteProperty -Name 'AvailableAgents' -Value $info.agentsLeft
-        $detail | Add-Member -Type NoteProperty -Name 'MaximumBuildConfigurations' `
-            -Value $info.maxBuildTypes
-        $detail | Add-Member -Type NoteProperty -Name 'AvailableBuildConfigurations' `
-            -Value $info.buildTypesLeft
+
+        if ($info.unlimitedBuildTypes) {
+            $detail | Add-Member -Type NoteProperty -Name 'MaximumBuildConfigurations' `
+                -Value "unlimited"
+        } else {
+            $detail | Add-Member -Type NoteProperty -Name 'MaximumBuildConfigurations' `
+                -Value $info.maxBuildTypes
+            $detail | Add-Member -Type NoteProperty -Name 'AvailableBuildConfigurations' `
+                -Value $info.buildTypesLeft
+        }
+
         $detail | Add-Member -Type NoteProperty -Name 'LicenseType' -Value $info.serverLicenseType
 
         return $detail

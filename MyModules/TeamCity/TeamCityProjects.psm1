@@ -96,20 +96,6 @@ function Get-TeamCityBuildConfigurations {
 function Get-TeamCityProject {
     param (
         [Parameter(Mandatory = $true)]
-        [string] $Name,
-        [switch] $PassThru
-    )
-
-    $project = Invoke-TeamCityApi "projects/name:$Name"
-
-    if ($project) {
-        Get-TeamCityProjectById $project.id $PassThru.IsPresent
-    }
-}
-
-function Get-TeamCityProjectById {
-    param (
-        [Parameter(Mandatory = $true)]
         [string] $Id,
         [switch] $PassThru
     )

@@ -31,7 +31,6 @@
         "Get-TeamCityBuildStatistics"
         "Get-TeamCityBuildTests"
         "Get-TeamCityProject"
-        "Get-TeamCityProjectById"
         "Get-TeamCityProjects"
         "Get-TeamCityServerLicense"
         "Get-TeamCityServerUptime"
