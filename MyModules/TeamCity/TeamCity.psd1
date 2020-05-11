@@ -8,6 +8,7 @@
         "TeamCityAgents.psm1"
         "TeamCityBuilds.psm1"
         "TeamCityProjects.psm1"
+        "TeamCityUsers.psm1"
     )
     TypesToProcess = @()
     FormatsToProcess = @()
@@ -34,6 +35,8 @@
         "Get-TeamCityProjects"
         "Get-TeamCityServerUptime"
         "Get-TeamCityServerVersion"
+        "Get-TeamCityUser"
+        "Get-TeamCityUsers"
         "Import-TeamCityProfile"
         "Invoke-TeamCityApi"
         "Move-TeamCityAgent"
