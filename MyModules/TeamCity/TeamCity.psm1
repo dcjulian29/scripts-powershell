@@ -1,6 +1,6 @@
 function Clear-TeamCityProfile {
-    Remove-Item $env:TeamCityURL
-    Remove-Item $env:TeamCityToken
+    Remove-Item env:TeamCityURL
+    Remove-Item env:TeamCityToken
 }
 
 Set-Alias teamcity-profile-clear Clear-TeamCityProfile
