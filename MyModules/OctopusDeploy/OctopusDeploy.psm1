@@ -84,7 +84,8 @@ function Invoke-OctopusApi {
         [string] $Method,
         [string] $Body,
         [ValidateSet("GET", "POST", "PUT", "DELETE")]
-        [string] $HttpMethod = "GET"
+        [string] $HttpMethod = "GET",
+        [string] $BodyType = "application/json"
     )
 
     Use-OctopusProfile
@@ -97,6 +98,7 @@ function Invoke-OctopusApi {
     $uri = "$env:OctopusUrl/api/$Method"
 
     if ($HttpMethod -ne "GET") {
+        $header.Add("Content-Type", $BodyType)
         $response = Invoke-WebRequest -Uri $uri -Method $HttpMethod -Header $header -Body $Body
     } else {
         $response = Invoke-WebRequest -Uri $uri -Method $HttpMethod -Header $header
