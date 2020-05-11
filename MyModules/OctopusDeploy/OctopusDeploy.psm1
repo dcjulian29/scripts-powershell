@@ -154,12 +154,50 @@ function Push-OctopusPackage {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateScript({Test-Path -Path $_ })]
-        [String]$Package
+        [Alias("Package")]
+        [string] $Path,
+        [switch] $ReplaceExisting
     )
 
-    $parameters = "push $(getOctoProfileArguments) --package $Package"
+    Use-OctopusProfile
 
-    Invoke-Octo $parameters
+    $package = New-Object IO.FileStream $Path, 'Open', 'Read', 'Read'
+
+    if ($ReplaceExisting) {
+        $replace = "?replace=true"
+    }
+
+    $url = $env:OctopusURL + "/api/packages/raw$replace"
+    $boundary = "----------------------------" + [System.DateTime]::Now.Ticks.ToString("x");
+    $boundarybytes = [System.Text.Encoding]::ASCII.GetBytes("`r`n--" + $boundary + "`r`n")
+    $partHeader = "Content-Disposition: form-data; filename=""" `
+        + [System.IO.Path]::GetFileName($Path) `
+        + """`r`nContent-Type: application/octet-stream`r`n`r`n";
+    $partBytes = [System.Text.Encoding]::ASCII.GetBytes($partHeader);
+
+    $request = [System.Net.HttpWebRequest]::Create($Url)
+    $request.AllowWriteStreamBuffering = $false
+    $request.SendChunked = $true
+    $request.Accept = "application/json"
+    $request.Method = "POST"
+    $request.Headers["X-Octopus-ApiKey"] = $env:OctopusAPIKey
+    $request.ContentType = "multipart/form-data; boundary=" + $boundary
+    $request.GetRequestStream().Write($boundarybytes, 0, $boundarybytes.Length)
+    $request.GetRequestStream().Write($partBytes, 0, $partBytes.Length)
+
+    $package.CopyTo($request.GetRequestStream())
+
+    $request.GetRequestStream().Write($boundarybytes, 0, $boundarybytes.Length)
+    $request.GetRequestStream().Flush()
+    $request.GetRequestStream().Close()
+
+    $package.Close();
+    $package.Dispose();
+
+    $response = $request.GetResponse()
+
+    Write-Output $response.StatusCode $response.StatusDescription
+    $response.Dispose()
 }
 
 Set-Alias octo-publish Push-OctopusPackage
