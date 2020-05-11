@@ -5,35 +5,6 @@ function Clear-TeamCityProfile {
 
 Set-Alias teamcity-profile-clear Clear-TeamCityProfile
 
-function Export-TeamCityCCTrayXml {
-    param (
-        [string] $Path = "$env:APPDATA\cctray-settings.xml"
-    )
-
-    $xml = Get-TeamCityCCTrayXml
-
-    if ($xml) {
-        Set-Content -Path $Path -Value $xml
-    }
-}
-
-function Get-TeamCityCCTrayXml {
-   Use-TeamCityProfile
-
-    $header = @{
-        "Authorization" = "Bearer $env:TeamCityToken"
-        "Accept" = "application/xml"
-    }
-
-    $uri = "$env:TeamCityUrl/app/rest/cctray/projects.xml"
-
-    $response = Invoke-WebRequest -Uri $uri -Method "GET" -Header $header
-
-    if ($response.StatusCode -eq 200) {
-        return $response.Content
-    }
-}
-
 function Get-TeamCityServerLicense {
     $info = Invoke-TeamCityApi "server/licensingData"
 
