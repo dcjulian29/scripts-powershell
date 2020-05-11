@@ -19,6 +19,7 @@ function buildDeploymentTable($deployments) {
             $detail | Add-Member -Type NoteProperty -Name 'Condition' -Value $step.Condition
 
             $steps += $detail
+            $counter++
         }
 
         $row | Add-Member -Type NoteProperty -Name 'Steps' -Value $steps
