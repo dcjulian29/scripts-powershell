@@ -33,6 +33,7 @@
         "Get-TeamCityProject"
         "Get-TeamCityProjectById"
         "Get-TeamCityProjects"
+        "Get-TeamCityServerLicense"
         "Get-TeamCityServerUptime"
         "Get-TeamCityServerVersion"
         "Get-TeamCityUser"
