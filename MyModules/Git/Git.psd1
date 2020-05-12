@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.4.3.1'
+    ModuleVersion = '2020.5.12.1'
     GUID = '099256ed-ac18-4e56-8017-bb9d9077fb74'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -8,6 +8,7 @@
         "GitBackups.psm1"
         "GitBranches.psm1"
         "GitCommits.psm1"
+        "GitConfigs.psm1"
         "GitEnvironments.psm1"
         "GitFiles.psm1"
         "GitIgnores.psm1"
@@ -22,6 +23,7 @@
         "Find-Git"
         "Find-GraphicGit"
         "Find-GraphicGitHistory"
+        "Get-GitConfigValue"
         "Get-GitFilesFromCommit"
         "Get-GitFilesFromLastCommit"
         "Get-GitFilesSinceLastTag"
@@ -47,6 +49,7 @@
         "Remove-GitRepositoryBackup"
         "Remove-LastGitCommit"
         "Restore-GitRepositoryBackup"
+        "Set-GitConfigValue"
         "Show-AllGitInformation"
         "Show-GitInformation"
         "Start-GitGraphicalInterface"
