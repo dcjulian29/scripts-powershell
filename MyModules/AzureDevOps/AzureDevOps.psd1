@@ -5,20 +5,20 @@
     PowerShellVersion = '3.0'
     RootModule = 'AzureDevOps.psm1'
     NestedModules = @(
-        "AzProjects.psm1"
+        "ADOProjects.psm1"
     )
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
         "Clear-AzureDevOpsProfile"
-        "Get-AzProcessTemplate"
-        "Get-AzProcessTemplates"
-        "Get-AzProject"
-        "Get-AzProjectProperties"
-        "Get-AzProjects"
+        "Get-AdoProcessTemplate"
+        "Get-AdoProcessTemplates"
+        "Get-AdoProject"
+        "Get-AdoProjectProperties"
+        "Get-AdoProjects"
         "Import-AzureDevOpsProfile"
         "Invoke-AzureDevOpsApi"
-        "New-AzProject"
+        "New-AdoProject"
         "Set-AzureDevOpsProfile"
         "Test-AzureDevOpsProfile"
         "Use-AzureDevOpsProfile"

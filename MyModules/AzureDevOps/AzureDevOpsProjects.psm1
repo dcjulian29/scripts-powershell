@@ -1,4 +1,4 @@
-function Get-AzProcessTemplate {
+function Get-AdoProcessTemplate {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -8,11 +8,11 @@ function Get-AzProcessTemplate {
     Invoke-AzureDevOpsApi "process/processes/$Id"
 }
 
-function Get-AzProcessTemplates {
+function Get-AdoProcessTemplates {
     (Invoke-AzureDevOpsApi "process/processes").value
 }
 
-function Get-AzProject {
+function Get-AdoProject {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -22,7 +22,7 @@ function Get-AzProject {
     Invoke-AzureDevOpsApi "projects/$Id"
 }
 
-function Get-AzProjectProperties {
+function Get-AdoProjectProperties {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -32,11 +32,11 @@ function Get-AzProjectProperties {
     (Invoke-AzureDevOpsApi "projects/$Id/properties" -Version "5.1-preview.1").value
 }
 
-function Get-AzProjects {
+function Get-AdoProjects {
     (Invoke-AzureDevOpsApi "projects/$Id").value
 }
 
-function New-AzProject {
+function New-AdoProject {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
