@@ -1,7 +1,6 @@
 function Clear-AzureDevOpsProfile {
     Remove-Item env:AzureDevOpsURL
     Remove-Item env:AzureDevOpsToken
-    Remove-Item env:AzureDevOpsTokenName
 }
 
 Set-Alias azuredevops-profile-clear Clear-AzureDevOpsProfile
@@ -21,7 +20,6 @@ function Import-AzureDevOpsProfile {
 
         $env:AzureDevOpsURL = $json.Url
         $env:AzureDevOpsToken = $json.Token
-        $env:AzureDevOpsTokenName = $json.TokenName
     }
 }
 
@@ -71,20 +69,16 @@ function Set-AzureDevOpsProfile {
         [Parameter(Mandatory = $true)]
         [string] $Url,
         [Parameter(Mandatory = $true)]
-        [string] $TokenName,
-        [Parameter(Mandatory = $true)]
         [string] $Token
     )
 
     $env:AzureDevOpsURL = $Url
     $env:AzureDevOpsToken = $Token
-    $env:AzureDevOpsTokenName = $TokenName
 }
 
 function Test-AzureDevOpsProfile {
     return ((Test-Path env:AzureDevOpsURL) `
-        -and (Test-Path env:AzureDevOpsToken) `
-        -and (Test-Path env:AzureDevOpsTokenName))
+        -and (Test-Path env:AzureDevOpsToken))
 }
 
 function Use-AzureDevOpsProfile {
