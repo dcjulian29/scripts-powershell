@@ -34,7 +34,8 @@ function Invoke-AzureDevOpsApi {
         [string] $Body,
         [ValidateSet("GET", "POST", "PUT", "DELETE")]
         [string] $HttpMethod = "GET",
-        [string] $BodyType = "application/xml"
+        [string] $BodyType = "application/json",
+        [string] $Version = "5.1"
     )
 
     Use-AzureDevOpsProfile
@@ -45,7 +46,7 @@ function Invoke-AzureDevOpsApi {
         "Accept" = "application/json"
     }
 
-    $uri = "$env:AzureDevOpsUrl/_apis/$Method"
+    $uri = "$env:AzureDevOpsUrl/_apis/$($Method)?api-version=$Version"
 
     if ($HttpMethod -ne "GET") {
         $header.Add("Content-Type", $BodyType)
