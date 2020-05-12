@@ -5,12 +5,13 @@
     PowerShellVersion = '3.0'
     RootModule = 'AzureDevOps.psm1'
     NestedModules = @(
-        "AdoProjects.psm1"
-        "AdoWorkItems.psm1"
+        "AzureDevOpsProjects.psm1"
+        "AzureDevOpsWorkItems.psm1"
     )
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+        "Clear-AzureDevOpsDefaultProject"
         "Clear-AzureDevOpsProfile"
         "Get-AdoProcessTemplate"
         "Get-AdoProcessTemplates"
@@ -25,6 +26,7 @@
         "New-AdoTask"
         "New-AdoWorkItem"
         "New-AdoUserStory"
+        "Set-AzureDevOpsDefaultProject"
         "Set-AzureDevOpsProfile"
         "Test-AzureDevOpsProfile"
         "Use-AzureDevOpsProfile"

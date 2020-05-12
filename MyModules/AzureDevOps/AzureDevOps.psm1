@@ -1,6 +1,11 @@
+function Clear-AzureDevOpsDefaultProject {
+    Remove-Item env:AzureDevOpsProject
+}
+
 function Clear-AzureDevOpsProfile {
     Remove-Item env:AzureDevOpsURL
     Remove-Item env:AzureDevOpsToken
+    Clear-AzureDevOpsDefaultProject
 }
 
 Set-Alias azuredevops-profile-clear Clear-AzureDevOpsProfile
@@ -20,6 +25,10 @@ function Import-AzureDevOpsProfile {
 
         $env:AzureDevOpsURL = $json.Url
         $env:AzureDevOpsToken = $json.Token
+
+        if ($json.DefaultProject) {
+            Set-AzureDevOpsDefaultProject $json.DefaultProject
+        }
     }
 }
 
@@ -32,10 +41,12 @@ function Invoke-AzureDevOpsApi {
         [Parameter(Mandatory = $true)]
         [string] $Method,
         [string] $Body,
+        [string] $Project,
         [ValidateSet("GET", "POST", "PUT", "DELETE")]
         [string] $HttpMethod = "GET",
         [string] $BodyType = "application/json",
-        [string] $Version = "5.1"
+        [string] $Version = "5.1",
+        [switch] $PrefixProject
     )
 
     Use-AzureDevOpsProfile
@@ -46,7 +57,19 @@ function Invoke-AzureDevOpsApi {
         "Accept" = "application/json"
     }
 
-    $uri = "$env:AzureDevOpsUrl/_apis/$($Method)?api-version=$Version"
+    if ($PrefixProject) {
+        if ($Project) {
+            $uri = "$env:AzureDevOpsUrl/$Project/_apis/$($Method)?api-version=$Version"
+        } else {
+            if (Test-Path env:AzureDevOpsProject) {
+                $uri = "$env:AzureDevOpsUrl/$env:AzureDevOpsProject/_apis/$($Method)?api-version=$Version"
+            } else {
+                throw "This Azure DevOps functions requires a project and one was not provided"
+            }
+        }
+    } else {
+        $uri = "$env:AzureDevOpsUrl/_apis/$($Method)?api-version=$Version"
+    }
 
     if ($HttpMethod -ne "GET") {
         $header.Add("Content-Type", $BodyType)
@@ -65,16 +88,31 @@ function Invoke-AzureDevOpsApi {
 Set-Alias adoapi Invoke-AzureDevOpsApi
 Set-Alias azuredevops-api Invoke-AzureDevOpsApi
 
+function Set-AzureDevOpsDefaultProject {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $ProjectName
+    )
+
+    $env:AzureDevOpsProject = $ProjectName
+}
+
 function Set-AzureDevOpsProfile {
     param(
         [Parameter(Mandatory = $true)]
         [string] $Url,
         [Parameter(Mandatory = $true)]
-        [string] $Token
+        [string] $Token,
+        [string] $DefaultProject
     )
 
     $env:AzureDevOpsURL = $Url
     $env:AzureDevOpsToken = $Token
+
+    if ($DefaultProject) {
+        Set-AzureDevOpsDefaultProject $DefaultProject
+    }
 }
 
 function Test-AzureDevOpsProfile {
