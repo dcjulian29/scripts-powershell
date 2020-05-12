@@ -41,8 +41,9 @@ function Invoke-AzureDevOpsApi {
 
     Use-AzureDevOpsProfile
 
+    $token = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$($env:AzureDevOpsToken)"))
     $header = @{
-        "Authorization" = "Bearer $env:AzureDevOpsToken"
+        "Authorization" = "Basic $token"
         "Accept" = "application/json"
     }
 
