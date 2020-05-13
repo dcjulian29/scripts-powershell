@@ -29,6 +29,7 @@
         "Set-AzureDevOpsDefaultProject"
         "Set-AzureDevOpsProfile"
         "Test-AzureDevOpsProfile"
+        "Test-AzureDevOpsDefaultProject"
         "Use-AzureDevOpsProfile"
     )
     AliasesToExport = @(

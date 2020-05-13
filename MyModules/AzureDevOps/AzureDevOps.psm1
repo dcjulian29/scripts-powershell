@@ -120,6 +120,10 @@ function Test-AzureDevOpsProfile {
         -and (Test-Path env:AzureDevOpsToken))
 }
 
+function Test-AzureDevOpsDefaultProject {
+    return (Test-Path env:AzureDevOpsProject)
+}
+
 function Use-AzureDevOpsProfile {
     if (-not (Test-AzureDevOpsProfile)) {
         throw "AzureDevOps Profile is not loaded or set"
