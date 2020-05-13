@@ -79,7 +79,7 @@ function Invoke-AzureDevOpsApi {
     }
 
     if ($response) {
-        $response = $response | ConvertFrom-Json
+        $response = $response -replace '""', '"Unknown"' | ConvertFrom-Json
 
         return $response
     }
