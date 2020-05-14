@@ -11,6 +11,7 @@
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+        "Add-AdoWorkItemComment"
         "Clear-AzureDevOpsDefaultProject"
         "Clear-AzureDevOpsProfile"
         "Get-AdoProcessTemplate"
@@ -22,7 +23,11 @@
         "Get-AzureDevOpsDefaultProject"
         "Import-AzureDevOpsProfile"
         "Invoke-AzureDevOpsApi"
+        "Join-AdoWorkItem"
+        "Join-AdoWorkItemAsChild"
+        "Join-AdoWorkItemAsParent"
         "New-AdoBug"
+        "New-AdoIssue"
         "New-AdoProject"
         "New-AdoTask"
         "New-AdoWorkItem"
@@ -36,6 +41,8 @@
     AliasesToExport = @(
         "adoapi"
         "ado-bug"
+        "ado-comment"
+        "ado-issue"
         "ado-profile-clear"
         "ado-profile-load"
         "ado-task"
