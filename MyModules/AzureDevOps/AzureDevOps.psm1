@@ -11,6 +11,10 @@ function Clear-AzureDevOpsProfile {
 Set-Alias azuredevops-profile-clear Clear-AzureDevOpsProfile
 Set-Alias ado-profile-clear Clear-AzureDevOpsProfile
 
+function Get-AzureDevOpsDefaultProject {
+    return $env:AzureDevOpsProject
+}
+
 function Import-AzureDevOpsProfile {
     param (
         [string]$ProfileName = $(Read-Host "Enter the AzureDevOps Profile")
@@ -42,7 +46,7 @@ function Invoke-AzureDevOpsApi {
         [string] $Method,
         [string] $Body,
         [string] $Project,
-        [ValidateSet("GET", "POST", "PUT", "DELETE")]
+        [ValidateSet("GET", "POST", "PUT", "PATCH", "DELETE")]
         [string] $HttpMethod = "GET",
         [string] $BodyType = "application/json",
         [string] $Version = "5.1",

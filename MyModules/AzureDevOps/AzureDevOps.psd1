@@ -19,6 +19,7 @@
         "Get-AdoProjectProperties"
         "Get-AdoProjects"
         "Get-AdoWorkItem"
+        "Get-AzureDevOpsDefaultProject"
         "Import-AzureDevOpsProfile"
         "Invoke-AzureDevOpsApi"
         "New-AdoBug"
@@ -33,7 +34,6 @@
         "Use-AzureDevOpsProfile"
     )
     AliasesToExport = @(
-        "Load-AzureDevOpsProfile"
         "adoapi"
         "ado-bug"
         "ado-profile-clear"
@@ -43,5 +43,6 @@
         "azuredevops-api"
         "azuredevops-profile-clear"
         "azuredevops-profile-load"
+        "Load-AzureDevOpsProfile"
     )
 }
