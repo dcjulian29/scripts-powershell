@@ -200,6 +200,7 @@ function Update-GitRepository {
         [Parameter(ParameterSetName="Update", Position = 0)]
         [Parameter(ParameterSetName="Reset", Position = 0)]
         [ValidateNotNullOrEmpty()]
+        [Alias("Repository")]
         [string]$Path = $pwd,
         [Parameter(ParameterSetName="Update")]
         [Parameter(ParameterSetName="Reset")]
