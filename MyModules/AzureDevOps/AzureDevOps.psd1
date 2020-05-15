@@ -34,6 +34,7 @@
         "New-AdoUserStory"
         "Set-AzureDevOpsDefaultProject"
         "Set-AzureDevOpsProfile"
+        "Set-AdoWorkItemState"
         "Test-AzureDevOpsProfile"
         "Test-AzureDevOpsDefaultProject"
         "Use-AzureDevOpsProfile"

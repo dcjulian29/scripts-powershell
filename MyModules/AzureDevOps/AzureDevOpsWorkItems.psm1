@@ -236,3 +236,47 @@ function New-AdoUserStory {
 }
 
 Set-Alias -Name ado-userstory -Value New-AdoUserStory
+
+function Set-AdoWorkItemState {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $Id,
+        [Parameter(Mandatory = $true)]
+        [string] $State,
+        [string] $Project
+    )
+
+    if (-not $Project) {
+        if (Test-AzureDevOpsDefaultProject) {
+            $Project = $env:AzureDevOpsProject
+        } else {
+            throw "Azure DevOps project was not provided and a default one is not set!"
+        }
+    }
+
+    $item = Get-AdoWorkItem -Id $Id -Project $Project
+    $type = $item.fields.'System.WorkItemType'
+
+    $stateName = (Invoke-AzureDevOpsApi "wit/workitemtypes/$type/states" `
+        -PrefixProject -Project $Project -Version "5.1-preview.1").value.name `
+        | Where-Object { $_ -eq $State }
+
+    if (-not $stateName) {
+        throw "$State is not a valid state for this work item."
+    }
+
+    $json = @"
+[
+  {
+    "op": "add",
+    "path": "/fields/System.State",
+    "from": null,
+    "value": "$State"
+  }
+]
+"@
+
+    Invoke-AzureDevOpsApi "wit/workitems/$Id" -PrefixProject -Project $Project `
+        -HttpMethod PATCH -Body $json -BodyType "application/json-patch+json"
+}
