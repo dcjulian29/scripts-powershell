@@ -8,7 +8,7 @@
         "GitBackups.psm1"
         "GitBranches.psm1"
         "GitCommits.psm1"
-        "GitConfigs.psm1"
+        "GitConfig.psm1"
         "GitEnvironments.psm1"
         "GitFiles.psm1"
         "GitIgnores.psm1"
