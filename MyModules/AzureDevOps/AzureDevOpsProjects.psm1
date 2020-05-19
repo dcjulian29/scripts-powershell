@@ -12,6 +12,25 @@ function Get-AdoProcessTemplates {
     (Invoke-AzureDevOpsApi "process/processes").value
 }
 
+function Get-AzureDevOpsProjectProcess {
+    [CmdletBinding()]
+    param (
+        [string] $Id
+    )
+
+    if (-not $Id) {
+        if (Test-AzureDevOpsDefaultProject) {
+            $name = $env:AzureDevOpsProject
+            $Id = (Get-AdoProjects | Where-Object { $_.name -eq $name }).id
+
+        } else {
+            throw "Azure DevOps project was not provided and a default one is not set!"
+        }
+    }
+
+    (Get-AdoProjectProperties $Id | Where-Object { $_.name -eq 'System.Process Template' }).value
+}
+
 function Get-AdoProject {
     [CmdletBinding()]
     param (

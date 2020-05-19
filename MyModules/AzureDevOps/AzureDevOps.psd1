@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.5.10.1'
+    ModuleVersion = '2020.5.19.1'
     GUID = '563f363a-2b2d-4ae5-b7f0-eddaf6087ca4'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -21,6 +21,8 @@
         "Get-AdoProjects"
         "Get-AdoWorkItem"
         "Get-AzureDevOpsDefaultProject"
+        "Get-AzureDevOpsProfile"
+        "Get-AzureDevOpsProjectProcess"
         "Import-AzureDevOpsProfile"
         "Invoke-AzureDevOpsApi"
         "Join-AdoWorkItem"
@@ -35,8 +37,8 @@
         "Set-AzureDevOpsDefaultProject"
         "Set-AzureDevOpsProfile"
         "Set-AdoWorkItemState"
-        "Test-AzureDevOpsProfile"
         "Test-AzureDevOpsDefaultProject"
+        "Test-AzureDevOpsProfile"
         "Use-AzureDevOpsProfile"
     )
     AliasesToExport = @(
