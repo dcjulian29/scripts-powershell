@@ -15,7 +15,7 @@ function Get-AzureDevOpsDefaultProject {
     return $env:AzureDevOpsProject
 }
 
-function Import-AzureDevOpsProfile {
+function Get-AzureDevOpsProfile {
     param (
         [string]$ProfileName = $(Read-Host "Enter the AzureDevOps Profile")
     )
@@ -25,14 +25,22 @@ function Import-AzureDevOpsProfile {
     if (-not (Test-Path $profileFile)) {
         Write-Error "AzureDevOps Profile does not exist!"
     } else {
-        $json = Get-Content -Raw -Path $profileFile | ConvertFrom-Json
+        return Get-Content -Raw -Path $profileFile | ConvertFrom-Json
+    }
+}
 
-        $env:AzureDevOpsURL = $json.Url
-        $env:AzureDevOpsToken = $json.Token
+function Import-AzureDevOpsProfile {
+    param (
+        [string]$ProfileName = $(Read-Host "Enter the AzureDevOps Profile")
+    )
 
-        if ($json.DefaultProject) {
-            Set-AzureDevOpsDefaultProject $json.DefaultProject
-        }
+    $json = Get-AzureDevOpsProfile $ProfileName
+
+    $env:AzureDevOpsURL = $json.Url
+    $env:AzureDevOpsToken = $json.Token
+
+    if ($json.DefaultProject) {
+        Set-AzureDevOpsDefaultProject $json.DefaultProject
     }
 }
 
