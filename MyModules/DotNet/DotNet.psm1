@@ -1,3 +1,11 @@
+function Get-AllAssemblyInfo {
+    Get-ChildItem `
+        | Where-Object { $_.Extension -eq ".dll" } `
+        | ForEach-Object { Get-AssemblyInfo $_ }
+}
+
+Set-Alias aia Get-AllAssemblyInfo
+
 function Get-NetFramework
 {
     $versions = @(
@@ -136,11 +144,3 @@ Function Get-AssemblyInfo {
 
     "{0} [{1}]" -f $name, $version
 }
-
-Function Get-AllAssemblyInfo {
-    Get-ChildItem | Where-Object { $_.Extension -eq ".dll" } | foreach { Get-AssemblyInfo $_ }
-}
-
-###################################################################################################
-
-Set-Alias aia Get-AllAssemblyInfo
