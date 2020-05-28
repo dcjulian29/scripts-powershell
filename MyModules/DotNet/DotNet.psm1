@@ -21,7 +21,7 @@ Function Test-NetFramework1To4
                 }
             }
         }
-      
+
         return $False
     }
     END { }
@@ -53,7 +53,7 @@ Function Test-NetFramework45AndUp
                 return $True
             }
         }
-      
+
         return $False
     }
     END { }
@@ -129,9 +129,9 @@ Function Test-NetFrameworks
 
 Function Get-AssemblyInfo {
     param (
-        $assembly = $(throw “An assembly name is required.”)
+        $assembly = $(throw ï¿½An assembly name is required.ï¿½)
     )
-    
+
     if (test-path $assembly) {
         $assemblyPath = Get-Item $assembly
         $loadedAssembly = [System.Reflection.Assembly]::LoadFrom($assemblyPath)
@@ -152,19 +152,4 @@ Function Get-AllAssemblyInfo {
 
 ###################################################################################################
 
-Export-ModuleMember Test-NetFramework2
-Export-ModuleMember Test-NetFramework3
-Export-ModuleMember Test-NetFramework35
-Export-ModuleMember Test-NetFramework40
-Export-ModuleMember Test-NetFramework45
-Export-ModuleMember Test-NetFramework451
-Export-ModuleMember Test-NetFramework452
-Export-ModuleMember Test-NetFramework46
-Export-ModuleMember Test-NetFramework461
-Export-ModuleMember Test-NetFramework462
-Export-ModuleMember Test-NetFrameworks
-Export-ModuleMember Get-AssemblyInfo
-Export-ModuleMember Get-AllAssemblyInfo
-
 Set-Alias aia Get-AllAssemblyInfo
-Export-ModuleMember -Alias aia
