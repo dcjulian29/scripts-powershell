@@ -8,6 +8,10 @@
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+        "Get-AllAssemblyInfo"
+        "Get-AssemblyInfo"
+        "Get-NetFramework"
+        "Test-NetFramework"
         "Test-NetFramework2"
         "Test-NetFramework3"
         "Test-NetFramework35"
@@ -18,9 +22,10 @@
         "Test-NetFramework46"
         "Test-NetFramework461"
         "Test-NetFramework462"
-        "Test-NetFrameworks"
-        "Get-AssemblyInfo"
-        "Get-AllAssemblyInfo"
+        "Test-NetFramework47"
+        "Test-NetFramework471"
+        "Test-NetFramework472"
+        "Test-NetFramework48"
     )
     AliasesToExport = @(
         "aia"
