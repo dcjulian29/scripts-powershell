@@ -1,3 +1,33 @@
+function Get-NetFramework
+{
+    $versions = @(
+        "2.0"
+        "3.0"
+        "3.5"
+        "4.0"
+        "4.5"
+        "4.5.1"
+        "4.5.2"
+        "4.6"
+        "4.6.1"
+        "4.6.2"
+        "4.7"
+        "4.7.1"
+        "4.7.2"
+        "4.8"
+    )
+
+    $installed = @()
+
+    foreach ($version in $versions) {
+        if (Test-NetFramework -Version $version) {
+            $installed += $version
+        }
+    }
+
+    return $installed.Join(',')
+}
+
 function Test-NetFramework
 {
     [CmdletBinding()]
@@ -87,23 +117,6 @@ function Test-NetFramework472 { Test-NetFramework -Version "4.7.2" }
 function Test-NetFramework48 { Test-NetFramework -Version "4.8" }
 
 
-Function Test-NetFrameworks
-{
-    $versions = ""
-
-    if (Test-NetFramework2) { $versions = $versions + "2.0," }
-    if (Test-NetFramework3) { $versions = $versions + "3.0," }
-    if (Test-NetFramework35) { $versions = $versions + "3.5," }
-    if (Test-NetFramework40) { $versions = $versions + "4.0," }
-    if (Test-NetFramework45) { $versions = $versions + "4.5," }
-    if (Test-NetFramework451) { $versions = $versions + "4.5.1," }
-    if (Test-NetFramework452) { $versions = $versions + "4.5.2," }
-    if (Test-NetFramework46) { $versions = $versions + "4.6," }
-    if (Test-NetFramework461) { $versions = $versions + "4.6.1," }
-    if (Test-NetFramework462) { $versions = $versions + "4.6.2," }
-
-    return $versions.Split(',', [StringSplitOptions]::RemoveEmptyEntries)
-}
 
 Function Get-AssemblyInfo {
     param (
