@@ -6,6 +6,22 @@ function Get-AllAssemblyInfo {
 
 Set-Alias aia Get-AllAssemblyInfo
 
+function Get-AssemblyInfo {
+    param (
+        $Assembly = $(throw "An assembly name is required.")
+    )
+
+
+    if (Test-Path $Assembly) {
+        $loaded = [System.Reflection.Assembly]::LoadFrom($(Get-Item $Assembly))
+    } else {
+        # Load from GAC
+        $loaded = [System.Reflection.Assembly]::LoadWithPartialName("$Assembly")
+    }
+
+    "{0} [{1}]" -f $loaded.GetName().name, $loaded.GetName().version
+}
+
 function Get-NetFramework
 {
     $versions = @(
@@ -123,24 +139,3 @@ function Test-NetFramework471 { Test-NetFramework -Version "4.7.1" }
 function Test-NetFramework472 { Test-NetFramework -Version "4.7.2" }
 
 function Test-NetFramework48 { Test-NetFramework -Version "4.8" }
-
-
-
-Function Get-AssemblyInfo {
-    param (
-        $assembly = $(throw �An assembly name is required.�)
-    )
-
-    if (test-path $assembly) {
-        $assemblyPath = Get-Item $assembly
-        $loadedAssembly = [System.Reflection.Assembly]::LoadFrom($assemblyPath)
-    } else {
-        # Load from GAC
-        $loadedAssembly = [System.Reflection.Assembly]::LoadWithPartialName("$assembly")
-    }
-
-    $name = $loadedAssembly.GetName().name
-    $version =  $loadedAssembly.GetName().version
-
-    "{0} [{1}]" -f $name, $version
-}
