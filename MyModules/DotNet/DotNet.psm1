@@ -1,113 +1,91 @@
-Function Test-NetFramework1To4
+function Test-NetFramework
 {
-    param ([string]$version)
-    BEGIN { }
-    PROCESS {
-        $path = 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\'
-        switch ($version) {
-            "2.0" { $path = "$path\v2.0.50727" }
-            "3.0" { $path = "$path\v3.0" }
-            "3.5" { $path = "$path\v3.5" }
-            "4.0" { $path = "$path\v4\Full" }
-            default { return $False }
-        }
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $Version
+    )
+    $major = [int]$version.Split('.')[0]
+    $path = 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\'
 
-        Write-Verbose "Checking Registry at $path"
+    switch ($major) {
+        @(2, 3) {
+            switch ($version) {
+                "2.0" { $path = "$path\v2.0.50727" }
+                "3.0" { $path = "$path\v3.0" }
+                "3.5" { $path = "$path\v3.5" }
+                default { return $False }
+            }
 
-        if (Test-PathReg -Path $path -Property Install) {
             if (Test-Path $path) {
                 if (Get-ItemProperty $path -Name Install -ErrorAction SilentlyContinue) {
                     return $True
                 }
             }
+
+            return $False
         }
 
-        return $False
-    }
-    END { }
-}
+        4 {
+            $path = "$path\v4\Full"
+            switch ($version) {
+                "4.5"   { $release = "378389 378675 378758" }
+                "4.5.1" { $release = "378675 378758" }
+                "4.5.2" { $release = "379893" }
+                "4.6"   { $release = "393295 393297" }
+                "4.6.1" { $release = "394254 394271" }
+                "4.6.2" { $release = "394802 394806" }
+                "4.7"   { $release = "460798 460805" }
+                "4.7.1" { $release = "461308 461310" }
+                "4.7.2" { $release = "461808 461814" }
+                "4.8"   { $release = "528040 528209 528049" }
+                default { return $False }
+            }
 
-Function Test-NetFramework45AndUp
-{
-    param ([string]$version)
-    BEGIN { }
-    PROCESS {
-        $path = 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full'
-        switch ($version) {
-            "4.5"   { $release = "378389 378675 378758" }
-            "4.5.1" { $release = "378675 378758" }
-            "4.5.2" { $release = "379893" }
-            "4.6"   { $release = "393295 393297" }
-            "4.6.1" { $release = "393295 394271" }
-            "4.6.2" { $release = "394802 394806" }
-
-            default { return $False }
-        }
-
-        Write-Verbose "Checking Registry at $path for $release"
-
-        if (Test-PathReg -Path $path -Property Release) {
             $installed = (Get-ItemProperty $path -Name Release -ErrorAction SilentlyContinue).Release
 
             if ($release.Contains($installed)) {
                 return $True
             }
+
+            return $False
+
         }
 
-        return $False
+        default {
+            return $False
+        }
     }
-    END { }
 }
 
-Function Test-NetFramework2
-{
-    Test-NetFramework1To4 -Version "2.0"
-}
+function Test-NetFramework2 { Test-NetFramework -Version "2.0" }
 
-Function Test-NetFramework3
-{
-    Test-NetFramework1To4 -Version "3.0"
-}
+function Test-NetFramework3 { Test-NetFramework -Version "3.0" }
 
-Function Test-NetFramework35
-{
-    Test-NetFramework1To4 -Version "3.5"
-}
+function Test-NetFramework35 { Test-NetFramework -Version "3.5" }
 
-Function Test-NetFramework40
-{
-    Test-NetFramework1To4 -Version "4.0"
-}
+function Test-NetFramework40 { Test-NetFramework -Version "4.0" }
 
-Function Test-NetFramework45
-{
-    Test-NetFramework45AndUp -Version "4.5"
-}
+function Test-NetFramework45 { Test-NetFramework -Version "4.5" }
 
-Function Test-NetFramework451
-{
-    Test-NetFramework45AndUp -Version "4.5.1"
-}
+function Test-NetFramework451 { Test-NetFramework -Version "4.5.1" }
 
-Function Test-NetFramework452
-{
-    Test-NetFramework45AndUp -Version "4.5.2"
-}
+function Test-NetFramework452 { Test-NetFramework -Version "4.5.2" }
 
-Function Test-NetFramework46
-{
-    Test-NetFramework45AndUp -Version "4.6"
-}
+function Test-NetFramework46 { Test-NetFramework -Version "4.6" }
 
-Function Test-NetFramework461
-{
-    Test-NetFramework45AndUp -Version "4.6.1"
-}
+function Test-NetFramework461 { Test-NetFramework -Version "4.6.1" }
 
-Function Test-NetFramework462
-{
-    Test-NetFramework45AndUp -Version "4.6.2"
-}
+function Test-NetFramework462 { Test-NetFramework -Version "4.6.2" }
+
+function Test-NetFramework47 { Test-NetFramework -Version "4.7" }
+
+function Test-NetFramework471 { Test-NetFramework -Version "4.7.1" }
+
+function Test-NetFramework472 { Test-NetFramework -Version "4.7.2" }
+
+function Test-NetFramework48 { Test-NetFramework -Version "4.8" }
+
 
 Function Test-NetFrameworks
 {
