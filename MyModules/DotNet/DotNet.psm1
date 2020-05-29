@@ -49,7 +49,7 @@ function Get-NetFramework
         }
     }
 
-    return $installed.Join(',')
+    return $installed -join ','
 }
 
 function Test-NetFramework
