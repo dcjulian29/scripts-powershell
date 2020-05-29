@@ -62,8 +62,8 @@ function Test-NetFramework
     $major = [int]$version.Split('.')[0]
     $path = 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\'
 
-    switch ($major) {
-        @(2, 3) {
+    switch -Regex ($major) {
+        '2|3' {
             switch ($version) {
                 "2.0" { $path = "$path\v2.0.50727" }
                 "3.0" { $path = "$path\v3.0" }
@@ -80,7 +80,7 @@ function Test-NetFramework
             return $False
         }
 
-        4 {
+        '4' {
             $path = "$path\v4\Full"
             switch ($version) {
                 "4.5"   { $release = "378389 378675 378758" }
