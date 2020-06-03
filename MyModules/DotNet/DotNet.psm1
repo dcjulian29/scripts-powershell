@@ -24,6 +24,10 @@ function Get-AssemblyInfo {
 
 function Get-NetFramework
 {
+    param (
+        [string] $ComputerName = $env:COMPUTERNAME
+    )
+
     $versions = @(
         "2.0"
         "3.0"
@@ -44,7 +48,7 @@ function Get-NetFramework
     $installed = @()
 
     foreach ($version in $versions) {
-        if (Test-NetFramework -Version $version) {
+        if (Test-NetFramework -Version $version -ComputerName $ComputerName) {
             $installed += $version
         }
     }
@@ -57,10 +61,12 @@ function Test-NetFramework
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [string] $Version
+        [string] $Version,
+        [string] $ComputerName = $env:COMPUTERNAME
     )
+
     $major = [int]$version.Split('.')[0]
-    $path = 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\'
+    $path = 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP'
 
     switch -Regex ($major) {
         '2|3' {
@@ -68,16 +74,22 @@ function Test-NetFramework
                 "2.0" { $path = "$path\v2.0.50727" }
                 "3.0" { $path = "$path\v3.0" }
                 "3.5" { $path = "$path\v3.5" }
-                default { return $False }
+                default { return $false }
             }
 
-            if (Test-Path $path) {
-                if (Get-ItemProperty $path -Name Install -ErrorAction SilentlyContinue) {
-                    return $True
-                }
+            $check = [Scriptblock]::Create("Get-ItemProperty `"$path`" -Name Install -ErrorAction SilentlyContinue")
+
+            if ($ComputerName -eq $env:COMPUTERNAME) {
+                $installed = Get-ItemProperty $path -Name Install -ErrorAction SilentlyContinue
+            } else {
+                $installed = Invoke-Command -ComputerName $ComputerName -ScriptBlock $check
             }
 
-            return $False
+            if ($installed) {
+                return $true
+            }
+
+            return $false
         }
 
         '4' {
@@ -93,21 +105,27 @@ function Test-NetFramework
                 "4.7.1" { $release = "461308 461310" }
                 "4.7.2" { $release = "461808 461814" }
                 "4.8"   { $release = "528040 528209 528049" }
-                default { return $False }
+                default { return $false }
             }
 
-            $installed = (Get-ItemProperty $path -Name Release -ErrorAction SilentlyContinue).Release
+            $check = [Scriptblock]::Create("Get-ItemProperty `"$path`" -Name Release -ErrorAction SilentlyContinue")
+
+            if ($ComputerName -eq $env:COMPUTERNAME) {
+                $installed = (Get-ItemProperty $path -Name Release -ErrorAction SilentlyContinue).Release
+            } else {
+                $installed = (Invoke-Command -ComputerName $ComputerName -ScriptBlock $check).Release
+            }
 
             if ($release.Contains($installed)) {
-                return $True
+                return $true
             }
 
-            return $False
+            return $false
 
         }
 
         default {
-            return $False
+            return $false
         }
     }
 }
