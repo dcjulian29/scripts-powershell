@@ -56,6 +56,94 @@ function Get-NetFramework
     return $installed -join ','
 }
 
+function Get-RemoteNetFramework {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string[]] $ComputerName
+    )
+
+    begin {
+        $counter = 1
+        $total = $ComputerName.Length
+        $list = @()
+        $originalProgressPreference = $Global:ProgressPreference
+    }
+
+    process {
+        foreach ($computer in $ComputerName) {
+            $Global:ProgressPreference = $originalProgressPreference
+
+            Write-Progress -Activity "Get Remote .Net Versions" `
+                -Status "Querying Frameworks installed on $computer" `
+                -PercentComplete (($counter / $total) * 100)
+
+            $Global:ProgressPreference = 'SilentlyContinue'
+
+            $net2 = ""
+            $net30 = ""
+            $net35 = ""
+            $net4 = ""
+            $winrm = ""
+            $online = Test-NetConnection -ComputerName $computer `
+                -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            $remoteAddress = $online.RemoteAddress
+
+            if ($online.PingSucceeded) {
+                $winrm = "Blocked"
+                $check = Test-NetConnection -ComputerName $computer -Port 5985 `
+                    -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+
+                if ($check.TcpTestSucceeded) {
+                    $winrm = "Allowed"
+
+                    if (Invoke-Command -ComputerName $computer { ipconfig } 2> $null) {
+                        $versions = Get-NetFramework -ComputerName $computer
+
+                        if ($versions -like "*2.0*") {
+                            $net2 = "2.0"
+                        }
+
+                        if ($versions -like "*3.0*") {
+                            $net30 = "3.0"
+                        }
+
+                        if ($versions -like "*3.5*") {
+                            $net35 = "3.5"
+                        }
+
+                        if ($versions -like "*4.*") {
+                            $net4 = $versions.Substring($versions.IndexOf('4'))
+                        }
+                    } else {
+                        $winrm = "Allowed, but Failed"
+                    }
+                }
+            }
+
+            $detail = New-Object PSObject
+
+            $detail | Add-Member -Type NoteProperty -Name 'Computer' -Value $computer
+            $detail | Add-Member -Type NoteProperty -Name 'RemoteAddress' -Value $remoteAddress
+            $detail | Add-Member -Type NoteProperty -Name 'Online' -Value $online.PingSucceeded
+            $detail | Add-Member -Type NoteProperty -Name 'PSRemoting' -Value $winrm
+            $detail | Add-Member -Type NoteProperty -Name 'Net2' -Value $net2
+            $detail | Add-Member -Type NoteProperty -Name 'Net30' -Value $net30
+            $detail | Add-Member -Type NoteProperty -Name 'Net35' -Value $net35
+            $detail | Add-Member -Type NoteProperty -Name 'Net4' -Value $net4
+
+            $list += $detail
+
+            $counter++
+        }
+    }
+
+    end {
+        $Global:ProgressPreference = $originalProgressPreference
+        return $list
+    }
+}
+
 function Test-NetFramework
 {
     [CmdletBinding()]
