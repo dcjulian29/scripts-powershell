@@ -7,11 +7,16 @@
     NestedModules = @(
         "IPerf.psm1"
         "NMap.psm1"
+        "PacketCapture.psm1"
         "Wireshark.psm1"
     )
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+        "Add-PacketFilter"
+        "Clear-PacketFilter"
+        "Convert-PacketCaptureFile"
+        "Get-PacketFilter"
         "Get-TSharkInterfaces"
         "Invoke-IPerf"
         "Invoke-IPerfServer"
@@ -26,6 +31,8 @@
         "Invoke-TSharkCapture"
         "New-NetFirewallRule"
         "New-UrlReservation"
+        "Start-PacketCapture"
+        "Stop-PacketCapture"
         "Remove-NetFirewallRule"
         "Remove-UrlReservation"
     )
