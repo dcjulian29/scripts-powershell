@@ -28,6 +28,7 @@ function Get-GitRepositoryBranch {
 
 function Merge-GitRepository {
     param (
+        [Alias("Repository")]
         [string]$Path = $pwd,
         [Parameter(Mandatory=$true)]
         [string]$SourceBranch,
@@ -56,7 +57,7 @@ function Merge-GitRepository {
 
     if ($Push) {
         Write-Output "Pushing merge (if any) to origin..."
-        & "$(Find-Git)" --no-optional-locks push -v --tags origin ${DestinationBranch}:$DestinationBranch
+        & "$(Find-Git)" --no-optional-locks push -v origin ${DestinationBranch}:$DestinationBranch
     }
 
     if ($current -ne $DestinationBranch) {
