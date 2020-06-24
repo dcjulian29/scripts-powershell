@@ -5,6 +5,10 @@ function Clear-TeamCityProfile {
 
 Set-Alias teamcity-profile-clear Clear-TeamCityProfile
 
+function Get-TeamCityBackup {
+    Invoke-TeamCityApi "server/backup" -AcceptType "text/plain"
+}
+
 function Get-TeamCityServerLicense {
     $info = Invoke-TeamCityApi "server/licensingData"
 
@@ -76,14 +80,15 @@ function Invoke-TeamCityApi {
         [string] $Body,
         [ValidateSet("GET", "POST", "PUT", "DELETE")]
         [string] $HttpMethod = "GET",
-        [string] $BodyType = "application/xml"
+        [string] $BodyType = "application/xml",
+        [string] $AcceptType = "application/json"
     )
 
     Use-TeamCityProfile
 
     $header = @{
         "Authorization" = "Bearer $env:TeamCityToken"
-        "Accept" = "application/json"
+        "Accept" = $AcceptType
     }
 
     $uri = "$env:TeamCityUrl/app/rest/$Method"
@@ -96,7 +101,10 @@ function Invoke-TeamCityApi {
     }
 
     if ($response) {
-        $response = $response | ConvertFrom-Json
+        switch ($AcceptType) {
+            "application/json" { $response = $response | ConvertFrom-Json }
+            default { $response = $response.Content }
+        }
 
         return $response
     }
@@ -104,6 +112,32 @@ function Invoke-TeamCityApi {
 
 Set-Alias teamcityapi Invoke-TeamCityApi
 Set-Alias teamcity-api Invoke-TeamCityApi
+
+function Invoke-TeamCityBackup {
+    [CmdletBinding()]
+    param (
+        [string] $FileName = "TeamCity_Backup",
+        [string] $AddTimestamp = $true,
+        [string] $IncludeConfigs = $true,
+        [string] $IncludeDatabase = $true,
+        [string] $IncludeBuildLogs = $false,
+        [string] $IncludePersonalChanges = $false
+    )
+
+    $param = ("addTimestamp={1}&includeConfigs={2}&includeDatabase={3}" `
+        + "&includeBuildLogs={4}&includePersonalChanges={5}&fileName={0}") `
+        -f `
+            $FileName,
+            $AddTimestamp,
+            $IncludeConfigs,
+            $IncludeDatabase,
+            $IncludeBuildLogs,
+            $IncludePersonalChanges
+
+    Invoke-TeamCityApi -Method "server/backup?$param" -HttpMethod POST -AcceptType "text/plain"
+}
+
+Set-Alias -Name Backup-TeamCity -Value Invoke-TeamCityBackup
 
 function Set-TeamCityProfile {
     param(
