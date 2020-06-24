@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.5.10.1'
+    ModuleVersion = '2020.6.7.1'
     GUID = '30e20011-16a8-4280-a894-12814809ff25'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -22,6 +22,7 @@
         "Get-TeamCityAgentPool"
         "Get-TeamCityAgentPools"
         "Get-TeamCityAgents"
+        "Get-TeamCityBackup"
         "Get-TeamCityBuild"
         "Get-TeamCityBuilds"
         "Get-TeamCityBuildConfiguration"
@@ -39,6 +40,7 @@
         "Get-TeamCityUsers"
         "Import-TeamCityProfile"
         "Invoke-TeamCityApi"
+        "Invoke-TeamCityBackup"
         "Move-TeamCityAgent"
         "Set-TeamCityProfile"
         "Start-TeamCityBuild"
@@ -48,6 +50,7 @@
     )
     AliasesToExport = @(
         "Authorize-TeamCityAgent"
+        "Backup-TeamCity"
         "Load-TeamCityProfile"
         "teamcityapi"
         "teamcity-api"
