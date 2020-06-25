@@ -11,6 +11,7 @@
         "Clear-ElasticSearchProfile"
         "Import-ElasticSearchProfile"
         "Invoke-ElasticSearchApi"
+        "New-ElasticSearchProfile"
         "Set-ElasticSearchProfile"
         "Test-ElasticSearchProfile"
         "Use-ElasticSearchProfile"

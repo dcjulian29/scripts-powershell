@@ -1,6 +1,5 @@
 function Clear-ElasticSearchProfile {
     Remove-Item env:ElasticSearchURL
-    Remove-Item env:ElasticSearchToken
 }
 
 Set-Alias elasticsearch-profile-clear Clear-ElasticSearchProfile
@@ -19,7 +18,6 @@ function Import-ElasticSearchProfile {
         $json = Get-Content -Raw -Path $profileFile | ConvertFrom-Json
 
         $env:ElasticSearchURL = $json.Url
-        $env:ElasticSearchToken = $json.Token
     }
 }
 
@@ -40,7 +38,6 @@ function Invoke-ElasticSearchApi {
     Use-ElasticSearchProfile
 
     $header = @{
-        "Authorization" = "Basic $env:ElasticSearchToken"
         "Accept" = "application/json"
     }
 
@@ -63,21 +60,36 @@ function Invoke-ElasticSearchApi {
 Set-Alias es-api Invoke-ElasticSearchApi
 Set-Alias elasticsearch-api Invoke-ElasticSearchApi
 
+function New-ElasticSearchProfile {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $Name,
+        [Parameter(Mandatory = $true)]
+        [string] $Url
+    )
+
+    if (Test-Path "$env:SystemDrive\etc\elasticsearch\$Name.json") {
+        throw "ElasticSearch '$Name' profile already exist!"
+    }
+
+    $json = New-Object PSObject
+    $json | Add-Member -Type NoteProperty -Name 'Url' -Value $Url
+    $json = $json | ConvertTo-Json
+
+    Set-Content -Path "$env:SystemDrive\etc\elasticsearch\$Name.json" -Value $json -Encoding ASCII
+}
+
 function Set-ElasticSearchProfile {
     param(
         [Parameter(Mandatory = $true)]
-        [string] $Url,
-        [Parameter(Mandatory = $true)]
-        [string] $Token
+        [string] $Url
     )
 
     $env:ElasticSearchURL = $Url
-    $env:ElasticSearchToken = $Token
 }
 
 function Test-ElasticSearchProfile {
-    return ((Test-Path env:ElasticSearchURL) `
-        -and (Test-Path env:ElasticSearchToken))
+    return Test-Path env:ElasticSearchURL
 }
 
 function Use-ElasticSearchProfile {
