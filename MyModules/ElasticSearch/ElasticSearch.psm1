@@ -32,7 +32,8 @@ function Invoke-ElasticSearchApi {
         [string] $Body,
         [ValidateSet("GET", "POST", "PUT", "DELETE")]
         [string] $HttpMethod = "GET",
-        [string] $BodyType = "application/xml"
+        [string] $BodyType = "application/json",
+        [switch] $Raw
     )
 
     Use-ElasticSearchProfile
@@ -43,18 +44,28 @@ function Invoke-ElasticSearchApi {
 
     $uri = "$env:ElasticSearchUrl/$Method"
 
-    if ($HttpMethod -ne "GET") {
-        $header.Add("Content-Type", $BodyType)
-        $response = Invoke-WebRequest -Uri $uri -Method $HttpMethod -Header $header -Body $Body
-    } else {
-        $response = Invoke-WebRequest -Uri $uri -Method $HttpMethod -Header $header
+    try {
+        if ($HttpMethod -ne "GET") {
+            $header.Add("Content-Type", $BodyType)
+            $response = Invoke-WebRequest -Uri $uri -Method $HttpMethod -Header $header -Body $Body -ErrorAction Stop
+        } else {
+            $response = Invoke-WebRequest -Uri $uri -Method $HttpMethod -Header $header -ErrorAction Stop
+        }
+
+        if ( -not $Raw) {
+            $response = $response.Content | ConvertFrom-Json
+        } else {
+            $response = $response.Content
+        }
+    } catch [System.Net.WebException] {
+        $response = $_.ErrorDetails.Message
+
+        if (-not $Raw) {
+            $response = $response | ConvertFrom-Json
+        }
     }
 
-    if ($response) {
-        $response = $response | ConvertFrom-Json
-
-        return $response
-    }
+    return $response
 }
 
 Set-Alias es-api Invoke-ElasticSearchApi
