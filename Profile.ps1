@@ -17,7 +17,12 @@ if (-not ($env:PATH).Contains($binarydirectory)) {
   $env:PATH = "$binarydirectory;$($env:PATH)"
 }
 
-Remove-Item alias:wget
-Remove-Item alias:curl
+if (Test-Path alias:wget) {
+  Remove-Item alias:wget
+}
+
+if (Test-Path alias:curl) {
+  Remove-Item alias:curl
+}
 
 Set-Alias -Name go -Value gd
