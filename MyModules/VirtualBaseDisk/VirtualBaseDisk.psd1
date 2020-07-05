@@ -7,6 +7,7 @@
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+        "Convert-WindowsImage"
         "Get-WindowsImagesInISO"
         "Get-WindowsImagesInWIM"
         "New-DevBaseVhdxDisk"
