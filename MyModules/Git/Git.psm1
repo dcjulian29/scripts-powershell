@@ -10,6 +10,16 @@ function Find-GraphicalGitHistory {
     "$(Find-ProgramFiles "Git")\cmd\gitk.exe"
 }
 
+function Get-GitRootDirectory {
+    $root = & "$(Find-Git)" rev-parse --show-toplevel
+    
+    if (Test-Path $root) {
+        return Get-Item $root
+    }
+    
+    return $null
+}
+
 function Get-GitRepositoryStatus {
     & "$(Find-Git)" status
 }
