@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.4.18.1'
+    ModuleVersion = '2020.7.15.1'
     GUID = '6aa69e5b-f92d-41ba-947b-7840504d31da'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -23,6 +23,8 @@
         "Invoke-CleanAllProjects"
         "Invoke-CleanProject"
         "Invoke-MSBuild"
+        "Invoke-SortConfigurationFile"
+        "Invoke-SortProjectFile"
         "New-CodeFolder"
         "Set-CodeFolder"
         "Set-DefaultCodeFolder"
@@ -37,5 +39,7 @@
         "project-archive"
         "project-clean"
         "project-clean-all"
+        "Sort-ConfigurationFile"
+        "Sort-ProjectFile"
     )
 }
