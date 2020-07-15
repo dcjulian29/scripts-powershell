@@ -86,6 +86,49 @@ function getUrl {
 
 #------------------------------------------------------------------------------
 
+function Get-NetworkIP {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true)]
+    [string] $Interface
+  )
+
+  $collection = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()
+
+  if ($Interface) {
+    $collection = $collection | Where-Object Name -eq $Interface
+  }
+
+  $r = @()
+
+  foreach ($item in $collection) {
+    $r += [PSCustomObject] @{
+      Alias = $item.Name
+      IPv4 = ($item.GetIPProperties().UnicastAddresses `
+        | Where-Object PrefixLength -eq 24 ).Address.IPAddressToString
+      IPv6 = ($item.GetIPProperties().UnicastAddresses `
+        | Where-Object PrefixLength -eq 64 ).Address.IPAddressToString
+    }
+  }
+
+  return $r
+}
+
+function Get-PublicIP {
+  param(
+    [Switch] $IPv6
+  )
+
+  if(-not $IPv6) {
+    $url = 'ipv4bot.whatismyipaddress.com'
+  } else {
+    $url = 'ipv6bot.whatismyipaddress.com'
+  }
+
+  Invoke-WebRequest -Uri $url -UseBasicParsing -DisableKeepAlive `
+    | Select-Object -ExpandProperty Content
+}
+
 function Invoke-Http {
     [CmdletBinding()]
     param (
