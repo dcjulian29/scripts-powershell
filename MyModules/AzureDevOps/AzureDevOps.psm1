@@ -56,6 +56,7 @@ function Invoke-AzureDevOpsApi {
         [string] $Project,
         [ValidateSet("GET", "POST", "PUT", "PATCH", "DELETE")]
         [string] $HttpMethod = "GET",
+        [string[]] $Filter,
         [string] $BodyType = "application/json",
         [string] $Version = "5.1",
         [switch] $PrefixProject
@@ -69,18 +70,23 @@ function Invoke-AzureDevOpsApi {
         "Accept" = "application/json"
     }
 
+    $queryString = ""
+    foreach ($item in $Filter) {
+        $queryString += "$($item.Trim())&"
+    }
+
     if ($PrefixProject) {
         if ($Project) {
-            $uri = "$env:AzureDevOpsUrl/$Project/_apis/$($Method)?api-version=$Version"
+            $uri = "$env:AzureDevOpsUrl/$Project/_apis/$($Method)?${queryString}api-version=$Version"
         } else {
             if (Test-Path env:AzureDevOpsProject) {
-                $uri = "$env:AzureDevOpsUrl/$env:AzureDevOpsProject/_apis/$($Method)?api-version=$Version"
+                $uri = "$env:AzureDevOpsUrl/$env:AzureDevOpsProject/_apis/$($Method)?${queryString}api-version=$Version"
             } else {
                 throw "This Azure DevOps functions requires a project and one was not provided"
             }
         }
     } else {
-        $uri = "$env:AzureDevOpsUrl/_apis/$($Method)?api-version=$Version"
+        $uri = "$env:AzureDevOpsUrl/_apis/$($Method)?${queryString}api-version=$Version"
     }
 
     if ($HttpMethod -ne "GET") {
