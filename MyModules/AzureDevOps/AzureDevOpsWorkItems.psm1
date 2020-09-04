@@ -211,8 +211,9 @@ function New-AdoWorkItem {
     }
 
     if ($AreaPath) {
+        $path = $AreaPath.Replace("\", "\\")
         $json += ",{`"op`": `"add`", `"path`": `"/fields/System.AreaPath`", " `
-            + "`"from`": null, `"value`": `"$AreaPath`"}"
+            + "`"from`": null, `"value`": `"$path`"}"
     }
 
     $json += "]"
