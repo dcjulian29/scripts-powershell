@@ -96,7 +96,7 @@ function Invoke-BuildProject {
     $param = "$args"
     if (Test-Path build.cake) {
         $tee = "| Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
-        if (-not ($param.Contains('-'))) {
+        if (-not ($param.StartsWith('-'))) {
             if ($param) {
                 # Assume a target was passed in
                 Invoke-Expression ".\build.ps1 -target $param $tee"
