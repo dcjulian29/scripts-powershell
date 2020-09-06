@@ -153,6 +153,7 @@ function New-BaseVhdxDisk {
 
     Write-Output "Creating a base disk using ""$($image.ImageName)"" to $vhdx..."
 
+    . $PSScriptRoot\Convert-WindowsImage.ps1
     Convert-WindowsImage -SourcePath $wim -Edition $Index `
         -DiskLayout $partition  -VHDPath $vhdx `
         -VHDFormat VHDX -SizeBytes 100GB -Verbose
