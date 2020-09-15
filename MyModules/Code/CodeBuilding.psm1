@@ -74,6 +74,16 @@ function Get-CodeCoverageReport {
     Start-Process "$((Get-Location).Path)\.coverage\index.htm"
 }
 
+function Edit-StyleCopSettings {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $Path
+    )
+
+    & $(Find-StyleCopSettingsEditor) $Path
+}
+
 function Find-MSBuild {
     return First-Path `
         (Find-ProgramFiles '\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe') `
@@ -90,6 +100,13 @@ function Find-MSBuild {
         (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe') `
         (Find-ProgramFiles 'MSBuild\15.0\bin\MSBuild.exe') `
         (Find-ProgramFiles 'MSBuild\14.0\bin\MSBuild.exe')
+}
+
+function Find-StyleCopSettingsEditor {
+    (Get-ChildItem -Path "${env:USERPROFILE}\.nuget\packages\stylecop.msbuild" -Recurse `
+        | Where-Object { $_.Name -match "StyleCop.SettingsEditor.exe" } `
+        | Sort-Object FullName -Descending `
+        | Select-Object -First 1).FullName
 }
 
 function Invoke-BuildProject {
