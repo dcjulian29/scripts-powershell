@@ -74,6 +74,48 @@ function Get-CodeCoverageReport {
     Start-Process "$((Get-Location).Path)\.coverage\index.htm"
 }
 
+function Get-MsBuildErrorsFromLog {
+    param(
+        [string]$Path
+    )
+
+    $errors = @()
+    $lines = Get-Content $Path | select-string ": error "
+
+    foreach ($line in $lines) {
+        $line = $line.ToString()
+
+        if ($line -like '*error MSB*') {
+            continue
+        }
+
+        $filename = $line.Split(':')[0]
+
+        if ($filename -like '*>*') {
+            $filename = $filename.Split('>')[1]
+        }
+
+        if ($filename -like '*(*') {
+            $filename = $filename.Split('(')[0]
+        }
+
+        $filename = $filename.Trim()
+
+        $code = $line.Split(':')[1].Replace("error ", "").Trim()
+        $desc = $line.Split('[')[0].Split(':')[2].Trim()
+
+        $detail = New-Object PSObject
+
+        $detail | Add-Member -Type NoteProperty -Name 'File' -Value $filename
+        $detail | Add-Member -Type NoteProperty -Name 'Code' -Value $code
+        $detail | Add-Member -Type NoteProperty -Name 'Error' -Value $desc
+
+        $errors += $detail
+    }
+
+    $errors
+}
+
 function Edit-StyleCopSettings {
     param (
         [Parameter(Mandatory=$true)]
