@@ -233,7 +233,7 @@ function New-AdoUserStory {
         [string] $Project
     )
 
-    New-AdoWorkItem @PsBoundParameters -WorkItemType "UserStory"
+    New-AdoWorkItem @PsBoundParameters -WorkItemType "User Story"
 }
 
 Set-Alias -Name ado-userstory -Value New-AdoUserStory
