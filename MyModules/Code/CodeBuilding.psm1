@@ -190,3 +190,13 @@ function Invoke-MSBuild {
 }
 
 Set-Alias msbuild Invoke-MSBuild
+
+function Show-CoverageReport {
+    param (
+        [String] $ReportIndex = ".\.build\coverage\index.htm"
+    )
+
+    if (Test-Path $ReportIndex) {
+            Start-Process $reportIndex
+    }
+}
