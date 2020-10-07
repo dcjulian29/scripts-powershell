@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.4.18.1'
+    ModuleVersion = '2020.9.28.1'
     GUID = '6aa69e5b-f92d-41ba-947b-7840504d31da'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -15,7 +15,10 @@
         "Get-CakeBuildBootstrapper"
         "Get-CodeCoverageReport"
         "Get-DefaultCodeFolder"
+        "Get-MsBuildErrorsFromLog"
+        "Edit-StyleCopSettings"
         "Find-MSBuild"
+        "Find-StyleCopSettingsEditor"
         "Import-DevelopmentPowerShellModule"
         "Import-DevelopmentPowerShellModules"
         "Invoke-ArchiveProject"
@@ -23,10 +26,13 @@
         "Invoke-CleanAllProjects"
         "Invoke-CleanProject"
         "Invoke-MSBuild"
+        "Invoke-SortConfigurationFile"
+        "Invoke-SortProjectFile"
         "New-CodeFolder"
         "Set-CodeFolder"
         "Set-DefaultCodeFolder"
         "Show-CodeStatus"
+        "Show-CoverageReport"
         "Test-DefaultCodeFolder"
         "Update-CodeFolder"
     )
@@ -37,5 +43,7 @@
         "project-archive"
         "project-clean"
         "project-clean-all"
+        "Sort-ConfigurationFile"
+        "Sort-ProjectFile"
     )
 }

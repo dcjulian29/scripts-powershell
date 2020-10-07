@@ -211,8 +211,9 @@ function New-AdoWorkItem {
     }
 
     if ($AreaPath) {
+        $path = $AreaPath.Replace("\", "\\")
         $json += ",{`"op`": `"add`", `"path`": `"/fields/System.AreaPath`", " `
-            + "`"from`": null, `"value`": `"$AreaPath`"}"
+            + "`"from`": null, `"value`": `"$path`"}"
     }
 
     $json += "]"
@@ -232,7 +233,7 @@ function New-AdoUserStory {
         [string] $Project
     )
 
-    New-AdoWorkItem @PsBoundParameters -WorkItemType "UserStory"
+    New-AdoWorkItem @PsBoundParameters -WorkItemType "User Story"
 }
 
 Set-Alias -Name ado-userstory -Value New-AdoUserStory

@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.5.12.1'
+    ModuleVersion = '2020.7.10.1'
     GUID = '099256ed-ac18-4e56-8017-bb9d9077fb74'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -29,10 +29,11 @@
         "Get-GitFilesSinceLastTag"
         "Get-GitFilesSinceTag"
         "Get-GitIgnoreTemplate"
-        "Get-LastGitCommit"
-        "Get-LastGitTag"
         "Get-GitRepositoryBranch"
         "Get-GitRepositoryStatus"
+        "Get-GitRootDirectory"
+        "Get-LastGitCommit"
+        "Get-LastGitTag"
         "Invoke-FetchGitRepository"
         "Invoke-GraphicGit"
         "Invoke-GraphicGitHistory"

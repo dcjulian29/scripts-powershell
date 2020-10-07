@@ -50,6 +50,10 @@ function Search-Command {
 
 Set-Alias -Name Find-PSCommand -Value Search-Command
 
+function Test-IsNonInteractive {
+    return (Get-WmiObject Win32_Process -filter "ProcessID=$pid").CommandLine -match "-NonInteractive"
+}
+
 function Test-PowerShellVerb {
     param (
         [Parameter(Mandatory = $true)]
