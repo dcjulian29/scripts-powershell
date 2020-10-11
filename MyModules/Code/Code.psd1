@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.9.28.1'
+    ModuleVersion = '2020.10.10.1'
     GUID = '6aa69e5b-f92d-41ba-947b-7840504d31da'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -16,6 +16,7 @@
         "Get-CodeCoverageReport"
         "Get-DefaultCodeFolder"
         "Get-MsBuildErrorsFromLog"
+        "Get-UnitTestReport"
         "Edit-StyleCopSettings"
         "Find-MSBuild"
         "Find-StyleCopSettingsEditor"

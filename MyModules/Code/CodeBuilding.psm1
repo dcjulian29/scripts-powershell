@@ -4,7 +4,7 @@
     }
 
     if (Test-Path build.ps1) {
-        throw "Cake.Build Bootstraper File Still Exists! Can't Continue..."
+        throw "Cake.Build bootstraper file still exists! Can't continue..."
     }
 
     Invoke-WebRequest https://cakebuild.net/download/bootstrapper/windows -OutFile build.ps1
@@ -12,27 +12,26 @@
 
 function Get-CodeCoverageReport {
     if (-not (Test-Path build.cake)) {
-        Write-Warning "This project doesn't support Cake.Build so cannot generate Code Coverage."
+        Write-Warning "This project doesn't support Cake.Build so cannot generate Code coverage currently."
         return
     }
 
-    Invoke-BuildProject "-Target Compile -Configuration Debug"
-
     if (-not (Test-Path "tools")) {
+        Write-Warning "This project doesn't contain the Tools directory."
         return
     }
 
     $openCover = (Get-ChildItem -Filter "OpenCover.*" -Path "tools" `
         | Sort-Object Name -Descending `
-        | Select-Object -First 1).FullName + "\tools\OpenCover.Console.exe"
+        | Select-Object -First 1).FullName + "/tools/OpenCover.Console.exe"
 
     $reportGenerator = (Get-ChildItem -Filter "ReportGenerator.*" -Path "tools" `
         | Sort-Object Name -Descending `
-        | Select-Object -First 1).FullName + "\tools\net47\ReportGenerator.exe"
+        | Select-Object -First 1).FullName + "/tools/net47/ReportGenerator.exe"
 
     $xunit = (Get-ChildItem -Filter "xunit.runner.console.*" -Path "tools" `
         | Sort-Object Name -Descending `
-        | Select-Object -First 1).FullName + "\tools\net472\xunit.console.exe"
+        | Select-Object -First 1).FullName + "/tools/net472/xunit.console.exe"
 
 
     if (-not ($openCover -and $reportGenerator -and $xunit)) {
@@ -40,38 +39,39 @@ function Get-CodeCoverageReport {
         return
     }
 
-    if (Test-Path ".coverage") {
-        Remove-Item ".coverage" -Recurse -Force
+    $coverageFolder = Join-Path $([System.IO.Path]::GetTempPath()) $([System.Guid]::NewGuid().Guid)
+
+    if (Test-Path $coverageFolder) {
+        Remove-Item $coverageFolder -Recurse -Force
     }
 
-    New-Item -ItemType Directory -Path ".coverage" | Out-Null
+    New-Item -ItemType Directory -Path $coverageFolder | Out-Null
 
-    if (Test-Path "build") {
-        $buildDirectory = "$((Get-Location).Path)\build"
-    }
+    $unitTest = "$((Get-Location).Path)/UnitTests/bin/Debug/UnitTests.dll"
 
-    if (Test-Path ".build") {
-        $buildDirectory = "$((Get-Location).Path)\.build"
+    if (-not (Test-Path $unitTest)) {
+        Write-Warning "UnitTest project output DLL not found."
+        return
     }
 
     $cmd = "$openCover --% " `
         + "-target:""$xunit"" " `
-        + "-targetargs:""\""$buildDirectory\output\UnitTests.dll\"" -stoponfail -parallel all -noshadow"" " `
+        + "-targetargs:""\""$unitTest\"" -parallel all -maxthreads unlimited -noshadow -nocolor -verbose"" " `
         + "-register:user " `
-        + "-output:.coverage\coverage.xml " `
-        + "-filter:""+[*]* -[UnitTests]* -[xunit.*]*"" " `
+        + "-output:""$coverageFolder\coverage.xml"" " `
+        + "-filter:""+[*]* -[UnitTests]* -[xunit.*]* -[Common.*]*"" " `
         + "-excludebyattribute:System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute " `
         + "-excludebyfile:""*Designer.csb*\\*.g.csb*.*.g.i.cs"""
 
     Invoke-Expression -Command $cmd
 
     $cmd = "$reportGenerator --% " `
-        + "-reports:""$((Get-Location).Path)\.coverage\coverage.xml"" " `
-        + "-targetdir:""$((Get-Location).Path)\.coverage"""
+        + "-reports:""$coverageFolder/coverage.xml"" " `
+        + "-targetdir:""$coverageFolder"""
 
     Invoke-Expression -Command $cmd
 
-    Start-Process "$((Get-Location).Path)\.coverage\index.htm"
+    Start-Process "$coverageFolder/index.htm"
 }
 
 function Get-MsBuildErrorsFromLog {
@@ -114,6 +114,43 @@ function Get-MsBuildErrorsFromLog {
     }
 
     $errors
+}
+
+function Get-UnitTestReport {
+    if (-not (Test-Path build.cake)) {
+        Write-Warning "This project doesn't support Cake.Build so cannot generate Code coverage currently."
+        return
+    }
+
+    if (-not (Test-Path "tools")) {
+        Write-Warning "This project doesn't contain the Tools directory."
+        return
+    }
+
+    $xunit = (Get-ChildItem -Filter "xunit.runner.console.*" -Path "tools" `
+        | Sort-Object Name -Descending `
+        | Select-Object -First 1).FullName + "/tools/net472/xunit.console.exe"
+
+
+    if (-not ($xunit)) {
+        Write-Warning "Xunit not found."
+        return
+    }
+
+    $unitTest = "$((Get-Location).Path)/UnitTests/bin/Debug/UnitTests.dll"
+
+    if (-not (Test-Path $unitTest)) {
+        Write-Warning "UnitTest project output DLL not found."
+        return
+    }
+
+    $report = "$(Join-Path $([System.IO.Path]::GetTempPath()) $([System.Guid]::NewGuid().Guid)).htm"
+    $cmd = "& ""$xunit"" --% " `
+        + """$unitTest"" -parallel all -maxthreads unlimited -noshadow -nocolor -verbose " `
+        + "-html ""$report"""
+
+    Invoke-Expression -Command $cmd
+    Start-Process "$report"
 }
 
 function Edit-StyleCopSettings {
