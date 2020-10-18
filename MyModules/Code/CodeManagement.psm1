@@ -128,6 +128,7 @@ function Invoke-SortConfigurationFile {
 }
 
 Set-Alias -Name Sort-ConfigurationFile -Value Invoke-SortConfigurationFile
+Set-Alias -Name sort-config -Value Invoke-SortConfigurationFile
 
 function Invoke-SortProjectFile {
     param (
@@ -183,3 +184,4 @@ function Invoke-SortProjectFile {
 }
 
 Set-Alias -Name Sort-ProjectFile -Value Invoke-SortProjectFile
+Set-Alias -Name sort-project -Value Invoke-SortProjectFile
