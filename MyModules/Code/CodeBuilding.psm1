@@ -3,11 +3,16 @@
         Remove-Item -Confirm -Path build.ps1
     }
 
-    if (Test-Path build.ps1) {
-        throw "Cake.Build bootstraper file still exists! Can't continue..."
+    if (Test-Path build.sh) {
+        Remove-Item -Confirm -Path build.sh
+    }
+
+    if ((Test-Path build.ps1) -or (Test-Path build.sh)) {
+        throw "Cake.Build bootstraper files still exists! Can't continue..."
     }
 
     Invoke-WebRequest https://cakebuild.net/download/bootstrapper/windows -OutFile build.ps1
+    Invoke-WebRequest https://cakebuild.net/download/bootstrapper/linux -OutFile build.sh
 }
 
 function Get-CodeCoverageReport {
@@ -71,7 +76,7 @@ function Get-CodeCoverageReport {
 
     Invoke-Expression -Command $cmd
 
-    Start-Process "$coverageFolder/index.htm"
+    Invoke-Item "$coverageFolder/index.htm"
 }
 
 function Get-MsBuildErrorsFromLog {
@@ -117,27 +122,22 @@ function Get-MsBuildErrorsFromLog {
 }
 
 function Get-UnitTestReport {
-    if (-not (Test-Path build.cake)) {
-        Write-Warning "This project doesn't support Cake.Build so cannot generate Code coverage currently."
-        return
+    param (
+        [string] $UnitTest = "$((Get-Location).Path)/UnitTests/bin/Debug/UnitTests.dll"
+    )
+
+    $xunit = (Get-Command "xunit.console.exe" -ErrorAction SilentlyContinue).Source
+
+    if (-not ($xunit)) {
+        $xunit = (Get-ChildItem -Filter "xunit.runner.console.*" -Path "tools" `
+            | Sort-Object Name -Descending `
+            | Select-Object -First 1).FullName + "/tools/net472/xunit.console.exe"
     }
-
-    if (-not (Test-Path "tools")) {
-        Write-Warning "This project doesn't contain the Tools directory."
-        return
-    }
-
-    $xunit = (Get-ChildItem -Filter "xunit.runner.console.*" -Path "tools" `
-        | Sort-Object Name -Descending `
-        | Select-Object -First 1).FullName + "/tools/net472/xunit.console.exe"
-
 
     if (-not ($xunit)) {
         Write-Warning "Xunit not found."
         return
     }
-
-    $unitTest = "$((Get-Location).Path)/UnitTests/bin/Debug/UnitTests.dll"
 
     if (-not (Test-Path $unitTest)) {
         Write-Warning "UnitTest project output DLL not found."
@@ -150,7 +150,7 @@ function Get-UnitTestReport {
         + "-html ""$report"""
 
     Invoke-Expression -Command $cmd
-    Start-Process "$report"
+    Invoke-Item "$report"
 }
 
 function Edit-StyleCopSettings {
@@ -165,7 +165,7 @@ function Edit-StyleCopSettings {
 
 function Find-MSBuild {
     return First-Path `
-        (Find-ProgramFiles '\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe') `
@@ -208,8 +208,6 @@ function Invoke-BuildProject {
         .\build.bat $param
     } elseif (Test-Path build.cmd) {
         .\build.cmd $param
-    } elseif (Test-Path build.xml) {
-        C:\tools\apps\nant\bin\nant.exe -buildfile:build.xml $param
     } else {
         Write-Host "This directory does not include build script to build the project"
     }
@@ -234,6 +232,6 @@ function Show-CoverageReport {
     )
 
     if (Test-Path $ReportIndex) {
-            Start-Process $reportIndex
+            Invoke-Item $reportIndex
     }
 }
