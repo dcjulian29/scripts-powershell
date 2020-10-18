@@ -70,8 +70,7 @@ function Show-CodeStatus {
 
     foreach ($project in $projects) {
         if (Test-Path "$Path\$project\.git") {
-            Write-Output "    ....$project..."
-            Write-Output " "
+            Write-Output "`n    ....$project...`n"
 
             Push-Location "$Path\$project"
 
@@ -79,8 +78,6 @@ function Show-CodeStatus {
             Get-GitRepositoryStatus
 
             Pop-Location
-
-            Write-Output " "
         }
     }
 }
