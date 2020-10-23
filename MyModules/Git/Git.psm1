@@ -12,11 +12,11 @@ function Find-GraphicalGitHistory {
 
 function Get-GitRootDirectory {
     $root = & "$(Find-Git)" rev-parse --show-toplevel
-    
+
     if (Test-Path $root) {
         return Get-Item $root
     }
-    
+
     return $null
 }
 
@@ -173,6 +173,19 @@ function Start-GitGraphicalInterface {
 
 Set-Alias gitk Start-GitGraphicalInterface
 
+function Test-GitRepository {
+    param (
+        [string] $Path = $PWD.Path
+    )
+
+    & "$(Find-Git)" -C $Path rev-parse 2>1 | Out-Null
+
+    if ($LASTEXITCODE -gt 0) {
+        return $false
+    }
+
+    return $true
+}
 
 function Update-AllGitRepositories {
     param (
