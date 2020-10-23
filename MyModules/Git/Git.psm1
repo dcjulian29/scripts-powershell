@@ -178,7 +178,7 @@ function Test-GitRepository {
         [string] $Path = $PWD.Path
     )
 
-    & "$(Find-Git)" -C $Path rev-parse 2>1 | Out-Null
+    & "$(Find-Git)" -C $Path rev-parse 2>&1 | Out-Null
 
     if ($LASTEXITCODE -gt 0) {
         return $false
