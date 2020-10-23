@@ -23,6 +23,7 @@
         "Find-Git"
         "Find-GraphicGit"
         "Find-GraphicGitHistory"
+        "Find-NonMergedBranches"
         "Get-GitConfigValue"
         "Get-GitFilesFromCommit"
         "Get-GitFilesFromLastCommit"

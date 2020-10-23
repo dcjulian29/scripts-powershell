@@ -26,6 +26,45 @@ function Get-GitRepositoryBranch {
     cmd /c """$(Find-Git)"" $parameters"
 }
 
+function Find-NonMergedBranches {
+    param (
+        [string] $Path = $PWD.Path
+    )
+
+    if (-not (Test-GitRepository $Path)) {
+        throw "This is not a Git repository."
+    }
+
+    Push-Location $Path
+
+    $branches = git branch -r --no-merged
+
+    $commits = @()
+    $list = @()
+
+    foreach ($branch in $branches) {
+        $branch = $branch.Trim()
+        $commits += git log -n 1 --format="%ci|%cr|%an|%ae|$branch" --no-merges --first-parent $branch
+    }
+
+    foreach ($commit in $commits) {
+            $line = $commit.Split('|')
+            $detail = New-Object PSObject
+
+            $detail | Add-Member -Type NoteProperty -Name 'Branch' -Value $line[4]
+            $detail | Add-Member -Type NoteProperty -Name 'Age' -Value $line[1]
+            $detail | Add-Member -Type NoteProperty -Name 'LastCommitDate' -Value $line[0]
+            $detail | Add-Member -Type NoteProperty -Name 'AuthorName' -Value $line[2]
+            $detail | Add-Member -Type NoteProperty -Name 'AuthorEmail' -Value $line[3]
+
+            $list += $detail
+    }
+
+    Pop-Location
+
+    return $list
+}
+
 function Merge-GitRepository {
     param (
         [Alias("Repository")]
