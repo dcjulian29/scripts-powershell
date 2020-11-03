@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.6.5.1'
+    ModuleVersion = '2020.11.2.1'
     GUID = 'd8dcfccc-7a12-4dfd-a27a-c647b408e1bf'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -16,6 +16,7 @@
         "Add-PacketFilter"
         "Clear-PacketFilter"
         "Convert-PacketCaptureFile"
+        "Find-Nmap"
         "Get-PacketFilter"
         "Get-TSharkInterfaces"
         "Invoke-IPerf"
@@ -24,9 +25,9 @@
         "Invoke-Http"
         "Invoke-Nmap"
         "Invoke-PingScanNetwork"
-        "Invoke-ScanNetwork"
         "Invoke-ScanHost"
         "Invoke-ScanLocalNetwork"
+        "Invoke-ScanNetwork"
         "Invoke-TShark"
         "Invoke-TSharkCapture"
         "New-NetFirewallRule"
@@ -41,6 +42,7 @@
         "iperf-server"
         "iperf-client"
         "nmap"
+        "nmap-host"
         "nmap-scan"
         "tshark"
         "tshark-showinterfaces"

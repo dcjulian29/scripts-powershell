@@ -1,32 +1,44 @@
-function Find-NMap {
-    First-Path `
-        (Find-ProgramFiles 'Nmap\nmap.exe')
+function testDockerOrElevated {
+    if (Get-Command "docker.exe" -ErrorAction SilentlyContinue) {
+        return $true
+    }
+    
+    Test-Elevation
 }
 
-Function Invoke-Nmap {
-    if (-not (Test-Path $(Find-NMap))) {
-        Write-Output "NMap is not installed on this system."
+#------------------------------------------------------------------------------
+
+function Find-Nmap {
+    if (Get-Command "docker.exe" -ErrorAction SilentlyContinue) {
+        "docker.exe run -it dcjulian29/nmap"
     } else {
-        $param = "$args"
+        First-Path `
+            (Find-ProgramFiles 'Nmap\nmap.exe')
+    }
+}
 
-        $ea = $ErrorActionPreference
-        $ErrorActionPreference = "SilentlyContinue"
-
+function Invoke-Nmap {
+    $nmap = Find-Nmap
+    if (-not $nmap) {
+        throw "NMap (or Docker) is not installed on this system."
+    }
+    
+    $param = "$args"
+    
+    if ($nmap -notlike "*docker*") {
         if (Test-Elevation) {
             $param = "--privileged $param"
         } else {
              $param = "--unprivileged $param"
         }
-
-        cmd.exe /c "`"$(Find-NMap)`"  $param"
-
-        $ErrorActionPreference = $ea
     }
+
+    cmd.exe /c "$nmap $param"
 }
 
 Set-Alias nmap Invoke-Nmap
 
-Function Invoke-ScanNetwork {
+function Invoke-PingScanNetwork {
     param (
         [ValidateNotNullOrEmpty()]
         [Parameter(Mandatory = $true)]
@@ -34,16 +46,10 @@ Function Invoke-ScanNetwork {
         [Int]$NetMask = 24
     )
 
-    if (Test-Elevation) {
-        Invoke-Nmap -v -R -sS -sV -A $NetId/$NetMask
-    } else {
-        Invoke-Nmap -v -R -sT -sV $NetId/$NetMask
-    }
+    Invoke-Nmap -R -sn $NetId/$NetMask
 }
 
-Set-Alias nmap-scan Invoke-ScanNetwork
-
-Function Invoke-ScanHost {
+function Invoke-ScanHost {
     param (
         [ValidateNotNullOrEmpty()]
         [Parameter(Mandatory = $true)]
@@ -53,7 +59,9 @@ Function Invoke-ScanHost {
     Invoke-ScanNetwork -NetId $HostIP -NetMask 32
 }
 
-Function Invoke-ScanLocalNetwork {
+Set-Alias nmap-host Invoke-ScanHost
+
+function Invoke-ScanLocalNetwork {
     $gw = Get-WmiObject -Class Win32_IP4RouteTable `
         | Where-Object { $_.destination -eq '0.0.0.0' -and $_.mask -eq '0.0.0.0'} `
         | Sort-Object metric1 | Select-Object InterfaceIndex
@@ -65,7 +73,7 @@ Function Invoke-ScanLocalNetwork {
     Invoke-ScanNetwork -NetId $netId -NetMask $netMask
 }
 
-Function Invoke-PingScanNetwork {
+function Invoke-ScanNetwork {
     param (
         [ValidateNotNullOrEmpty()]
         [Parameter(Mandatory = $true)]
@@ -73,5 +81,11 @@ Function Invoke-PingScanNetwork {
         [Int]$NetMask = 24
     )
 
-    Invoke-Nmap -R -sn $NetId/$NetMask
+    if (testDockerOrElevated) {
+        Invoke-Nmap -v -R -sS -sV -A $NetId/$NetMask
+    } else {
+        Invoke-Nmap -v -R -sT -sV $NetId/$NetMask
+    }
 }
+
+Set-Alias nmap-scan Invoke-ScanNetwork
