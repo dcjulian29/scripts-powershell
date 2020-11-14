@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2019.12.30.1'
+    ModuleVersion = '2020.11.14.1'
     GUID = '2cd0c771-ed8b-48bc-b6bc-be8540c915e4'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -17,11 +17,14 @@
         "Get-DockerContainerState"
         "Get-DockerContainerStates"
         "Get-RunningDockerContainers"
+        "Invoke-AlpineContainer"
         "Invoke-Docker"
         "Remove-ExitedDockerContainers"
         "Remove-NonRunningDockerContainers"
         "Start-DockerContainer"
         "Stop-DockerContainer"
     )
-    AliasesToExport = @()
+    AliasesToExport = @(
+        "alpine"
+    )
 }

@@ -12,6 +12,16 @@ function Get-DockerContainer {
     Invoke-Docker "inspect $Id" | ConvertFrom-Json
 }
 
+function Invoke-AlpineContainer {
+    if (Get-Command "docker.exe" -ErrorAction SilentlyContinue) {
+        cmd.exe /c "docker.exe run -it alpine:latest"
+    } else {
+        throw "Docker is not installed on this system."
+
+}
+
+Set-Alias -Name alpine -Value Invoke-AlpineContainer
+
 function Get-DockerContainerIds {
     param (
         [switch]$Running,
