@@ -122,36 +122,47 @@ function Optimize-ChocolateyCache {
         [switch]$WhatIf
     )
 
-    $files = (Get-ChildItem -Path $Path -Filter "*.nupkg").Name
+    $files = (Get-ChildItem -Path $Path -Filter "*.nupkg").FullName
+    $packages = @()
 
-    for ($i = 0; $i -lt ($files.Count - 1); $i++) {
-        $current = $files[$i].Split('.')
-        $next = $files[$i + 1].Split('.')
+    foreach ($file in $files) {
+        $detail = New-Object PSObject
 
-        $currentFile = $current[0]
-        $nextFile = $next[0]
+        $detail | Add-Member -Type NoteProperty -Name 'file' -Value $file
+        $data = Get-NuGetMetadata $file | Select-Object id, version
+        $detail | Add-Member -Type NoteProperty -Name 'id' -Value $data.id
+        $detail | Add-Member -Type NoteProperty -Name 'version' -Value $data.version
 
-        # dotnet and netfx packages (possibly others) don't follow
-        #   the same file name conventions as other packages
-        if (($current[0] -eq "DotNet4") -or ($current[0] -eq "netfx-4")) {
-            $currentFile = "$current[0].$current[1].$current[2]"
+        $parts = $data.version.Split('.')
+
+        $detail | Add-Member -Type NoteProperty -Name 'Major' -Value $parts[0]
+        $detail | Add-Member -Type NoteProperty -Name 'Minor' -Value $parts[1]
+        $detail | Add-Member -Type NoteProperty -Name 'Patch' -Value $parts[2]
+        if ($parts.Count -gt 3){
+            $detail | Add-Member -Type NoteProperty -Name 'Revision' -Value $parts[2]
+        } else {
+            $detail | Add-Member -Type NoteProperty -Name 'Revision' -Value 0
         }
 
-        if (($next[0] -eq "DotNet4") -or ($next[0] -eq "netfx-4")) {
-            $nextFile = "$next[0].$next[1].$next[2]"
-        }
+        $packages += $detail
+    }
 
-        if ($currentFile -eq $nextFile) {
-            if ($current.Length -eq $next.Length) {
-                $j = $current.Length
-                if (    ($current[$j - 2] -ne $next[$j - 2]) -or
-                        ($current[$j - 3] -ne $next[$j - 3]) -or
-                        ($current[$j - 4] -ne $next[$j - 4])) {
-                    if ($WhatIf) {
-                        Write-Output """$($files[$i])"" is superseeded by ""$($files[$i + 1])""."
-                    } else {
-                        Remove-Item -Path "$Path\$($files[$i])" -Force
-                    }
+    $packages = $packages | Sort-Object id,major,minor,patch,revision
+
+    for ($i = 0; $i -lt ($packages.Count - 1); $i++) {
+        $current = $packages[$i]
+        $next = $packages[$i + 1]
+
+        if ($current.id -eq $next.id) {
+            if (    ($current.Major -ne $next.Major) -or
+                    ($current.Minor -ne $next.Minor) -or
+                    ($current.Patch -ne $next.Patch) -or
+                    ($current.Revision -ne $next.Revision)) {
+                if ($WhatIf) {
+                    Write-Output `
+                        "'$($current.id) ($($current.version))' is superseeded by '$($next.id) ($($next.version))'."
+                } else {
+                    Remove-Item -Path $current.file -Force -Verbose
                 }
             }
         }
@@ -194,12 +205,12 @@ function Restore-ChocolateyCache {
 
         Get-Childitem -Filter "*.nupkg" -Path $chocoCache -Recurse | ForEach-Object {
             if (-not (Test-Path "$Destination\$($_.Name)")) {
-                Copy-Item -Path $_.FullName -Destination $Destination
+                Copy-Item -Path $_.FullName -Destination $Destination -Verbose
             } else {
                 $sourceHash = Get-Sha256 -Path "$($_.FullName)"
                 $destinationHash = Get-Sha256 -Path "$Destination\$($_.Name)"
                 if ($sourceHash -ne $destinationHash) {
-                    Copy-Item -Path $_.FullName -Destination $Destination -Force
+                    Copy-Item -Path $_.FullName -Destination $Destination -Force -Verbose
                 }
             }
         }
@@ -227,7 +238,7 @@ function Uninstall-ChocolateyPackage {
             $args = $args + " -installArguments $installArguments"
         }
 
-        Invoke-Expression "choco.exe uninstall $package$args -y"
+        Invoke-Expression "choco.exe uninstall $package $args -y"
     }
 }
 
