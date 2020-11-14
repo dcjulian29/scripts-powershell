@@ -8,6 +8,36 @@ function Clear-NuGetProfile {
 
 Set-Alias nuget-profile-clear Clear-NuGetProfile
 
+function Get-NuGetMetadata {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateScript({Test-Path -Path $_ })]
+        [String]$NuGetPackage
+    )
+
+    [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
+
+    try {
+        $zipFile = [System.IO.Compression.ZipFile]::OpenRead($NuGetPackage)
+        $entry = ($zipFile.Entries | Where-Object { $_.FullName.EndsWith(".nuspec") }).Open()
+        $reader = New-Object System.IO.StreamReader($entry)
+        $nuspec = [xml] ($reader.ReadToEnd())
+    }
+    catch [System.IO.InvalidDataException] {
+        Write-Error "'$NuGetPackage' is not a vaild NuGet file!"
+    }
+    catch {
+        Write-Error $_
+    }
+    finally {
+        if ($zipFile) { $zipFile.Dispose() }
+    }
+
+    return $nuspec.package.metadata
+}
+
+Set-Alias -Name nuget-metadata -Value Get-NuGetMetadata
+
 function New-NuGetPackage {
     param(
         [Parameter(Mandatory = $true)]

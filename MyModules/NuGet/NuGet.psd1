@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2019.12.28.1'
+    ModuleVersion = '2020.11.13.1'
     GUID = 'b3764581-214b-4403-b277-e97b6ad00c51'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -9,6 +9,7 @@
     FunctionsToExport = @(
         "Clear-NuGetProfile"
         "Find-NuGet"
+        "Get-NuGetMetaData"
         "Import-NuGetProfile"
         "Invoke-NuGet"
         "New-NuGetPackage"
@@ -21,6 +22,7 @@
     AliasesToExport = @(
         "Create-NuGetPackage"
         "Load-NuGetProfile"
+        "nuget-metadata"
         "nuget-profile-clear"
         "nuget-profile-load"
         "nuget-package-clean"
