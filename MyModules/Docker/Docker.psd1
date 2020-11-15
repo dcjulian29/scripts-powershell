@@ -4,21 +4,29 @@
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
     RootModule = 'Docker.psm1'
+        NestedModules = @(
+        "DockerContainer.psm1"
+        "DockerImage.psm1"
+    )
+
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
         "Find-Docker"
+        "Connect-DockerContainer"
         "Get-DockerContainer"
         "Get-DockerContainerNames"
         "Get-DockerContainerIds"
         "Get-DockerContainerIPAddress"
-        "Get-DockerContainerIPAddresses"
-        "Get-DockerContainers"
         "Get-DockerContainerState"
-        "Get-DockerContainerStates"
+        "Get-DockerImage"
+        "Get-DockerDiskUsage"
         "Get-RunningDockerContainers"
         "Invoke-AlpineContainer"
         "Invoke-Docker"
+        "Pop-DockerImage"
+        "Prune-Docker"
+        "Remove-DockerImage"
         "Remove-ExitedDockerContainers"
         "Remove-NonRunningDockerContainers"
         "Start-DockerContainer"
@@ -26,5 +34,11 @@
     )
     AliasesToExport = @(
         "alpine"
+        "Pull-DockerImage"
+        "docker-container"
+        "docker-image"
+        "docker-prune"
+        "docker-pull"
+        "docker-diskusage"
     )
 }

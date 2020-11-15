@@ -1,256 +1,90 @@
+function convertSizeString($Size) {
+    if ($Size.Contains(' ')) {
+        $size = $size.Substring(0, $size.IndexOf(' '))
+    }
+
+    $size = $size.ToUpper()
+    $size -match '[A-Za-z]+' | Out-Null
+    $size = [double]::Parse($size -replace '[^0-9.]')
+    switch ($Matches[0]) {
+        "KB" { $size = $size * 1KB }
+        "MB" { $size = $size * 1MB }
+        "GB" { $size = $size * 1GB }
+        "TB" { $size = $size * 1TB }
+    }
+
+    $size = [int][Math]::Round($size, 0, [MidPointRounding]::AwayFromZero)
+
+    return $size
+}
+
+#-----------------------------------------------------------------------------
+
 function Find-Docker {
     First-Path `
-        (Find-ProgramFiles "Docker\Docker\Resources\bin\docker.exe")
+        (Find-ProgramFiles "Docker\Docker\Resources\bin\docker.exe") `
+        "${env:ALLUSERSPROFILE}/DockerDesktop/version-bin/docker.exe"
 }
 
-function Get-DockerContainer {
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Id
-    )
+function Get-DockerDiskUsage {
+    $output = Invoke-Docker "system df"
 
-    Invoke-Docker "inspect $Id" | ConvertFrom-Json
+    $list = @()
+
+    if ($output) {
+        foreach ($line in $output) {
+            if ($line.StartsWith("TYPE")) {
+                continue # Exclude Header Row
+            }
+
+            $result = $line | Select-String -Pattern '(\S+\s\S+|\S+)' -AllMatches
+
+            $detail = New-Object -TypeName PSObject
+
+            $detail | Add-Member -MemberType NoteProperty -Name Type -Value $result.Matches[0].Value
+            $detail | Add-Member -MemberType NoteProperty -Name Total -Value $result.Matches[1].Value
+            $detail | Add-Member -MemberType NoteProperty -Name Active -Value $result.Matches[2].Value
+            $detail | Add-Member -MemberType NoteProperty -Name Size `
+                -Value $(convertSizeString $result.Matches[3].Value)
+            $detail | Add-Member -MemberType NoteProperty -Name Reclaimable `
+                -Value $(convertSizeString $result.Matches[4].Value)
+
+            $list += $detail
+        }
+    }
+
+    return $list
 }
+
+Set-Alias -Name docker-diskusage -Value Get-DockerDiskUsage
 
 function Invoke-AlpineContainer {
     if (Get-Command "docker.exe" -ErrorAction SilentlyContinue) {
         cmd.exe /c "docker.exe run -it alpine:latest"
     } else {
         throw "Docker is not installed on this system."
-
+    }
 }
 
 Set-Alias -Name alpine -Value Invoke-AlpineContainer
-
-function Get-DockerContainerIds {
-    param (
-        [switch]$Running,
-        [switch]$NoTruncate
-    )
-
-    $arg = "ps "
-
-    if (-not $Running) {
-        $arg += "--all "
-    }
-
-    $arg += "--format {{.ID}} "
-
-    if ($NoTruncate) {
-        $arg += "--no-trunc"
-    }
-
-    Invoke-Docker $arg
-}
-
-function Get-DockerContainerIPAddress {
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Id
-    )
-
-    $container = Get-DockerContainer -Id $Id
-
-    return $container.NetworkSettings.IPAddress
-}
-
-function Get-DockerContainerIPAddresses {
-    param (
-        [switch]$Running
-    )
-
-    $arg = "ps "
-
-    if (-not $Running) {
-        $arg += "--all "
-    }
-
-    $arg += "--format {{.ID}} --no-trunc"
-
-    $containers = Invoke-Docker $arg
-    $containerList = @()
-
-    if ($containers) {
-        foreach ($containerId in $containers) {
-            $container = New-Object -TypeName PSObject
-
-            $container | Add-Member -MemberType NoteProperty -Name Id -Value $containerId
-            $container | Add-Member -MemberType NoteProperty -Name IpAddress -Value $(Get-DockerContainerIPAddress $containerId)
-
-            $containerList += $container
-        }
-    }
-
-    return $containerList
-
-}
-
-function Get-DockerContainerNames {
-    param (
-        [switch]$Running,
-        [switch]$Image
-    )
-
-    $arg = "ps "
-
-    if (-not $Running) {
-        $arg += "--all "
-    }
-
-    if ($Image) {
-        $arg += "--format ""{{.Names}} container is using the '{{.Image}}' image"" "
-    } else {
-        $arg += "--format {{.Names}} "
-    }
-
-$arg
-    Invoke-Docker $arg
-}
-
-function Get-DockerContainers {
-    param (
-        [switch]$Running
-    )
-
-    $arg = "ps "
-
-    if (-not $Running) {
-        $arg += "--all "
-    }
-
-    $arg += "--no-trunc --size"
-    $containers = Invoke-Docker $arg
-
-    $containerList = @()
-
-    if ($containers) {
-        if ($containers.Length -gt 1) {
-            foreach ($containerLine in $containers) {
-                if ($containerLine.StartsWith("CONTAINER")) {
-                    continue # Exclude Header Row
-                }
-
-                $result = $containerLine | Select-String -Pattern '(\S+(?:(?!\s{2}).)+)\s+' -AllMatches
-
-                $container = New-Object -TypeName PSObject
-
-                $container | Add-Member -MemberType NoteProperty -Name Id -Value $result.Matches[0].Value
-                $container | Add-Member -MemberType NoteProperty -Name Image -Value $result.Matches[1].Value
-                $container | Add-Member -MemberType NoteProperty -Name Command -Value  $result.Matches[2].Value
-                $container | Add-Member -MemberType NoteProperty -Name Created -Value $result.Matches[3].Value
-                $container | Add-Member -MemberType NoteProperty -Name Status -Value $result.Matches[4].Value
-
-                if ($result.Matches.Length -eq 8) {
-                    $ports = $result.Matches[5].Value
-                    $name = $result.Matches[6].Value
-                    $size = $result.Matches[7].Value
-                } else {
-                    $ports = $null
-                    $name = $result.Matches[5].Value
-                    $size = $result.Matches[6].Value
-                }
-
-                $container | Add-Member -MemberType NoteProperty -Name Ports -Value $ports
-
-                $container | Add-Member -MemberType NoteProperty -Name Name -Value $name
-
-                $size = $size.Substring(0, $size.IndexOf(' ')).ToUpper()
-                $size -match '[A-Za-z]+' | Out-Null
-                $size = [double]::Parse($size -replace '[^0-9.]')
-                switch ($Matches[0]) {
-                    "KB" { $size = $size * 1KB }
-                    "MB" { $size = $size * 1MB }
-                    "GB" { $size = $size * 1GB }
-                    "TB" { $size = $size * 1TB }
-                }
-
-                $size = [int][Math]::Round($size, 0, [MidPointRounding]::AwayFromZero)
-
-                $container | Add-Member -MemberType NoteProperty -Name Size -Value $size
-
-                $containerList += $container
-            }
-        }
-    }
-
-    return $containerList
-}
-
-function Get-DockerContainerState {
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Id
-    )
-
-    $container = Get-DockerContainer -Id $Id
-
-    return $container.State.Status
-}
-
-function Get-DockerContainerStates {
-    param (
-        [switch]$Running
-    )
-
-    $arg = "ps "
-
-    if (-not $Running) {
-        $arg += "--all "
-    }
-
-    $arg += "--format {{.ID}} --no-trunc"
-
-    $containers = Invoke-Docker $arg
-    $containerList = @()
-
-    if ($containers) {
-        foreach ($containerId in $containers) {
-            $container = New-Object -TypeName PSObject
-
-            $container | Add-Member -MemberType NoteProperty -Name Id -Value $containerId
-            $container | Add-Member -MemberType NoteProperty -Name State -Value $(Get-DockerContainerState $containerId)
-
-            $containerList += $container
-        }
-    }
-
-    return $containerList
-
-}
-
-function Get-RunningDockerContainers {
-    Get-DockerContainers -Running
-}
 
 function Invoke-Docker {
     cmd /c """$(Find-Docker)"" $args"
 }
 
-function Remove-ExitedDockerContainers {
-    (Get-DockerContainerStates | Where-Object { $_.State -eq 'exited' }).Id | ForEach-Object {
-        Invoke-Docker "rm -v $_"
-    }
-}
-
-function Remove-NonRunningDockerContainers {
-    (Get-DockerContainerStates | Where-Object { $_.State -ne 'running' }).Id | ForEach-Object {
-        Invoke-Docker "rm -v $_"
-    }
-}
-
-function Start-DockerContainer {
+function Optimize-Docker {
     param (
-        [string]$Id
+        [switch]$Force
     )
 
-    Invoke-Docker "start $Id"
+    $params = "--all"
+
+    if ($Force) {
+        $params += " --force"
+    }
+
+    Invoke-Docker "system prune"
 }
 
-function Stop-DockerContainer {
-    param (
-        [string]$Id,
-        [int]$TimeOut = 15
-    )
-
-    Invoke-Docker "stop $Id -t $TimeOut"
-}
+Set-Alias -Name Prune-Docker -Value Optimize-Docker
+Set-Alias -Name docker-prune -Value Optimize-Docker
