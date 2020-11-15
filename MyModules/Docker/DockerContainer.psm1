@@ -150,6 +150,15 @@ function Get-DockerContainerIPAddress {
     return $containerList
 }
 
+function Get-DockerContainerLog {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Id
+    )
+
+    Invoke-Docker "container logs $Id"
+}
+
 function Get-DockerContainerNames {
     param (
         [switch]$Running,

@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.11.14.1'
+    ModuleVersion = '2020.11.15.1'
     GUID = '2cd0c771-ed8b-48bc-b6bc-be8540c915e4'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -15,6 +15,7 @@
         "Find-Docker"
         "Connect-DockerContainer"
         "Get-DockerContainer"
+        "Get-DockerContainerLog"
         "Get-DockerContainerNames"
         "Get-DockerContainerIds"
         "Get-DockerContainerIPAddress"
