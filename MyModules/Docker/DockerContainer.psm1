@@ -246,6 +246,51 @@ function Get-RunningDockerContainers {
     Get-DockerContainer -Running
 }
 
+function New-DockerContainer {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true, Position = 0)]
+        [string]$Image,
+        [Parameter(Position = 1)]
+        [string]$Tag = "latest",
+        [string]$Name,
+        [string]$HostName,
+        [switch]$Interactive,
+        [switch]$Keep
+    )
+
+    $param = "run"
+
+    if ($Interactive) {
+        $param += " --interactive --tty"
+    } else {
+        $param += " --detach"
+    }
+
+    if (-not $Keep) {
+        $param += " --rm"
+    }
+
+    if ($HostName) {
+        $param += " --hostname $HostName"
+    }
+
+    if ($Name) {
+        $param += " --name $Name"
+    }
+
+    # Future Enhancements:
+    # "--env [string[]]$EnvironmentVariables" #Maybe HashTable?
+    # "--expose list   (port mapping)"
+    # "--network list"
+    # "--volume list??" # Attach volumes to container
+
+    $param += " ${Image}:$Tag"
+
+    Write-Verbose $($param.Trim())
+    Invoke-Docker $($param.Trim())
+}
+
 function Remove-ExitedDockerContainers {
     (Get-DockerContainerState | Where-Object { $_.State -eq 'exited' }).Id | ForEach-Object {
         Invoke-Docker "rm -v $_"

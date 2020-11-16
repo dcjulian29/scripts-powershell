@@ -25,6 +25,7 @@
         "Get-RunningDockerContainers"
         "Invoke-AlpineContainer"
         "Invoke-Docker"
+        "New-DockerContainer"
         "Pop-DockerImage"
         "Prune-Docker"
         "Remove-DockerImage"

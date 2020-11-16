@@ -22,8 +22,9 @@ function convertSizeString($Size) {
 
 function Find-Docker {
     First-Path `
-        (Find-ProgramFiles "Docker\Docker\Resources\bin\docker.exe") `
-        "${env:ALLUSERSPROFILE}/DockerDesktop/version-bin/docker.exe"
+        ((Get-Command docker -ErrorAction SilentlyContinue).Source) `
+        "${env:ALLUSERSPROFILE}\DockerDesktop\version-bin\docker.exe" `
+        (Find-ProgramFiles "Docker\Docker\Resources\bin\docker.exe")
 }
 
 function Get-DockerDiskUsage {
@@ -59,17 +60,21 @@ function Get-DockerDiskUsage {
 Set-Alias -Name docker-diskusage -Value Get-DockerDiskUsage
 
 function Invoke-AlpineContainer {
-    if (Get-Command "docker.exe" -ErrorAction SilentlyContinue) {
-        cmd.exe /c "docker.exe run -it alpine:latest"
-    } else {
-        throw "Docker is not installed on this system."
-    }
+    New-DockerContainer alpine -Interactive -Name "alpine_shell"
 }
 
 Set-Alias -Name alpine -Value Invoke-AlpineContainer
 
 function Invoke-Docker {
-    cmd /c """$(Find-Docker)"" $args"
+    $docker = Find-Docker
+
+    if ($docker) {
+        if (Test-Docker) {
+            cmd /c """$docker"" $args"
+        } else {
+            throw "Docker is not installed on this system."
+        }
+    }
 }
 
 function Optimize-Docker {
@@ -88,3 +93,15 @@ function Optimize-Docker {
 
 Set-Alias -Name Prune-Docker -Value Optimize-Docker
 Set-Alias -Name docker-prune -Value Optimize-Docker
+
+function Test-Docker {
+    $docker = Find-Docker
+
+    if ($docker) {
+        if (Test-Path $docker) {
+            return $true
+        } else {
+            return $false
+        }
+    }
+}
