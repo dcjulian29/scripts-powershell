@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.11.15.1'
+    ModuleVersion = '2020.11.22.1'
     GUID = '2cd0c771-ed8b-48bc-b6bc-be8540c915e4'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -23,24 +23,31 @@
         "Get-DockerImage"
         "Get-DockerDiskUsage"
         "Get-RunningDockerContainers"
+        "Get-DockerServerEngine"
         "Invoke-AlpineContainer"
         "Invoke-Docker"
         "New-DockerContainer"
+        "Optimize-Docker"
         "Pop-DockerImage"
-        "Prune-Docker"
         "Remove-DockerImage"
         "Remove-ExitedDockerContainers"
         "Remove-NonRunningDockerContainers"
         "Start-DockerContainer"
         "Stop-DockerContainer"
+        "Switch-DockerLinuxEngine"
+        "Switch-DockerWindowsEngine"
+        "Test-Docker"
+        "Test-DockerLinuxEngine"
+        "Test-DockerWindowsEngine"
     )
     AliasesToExport = @(
         "alpine"
-        "Pull-DockerImage"
         "docker-container"
         "docker-image"
         "docker-prune"
         "docker-pull"
         "docker-diskusage"
+        "Prune-Docker"
+        "Pull-DockerImage"
     )
 }

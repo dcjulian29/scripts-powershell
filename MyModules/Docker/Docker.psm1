@@ -59,8 +59,34 @@ function Get-DockerDiskUsage {
 
 Set-Alias -Name docker-diskusage -Value Get-DockerDiskUsage
 
+function Get-DockerServerEngine {
+    $version = Invoke-Docker "version"
+
+    if (-not $version) {
+        return $null
+    }
+
+    $server = $false
+
+    foreach ($line in $version) {
+        if ($line -like "Server:*") {
+            $server = $true
+        }
+
+        if ($server) {
+            if ($line -like "*OS/Arch:*") {
+                return ($line.split(' ', [System.StringSplitOptions]::RemoveEmptyEntries))[1]
+            }
+        }
+    }
+}
+
 function Invoke-AlpineContainer {
-    New-DockerContainer alpine -Interactive -Name "alpine_shell"
+    if (Test-DockerLinuxEngine) {
+        New-DockerContainer alpine -Interactive -Name "alpine_shell"
+    } else {
+        Write-Error "Alpine Linux requires the Linux Docker Engine!" -Category ResourceUnavailable
+    }
 }
 
 Set-Alias -Name alpine -Value Invoke-AlpineContainer
@@ -94,6 +120,18 @@ function Optimize-Docker {
 Set-Alias -Name Prune-Docker -Value Optimize-Docker
 Set-Alias -Name docker-prune -Value Optimize-Docker
 
+function Switch-DockerLinuxEngine {
+    if (-not (Test-DockerLinuxEngine)) {
+        & "C:\Program Files\Docker\Docker\DockerCli.exe" -SwitchLinuxEngine
+    }
+}
+
+function Switch-DockerWindowsEngine {
+    if (-not (Test-DockerWindowsEngine)) {
+        & "C:\Program Files\Docker\Docker\DockerCli.exe" -SwitchWindowsEngine
+    }
+}
+
 function Test-Docker {
     $docker = Find-Docker
 
@@ -104,4 +142,20 @@ function Test-Docker {
             return $false
         }
     }
+}
+
+function Test-DockerLinuxEngine {
+    if ((Get-DockerServerEngine) -like '*linux*') {
+        return $true
+    }
+
+    return $false
+}
+
+function Test-DockerWindowsEngine {
+    if ((Get-DockerServerEngine) -like '*windows*') {
+        return $true
+    }
+
+    return $false
 }
