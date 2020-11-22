@@ -107,3 +107,33 @@ function Merge-GitRepository {
         Pop-Location
     }
 }
+
+function Rename-GitBranch {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$Name,
+        [switch]$NoPush
+    )
+
+    if (Test-GitRepository) {
+        $oldName = Get-GitRepositoryBranch
+
+        & "$(Find-Git)" branch -m $Name
+
+        if ($NoPush) {
+            return
+        }
+
+        $remotes = & "$(Find-Git)" remote -v | Select-String '(\S+)\s+\S+\s+\(push\)$' -AllMatches
+        $upstream = Get-GitRepositoryBranch -Upstream
+
+        for ($i = 0; $i -lt $remotes.Matches.Count; $i++) {
+            $remote = $remotes[$i].Matches.Groups[1].Value
+            if ($remote -like $upstream) {
+                git push $remote -u $Name
+                git push $remote --delete $oldName
+            }
+        }
+    }
+}
