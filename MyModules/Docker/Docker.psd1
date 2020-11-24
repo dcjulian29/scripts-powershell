@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.11.22.1'
+    ModuleVersion = '2020.11.23.1'
     GUID = '2cd0c771-ed8b-48bc-b6bc-be8540c915e4'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -25,6 +25,7 @@
         "Get-RunningDockerContainers"
         "Get-DockerServerEngine"
         "Invoke-AlpineContainer"
+        "Invoke-DockerContainerShell"
         "Invoke-Docker"
         "New-DockerContainer"
         "Optimize-Docker"

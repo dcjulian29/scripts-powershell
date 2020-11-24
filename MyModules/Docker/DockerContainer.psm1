@@ -246,6 +246,15 @@ function Get-RunningDockerContainers {
     Get-DockerContainer -Running
 }
 
+function Invoke-DockerContainerShell {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Id
+    )
+
+    Invoke-Docker "exec -it $Id /bin/sh"
+}
+
 function New-DockerContainer {
     [CmdletBinding()]
     param (
