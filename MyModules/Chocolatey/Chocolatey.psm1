@@ -193,6 +193,8 @@ function Restore-ChocolateyCache {
         }
     }
 
+    $packages = @()
+
     (Get-Content -Raw -Path $PackageList | ConvertFrom-Json).Packages | ForEach-Object {
         Write-Output " "
         Write-Output "===================================================> $_"
@@ -206,11 +208,13 @@ function Restore-ChocolateyCache {
         Get-Childitem -Filter "*.nupkg" -Path $chocoCache -Recurse | ForEach-Object {
             if (-not (Test-Path "$Destination\$($_.Name)")) {
                 Copy-Item -Path $_.FullName -Destination $Destination -Verbose
+                $packages += $($_.Name)
             } else {
                 $sourceHash = Get-Sha256 -Path "$($_.FullName)"
                 $destinationHash = Get-Sha256 -Path "$Destination\$($_.Name)"
                 if ($sourceHash -ne $destinationHash) {
                     Copy-Item -Path $_.FullName -Destination $Destination -Force -Verbose
+                    $packages += $($_.Name)
                 }
             }
         }
@@ -218,6 +222,14 @@ function Restore-ChocolateyCache {
 
     Remove-Item $chocoCache -Recurse -Force
 
+    Write-Output "`n`n----------------------------------------------`n"
+    Write-Output "The following packages were updated in the cache:"
+
+    foreach ($package in $packages) {
+        Write-Output "* $package"
+    }
+
+    Write-Output " "
     Stop-Transcript
 }
 
