@@ -191,16 +191,31 @@ function Find-StyleCopSettingsEditor {
 function Invoke-BuildProject {
     $param = "$args"
     if (Test-Path build.cake) {
+        if (-not (Test-Path ("./build.ps1"))) {
+            if (-not ((& dotnet tool list) -like "*cake.tool*")) {
+                if (-not (Test-Path ".config/dotnet-tools.json")) {
+                    & dotnet new tool-manifest | Out-Null
+                }
+
+                & dotnet tool install Cake.Tool | Out-Null
+            }
+
+            $cake = "dotnet cake"
+        } else {
+            $cake = "./build.ps1"
+        }
+
         $tee = "| Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+
         if (-not ($param.StartsWith('-'))) {
             if ($param) {
                 # Assume a target was passed in
-                Invoke-Expression ".\build.ps1 -target $param $tee"
+                Invoke-Expression "$cake -target $param $tee"
             } else {
-                Invoke-Expression ".\build.ps1 $tee"
+                Invoke-Expression "$cake $tee"
             }
         } else {
-            Invoke-Expression ".\build.ps1 $param $tee"
+            Invoke-Expression "$cake $param $tee"
         }
     } elseif (Test-Path build.ps1) {
         Invoke-Psake .\build.ps1 $param
