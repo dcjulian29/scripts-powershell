@@ -251,6 +251,32 @@ function Set-EnvironmentVariable {
     [Environment]::SetEnvironmentVariable($Name, $Value, $Scope)
 }
 
+function Set-Tls13Client {
+    param (
+        [switch]$Disable
+    )
+
+    $key = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols"
+
+    if ($Disable) {
+        $value = 0
+    } else {
+        $value = 1
+    }
+
+    $key = Join-Path $key "TLS 1.3"
+    if (-not (Test-Path $key)) {
+        New-Item -Path $key | Out-Null
+    }
+
+    $key = Join-Path $key "Client"
+    if (-not (Test-Path $key)) {
+        New-Item -Path $key | Out-Null
+    }
+
+    New-ItemProperty -Path $key -Name "Enabled" -PropertyType "DWORD" -Value $value
+}
+
 function Test-DaylightSavingsInEffect {
     return (Get-WmiObject -Class Win32_ComputerSystem).DaylightInEffect
 }

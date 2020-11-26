@@ -21,6 +21,7 @@
         "Install-WindowsUpdates"
         "Remove-EnvironmentVariable"
         "Set-EnvironmentVariable"
+        "Set-Tls13Client"
         "Test-DaylightSavingsInEffect"
         "Test-DomainJoined"
         "Test-EnvironmentVariable"
