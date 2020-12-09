@@ -6,12 +6,14 @@
     RootModule = 'ElasticSearch.psm1'
     NestedModules = @(
         'ElasticSearchCluster.psm1'
+        'ElasticSearchIndex.psm1'
     )
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
         "Clear-ElasticSearchProfile"
         "Get-ElasticSearchHealth"
+        "Get-ElasticSearchIndex"
         "Get-ElasticSearchNode"
         "Get-ElasticSearchNodeDetail"
         "Get-ElasticSearchState"
@@ -20,6 +22,7 @@
         "Invoke-ElasticSearchApi"
         "New-ElasticSearchProfile"
         "Set-ElasticSearchProfile"
+        "Test-ElasticSearchIndex"
         "Test-ElasticSearchProfile"
         "Use-ElasticSearchProfile"
     )
