@@ -300,15 +300,46 @@ function New-DockerContainer {
     Invoke-Docker $($param.Trim())
 }
 
-function Remove-ExitedDockerContainers {
-    (Get-DockerContainerState | Where-Object { $_.State -eq 'exited' }).Id | ForEach-Object {
-        Invoke-Docker "rm -v $_"
-    }
-}
+function Remove-DockerContainer {
+    [CmdletBinding(DefaultParameterSetName="ID")]
+    param (
+        [Parameter(Position = 0, Mandatory = $true, ParameterSetName = "ID")]
+        [Alias("Name")]
+        [string]$Id,
+        [Parameter(Position = 0, ParameterSetName = "All")]
+        [Parameter(Position = 1, ParameterSetName = "ID")]
+        [Parameter(Position = 0, ParameterSetName = "Other")]
+        [int]$TimeOut = 15,
+        [Parameter(ParameterSetName = "All")]
+        [switch]$All,
+        [Parameter(ParameterSetName = "Other")]
+        [switch]$Exited,
+        [Parameter(ParameterSetName = "Other")]
+        [switch]$NonRunning
+    )
 
-function Remove-NonRunningDockerContainers {
-    (Get-DockerContainerState | Where-Object { $_.State -ne 'running' }).Id | ForEach-Object {
-        Invoke-Docker "rm -v $_"
+    if ($PSCmdlet.ParameterSetName -eq "ID") {
+        Invoke-Docker "rm $Id -t $TimeOut"
+    }
+
+    if ($PSCmdlet.ParameterSetName -eq "All") {
+        Invoke-Docker "rm $(Invoke-Docker ps -a -q)"
+    }
+
+    if ($PSCmdlet.ParameterSetName -eq "Other") {
+        if ($Exited) {
+            (Get-DockerContainerState | Where-Object { $_.State -eq 'exited' }).Id | `
+                ForEach-Object {
+                  Invoke-Docker "rm -v $_"
+                }
+        }
+
+        if ($NonRunning) {
+            (Get-DockerContainerState | Where-Object { $_.State -ne 'running' }).Id | `
+              ForEach-Object {
+                Invoke-Docker "rm -v $_"
+              }
+        }
     }
 }
 
@@ -322,11 +353,21 @@ function Start-DockerContainer {
 }
 
 function Stop-DockerContainer {
+    [CmdletBinding(DefaultParameterSetName="ID")]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Position = 0, Mandatory = $true, ParameterSetName = "ID")]
+        [Alias("Name")]
         [string]$Id,
-        [int]$TimeOut = 15
+        [Parameter(Position = 0, ParameterSetName = "All")]
+        [Parameter(Position = 1, ParameterSetName = "ID")]
+        [int]$TimeOut = 15,
+        [Parameter(ParameterSetName = "All")]
+        [switch]$All
     )
 
-    Invoke-Docker "stop $Id -t $TimeOut"
+    if ($PSCmdlet.ParameterSetName -eq "ID") {
+        Invoke-Docker "stop $Id -t $TimeOut"
+    } else {
+        Invoke-Docker "stop $(Invoke-Docker ps -a -q)"
+    }
 }

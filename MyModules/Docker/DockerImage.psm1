@@ -1,12 +1,17 @@
 function Get-DockerImage {
     param (
-        [string]$Name
+        [string]$Name,
+        [switch]$Unused
     )
 
     if ($Name) {
         $images = Invoke-Docker "images $Name --no-trunc"
     } else {
-        $images = Invoke-Docker "images --no-trunc"
+        if ($Unused) {
+            Invoke-Docker "images 'dangling=true' --no-trunc"
+        } else {
+            $images = Invoke-Docker "images --no-trunc"
+        }
     }
 
     $list = @()
@@ -73,7 +78,8 @@ function Remove-DockerImage {
     param (
         [string]$Id,
         [string]$Name,
-        [Switch]$Force
+        [switch]$Unused,
+        [switch]$Force
     )
 
     if ($Id) {
@@ -82,7 +88,11 @@ function Remove-DockerImage {
         if ($Name) {
             $images = (Get-DockerImage | Where-Object { $_.Id -eq $Id }).Id
         } else {
-            $images = (Get-DockerImage).Id
+            if ($Unused) {
+                $images = (Get-DockerImage -Unused).Id
+            } else {
+                $images = (Get-DockerImage).Id
+            }
         }
     }
 
