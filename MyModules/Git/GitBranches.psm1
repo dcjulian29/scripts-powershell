@@ -130,9 +130,9 @@ function Rename-GitBranch {
 
         for ($i = 0; $i -lt $remotes.Matches.Count; $i++) {
             $remote = $remotes[$i].Matches.Groups[1].Value
-            if ($remote -like $upstream) {
-                git push $remote -u $Name
-                git push $remote --delete $oldName
+            if ($upstream -like "*$remote*") {
+                & "$(Find-Git)" push $remote -u $Name
+                & "$(Find-Git)" push $remote --delete $oldName
             }
         }
     }
