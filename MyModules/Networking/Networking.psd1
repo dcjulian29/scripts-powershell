@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.11.2.1'
+    ModuleVersion = '2020.12.15.1'
     GUID = 'd8dcfccc-7a12-4dfd-a27a-c647b408e1bf'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -32,11 +32,11 @@
         "Invoke-ScanNetwork"
         "Invoke-TShark"
         "Invoke-TSharkCapture"
-        "New-NetFirewallRule"
+        "New-FirewallRule"
         "New-UrlReservation"
         "Start-PacketCapture"
         "Stop-PacketCapture"
-        "Remove-NetFirewallRule"
+        "Remove-FirewallRule"
         "Remove-UrlReservation"
     )
     AliasesToExport = @(

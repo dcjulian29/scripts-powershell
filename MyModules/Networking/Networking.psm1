@@ -163,7 +163,7 @@ function Invoke-Http {
     }
 }
 
-function New-NetFirewallRule {
+function New-FirewallRule {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -206,7 +206,7 @@ function New-UrlReservation {
     netUrlAcl -Protocol $Protocol -Operation "add" -Url $url -User $User
 }
 
-function Remove-NetFirewallRule {
+function Remove-FirewallRule {
     [CmdletBinding()]
     param (
         [parameter(Mandatory = $true)]
