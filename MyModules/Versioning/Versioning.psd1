@@ -10,6 +10,7 @@
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+        "ConvertFrom-DatedVersion"
         "ConvertTo-AssemblyVersion"
         "Get-SemanticVersion"
         "Get-Version"

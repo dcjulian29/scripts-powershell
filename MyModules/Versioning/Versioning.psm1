@@ -1,5 +1,29 @@
 $script:regexmicrosoft = '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?$'
 
+function ConvertFrom-DatedVersion {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Version
+    )
+
+    if ((Test-Version $Version) -and ($Version.Split('.').Count -eq 4)) {
+        $parts = $Version.Split('.')
+
+        # I have existing released version during 2020 so dated versions for the rest of 2020
+        # should be greater that 2020 but less than 2101.
+        if ($parts[0] -eq '2020') {
+            $major = $parts[0].Substring(2) + (12 + $parts[1])
+        } else {
+            $major = $parts[0].Substring(2) + $parts[1]
+        }
+
+        New-SemanticVersion -Major $major -Minor $parts[2] -Patch $parts[3]
+    } else {
+        throw "'$Version' isn't a dated version string!"
+    }
+}
+
 function ConvertTo-AssemblyVersion {
     param (
         [Parameter(Mandatory = $true)]
