@@ -83,13 +83,23 @@ function Get-DockerServerEngine {
 
 function Invoke-AlpineContainer {
     if (Test-DockerLinuxEngine) {
-        New-DockerContainer alpine -Interactive -Name "alpine_shell"
+        New-DockerContainer -Image "alpine" -Tag "latest" -Interactive -Name "alpine_shell"
     } else {
         Write-Error "Alpine Linux requires the Linux Docker Engine!" -Category ResourceUnavailable
     }
 }
 
 Set-Alias -Name alpine -Value Invoke-AlpineContainer
+
+function Invoke-DebainContainer {
+    if (Test-DockerLinuxEngine) {
+        New-DockerContainer -Image "debian" -Tag "buster-slim" -Interactive -Name "debian_shell"
+    } else {
+        Write-Error "Debian Linux requires the Linux Docker Engine!" -Category ResourceUnavailable
+    }
+}
+
+Set-Alias -Name debian -Value Invoke-DebianContainer
 
 function Invoke-Docker {
     $docker = Find-Docker
