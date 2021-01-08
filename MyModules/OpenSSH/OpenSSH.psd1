@@ -4,6 +4,10 @@
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
     RootModule = 'OpenSSH.psm1'
+    NestedModules = @(
+        "OpenSSHPackages.psm1"
+        "OpenSSHServer.psm1"
+    )
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
