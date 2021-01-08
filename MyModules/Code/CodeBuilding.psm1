@@ -210,7 +210,7 @@ function Invoke-BuildProject {
         if (-not ($param.StartsWith('-'))) {
             if ($param) {
                 # Assume a target was passed in
-                Invoke-Expression "$cake -target=$param $tee"
+                Invoke-Expression "$cake --target=$param $tee"
             } else {
                 Invoke-Expression "$cake $tee"
             }
