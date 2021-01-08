@@ -99,24 +99,27 @@ function Invoke-OpenSCP {
 Set-Alias scp Invoke-OpenSCP
 
 function Invoke-OpenSSH {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
-        [string]$Remote,
-        [string]$IdentityFile
+        [Alias("Remote", "RemoteHost")]
+        [string]$ComputerName,
+        [string]$IdentityFile,
+        [string]$Command
     )
 
     $ssh = "$env:windir\System32\OpenSSH\ssh.exe"
     $etc = "$env:SystemDrive\etc\ssh"
 
     if (-not $IdentityFile) {
-        if ($Remote.Contains("@")) {
-            $ComputerName = $Remote.Split('@')[1]
+        if ($ComputerName.Contains("@")) {
+            $name = $ComputerName.Split('@')[1]
         } else {
-            $ComputerName = $Remote
+            $name = $ComputerName
         }
 
-        $file = "$env:SystemDrive\etc\ssh\id_$ComputerName"
+        $file = "$env:SystemDrive\etc\ssh\id_$name"
 
         if (Test-Path $file) {
             $IdentityFile = $file
@@ -129,13 +132,34 @@ function Invoke-OpenSSH {
         $arguments = $arguments + " -i ""$IdentityFile"""
     }
 
-    $arguments = $arguments + " $Remote"
+    $arguments = $arguments + " $ComputerName"
 
+    if ($Command) {
+        $arguments = $arguments + " -t `"$Command`""
+    }
+
+    Write-Verbose "[SSH Arguments] $arguments"
     Start-Process -FilePath $ssh -ArgumentList $arguments -NoNewWindow -Wait
 }
 
 Set-Alias ssh Invoke-OpenSSH
 Set-Alias sshell Invoke-OpenSSH
+
+function Invoke-OpenSSHCommand {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$ComputerName,
+        [Parameter(Mandatory=$true)]
+        [string]$Command,
+        [string]$IdentityFile
+    )
+
+    Invoke-OpenSSH -ComputerName $ComputerName -IdentityFile $IdentityFile -Command $Command
+}
+
+Set-Alias Execute-OpenSSHCommand Invoke-OpenSSHCommand
+Set-Alias sshellc Invoke-OpenSSHCommand
 
 function New-OpenSSHHostShortcut {
     param (
