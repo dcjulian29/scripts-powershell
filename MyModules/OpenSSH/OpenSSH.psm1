@@ -139,7 +139,9 @@ function Invoke-OpenSSH {
     }
 
     Write-Verbose "[SSH Arguments] $arguments"
+    $oldTitle = $host.UI.RawUI.WindowTitle
     Start-Process -FilePath $ssh -ArgumentList $arguments -NoNewWindow -Wait
+    $host.UI.RawUI.WindowTitle = $oldTitle
 }
 
 Set-Alias ssh Invoke-OpenSSH
