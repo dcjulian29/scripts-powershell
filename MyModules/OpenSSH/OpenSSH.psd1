@@ -1,9 +1,9 @@
 @{
-    RootModule = 'OpenSSH.psm1'
     ModuleVersion = '2020.4.30.1'
     GUID = '2b2add2f-ba2d-461a-8bac-6cfb19894a0d'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
+    RootModule = 'OpenSSH.psm1'
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
