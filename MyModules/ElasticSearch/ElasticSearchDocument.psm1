@@ -1,17 +1,25 @@
 function Get-ElasticSearchDocument {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'multiple')]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'single', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'multiple', Mandatory = $true)]
         [Alias("Name")]
         [string] $IndexName,
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'single', Mandatory = $true)]
         [Alias("Type")]
         [string] $DocumentType,
-        [Parameter(Mandatory = $true)]
-        [string] $Id
+        [Parameter(ParameterSetName = 'single', Mandatory = $true)]
+        [string] $Id,
+        [Parameter(ParameterSetName = 'multiple')]
+        [string] $Query = "*"
+
     )
 
-    Invoke-ElasticSearchApi "$IndexName/$DocumentType/$Id"
+    if ($PSCmdlet.ParameterSetName -eq 'single') {
+        Invoke-ElasticSearchApi "$IndexName/$DocumentType/$Id"
+    } else {
+        (Invoke-ElasticSearchApi "$IndexName/_search?q=*").hits.hits
+    }
 }
 
 function Find-ElasticSearchDocument {

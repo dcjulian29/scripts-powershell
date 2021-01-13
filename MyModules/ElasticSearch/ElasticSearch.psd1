@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.12.8.1'
+    ModuleVersion = '2101.12.1'
     GUID = '9b8cce35-7dda-4746-b7b0-ba340ef3185a'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -17,6 +17,7 @@
         "Get-ElasticSearchDocument"
         "Get-ElasticSearchHealth"
         "Get-ElasticSearchIndex"
+        "Get-ElasticSearchIndexDocumentCount"
         "Get-ElasticSearchNode"
         "Get-ElasticSearchNodeDetail"
         "Get-ElasticSearchState"

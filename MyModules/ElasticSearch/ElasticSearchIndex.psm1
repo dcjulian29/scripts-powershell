@@ -1,11 +1,35 @@
 function Get-ElasticSearchIndex {
     param (
-        [Parameter(Mandatory = $true)]
         [Alias("Name")]
         [string] $IndexName
     )
 
-    Invoke-ElasticSearchApi "$IndexName"
+    if ($IndexName) {
+        (Invoke-ElasticSearchApi "$IndexName").$IndexName
+    } else {
+        Invoke-ElasticSearchApi "_cat/indices"
+    }
+}
+
+function Get-ElasticSearchIndexDocumentCount {
+    param (
+        [string] $Filter,
+        [switch] $Not
+    )
+
+    $indexes = Get-ElasticSearchIndex | Select-Object index, health, 'docs.count', 'store.size'
+    
+    if ($Filter) {
+        if ($Not) {
+            $indexes = $indexes | Where-Object { $_.index -notlike "*$Filter*" }
+        } else {
+            $indexes = $indexes | Where-Object { $_.index -like "*$Filter*" }
+        }
+    }
+    
+    $indexes = $indexes | Sort-Object index
+    
+    return $indexes
 }
 
 function New-ElasticSearchIndex {
