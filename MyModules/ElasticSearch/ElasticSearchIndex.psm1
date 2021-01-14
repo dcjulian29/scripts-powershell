@@ -18,7 +18,7 @@ function Get-ElasticSearchIndexDocumentCount {
     )
 
     $indexes = Get-ElasticSearchIndex | Select-Object index, health, 'docs.count', 'store.size'
-    
+
     if ($Filter) {
         if ($Not) {
             $indexes = $indexes | Where-Object { $_.index -notlike "*$Filter*" }
@@ -26,9 +26,9 @@ function Get-ElasticSearchIndexDocumentCount {
             $indexes = $indexes | Where-Object { $_.index -like "*$Filter*" }
         }
     }
-    
+
     $indexes = $indexes | Sort-Object index
-    
+
     return $indexes
 }
 
@@ -41,7 +41,13 @@ function New-ElasticSearchIndex {
 }
 
 function Remove-ElasticSearchIndex {
-    # (DELETE)
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $IndexPattern
+    )
+
+    Invoke-ElasticSearchApi -Method "$IndexPattern" -HttpMethod DELETE
 }
 
 function Test-ElasticSearchIndex {
