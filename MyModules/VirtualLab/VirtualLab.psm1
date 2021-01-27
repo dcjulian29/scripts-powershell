@@ -413,6 +413,10 @@ function New-LabVMSwitch {
         New-VMSwitch -Name LAB -SwitchType Internal
 
         New-NetIPAddress -IPAddress 10.10.10.11 -PrefixLength 24 -InterfaceAlias "vEthernet (LAB)"
+        
+        Set-NetConnectionProfile `
+            -InterfaceIndex $((Get-NetConnectionProfile -InterfaceAlias "vEthernet (LAB)").InterfaceIndex) `
+            -NetworkCategory Private
     } else {
         Write-Warning "Lab VMSwitch already exists..."
     }
