@@ -93,7 +93,7 @@ if (Test-Path "C:\tools\poshgit") {
         Where-Object { $_.psIsContainer } | `
         Sort-Object { $_.CreationTime } -Descending
 
-    Import-Module "C:\tools\poshgit\$poshgit\src\posh-git.psd1"
+    Import-Module "C:\tools\poshgit\$($poshgit.name)\src\posh-git.psd1"
 }
 
 # Argument Completers
