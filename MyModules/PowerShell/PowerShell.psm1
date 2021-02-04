@@ -2,6 +2,72 @@ function Edit-Profile {
     Start-Notepad $profile
 }
 
+function Format-FileWithSpaceIndent {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $Path,
+        [int]$spaces = 4
+    )
+
+    $tab = "`t"
+    $space = " " * $spaces
+    $text = Get-Content -Path $Path
+
+    $newText = ""
+
+    foreach ($line in $text -split [Environment]::NewLine) {
+        if ($line -match "\S") {
+            $pos = $line.IndexOf($Matches[0])
+            $indentation = $line.SubString(0, $pos)
+            $remainder = $line.SubString($pos)
+
+            $replaced = $indentation -replace $tab, $space
+
+            $newText += $replaced + $remainder + [Environment]::NewLine
+        } else {
+            $newText += $line + [Environment]::NewLine
+        }
+
+        Set-Content -Path $Path -Value $text
+    }
+}
+
+function Format-FileWithTabIndent {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $Path,
+        [int]$Spaces = 4
+    )
+
+    $tab = "`t"
+    $space = " " * $spaces
+    $text = Get-Content -Path $Path
+
+    $newText = ""
+
+    foreach ($line in $text -split [Environment]::NewLine) {
+        if ($line -match "\S") {
+            $pos = $line.IndexOf($Matches[0])
+            $indentation = $line.SubString(0, $pos)
+            $remainder = $line.SubString($pos)
+
+            $replaced = $indentation -replace $space, $tab
+
+            $newText += $replaced + $remainder + [Environment]::NewLine
+        } else {
+            $newText += $line + [Environment]::NewLine
+        }
+
+        Set-Content -Path $Path -Value $text
+    }
+}
+
 Function Get-LastExecutionTime {
     $command = Get-History -Count 1
 
@@ -39,6 +105,41 @@ function Import-Assembly {
 }
 
 Set-Alias -Name Load-Assembly -Value Import-Assembly
+
+function Remove-AliasesFromScript {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $Path
+    )
+
+    $aliases = @{}
+
+    Get-Alias | Select-Object Name, Definition | ForEach-Object {
+        $aliases.Add($_.Name, $_.Definition)
+    }
+
+    $errors = $null
+    $text = Get-Content -Path $Path
+
+    [System.Management.Automation.PSParser]::Tokenize($text, [ref]$errors) |
+        Where-Object { $_.Type -eq "command" } |
+        ForEach-Object {
+            if ($aliases.($_.Content)) {
+                $text = $text -replace
+                    ('(?<=(\W|\b|^))' + [regex]::Escape($_.Content) + '(?=(\W|\b|$))'),
+                    $a.($_.Content)
+            }
+        }
+
+    if ($null -eq $errors) {
+        Set-Content -Path $Path -Value $text
+    } else {
+        Write-Error $errors
+    }
+}
 
 function Search-Command {
     param (

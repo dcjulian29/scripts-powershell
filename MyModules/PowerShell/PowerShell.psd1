@@ -8,11 +8,14 @@
     FormatsToProcess = @()
     FunctionsToExport = @(
         "Edit-Profile"
+        "Format-FileWithSpaceIndent"
+        "Format-FileWithTabIndent"
         "Get-LastExecutionTime"
         "Get-PowerShellVerbs"
         "Get-PowerShellVerbs"
         "Get-Profile"
         "Import-Assembly"
+        "Remove-AliasesFromScript"
         "Search-Command"
         "Test-IsNonInteractive"
         "Test-PowerShellVerb"
