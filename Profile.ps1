@@ -24,5 +24,3 @@ if (Test-Path alias:wget) {
 if (Test-Path alias:curl) {
   Remove-Item alias:curl
 }
-
-Set-Alias -Name go -Value gd
