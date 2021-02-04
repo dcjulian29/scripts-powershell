@@ -9,6 +9,7 @@
         "DockerContainer.psm1"
         "DockerImage.psm1"
         "DockerNetwork.psm1"
+        "DockerVolume.psm1"
     )
     TypesToProcess = @()
     FormatsToProcess = @()
@@ -30,6 +31,7 @@
         "Get-DockerImage"
         "Get-DockerNetwork"
         "Get-DockerServerEngine"
+        "Get-DockerVolume"
         "Get-RunningDockerContainers"
         "Invoke-AlpineContainer"
         "Invoke-DebianContainer"
@@ -38,13 +40,17 @@
         "Invoke-DockerContainerShell"
         "New-DockerContainer"
         "New-DockerNetwork"
+        "New-DockerNfsVolume"
+        "New-DockerVolume"
         "Optimize-Docker"
         "Optimize-DockerNetwork"
+        "Optimize-DockerVolume"
         "Pop-DockerImage"
         "Read-DockerCompose"
         "Remove-DockerContainer"
         "Remove-DockerImage"
         "Remove-DockerNetwork"
+        "Remove-DockerVolume"
         "Resume-DockerCompose"
         "Start-DockerCompose"
         "Start-DockerContainer"
@@ -72,6 +78,7 @@
         "docker-pull"
         "Prune-Docker"
         "Prune-DockerNetwork"
+        "Prune-DockerVolume"
         "Pull-DockerImage"
         "Validate-DockerCompose"
     )
