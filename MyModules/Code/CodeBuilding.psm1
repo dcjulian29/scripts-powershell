@@ -1,4 +1,8 @@
 ﻿function Get-CakeBuildBootstrapper {
+    param (
+        [swtich] $Legacy
+    )
+
     if (Test-Path build.ps1) {
         Remove-Item -Confirm -Path build.ps1
     }
@@ -11,8 +15,18 @@
         throw "Cake.Build bootstraper files still exists! Can't continue..."
     }
 
-    Invoke-WebRequest https://cakebuild.net/download/bootstrapper/windows -OutFile build.ps1
-    Invoke-WebRequest https://cakebuild.net/download/bootstrapper/linux -OutFile build.sh
+    if ($Legacy) {
+        Invoke-WebRequest https://cakebuild.net/download/bootstrapper/windows -OutFile build.ps1
+        Invoke-WebRequest https://cakebuild.net/download/bootstrapper/linux -OutFile build.sh
+    } else {
+        if (-not ((& dotnet tool list) -like "*cake.tool*")) {
+            if (-not (Test-Path ".config/dotnet-tools.json")) {
+                & dotnet new tool-manifest | Out-Null
+            }
+
+            & dotnet tool install Cake.Tool | Out-Null
+        }
+    }
 }
 
 function Get-CodeCoverageReport {
@@ -153,16 +167,6 @@ function Get-UnitTestReport {
     Invoke-Item "$report"
 }
 
-function Edit-StyleCopSettings {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $Path
-    )
-
-    & $(Find-StyleCopSettingsEditor) $Path
-}
-
 function Find-MSBuild {
     return First-Path `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe') `
@@ -179,13 +183,6 @@ function Find-MSBuild {
         (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe') `
         (Find-ProgramFiles 'MSBuild\15.0\bin\MSBuild.exe') `
         (Find-ProgramFiles 'MSBuild\14.0\bin\MSBuild.exe')
-}
-
-function Find-StyleCopSettingsEditor {
-    (Get-ChildItem -Path "${env:USERPROFILE}\.nuget\packages\stylecop.msbuild" -Recurse `
-        | Where-Object { $_.Name -match "StyleCop.SettingsEditor.exe" } `
-        | Sort-Object FullName -Descending `
-        | Select-Object -First 1).FullName
 }
 
 function Invoke-BuildProject {
