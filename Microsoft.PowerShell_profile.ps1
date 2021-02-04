@@ -23,6 +23,7 @@ if (-not $batch) {
        $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
        ColorTool.exe -q purplepeter.itermcolors
    }
+
    if ((Get-Command Set-PSReadLineOption).Version.Major -lt 2) {
        Set-PSReadLineOption -TokenKind Parameter -ForegroundColor Cyan
        Set-PSReadlineOption -TokenKind Operator -ForegroundColor Green
