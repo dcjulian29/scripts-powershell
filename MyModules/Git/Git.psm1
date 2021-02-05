@@ -178,6 +178,7 @@ function Test-GitRepository {
         [string] $Path = $PWD.Path
     )
 
+
     & "$(Find-Git)" -C $Path rev-parse 2>&1 | Out-Null
 
     if ($LASTEXITCODE -gt 0) {
@@ -185,6 +186,18 @@ function Test-GitRepository {
     }
 
     return $true
+}
+
+function Test-GitRepositoryDirty {
+    param (
+        [string] $Path = $PWD.Path
+    )
+
+    if ($(& "$(Find-Git)" -C "$Path" diff --stat) -ne '') {
+        return $true
+    } else {
+        return $false
+    }
 }
 
 function Update-AllGitRepositories {

@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.11.17.1'
+    ModuleVersion = '2102.5.1'
     GUID = '099256ed-ac18-4e56-8017-bb9d9077fb74'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -57,6 +57,7 @@
         "Show-GitInformation"
         "Start-GitGraphicalInterface"
         "Test-GitRepository"
+        "Test-GitRepositoryDirty"
         "Update-AllGitRepositories"
         "Update-GitRepository"
     )
