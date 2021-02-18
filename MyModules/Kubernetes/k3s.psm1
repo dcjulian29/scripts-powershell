@@ -16,7 +16,7 @@ function Install-K3D {
     if (Test-K3D) {
         Write-Warning "K3D is already installed."
     } else {
-        choco install --version=4.0.0 -y k3d
+        choco install -y k3d
     }
 }
 
