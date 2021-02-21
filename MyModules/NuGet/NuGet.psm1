@@ -17,19 +17,17 @@ function Get-NuGetMetadata {
 
     [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
 
+    $NuGetPackage = Resolve-Path $NuGetPackage
     try {
         $zipFile = [System.IO.Compression.ZipFile]::OpenRead($NuGetPackage)
         $entry = ($zipFile.Entries | Where-Object { $_.FullName.EndsWith(".nuspec") }).Open()
         $reader = New-Object System.IO.StreamReader($entry)
         $nuspec = [xml] ($reader.ReadToEnd())
-    }
-    catch [System.IO.InvalidDataException] {
+    } catch [System.IO.InvalidDataException] {
         Write-Error "'$NuGetPackage' is not a vaild NuGet file!"
-    }
-    catch {
+    } catch {
         Write-Error $_
-    }
-    finally {
+    } finally {
         if ($zipFile) { $zipFile.Dispose() }
     }
 
@@ -37,6 +35,67 @@ function Get-NuGetMetadata {
 }
 
 Set-Alias -Name nuget-metadata -Value Get-NuGetMetadata
+
+function Get-NuGetPackage {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateScript({Test-Path -Path $_ })]
+        [String]$Path
+    )
+
+    $packageList = @()
+
+    $pathObject = Get-Item $Path
+    if ($pathObject.PSIsContainer) {
+        $files = (Get-ChildItem -Path $Path -Recurse `
+            | Where-Object { $_.Extension -match "nu(spec|pkg)" }).FullName
+
+        foreach ($file in $files) {
+            if ($file.EndsWith('nupkg')) {
+                $metadata = Get-NuGetMetadata $file
+            } else {
+                $metadata = Get-NuSpecMetadata $file
+            }
+
+            $detail = New-Object PSObject
+            $detail | Add-Member -Type NoteProperty -Name 'Package Name' -Value $metadata.id
+            $detail | Add-Member -Type NoteProperty -Name 'Version' -Value $metadata.version
+
+            $packageList += $detail
+        }
+    } else {
+        if ($Path -match "nu(spec|pkg)") {
+            if ($Path.EndsWith('nupkg')) {
+                $metadata = Get-NuGetMetadata $Path
+            } else {
+                $metadata = Get-NuSpecMetadata $Path
+            }
+
+            $detail = New-Object PSObject
+            $detail | Add-Member -Type NoteProperty -Name 'Package Name' -Value $metadata.id
+            $detail | Add-Member -Type NoteProperty -Name 'Version' -Value $metadata.version
+
+            $packageList += $detail
+        } else {
+            throw "Not a NuGet package or specification file!"
+        }
+    }
+
+    return $packageList | Sort-Object 'Package Name', Version
+}
+
+function Get-NuSpecMetadata {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateScript({Test-Path -Path $_ })]
+        [String]$NuGetPackage
+    )
+
+    $NuGetPackage = Resolve-Path $NuGetPackage
+    $nuspec = [xml](Get-Content "$NuGetPackage")
+
+    return $nuspec.package.metadata
+}
 
 function New-NuGetPackage {
     param(
