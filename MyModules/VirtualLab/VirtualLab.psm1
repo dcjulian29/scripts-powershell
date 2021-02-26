@@ -62,7 +62,7 @@ function New-LabDomainController {
 
     Uninstall-VirtualMachine $ComputerName
 
-    New-DifferencingVHDX -ReferenceDisk "$((Get-VMHost).VirtualHardDiskPath)\Win2016ServerBase.vhdx" `
+    New-DifferencingVHDX -ReferenceDisk "$((Get-VMHost).VirtualHardDiskPath)\Win2019ServerBase.vhdx" `
         -VhdxFile $vhdx
 
     $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)"
@@ -124,11 +124,6 @@ function New-LabDomainController {
     Set-DhcpServerV4OptionValue -Router 10.10.10.10
     Add-DhcpServerInDC -DnsName $ComputerName.$DomainName -Verbose
 
-    New-ADUser -SamAccountName 'labuser' -Enable ```$true ````
-        -UserPrincipalName 'labuser@$DomainName' -Name 'Lab User Account' ````
-        -AccountPassword '$($Credentials.GetNetworkCredential().password)' `
-        -ChangePasswordAtLogon ```$true
-
     Install-WindowsFeature Web-Scripting-Tools -IncludemanagementTools
     Install-WindowsFeature AD-Certificate, Adcs-Cert-Authority -IncludemanagementTools
     Install-WindowsFeature Adcs-Enroll-Web-Svc, Adcs-Web-Enrollment, Adcs-Enroll-Web-Pol -IncludemanagementTools
@@ -136,6 +131,11 @@ function New-LabDomainController {
     ```$username   = "$netBios\Administrator"
     ```$pass = ConvertTo-SecureString -String '$($Credentials.GetNetworkCredential().password)' -AsPlainText -Force
     ```$cred = New-Object System.Management.Automation.PSCredential ```$username,```$pass
+
+    New-ADUser -SamAccountName 'labuser' -Enable ```$true ````
+        -UserPrincipalName 'labuser@$DomainName' -Name 'Lab User Account' ````
+        -AccountPassword ```$pass ````
+        -ChangePasswordAtLogon ```$true
 
     Write-Output "Installing CA using ```$(```$cred.UserName)"
     Install-AdcsCertificationAuthority -CACommonName 'ContosoCA' -CAType 'EnterpriseRootCA' ````
@@ -145,21 +145,36 @@ function New-LabDomainController {
 
     Install-AdcsWebEnrollment -Force -Verbose
 
-    New-WebBinding -Name "Default Web Site" -IP "*" -Port 443 -Protocol https
+    Write-Output "Generating the HTTPS certificate for this server..."
+    ```$context = ([ADSI]"LDAP://RootDSE").configurationNamingContext
+    ```$context = "CN=Certificate Templates,CN=Public Key Services,CN=Services,```$context"
+    ```$ds = New-Object System.DirectoryServices.DirectorySearcher([ADSI]"LDAP://```$context", "(cn=WebServer)")
 
-    Write-Output "Waiting for $ComputerName certificate to be created"
-    Gpupdate /Target:Computer /Force | Out-Null
-    Start-Sleep -Seconds 5
+    ```$template = ```$ds.FindOne().GetDirectoryEntry()
 
-    While (! (Get-ChildItem Cert:\LocalMachine\My | Where Subject -Match 'CN=$ComputerName.$DomainName')) {
-      Write-Output "Sleeping for another 5 seconds waiting for $ComputerName certificate..."
-      Start-sleep -seconds 5
-    }
+    ```$user1 = New-Object System.Security.Principal.NTAccount("Domain Computers")
+    ```$user2 = New-Object System.Security.Principal.NTAccount("Domain Controllers")
+    ```$guid = New-Object Guid 0e10c968-78fb-11d2-90d4-00c04f79dc55
+    ```$right = [System.DirectoryServices.ActiveDirectoryRights]"ExtendedRight"
+    ```$type = [System.Security.AccessControl.AccessControlType]"Allow"
 
-    ```$cert = (Get-ChildItem Cert:\localmachine\my | Where Subject -Match 'CN=$ComputerName.$DomainName')
-    Write-Output "Certificate being used is: [```$(```$cert.thumbprint)]"
+    ```$ace1 = New-Object System.DirectoryServices.ActiveDirectoryAccessRule ````
+        -ArgumentList ```$user1, ```$right, ```$type, ```$guid
+    ```$ace2 = New-Object System.DirectoryServices.ActiveDirectoryAccessRule ````
+        -ArgumentList ```$user2, ```$right, ```$type, ```$guid
+
+    ```$template.ObjectSecurity.AddAccessRule(```$ace1)
+    ```$template.ObjectSecurity.AddAccessRule(```$ace2)
+    ```$template.CommitChanges()
+
+    ```$cert = (Get-Certificate -Template 'WebServer' -DnsName '$ComputerName.$DomainName' ````
+        -SubjectName 'CN=$ComputerName.$DomainName' -CertStoreLocation cert:\LocalMachine\My).Certificate
+
+    Write-Output "Certificate being used is: [```$(```$cert.Thumbprint)]"
 
     Write-Output "Setting SSL bindings with this certificate"
+
+    New-WebBinding -Name "Default Web Site" -IP "*" -Port 443 -Protocol https
     New-Item IIS:\SSLBindings\0.0.0.0!443 -value ```$cert
 
     Write-Output "######### Active Directory Configuration Complete."
@@ -232,8 +247,7 @@ function New-LabDomainController {
     Restart-Computer -Force
 "@
 
-
-    Move-VMStartUpScriptBlockToVM -VhdxFile $vhdx -ScriptBlock $scriptBlock
+    Move-VMStartUpScriptBlockToVM -VhdxFile $vhdx -ScriptBlock ([Scriptblock]::Create($script))
 
     New-VirtualMachine -VhdxFile $vhdx -ComputerName $ComputerName -VirtualSwitch "LAB"
 
