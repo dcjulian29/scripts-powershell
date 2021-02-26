@@ -261,6 +261,14 @@ function New-LabFirewall {
 
     $iso = LatestIsoFile("pfSense-")
 
+    if (-not ($iso -like "*.iso")) {
+        $iso = LatestIsoFile("OPNsense-")
+    }
+
+    if (-not (($iso -like "*.iso"))) {
+        throw "Firewall ISO not found!"
+    }
+
     $ComputerName = $ComputerName.ToUpperInvariant()
     $vhdx = "$ComputerName.vhdx"
 
