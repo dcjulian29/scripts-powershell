@@ -232,7 +232,6 @@ function New-LabDomainController {
     Restart-Computer -Force
 "@
 
-    $scriptBlock = [Scriptblock]::Create($script)
 
     Move-VMStartUpScriptBlockToVM -VhdxFile $vhdx -ScriptBlock $scriptBlock
 
@@ -247,7 +246,7 @@ function New-LabDomainController {
 
     Start-Sleep 5
 
-    Start-Process -FilePath "vmconnect.exe" -ArgumentList "127.0.0.1 $ComputerName"
+    Start-Process -FilePath "vmconnect.exe" -ArgumentList "${env:COMPUTERNAME} $ComputerName"
 
     $ErrorActionPreference = $errorPreviousAction
 }
@@ -291,7 +290,7 @@ function New-LabFirewall {
 
     Start-VM -VMName $ComputerName
 
-    vmconnect.exe localhost $ComputerName
+    vmconnect.exe ${env:COMPUTERNAME} $ComputerName
 
     $ErrorActionPreference = $errorPreviousAction
 }
@@ -413,7 +412,7 @@ function New-LabVMSwitch {
         New-VMSwitch -Name LAB -SwitchType Internal
 
         New-NetIPAddress -IPAddress 10.10.10.11 -PrefixLength 24 -InterfaceAlias "vEthernet (LAB)"
-        
+
         Set-NetConnectionProfile `
             -InterfaceIndex $((Get-NetConnectionProfile -InterfaceAlias "vEthernet (LAB)").InterfaceIndex) `
             -NetworkCategory Private
