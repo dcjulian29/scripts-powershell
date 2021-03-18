@@ -7,6 +7,7 @@
     NestedModules = @(
         "AzureDevOpsGit.psm1"
         "AzureDevOpsProjects.psm1"
+        "AzureDevOpsRepository.psm1"
         "AzureDevOpsWorkItems.psm1"
     )
     TypesToProcess = @()
@@ -20,6 +21,7 @@
         "Get-AdoProject"
         "Get-AdoProjectProperties"
         "Get-AdoProjects"
+        "Get-AdoRepository"
         "Get-AdoWorkItem"
         "Get-AzureDevOpsDefaultProject"
         "Get-AzureDevOpsGitCommit"
