@@ -20,6 +20,20 @@ function Install-K3D {
     }
 }
 
+function New-K3S {
+    param (
+        [string] $ClusterName = $env:COMPUTERNAME,
+        [int]$Servers = 1,
+        [int]$Agents = 1
+    )
+
+    if (-not (Test-K3D)) {
+        Install-K3D
+    }
+
+    k3d cluster create $ClusterName --agents $Agents --servers $Servers
+}
+
 function Open-K3SDashboard {
     param (
         [string] $ClusterName = $env:COMPUTERNAME
@@ -54,7 +68,7 @@ function Start-K3S {
     if (Get-K3SCluster $ClusterName) {
         k3d cluster start $ClusterName
     } else {
-        k3d cluster create $ClusterName
+        New-K3S $ClusterName
     }
 
     ($node = kubectl get nodes --context="k3d-$ClusterName") 1> $null 2> $null

@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2102.4.1'
+    ModuleVersion = '2103.19.1'
     GUID = 'f5af3a59-c5ad-4e26-8502-c14c3ee8d5df'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -12,6 +12,7 @@
     FunctionsToExport = @(
         "Get-K3SCluster"
         "Install-K3D"
+        "New-K3S"
         "Open-K3SDashboard"
         "Remove-K3S"
         "Start-K3S"
