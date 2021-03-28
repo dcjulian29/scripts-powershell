@@ -4,7 +4,12 @@
 
 $Global:PromptAdmin="$"
 
-$batch = (Get-WmiObject Win32_Process -filter "ProcessID=$pid").CommandLine -match "-NonInteractive"
+if ($PSVersionTable.PSEdition -eq "Core") {
+    $batch = false
+} else {
+    $batch = (Get-WmiObject Win32_Process -filter "ProcessID=$pid").CommandLine -match "-NonInteractive"
+}
+
 if (-not $batch) {
    # Sometimes color settings get set based on subkeys in HKCU:\Console, remove them
    Remove-Item -Path HKCU:\Console\* -Recurse -Force
@@ -20,8 +25,8 @@ if (-not $batch) {
            Clear-Host
        }
    } else {
-       $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
-       ColorTool.exe -q purplepeter.itermcolors
+        $host.UI.RawUI.WindowTitle = "PowerShell Prompt"
+        ColorTool.exe -q purplepeter.itermcolors
    }
 
    if ((Get-Command Set-PSReadLineOption).Version.Major -lt 2) {
