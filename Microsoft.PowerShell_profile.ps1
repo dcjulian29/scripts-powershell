@@ -45,9 +45,45 @@ if (-not $batch) {
     Write-Output ""
 }
 
+# Load the Posh-GIT module if it exist
+if (Test-Path "C:\tools\poshgit") {
+    $poshgit = Get-ChildItem -Path "C:\tools\poshgit" |  `
+        Where-Object { $_.psIsContainer } | `
+        Sort-Object { $_.CreationTime } -Descending
+
+    Import-Module "C:\tools\poshgit\$($poshgit.name)\src\posh-git.psd1"
+}
+
+# Argument Completers
+
+if (Get-Command winget -ErrorAction SilentlyContinue) {
+    Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
+        param($wordToComplete, $commandAst, $cursorPosition)
+
+            [Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [System.Text.Utf8Encoding]::new()
+            $Local:word = $wordToComplete.Replace('"', '""')
+            $Local:ast = $commandAst.ToString().Replace('"', '""')
+
+            winget complete --word="$Local:word" --commandline "$Local:ast" --position $cursorPosition `
+                | ForEach-Object {
+                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+                }
+    }
+}
+
+if (Get-Command dotnet -ErrorAction SilentlyContinue) {
+    Register-ArgumentCompleter -Native -CommandName dotnet -ScriptBlock {
+        param($commandName, $wordToComplete, $cursorPosition)
+
+        dotnet complete --position $cursorPosition "$wordToComplete" | ForEach-Object {
+            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+        }
+    }
+}
+
 ################################################################################
 
-Function prompt {
+function prompt {
     $realLASTEXITCODE = $LASTEXITCODE
     $Host.UI.RawUI.BackgroundColor = $(Get-Host).UI.RawUI.BackgroundColor
     $originalColor = $Host.UI.RawUI.ForegroundColor
@@ -91,40 +127,4 @@ Function prompt {
 
     $global:LASTEXITCODE = $realLASTEXITCODE
     return "  `b"
-}
-
-# Load the Posh-GIT module if it exist
-if (Test-Path "C:\tools\poshgit") {
-    $poshgit = Get-ChildItem -Path "C:\tools\poshgit" |  `
-        Where-Object { $_.psIsContainer } | `
-        Sort-Object { $_.CreationTime } -Descending
-
-    Import-Module "C:\tools\poshgit\$($poshgit.name)\src\posh-git.psd1"
-}
-
-# Argument Completers
-
-if (Get-Command winget -ErrorAction SilentlyContinue) {
-    Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
-        param($wordToComplete, $commandAst, $cursorPosition)
-
-            [Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [System.Text.Utf8Encoding]::new()
-            $Local:word = $wordToComplete.Replace('"', '""')
-            $Local:ast = $commandAst.ToString().Replace('"', '""')
-
-            winget complete --word="$Local:word" --commandline "$Local:ast" --position $cursorPosition `
-                | ForEach-Object {
-                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-                }
-    }
-}
-
-if (Get-Command dotnet -ErrorAction SilentlyContinue) {
-    Register-ArgumentCompleter -Native -CommandName dotnet -ScriptBlock {
-        param($commandName, $wordToComplete, $cursorPosition)
-
-        dotnet complete --position $cursorPosition "$wordToComplete" | ForEach-Object {
-            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-        }
-    }
 }
