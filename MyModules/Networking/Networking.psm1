@@ -86,32 +86,56 @@ function getUrl {
 
 #------------------------------------------------------------------------------
 
-function Get-NetworkIP {
-  [CmdletBinding()]
-  param (
-    [Parameter(Mandatory = $true)]
-    [string] $Interface
-  )
+function Get-NetworkInterface {
+    [CmdletBinding()]
+    param (
+        [string] $InterfaceName,
+        [string] $InterfaceType,
+        [string] $InterfaceStatus
+    )
 
-  $collection = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()
+    $i = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()
 
-  if ($Interface) {
-    $collection = $collection | Where-Object Name -eq $Interface
-  }
-
-  $r = @()
-
-  foreach ($item in $collection) {
-    $r += [PSCustomObject] @{
-      Alias = $item.Name
-      IPv4 = ($item.GetIPProperties().UnicastAddresses `
-        | Where-Object PrefixLength -eq 24 ).Address.IPAddressToString
-      IPv6 = ($item.GetIPProperties().UnicastAddresses `
-        | Where-Object PrefixLength -eq 64 ).Address.IPAddressToString
+    if ($InterfaceName) {
+        $i = $i | Where-Object Name -eq $InterfaceName
     }
-  }
 
-  return $r
+   if ($InterfaceType) {
+        $i = $i | Where-Object NetworkInterfaceType -eq $InterfaceType
+    }
+
+    if ($InterfaceStatus) {
+        $i = $i | Where-Object OperationalStatus -eq $InterfaceStatus
+    }
+
+    return $i
+}
+
+function Get-NetworkIP {
+    [CmdletBinding()]
+    param (
+        [string] $InterfaceName,
+        [string] $InterfaceType,
+        [string] $InterfaceStatus
+    )
+
+    $collection = Get-NetworkInterface -InterfaceName $InterfaceName `
+        -InterfaceType $InterfaceType -InterfaceStatus $InterfaceStatus
+
+
+    $r = @()
+
+    foreach ($item in $collection) {
+        $r += [PSCustomObject] @{
+            Name = $item.Name
+            IPv4 = ($item.GetIPProperties().UnicastAddresses `
+                | Where-Object PrefixLength -eq 24 ).Address.IPAddressToString
+            IPv6 = ($item.GetIPProperties().UnicastAddresses `
+                | Where-Object PrefixLength -eq 64 ).Address.IPAddressToString
+        }
+    }
+
+    return $r
 }
 
 function Get-PublicIP {
@@ -127,6 +151,39 @@ function Get-PublicIP {
 
   Invoke-WebRequest -Uri $url -UseBasicParsing -DisableKeepAlive `
     | Select-Object -ExpandProperty Content
+}
+
+function Get-WirelessState {
+    $adapter = Get-NetworkInterface -InterfaceStatus Up -InterfaceType Wireless80211
+
+    $r = [PSCustomObject]@{
+        IPv4Address = (Get-NetworkIp $adapter.Name).IPv4
+        IPv6Address = (Get-NetworkIp $adapter.Name).IPv6
+        SSID = ""
+        BSSID = ""
+        State = ""
+        Authentication = ""
+        Channel = ""
+        Signal = ""
+        RxRate = ""
+        TxRate = ""
+        StateTime = Get-Date
+    }
+
+    $status = ($(netsh wlan show interfaces)).Split("`n")
+
+    foreach ($line in $status) {
+        if ($line -match "^    SSID\s{10,35}:\s(.*)") { $r.SSID = $Matches[1] }
+        if ($line -match "^    BSSID\s{10,35}:\s(.*)") { $r.BSSID = $Matches[1] }
+        if ($line -match "^    State\s{10,35}:\s(.*)") { $r.State = $Matches[1]}
+        if ($line -match "^    Authentication\s{5,35}:\s(.*)") { $r.Authentication = $Matches[1] }
+        if ($line -match "^    Channel\s{10,35}:\s(.*)") { $r.Channel = $Matches[1] }
+        if ($line -match "^    Signal\s{10,35}:\s(.*)") { $r.Signal=$Matches[1] }
+        if ($line -match "^    Receive\srate\s\(Mbps\)\s{2,15}:\s(.*)") { $r.RxRate = $Matches[1] }
+        if ($line -match "^    Transmit\srate\s\(Mbps\)\s{2,15}:\s(.*)") { $r.TxRate=$Matches[1] }
+    }
+
+    return $r
 }
 
 function Invoke-Http {
@@ -253,4 +310,8 @@ function Show-UrlReservation {
     $url = getUrl $Protocol $Hostname $Port
 
     netUrlAcl -Operation "show" -Url $url -User $User
+}
+
+function Show-WirelessInterface {
+    netsh wlan show interfaces
 }

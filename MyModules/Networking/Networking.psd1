@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.12.15.1'
+    ModuleVersion = '2103.28.1'
     GUID = 'd8dcfccc-7a12-4dfd-a27a-c647b408e1bf'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -17,10 +17,12 @@
         "Clear-PacketFilter"
         "Convert-PacketCaptureFile"
         "Find-Nmap"
+        "Get-NetworkInterface"
         "Get-NetworkIP"
         "Get-PacketFilter"
         "Get-PublicIP"
         "Get-TSharkInterfaces"
+        "Get-WirelessState"
         "Invoke-IPerf"
         "Invoke-IPerfServer"
         "Invoke-IPerfClient"
@@ -34,6 +36,8 @@
         "Invoke-TSharkCapture"
         "New-FirewallRule"
         "New-UrlReservation"
+        "Show-UrlReservation"
+        "Show-WirelessInterface"
         "Start-PacketCapture"
         "Stop-PacketCapture"
         "Remove-FirewallRule"
