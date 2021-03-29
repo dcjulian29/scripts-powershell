@@ -8,6 +8,7 @@
         "IPerf.psm1"
         "NMap.psm1"
         "PacketCapture.psm1"
+        "Wireless.psm1"
         "Wireshark.psm1"
     )
     TypesToProcess = @()
