@@ -52,12 +52,9 @@ function Write-Log {
         [string] $LogFile = "$(Get-LogFolder)\_default.log",
         [switch] $NoOutput,
         [switch] $Warning,
-        [switch] $NoTimestamp
+        [switch] $NoTimestamp,
+        [switch] $NoFileOutput
     )
-
-    if (-not (Test-Path $(Split-Path $LogFile))) {
-        New-Item -Path $(Split-Path $LogFile) -ItemType Directory | Out-Null
-    }
 
     if ($NoTimestamp) {
         $text = "$Message"
@@ -65,17 +62,23 @@ function Write-Log {
         $text = "$(Get-Date -Format "MM/dd/yyyy HH:mm:ss") : $Message"
     }
 
-    if (Test-Path $LogFile) {
-        Add-Content -Path $LogFile -Value $text
-    } else {
-        Set-Content -Path $LogFile -Value $text
+    if (-not ($NoFileOutput)) {
+        if (-not (Test-Path $(Split-Path $LogFile))) {
+            New-Item -Path $(Split-Path $LogFile) -ItemType Directory | Out-Null
+        }
+
+        if (Test-Path $LogFile) {
+            Add-Content -Path $LogFile -Value $text
+        } else {
+            Set-Content -Path $LogFile -Value $text
+        }
     }
 
     if (-not $NoOutput) {
         if ($Warning) {
-            Write-Warning $Message
+            Write-Warning $text
         } else {
-            Write-Output $Message
+            Write-Output $text
         }
     }
 }
