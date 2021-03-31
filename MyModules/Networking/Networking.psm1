@@ -1,3 +1,7 @@
+$Script:dnsCache = @{
+    "127.0.0.1" = "localhost"
+}
+
 function netFirewall {
     [OutputType([System.String])]
     param (
@@ -86,6 +90,42 @@ function getUrl {
 
 #------------------------------------------------------------------------------
 
+function Get-NetworkEstablishedConnection {
+    [CmdletBinding()]
+    param (
+        [switch] $NoResolve
+    )
+
+    $r = @()
+
+    Get-NetTCPConnection -State Established | ForEach-Object {
+        if ($NoResolve) {
+            $remoteName = $null
+        } else {
+            if (-not ($dnsCache.ContainsKey($_.RemoteAddress))) {
+                $dnsCache.Add($_.RemoteAddress, `
+                    $(Resolve-DnsName $_.RemoteAddress -ErrorAction SilentlyContinue))
+            }
+
+            $remoteName = $dnsCache[$_.RemoteAddress]
+        }
+
+        $process = Get-Process | Where-Object Id -eq $_.OwningProcess
+
+        $r += [PSCustomObject]@{
+            RemoteDNS   = $remoteName.Server
+            RemoteIP    = $_.RemoteAddress
+            RemotePort  = $_.RemotePort
+            ProcessID   = $_.OwningProcess
+            ProcessName = $process.ProcessName
+            LocalIP     = $_.LocalAddress
+            LocalPort   = $_.LocalPort
+        }
+    }
+
+    return $r
+}
+
 function Get-NetworkInterface {
     [CmdletBinding()]
     param (
@@ -132,6 +172,23 @@ function Get-NetworkIP {
                 | Where-Object PrefixLength -eq 24 ).Address.IPAddressToString
             IPv6 = ($item.GetIPProperties().UnicastAddresses `
                 | Where-Object PrefixLength -eq 64 ).Address.IPAddressToString
+        }
+    }
+
+    return $r
+}
+
+function Get-NetworkListeningPorts {
+    $r = @()
+
+    Get-NetTCPConnection -State Listen | ForEach-Object {
+        $process = Get-Process | Where-Object Id -eq $_.OwningProcess
+
+        $r += [PSCustomObject]@{
+            LocalIP     = $_.LocalAddress
+            LocalPort   = $_.LocalPort
+            ProcessID   = $_.OwningProcess
+            ProcessName = $process.ProcessName
         }
     }
 

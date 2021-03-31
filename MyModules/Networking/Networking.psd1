@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2103.28.1'
+    ModuleVersion = '2103.30.1'
     GUID = 'd8dcfccc-7a12-4dfd-a27a-c647b408e1bf'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -18,8 +18,10 @@
         "Clear-PacketFilter"
         "Convert-PacketCaptureFile"
         "Find-Nmap"
+        "Get-NetworkEstablishedConnection"
         "Get-NetworkInterface"
         "Get-NetworkIP"
+        "Get-NetworkListeningPorts"
         "Get-PacketFilter"
         "Get-PublicIP"
         "Get-TSharkInterfaces"
