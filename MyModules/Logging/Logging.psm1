@@ -45,6 +45,17 @@ function Optimize-LogFolder {
     $files | ForEach-Object { Remove-Item -Path $_.FullName -Force }
 }
 
+function Start-ApplicationTranscript {
+    [CmdletBinding()]
+    param (
+        [string] $LogFile = $(Get-LogFileName -Suffix $PID)
+    )
+
+    Start-Transcript -Path $LogFile -Append
+}
+
+Set-Alias -Name Stop-ApplicationTranscript -Value Stop-Transcript
+
 function Write-Log {
     param (
         [Parameter(Mandatory=$true)]
