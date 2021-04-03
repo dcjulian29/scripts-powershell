@@ -9,6 +9,7 @@
         "NMap.psm1"
         "PacketCapture.psm1"
         "Wireless.psm1"
+        "WirelessProfile.psm1"
         "Wireshark.psm1"
     )
     TypesToProcess = @()
@@ -16,7 +17,9 @@
     FunctionsToExport = @(
         "Add-PacketFilter"
         "Clear-PacketFilter"
+        "Connect-WirelessProfile"
         "Convert-PacketCaptureFile"
+        "Export-WirelessProfile"
         "Find-Nmap"
         "Get-NetworkEstablishedConnection"
         "Get-NetworkInterface"
@@ -25,7 +28,9 @@
         "Get-PacketFilter"
         "Get-PublicIP"
         "Get-TSharkInterfaces"
+        "Get-WirelessProfile"
         "Get-WirelessState"
+        "Import-WirelessProfile"
         "Invoke-IPerf"
         "Invoke-IPerfServer"
         "Invoke-IPerfClient"
@@ -39,6 +44,8 @@
         "Invoke-TSharkCapture"
         "New-FirewallRule"
         "New-UrlReservation"
+        "New-WirelessProfile"
+        "Remove-WirelessProfile"
         "Show-UrlReservation"
         "Show-WirelessInterface"
         "Start-PacketCapture"
