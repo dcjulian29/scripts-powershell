@@ -106,20 +106,27 @@ function Invoke-OpenSSH {
         [Alias("Remote", "RemoteHost")]
         [string]$ComputerName,
         [string]$IdentityFile,
-        [string]$Command
+        [string]$Command,
+        [string]$User,
+        [Alias("NoSave", "Transient", "NoHostChecking")]
+        [switch]$Temporary
     )
 
     $ssh = "$env:windir\System32\OpenSSH\ssh.exe"
     $etc = "$env:SystemDrive\etc\ssh"
 
-    if (-not $IdentityFile) {
-        if ($ComputerName.Contains("@")) {
-            $name = $ComputerName.Split('@')[1]
+    if ($ComputerName.Contains("@")) {
+        if ($User) {
+            Write-Error "Cannot specify an explicit user and also one in computer connection string. Ignoring that one."
         } else {
-            $name = $ComputerName
+            $User = $ComputerName.Split('@')[0]
         }
 
-        $file = "$env:SystemDrive\etc\ssh\id_$name"
+        $ComputerName = $ComputerName.Split('@')[1]
+    }
+
+    if (-not $IdentityFile) {
+        $file = "$env:SystemDrive\etc\ssh\id_$ComputerName"
 
         if (Test-Path $file) {
             $IdentityFile = $file
@@ -131,8 +138,17 @@ function Invoke-OpenSSH {
     if ($IdentityFile -and (Test-Path $IdentityFile)) {
         $arguments = $arguments + " -i ""$IdentityFile"""
     }
+    
+    if ($Temporary) {
+        $arguments = $arguments + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"        
+    }
 
-    $arguments = $arguments + " $ComputerName"
+    if ($User) {
+
+        $arguments = $arguments + " $User@$ComputerName"
+    } else {
+        $arguments = $arguments + " $ComputerName"
+    }
 
     if ($Command) {
         $arguments = $arguments + " -t `"$Command`""
