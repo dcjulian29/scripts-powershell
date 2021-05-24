@@ -114,9 +114,9 @@ function Disable-RdpHostFile {
     )
 
     if ($ExcludeFilter) {
-        $computers = Find-RdpHostFile -Path $files -ExcludeFilter $ExcludeFilter
+        $computers = Find-RdpHostFile -Path $Path -ExcludeFilter $ExcludeFilter
     } else {
-        $computers = Find-RdpHostFile -Path $files
+        $computers = Find-RdpHostFile -Path $Path
     }
 
     disableRdpFile($computers)
