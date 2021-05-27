@@ -264,6 +264,10 @@ function New-DockerContainer {
         [string]$Tag = "latest",
         [string]$Name,
         [string]$HostName,
+        [string[]]$Volume,
+        [switch]$ReadOnly,
+        [string]$EntryPoint,
+        [string]$Command,
         [switch]$Interactive,
         [switch]$Keep
     )
@@ -288,13 +292,30 @@ function New-DockerContainer {
         $param += " --name $Name"
     }
 
+    if ($EntryPoint) {
+        $param += " --entrypoint $EntryPoint"
+    }
+
+    if ($ReadOnly) {
+        $param += " --read-only"
+    }
+
     # Future Enhancements:
     # "--env [string[]]$EnvironmentVariables" #Maybe HashTable?
     # "--expose list   (port mapping)"
     # "--network list"
-    # "--volume list??" # Attach volumes to container
+
+    if (($Volume) -and ($Volume.Count -gt 0)) {
+      for ($i = 0; $i -lt $Volume.Count; $i++) {
+        $param += " --volume `"$($Volume[$i])`""
+      }
+    }
 
     $param += " ${Image}:$Tag"
+
+    if ($Command) {
+        $param += " $Command"
+    }
 
     Write-Verbose $($param.Trim())
     Invoke-Docker $($param.Trim())
