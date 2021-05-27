@@ -141,6 +141,30 @@ function Show-AllGitInformation {
 
 Set-Alias status-all-projects Show-AllGitInformation
 
+function Show-AllGitRepositoryStatus {
+    param(
+        $Folders = $((Get-ChildItem -Directory "$(Get-DefaultCodeFolder)").FullName)
+    )
+
+    $repos = @()
+
+    foreach ($folder in $Folders) {
+        Push-Location $folder
+        if (Test-GitRepository) {
+            $status = Test-GitRepositoryDirty
+
+            $repos += [PSCustomObject]@{
+                Folder = $folder
+                Dirty = $status
+            }
+        }
+
+        Pop-Location
+    }
+
+    return $repos
+}
+
 function Show-GitInformation {
     if (Test-Path "$(Join-Path $pwd.Path ".git")") {
         Write-Output "== Remote URLs:"
@@ -193,7 +217,7 @@ function Test-GitRepositoryDirty {
         [string] $Path = $PWD.Path
     )
 
-    if ($(& "$(Find-Git)" -C "$Path" diff --stat) -ne '') {
+    if ($null -ne (& "$(Find-Git)" -C "$Path" diff --stat)) {
         return $true
     } else {
         return $false
