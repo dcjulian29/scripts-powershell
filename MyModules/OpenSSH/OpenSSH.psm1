@@ -196,6 +196,24 @@ function New-OpenSSHHostShortcut {
 
 }
 
+function New-OpenSSHKey {
+  param(
+    [string] $User = "${env:USERNAME}",
+    [Parameter(Mandatory = $true)]
+    [Alias("ComputerName")]
+    [string] $Host,
+    [switch] $CopyToRemote
+  )
+
+  $file = "`"${env:SystemDrive}\etc\ssh\$Host.key`""
+
+  & C:\Windows\System32\OpenSSH\ssh-keygen.exe -t ed25519 -C `"$User@$Host`" -N `"`" -f $file
+
+  if ($CopyToRemote) {
+    & C:\Windows\System32\OpenSSH\ssh-copy-id.exe -i $file $User@$Host
+  }
+}
+
 function Remove-OpenSSHKnownHost {
     param (
         [Parameter(Mandatory=$true)]

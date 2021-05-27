@@ -22,6 +22,7 @@
         "Invoke-OpenSSH"
         "Invoke-OpenSSHCommand"
         "New-OpenSSHHostShortcut"
+        "New-OpenSSHKey"
         "Remove-OpenSSHClient"
         "Remove-OpenSSHServer"
         "Remove-OpenSSHKnownHost"
