@@ -2,7 +2,7 @@ function testDockerOrElevated {
     if (Get-Command "docker.exe" -ErrorAction SilentlyContinue) {
         return $true
     }
-    
+
     Test-Elevation
 }
 
@@ -10,7 +10,7 @@ function testDockerOrElevated {
 
 function Find-Nmap {
     if (Get-Command "docker.exe" -ErrorAction SilentlyContinue) {
-        "docker.exe run -it dcjulian29/nmap"
+        "docker.exe run --rm -it dcjulian29/nmap:latest"
     } else {
         First-Path `
             (Find-ProgramFiles 'Nmap\nmap.exe')
@@ -22,9 +22,9 @@ function Invoke-Nmap {
     if (-not $nmap) {
         throw "NMap (or Docker) is not installed on this system."
     }
-    
+
     $param = "$args"
-    
+
     if ($nmap -notlike "*docker*") {
         if (Test-Elevation) {
             $param = "--privileged $param"
