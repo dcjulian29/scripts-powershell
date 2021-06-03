@@ -1,3 +1,12 @@
+function ConvertTo-UnixPath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    return "/" + (($Path -replace "\\","/") -replace ":","").ToLower().Trim("/")
+}
+
 function Find-FolderSize {
     param (
         [String]$Path = $pwd.Path
