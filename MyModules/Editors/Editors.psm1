@@ -1,36 +1,96 @@
-$script:VIM = Find-ProgramFiles 'vim\vim80\vim.exe'
-$script:GVIM = Find-ProgramFiles 'vim\vim80\gvim.exe'
-$script:NOTEPAD = Find-ProgramFiles 'Notepad++\notepad++.exe'
+function Invoke-NanoEditor {
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path
+    )
 
-Function Start-VIM {
-    Start-Process -FilePath $VIM -ArgumentList $args -NoNewWindow -Wait
+    $Path = (Resolve-Path $Path).Path
+    $folder = ConvertTo-UnixPath $(Split-Path $Path)
+    $file = $(Split-Path -Leaf $Path)
+
+    New-DockerContainer -Image "alpine" -Tag "latest" -Interactive -Name "nano_editor" `
+        -Volume "${folder}:/data" `
+        -Command "/bin/ash -c `"apk add nano; /usr/bin/nano /data/$file`""
 }
 
-Function Start-GVIM {
-    Start-Process -FilePath $VIM -ArgumentList $args
+Set-Alias -Name nano -Value Invoke-NanoEditor
+
+function Invoke-NotePadEditor {
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path
+    )
+
+    $Path = (Resolve-Path $Path).Path
+    $notePad = Find-ProgramFiles 'Notepad++\notepad++.exe'
+    $param = "-nosession '$Path'"
+
+    Start-Process -FilePath $notePad -ArgumentList $param
 }
 
-Function Start-Notepad {
-    Start-Process -FilePath $NOTEPAD -ArgumentList $args
+Set-Alias notepad Invoke-NotePadEditor
+Set-Alias np Invoke-NotePadEditor
+
+function Invoke-VimEditor {
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path
+    )
+
+    $Path = (Resolve-Path $Path).Path
+    $folder = ConvertTo-UnixPath $(Split-Path $Path)
+    $file = $(Split-Path -Leaf $Path)
+
+    New-DockerContainer -Image "alpine" -Tag "latest" -Interactive -Name "vim_editor" `
+        -Volume "${folder}:/data" -Command "/usr/bin/vi /data/$file"
 }
 
-##############################################################################
+Set-Alias -Name vi -Value Invoke-VimEditor
+Set-Alias -Name vim -Value Invoke-VimEditor
 
-Export-ModuleMember Start-VIM
-Export-ModuleMember Start-GVIM
-Export-ModuleMember Start-Notepad
+function Invoke-VisualStudioCode {
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path
+    )
 
-Set-Alias vi Start-VIM
-Export-ModuleMember -Alias vi
+    $Path = (Resolve-Path $Path).Path
+    $code = Find-ProgramFiles 'Microsoft VS Code\Code.exe'
+    $param = "--new-window  '$Path'"
 
-Set-Alias vim Start-VIM
-Export-ModuleMember -Alias vim
+    Start-Process -FilePath $code -ArgumentList $param
+}
 
-Set-Alias vim Start-GVIM
-Export-ModuleMember -Alias gvim
+Set-Alias -Name code -Value Invoke-VisualStudioCode
+Set-Alias -Name vscode -Value Invoke-VisualStudioCode
 
-Set-Alias np Start-Notepad
-Export-ModuleMember -Alias np
+function Invoke-VisualStudioDiff {
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path1,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$Path2
+    )
 
-Set-Alias notepad Start-Notepad
-Export-ModuleMember -Alias notepad
+    $Path1 = (Resolve-Path $Path1).Path
+    $Path2 = (Resolve-Path $Path2).Path
+
+    $code = Find-ProgramFiles 'Microsoft VS Code\Code.exe'
+    $param = "--new-window --diff `"$Path1`" `"$Path2`""
+
+    Start-Process -FilePath $code -ArgumentList $param
+}
+
+Set-Alias -Name vsdiff -Value Invoke-VisualStudioDiff
