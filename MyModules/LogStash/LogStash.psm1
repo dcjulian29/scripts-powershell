@@ -5,12 +5,42 @@ function Clear-LogStashProfile {
 Set-Alias logstash-profile-clear Clear-LogStashProfile
 Set-Alias ls-profile-clear Clear-LogStashProfile
 
+function Get-LogStashHotThreads {
+    param(
+        [switch]$Threads
+    )
+
+    if ($Threads) {
+        (Invoke-LogStashApi -Method "_node/hot_threads").hot_threads.threads
+    } else {
+        (Invoke-LogStashApi -Method "_node/hot_threads").hot_threads
+    }
+        (Invoke-LogStashApi -Method "_node/hot_threads").hot_threads
+}
+
 function Get-LogStashNode {
     Invoke-LogStashApi -Method "_node"
 }
 
 function Get-LogStashPipeline {
-    (Invoke-LogStashApi -Method "_node/pipelines").pipelines
+    param(
+        [string]$Pipeline,
+        [switch]$Detailed
+    )
+
+    if ($Detailed) {
+        if ($Pipeline) {
+            (Invoke-LogStashApi -Method "_node/stats/pipelines/$Pipeline").pipelines.$Pipeline
+        } else {
+            (Invoke-LogStashApi -Method "_node/stats/pipelines").pipelines
+        }
+    } else {
+        if ($Pipeline) {
+            (Invoke-LogStashApi -Method "_node/pipelines/$Pipeline").pipelines.$Pipeline
+        } else {
+            (Invoke-LogStashApi -Method "_node/pipelines").pipelines
+        }
+    }
 }
 
 function Get-LogStashPlugins {
@@ -19,13 +49,38 @@ function Get-LogStashPlugins {
 
 function Get-LogStashServer {
     param (
-        [switch]$Detailed
+        [switch]$Detailed,
+        [alias("os")]
+        [switch]$OperatingSystem,
+        [alias("jvm")]
+        [switch]$JavaVirtualMachine,
+        [switch]$Events
     )
 
-    if ($Detailed) {
-        Invoke-LogStashApi -Method "_node/stats"
+    if ($Detailed -or $Events) {
+        if ($JavaVirtualMachine) {
+            (Invoke-LogStashApi -Method "_node/stats/jvm").jvm
+        } else {
+            if ($OperatingSystem) {
+                (Invoke-LogStashApi -Method "_node/stats/os").os
+            } else {
+                if ($Events) {
+                    (Invoke-LogStashApi -Method "_node/stats/os").os
+                } else {
+                    Invoke-LogStashApi -Method "_node/stats"
+                }
+            }
+        }
     } else {
-        Invoke-LogStashApi -Method "?pretty"
+        if ($OperatingSystem) {
+            (Invoke-LogStashApi -Method "_node/os").os
+        } else {
+            if ($JavaVirtualMachine) {
+                (Invoke-LogStashApi -Method "_node/jvm").jvm
+            } else {
+                Invoke-LogStashApi -Method "?pretty"
+            }
+        }
     }
 }
 

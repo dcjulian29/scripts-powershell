@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2101.19.1'
+    ModuleVersion = '2106.6.1'
     GUID = '2d6efd08-0859-4734-a2e0-c873bd36ccb4'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -9,6 +9,7 @@
     FormatsToProcess = @()
     FunctionsToExport = @(
         "Clear-LogStashProfile"
+        "Get-LogStashHotThreads"
         "Get-LogStashNode"
         "Get-LogStashPipeline"
         "Get-LogStashPlugins"
