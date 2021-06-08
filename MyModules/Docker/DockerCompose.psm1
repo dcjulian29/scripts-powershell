@@ -1,7 +1,8 @@
 function Build-DockerCompose {
     [CmdletBinding()]
     param (
-        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [Alias("Path")]
         [string]$ComposeFile = "docker-compose.yml"
     )
@@ -37,11 +38,18 @@ Set-Alias -Name "dc" -Value "Invoke-DockerCompose"
 
 function Invoke-DockerComposeLog {
     param(
-        [Parameter(Mandatory = $true)]
-        [string] $ContainerName
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [Alias("Path")]
+        [string] $ComposeFile = "docker-compose.yml",
+        [string] $Service
     )
 
-    Invoke-DockerCompose "logs $ContainerName"
+    $ComposeFile = Resolve-Path $ComposeFile
+
+    if (Test-Path $ComposeFile) {
+        Invoke-DockerCompose "-f `"$(Resolve-Path $ComposeFile)`" logs $Service"
+    }
 }
 
 Set-Alias -Name "dcl" -Value "Invoke-DockerComposeLog"
@@ -49,12 +57,27 @@ Set-Alias -Name "dclog" -Value "Invoke-DockerComposeLog"
 
 function Invoke-DockerComposeLogTail {
     param(
-        [Parameter(Mandatory = $true)]
-        [string] $ContainerName,
-        [int] $Lines = 50
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [Alias("Path")]
+        [string] $ComposeFile = "docker-compose.yml",
+        [int] $Lines = 50,
+        [string] $Service
     )
 
-    Invoke-DockerCompose "logs -tf --tail=$Lines $ContainerName"
+    $ComposeFile = Resolve-Path $ComposeFile
+
+    $params = "-f `"$(Resolve-Path $ComposeFile)`" logs --follow"
+
+    if ($Service) {
+        $params += " --no-log-prefix"
+    }
+
+    $params += " --tail=$Lines $Service"
+
+    if (Test-Path $ComposeFile) {
+        Invoke-DockerCompose $params
+    }
 }
 
 Set-Alias -Name "dctail" -Value "Invoke-DockerComposeLogTail"
@@ -62,7 +85,8 @@ Set-Alias -Name "dctail" -Value "Invoke-DockerComposeLogTail"
 function Pop-DockerCompose {
     [CmdletBinding()]
     param (
-        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [Alias("Path")]
         [string]$ComposeFile = "docker-compose.yml"
     )
@@ -76,7 +100,8 @@ Set-Alias -Name "dcpull" -Value "Pop-DockerCompose"
 function Read-DockerCompose {
     [CmdletBinding()]
     param (
-        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [Alias("Path")]
         [string]$ComposeFile = "docker-compose.yml"
     )
@@ -93,7 +118,8 @@ function Resume-DockerCompose {
 function Start-DockerCompose {
     [CmdletBinding()]
     param (
-        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [Alias("Path")]
         [string]$ComposeFile = "docker-compose.yml"
     )
