@@ -59,6 +59,20 @@ function Invoke-DockerComposeLogTail {
 
 Set-Alias -Name "dctail" -Value "Invoke-DockerComposeLogTail"
 
+function Pop-DockerCompose {
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        [Alias("Path")]
+        [string]$ComposeFile = "docker-compose.yml"
+    )
+
+    Invoke-DockerCompose "-f $ComposeFile pull"
+}
+
+Set-Alias -Name "Pull-DockerCompose" -Value "Pop-DockerCompose"
+Set-Alias -Name "dcpull" -Value "Pop-DockerCompose"
+
 function Read-DockerCompose {
     [CmdletBinding()]
     param (

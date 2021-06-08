@@ -39,6 +39,7 @@
         "Invoke-DockerCompose"
         "Invoke-DockerComposeLog"
         "Invoke-DockerComposeLogTail"
+        "Invoke-DockerComposePull"
         "Invoke-DockerContainerShell"
         "New-DockerContainer"
         "New-DockerNetwork"
@@ -74,6 +75,7 @@
         "dcdown"
         "dcl"
         "dclog"
+        "dcpull"
         "dctail"
         "dcu"
         "dcup"
@@ -86,6 +88,7 @@
         "Prune-Docker"
         "Prune-DockerNetwork"
         "Prune-DockerVolume"
+        "Pull-DockerCompose"
         "Pull-DockerImage"
         "Validate-DockerCompose"
     )
