@@ -255,6 +255,29 @@ function Invoke-DockerContainerShell {
     Invoke-Docker "exec -it $Id /bin/sh"
 }
 
+function Invoke-DockerComposeLog {
+    param(
+        [Parameter(Mandantory = $true)]
+        [string] $ContainerName
+    )
+
+    Invoke-Docker "logs $ContainerName"
+}
+
+Set-Alias -Name "dlog" -Value "Invoke-DockerLog"
+
+function Invoke-DockerLogTail {
+    param(
+        [Parameter(Mandantory = $true)]
+        [string] $ContainerName,
+        [int] $Lines = 50
+    )
+
+    Invoke-Docker "logs -tf --tail=$Lines $ContainerName"
+}
+
+Set-Alias -Name "dtail" -Value "Invoke-DockerLogTail"
+
 function New-DockerContainer {
     [CmdletBinding()]
     param (
