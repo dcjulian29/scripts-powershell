@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2104.30.1'
+    ModuleVersion = '2106.8.1'
     GUID = '2cd0c771-ed8b-48bc-b6bc-be8540c915e4'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -37,6 +37,8 @@
         "Invoke-DebianContainer"
         "Invoke-Docker"
         "Invoke-DockerCompose"
+        "Invoke-DockerComposeLog"
+        "Invoke-DockerComposeLogTail"
         "Invoke-DockerContainerShell"
         "New-DockerContainer"
         "New-DockerNetwork"
@@ -69,6 +71,9 @@
         "dc"
         "dcb"
         "dcd"
+        "dcl"
+        "dclog"
+        "dctail"
         "dcu"
         "debian"
         "docker-container"

@@ -35,6 +35,30 @@ function Invoke-DockerCompose {
 
 Set-Alias -Name "dc" -Value "Invoke-DockerCompose"
 
+function Invoke-DockerComposeLog {
+    param(
+        [Parameter(Mandantory = $true)]
+        [string] $ContainerName
+    )
+
+    Invoke-DockerCompose "logs $ContainerName"
+}
+
+Set-Alias -Name "dcl" -Value "Invoke-DockerComposeLog"
+Set-Alias -Name "dclog" -Value "Invoke-DockerComposeLog"
+
+function Invoke-DockerComposeLogTail {
+    param(
+        [Parameter(Mandantory = $true)]
+        [string] $ContainerName,
+        [int] $Lines = 50
+    )
+
+    Invoke-DockerCompose "logs -tf --tail=$Lines $ContainerName"
+}
+
+Set-Alias -Name "dctail" -Value "Invoke-DockerComposeLogTail"
+
 function Read-DockerCompose {
     [CmdletBinding()]
     param (
