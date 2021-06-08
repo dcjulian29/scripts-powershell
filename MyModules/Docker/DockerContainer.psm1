@@ -255,9 +255,9 @@ function Invoke-DockerContainerShell {
     Invoke-Docker "exec -it $Id /bin/sh"
 }
 
-function Invoke-DockerComposeLog {
+function Invoke-DockerLog {
     param(
-        [Parameter(Mandantory = $true)]
+        [Parameter(Mandatory = $true)]
         [string] $ContainerName
     )
 
@@ -268,7 +268,7 @@ Set-Alias -Name "dlog" -Value "Invoke-DockerLog"
 
 function Invoke-DockerLogTail {
     param(
-        [Parameter(Mandantory = $true)]
+        [Parameter(Mandatory = $true)]
         [string] $ContainerName,
         [int] $Lines = 50
     )
@@ -395,6 +395,41 @@ function Start-DockerContainer {
 
     Invoke-Docker "start $Id"
 }
+
+function Start-LinuxServerCommunityContainer {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $Image,
+        [string] $Name = $(((New-Guid).GUID).Replace('-','')),
+        [string[]] $Volumes,
+        [string[]] $Ports
+    )
+
+    $param = "run --rm -d --name=`"$Name`""
+
+    foreach ($volume in $Volumes) {
+        $param += " -v `"$volume`""
+    }
+
+    if ($param -like "-v *:/config`"*") {
+        $param += " -v `"$(ConvertTo-UnixPath $PWD):/config`""
+    }
+
+    $param += " -e PUID=1000 -e PGID=1000"
+
+    if ($Ports) {
+        foreach ($port in $Ports) {
+            $param += " -p $port"
+        }
+    }
+
+    $param += " linuxserver/$Image"
+
+    Invoke-Docker $param
+}
+
+Set-Alias -Name "docker-linuxserverio" -Value "Start-LinuxServerCommunityContainer"
+Set-Alias -Name "docker-lsio" -Value "Start-LinuxServerCommunityContainer"
 
 function Stop-DockerContainer {
     [CmdletBinding(DefaultParameterSetName="ID")]
