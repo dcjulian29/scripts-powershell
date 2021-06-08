@@ -88,12 +88,14 @@ function Start-DockerCompose {
 }
 
 Set-Alias -Name "dcu" -Value "Start-DockerCompose"
+Set-Alias -Name "dcup" -Value "Start-DockerCompose"
 
 function Stop-DockerCompose {
     Invoke-DockerCompose "down"
 }
 
 Set-Alias -Name "dcd" -Value "Stop-DockerCompose"
+Set-Alias -Name "dcdown" -Value "Stop-DockerCompose"
 
 function Suspend-DockerCompose {
     Invoke-DockerCompose "stop"
