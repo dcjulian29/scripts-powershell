@@ -37,7 +37,7 @@ Set-Alias -Name "dc" -Value "Invoke-DockerCompose"
 
 function Invoke-DockerComposeLog {
     param(
-        [Parameter(Mandantory = $true)]
+        [Parameter(Mandatory = $true)]
         [string] $ContainerName
     )
 
@@ -49,7 +49,7 @@ Set-Alias -Name "dclog" -Value "Invoke-DockerComposeLog"
 
 function Invoke-DockerComposeLogTail {
     param(
-        [Parameter(Mandantory = $true)]
+        [Parameter(Mandatory = $true)]
         [string] $ContainerName,
         [int] $Lines = 50
     )
