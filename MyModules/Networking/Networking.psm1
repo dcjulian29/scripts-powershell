@@ -195,6 +195,22 @@ function Get-NetworkListeningPorts {
     return $r
 }
 
+function Get-PrimaryIP {
+    param(
+      [switch]$IPv6
+    )
+
+    if ($IPv6) {
+      return (Get-NetIPAddress -InterfaceIndex $((Get-NetRoute -AddressFamily IPv6 `
+        | Where-Object { $_.DestinationPrefix -eq "::/0" }).ifIndex) `
+            -AddressFamily IPv6 -PrefixOrigin "Manual").IPAddress
+    } else {
+      return (Get-NetIPAddress -InterfaceIndex $((Get-WmiObject -Class Win32_IP4RouteTable `
+        | Where-Object { $_.destination -eq '0.0.0.0' -and $_.mask -eq '0.0.0.0'} `
+        | Sort-Object metric1).InterfaceIndex) -AddressFamily IPv4).IPAddress
+    }
+}
+
 function Get-PublicIP {
   param(
     [Switch] $IPv6

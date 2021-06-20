@@ -28,6 +28,7 @@
         "Get-NetworkIP"
         "Get-NetworkListeningPorts"
         "Get-PacketFilter"
+        "Get-PrimaryIP"
         "Get-PublicIP"
         "Get-TSharkInterfaces"
         "Get-WirelessProfile"
