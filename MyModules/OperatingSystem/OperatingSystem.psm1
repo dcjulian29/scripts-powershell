@@ -33,6 +33,77 @@ function Find-FolderSize {
 Set-Alias -Name Calculate-Folder-Size -Value Find-FolderSize
 Set-Alias -Name Calculate-FolderSize -Value Find-FolderSize
 
+function Get-InstalledSoftware{
+    param(
+        [Parameter(Position=0, ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True)]
+        [string[]]$ComputerName
+    )
+
+    begin {
+        $computers = @()
+        $results = @()
+
+        if ($null -eq $ComputerName) {
+            $computers += $env:COMPUTERNAME
+        } else {
+            $ComputerName | ForEach-Object { $computers += $_ }
+        }
+    }
+
+    process {
+        Foreach ($computer in $computers) {
+            if (Test-Connection $computer -Count 2 -Quiet) {
+
+                $keys = $('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', 'SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall')
+
+                $hive = Invoke-Expression $("[{0}]::{1}" -f 'Microsoft.Win32.RegistryHive', 'LocalMachine') `
+                    -ErrorAction Stop
+
+                foreach ($path in $keys) {
+                    try {
+                        $key = ([Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey($hive, $computer)).OpenSubKey($path, $true)
+                    } catch {
+                        Write-Warning "Check permissions on computer name $computer, cannot connect registry"
+                        continue
+                    }
+
+                    ($key.GetSubKeyNames()) | ForEach-Object {
+                        $child = $key.OpenSubKey($_)
+
+                        $software = $child.GetValueNames()
+
+                        if ($software -contains 'DisplayName') {
+                            $results += [PSCustomObject]@{
+                                ComputerName = $Computer
+                                DisplayName = $child.GetValue('DisplayName')
+                                DisplayVersion = $child.GetValue('DisplayVersion')
+                                Publisher = $child.GetValue('Publisher')
+                                InstallDate = $child.GetValue('InstallDate')
+                                EstimatedSize = "{0:N2}MB" -f $(([int]$child.GetValue('EstimatedSize')) / 1024)
+                                InstallLocation = $child.GetValue('InstallLocation')
+                                InstallSource = $child.GetValue('InstallSource')
+                                UninstallString = $child.GetValue('UninstallString')
+                                RegistryLocation = $child.Name
+                            }
+                        }
+
+                        $child.close()
+                    }
+
+                    $key.close()
+                }
+            }
+            else {
+                Write-Warning "Computer Name '$Computer' not reachable."
+            }
+        }
+    }
+
+    end {
+        return $results
+    }
+}
+
 function Get-Midnight {
     (Get-Date).Date
 }
