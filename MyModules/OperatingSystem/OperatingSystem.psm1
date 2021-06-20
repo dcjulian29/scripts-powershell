@@ -3,8 +3,11 @@ function ConvertTo-UnixPath {
         [Parameter(Mandatory = $true)]
         [string]$Path
     )
-
-    return "/" + (($Path -replace "\\","/") -replace ":","").ToLower().Trim("/")
+    if (Test-WindowsPath $Path) {
+        return "/" + (($Path -replace "\\","/") -replace ":","").ToLower().Trim("/")
+    } else {
+        Write-Error "'$Path' is not a valid Windows Path."
+    }
 }
 
 function Find-FolderSize {
@@ -425,4 +428,22 @@ function Test-PendingReboot {
     Pop-Location
 
     return $PendingReboot
+}
+
+function Test-UnixPath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    return $Path -match "^(\/([\w_%!$@:.,~-]+|\\.)*|[^\\])+$"
+}
+
+function Test-WindowsPath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    return $Path -match "([A-Za-z]+:|\.{1,2}|\\)*((\w+\\)+|\w+)+"
 }

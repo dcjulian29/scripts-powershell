@@ -1,6 +1,6 @@
 @{
     RootModule = 'OperatingSystem.psm1'
-    ModuleVersion = '2106.14.1'
+    ModuleVersion = '2106.20.1'
     GUID = '3ffbac72-4374-43f7-8b6d-f190478077e7'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -33,6 +33,8 @@
         "Test-OsDomainController"
         "Test-OsServer"
         "Test-PendingReboot"
+        "Test-UnixPath"
+        "Test-WindowsPath"
     )
     AliasesToExport = @(
         "Calculate-Folder-Size"
