@@ -1,12 +1,11 @@
 function Start-GitHubFlowFeature {
     param (
-        [string] $Name = "$(Read-Host 'What is the name of the feature')"
+        [string] $Name = "$(Read-Host 'What is the name of the feature')",
+        [swtich] $Force
     )
 
-    $branch = Get-GitRepositoryBranch
-
-    if (-not ($branch -eq "master")) {
-        Write-Error "You are not in the master branch. Use -Force to create a new feature from this branch if that is what you want."
+    if (-not ($Force -or ($(Get-GitRepositoryBranch) -ne $(Get-GitPrimaryBranch)))) {
+        Write-Error "You are not in the $(Get-GitPrimaryBranch) branch. Use -Force to create a new feature from this branch if that is what you want."
     } else {
         if (-not ($name.StartsWith("feature/"))) {
             $Name = "feature/$Name"
@@ -30,7 +29,7 @@ function Stop-GitHubFlowFeature {
             & "$(Find-Git)" pull
         }
 
-        & "$(Find-Git)" checkout master
+        & "$(Find-Git)" checkout $(Get-GitPrimaryBranch)
         & "$(Find-Git)" merge --no-ff $branch
         & "$(Find-Git)" branch --delete $branch
 
@@ -98,17 +97,17 @@ function Update-GitHubFlowFeature {
     if (-not $branch.StartsWith("feature/")) {
         Write-Error "You are not in a feature branch."
     } else {
-        & "$(Find-Git)"  checkout master
-        & "$(Find-Git)"  pull origin
-        & "$(Find-Git)"  checkout $branch
+        & "$(Find-Git)" checkout $(Get-GitPrimaryBranch)
+        & "$(Find-Git)" pull origin
+        & "$(Find-Git)" checkout $branch
 
         $remote = & "$(Find-Git)" ls-remote --heads origin $Name
 
         if ($remote) {
-            & "$(Find-Git)"  pull origin
+            & "$(Find-Git)" pull origin
         }
 
-        & "$(Find-Git)"  merge master --no-ff
+        & "$(Find-Git)" merge $(Get-GitPrimaryBranch) --no-ff
 
         if ($Push) {
             if ($remote) {

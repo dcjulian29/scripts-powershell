@@ -1,4 +1,8 @@
-﻿function Find-Git {
+﻿function Get-GitPrimaryBranch {
+  (& "$(Find-Git)" remote show origin | Select-String "HEAD branch: ").ToString().Replace('HEAD branch:', '').Trim()
+}
+
+function Find-Git {
     "$(Find-ProgramFiles "Git")\bin\git.exe"
 }
 
