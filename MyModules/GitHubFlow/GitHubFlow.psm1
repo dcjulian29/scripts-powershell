@@ -1,7 +1,7 @@
 function Start-GitHubFlowFeature {
     param (
         [string] $Name = "$(Read-Host 'What is the name of the feature')",
-        [swtich] $Force
+        [switch] $Force
     )
 
     if (-not ($Force -or ($(Get-GitRepositoryBranch) -ne $(Get-GitPrimaryBranch)))) {
