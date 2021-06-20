@@ -602,6 +602,96 @@ function New-LabWindowsWorkstation {
     $ErrorActionPreference = $errorPreviousAction
 }
 
+function Start-LabDomainController {
+    param (
+        [string]$ComputerName = "DC01"
+    )
+
+    $vm = Get-VM -VMName $ComputerName  -ErrorAction SilentlyContinue
+    
+    if ($null -eq $vm) {
+        Write-Error "Hyper-V was unable to find a virtual machine with name `"$ComputerName`"."
+    } else {
+        if ($vm.State -ne "Running") {
+            Start-VM -Name $ComputerName
+        }
+    }
+}
+
+function Start-LabFirewall {
+    param (
+        [string]$ComputerName = "FIREWALL"
+    )
+
+    $vm = Get-VM -VMName $ComputerName -ErrorAction SilentlyContinue
+    
+    if ($null -eq $vm) {
+        New-LabFirewall $ComputerName
+    } else {
+        if ($vm.State -ne "Running") {
+            Start-VM -Name $ComputerName
+        }
+    }
+}
+
+function Stop-LabDomainController {
+    param (
+        [string]$ComputerName = "DC01"
+    )
+
+    $vm = Get-VM -VMName $ComputerName  -ErrorAction SilentlyContinue
+    
+    if (($null -ne $vm) -and ($vm.State -eq "Running")) {
+        Stop-VM -Name $ComputerName
+    }
+}
+
+function Stop-LabFirewall {
+    param (
+        [string]$ComputerName = "FIREWALL"
+    )
+
+    $vm = Get-VM -VMName $ComputerName -ErrorAction SilentlyContinue
+    
+    if (($null -ne $vm) -and ($vm.State -eq "Running")) {
+        Stop-VM -Name $ComputerName
+    }
+}
+
+function Remove-LabDomainController {
+    param (
+        [string]$ComputerName = "DC01",
+        [switch]$LeaveDisc
+    )
+
+    Stop-LabDomainController -ComputerName $ComputerName
+    
+    Remove-VM -Name $ComputerName -Force -Confirm:$false
+    
+    Push-Location "$((Get-VMHost).VirtualMachinePath)\Discs"
+    
+    if ((-not $LeaveDisc) -and (Test-Path "$ComputerName.vhdx")) {
+        Remove-Item -Path "$ComputerName.vhdx" -Force -Confirm:$false
+    }
+}
+
+function Remove-LabFirewall {
+    param (
+        [string]$ComputerName = "DC01",
+        [switch]$LeaveDisc
+    )
+
+    Stop-LabFirewall -ComputerName $ComputerName
+    
+    Remove-VM -Name $ComputerName -Force -Confirm:$false
+    
+    Push-Location "$((Get-VMHost).VirtualMachinePath)\Discs"
+    
+    if ((-not $LeaveDisc) -and (Test-Path "$ComputerName.vhdx")) {
+        Remove-Item -Path "$ComputerName.vhdx" -Force -Confirm:$false
+    }
+}
+
 function Remove-LabVMSwitch {
     $lab = Get-VMSwitch -Name LAB -ErrorAction SilentlyContinue
 

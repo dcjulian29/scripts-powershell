@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2102.24.1'
+    ModuleVersion = '2106.16.1'
     GUID = 'fa07d906-a7c4-4a32-a845-6b54a7cb04d6'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -19,6 +19,12 @@
         "New-LabVMSwitch"
         "New-LabWindowsServer"
         "New-LabWindowsWorkstation"
+        "Start-LabDomainController"
+        "Start-LabFirewall"
+        "Stop-LabDomainController"
+        "Stop-LabFirewall"
+        "Remove-LabDomainController"
+        "Remove-LabFirewall"
         "Remove-LabVMSwitch"
     )
     AliasesToExport = @(
