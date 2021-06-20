@@ -4,7 +4,7 @@ function Start-GitHubFlowFeature {
         [switch] $Force
     )
 
-    if (-not ($Force -or ($(Get-GitRepositoryBranch) -ne $(Get-GitPrimaryBranch)))) {
+    if (-not ($Force -or ($(Get-GitRepositoryBranch) -eq $(Get-GitPrimaryBranch)))) {
         Write-Error "You are not in the $(Get-GitPrimaryBranch) branch. Use -Force to create a new feature from this branch if that is what you want."
     } else {
         if (-not ($name.StartsWith("feature/"))) {
