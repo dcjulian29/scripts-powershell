@@ -101,6 +101,16 @@ function Invoke-DebainContainer {
 
 Set-Alias -Name debian -Value Invoke-DebianContainer
 
+function Invoke-Dive {
+    $params = "$args"
+
+    Invoke-Docker run --rm -it `
+      -v "/var/run/docker.sock:/var/run/docker.sock" `
+      wagoodman/dive:latest $params
+}
+
+Set-Alias -Name dive -Value Invoke-Dive
+
 function Invoke-Docker {
     $docker = Find-Docker
 
