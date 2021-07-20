@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2104.18.1'
+    ModuleVersion = '2107.20.1'
     GUID = '2b2add2f-ba2d-461a-8bac-6cfb19894a0d'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -23,9 +23,11 @@
         "Invoke-OpenSSHCommand"
         "New-OpenSSHHostShortcut"
         "New-OpenSSHKey"
+        "Receive-FileScp"
         "Remove-OpenSSHClient"
         "Remove-OpenSSHServer"
         "Remove-OpenSSHKnownHost"
+        "Send-FileScp"
         "Set-OpenSSHDefaultShell"
         "Test-OpenSSHClient"
         "Test-OpenSSHServer"

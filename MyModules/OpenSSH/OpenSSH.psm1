@@ -1,3 +1,53 @@
+$script:scp = "$env:windir\System32\OpenSSH\scp.exe"
+$script:ssh = "$env:windir\System32\OpenSSH\ssh.exe"
+$script:etc = "$env:SystemDrive\etc\ssh"
+
+function generateScpArguments($IdentityFile,$Recurse,$Port,$LocalPath,$RemoteUser,$RemoteHost,$RemotePath,$Direction) {
+    $arguments = getConfigFile
+
+    if ($IdentifyFile) {
+        $arguments += " -i ""$IdentityFile"""
+    } else {
+        $arguments += " -i ""$(getIdentityFile $null $RemoteHost)"""
+    }
+
+    if ($Recurse) {
+        $arguments += " -r"
+    }
+
+    if ($Port) {
+        $arguments += " -P $Port"
+    }
+
+    if ($RemoteUser) {
+        $RemoteHost = "$RemoteUser@$RemoteHost"
+    }
+
+    if ($Direction -eq 'Up') {
+        $arguments += " $LocalPath $($RemoteHost):$RemotePath"
+    } else {
+        $arguments += " $($RemoteHost):$RemotePath $LocalPath"
+    }
+
+    return $arguments
+}
+
+function getConfigFile {
+    if (Test-Path "$etc\config") {
+        return "-F ""$etc\config"""
+    }
+}
+
+function getIdentityFile($IdentityFile,$RemoteHost) {
+    if (($null -eq $IdentityFile) -and (Test-Path "$etc\$RemoteHost.key")) {
+        $IdentityFile = "$etc\$RemoteHost.key"
+    }
+
+    return $IdentityFile
+}
+
+#------------------------------------------------------------------------------
+
 function Add-OpenSSHKnownHost {
     param (
         [Parameter(Mandatory=$true)]
@@ -48,52 +98,12 @@ function Get-OpenSSHKnownHosts {
 }
 
 function Invoke-OpenSCP {
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$SourcePath,
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$RemoteHost,
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$DestinationPath,
-        [string]$RemoteUser,
-        [string]$IdentityFile,
-        [int32]$Port,
-        [switch]$Recurse
-    )
+    $arguments = "$(getConfigFile) $args"
 
-    $scp = "$env:windir\System32\OpenSSH\scp.exe"
-    $etc = "$env:SystemDrive\etc\ssh"
-
-    $arguments = "-F ""$etc\config"""
-
-    if (($null = $IdentityFile) -and (Test-Path "$env:SystemDrive\etc\ssh\id_$RemoteHost")) {
-        $IdentityFile = "$env:SystemDrive\etc\ssh\id_$RemoteHost"
-    }
-
-    if ($IdentifyFile) {
-        $arguments += " -i ""$IdentityFile"""
-    }
-
-    if ($Recurse) {
-        $arguments += " -r"
-    }
-
-    if ($Port) {
-        $arguments += " -P $Port"
-    }
-
-    $arguments += " $SourcePath"
-
-    if ($RemoteUser) {
-        $RemoteHost = "$RemoteUser@$RemoteHost"
-    }
-
-    $arguments += " $($RemoteHost):$DestinationPath"
-
+    Write-Verbose "[SCP Arguments] $arguments"
+    $oldTitle = $host.UI.RawUI.WindowTitle
     Start-Process -FilePath $scp -ArgumentList $arguments -NoNewWindow -Wait
+    $host.UI.RawUI.WindowTitle = $oldTitle
 }
 
 Set-Alias scp Invoke-OpenSCP
@@ -112,9 +122,6 @@ function Invoke-OpenSSH {
         [switch]$Temporary
     )
 
-    $ssh = "$env:windir\System32\OpenSSH\ssh.exe"
-    $etc = "$env:SystemDrive\etc\ssh"
-
     if ($ComputerName.Contains("@")) {
         if ($User) {
             Write-Error "Cannot specify an explicit user and also one in computer connection string. Ignoring that one."
@@ -125,26 +132,18 @@ function Invoke-OpenSSH {
         $ComputerName = $ComputerName.Split('@')[1]
     }
 
-    if (-not $IdentityFile) {
-        $file = "$env:SystemDrive\etc\ssh\id_$ComputerName"
+    $arguments = getConfigFile
 
-        if (Test-Path $file) {
-            $IdentityFile = $file
-        }
-    }
-
-    $arguments = "-F ""$etc\config"""
-
+    $IdentityFile = getIdentityFile $IdentityFile $RemoteHost
     if ($IdentityFile -and (Test-Path $IdentityFile)) {
         $arguments = $arguments + " -i ""$IdentityFile"""
     }
-    
+
     if ($Temporary) {
-        $arguments = $arguments + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"        
+        $arguments = $arguments + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
     }
 
     if ($User) {
-
         $arguments = $arguments + " $User@$ComputerName"
     } else {
         $arguments = $arguments + " $ComputerName"
@@ -205,13 +204,38 @@ function New-OpenSSHKey {
     [switch] $CopyToRemote
   )
 
-  $file = "`"${env:SystemDrive}\etc\ssh\$Host.key`""
+  $file = "`"$etc\$Host.key`""
 
   & C:\Windows\System32\OpenSSH\ssh-keygen.exe -t ed25519 -C `"$User@$Host`" -N `"`" -f $file
 
   if ($CopyToRemote) {
     & C:\Windows\System32\OpenSSH\ssh-copy-id.exe -i $file $User@$Host
   }
+}
+
+function Receive-FileScp {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string]$LocalPath,
+        [Parameter(Mandatory = $true, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [string]$RemotePath,
+        [Parameter(Mandatory = $true, Position = 3)]
+        [ValidateNotNullOrEmpty()]
+        [string]$RemoteHost,
+        [string]$RemoteUser,
+        [string]$IdentityFile,
+        [int32]$Port,
+        [switch]$Recurse
+    )
+
+    $arguments = generateScpArguments $IdentityFile $Recurse.IsPresent $Port `
+        $LocalPath $RemoteUser $RemoteHost $RemotePath "Down"
+
+    Write-Verbose "[SCP Recieve Arguments] $arguments"
+    Invoke-OpenSCP $arguments
 }
 
 function Remove-OpenSSHKnownHost {
@@ -233,4 +257,29 @@ function Remove-OpenSSHKnownHost {
     } else {
         Set-Content -Path "$env:USERPROFILE/.ssh/known_hosts" -Value $newContent
     }
+}
+
+function Send-FileScp {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string]$LocalPath,
+        [Parameter(Mandatory = $true, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [string]$RemotePath,
+        [Parameter(Mandatory = $true, Position = 3)]
+        [ValidateNotNullOrEmpty()]
+        [string]$RemoteHost,
+        [string]$RemoteUser,
+        [string]$IdentityFile,
+        [int32]$Port,
+        [switch]$Recurse
+    )
+
+    $arguments = generateScpArguments $IdentityFile $Recurse.IsPresent $Port `
+        $LocalPath $RemoteUser $RemoteHost $RemotePath "Up"
+
+    Write-Verbose "[SCP Send Arguments] $arguments"
+    Invoke-OpenSCP $arguments
 }
