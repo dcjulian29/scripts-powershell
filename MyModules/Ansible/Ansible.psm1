@@ -15,7 +15,7 @@ function Invoke-AnsibleContainer {
           Name = "ansible_shell"
           Volume = @(
             "${workingPath}:/etc/ansible"
-            "/c/etc/ssh/wsl:/root/.ssh"
+            "/mnt/c/etc/ssh/wsl:/root/.ssh"
           )
         }
 
