@@ -31,7 +31,7 @@ function Get-GitRepositoryStatus {
 Set-Alias gs Get-GitRepositoryStatus
 
 function Invoke-FetchGitRepository {
-    & "$(Find-Git)" fetch --prune --all
+    & "$(Find-Git)" fetch --progress --prune --all
 }
 
 Set-Alias Fetch-GitRepository Invoke-FetchGitRepository
