@@ -91,7 +91,7 @@ function Invoke-AlpineContainer {
 
 Set-Alias -Name alpine -Value Invoke-AlpineContainer
 
-function Invoke-DebainContainer {
+function Invoke-DebianContainer {
     if (Test-DockerLinuxEngine) {
         New-DockerContainer -Image "debian" -Tag "buster-slim" -Interactive -Name "debian_shell"
     } else {
