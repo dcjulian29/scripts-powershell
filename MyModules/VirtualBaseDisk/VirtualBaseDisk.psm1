@@ -180,12 +180,12 @@ function New-DevBaseVhdxDisk {
     $wim = getWIMFileName($File)
 
     $image = Get-WindowsImage -ImagePath $wim `
-        | Where-Object { $_.ImageName -eq 'Windows 10 Pro' }
+        | Where-Object { $_.ImageName -eq 'Windows 11 Pro' }
 
     if ($image) {
         $index = $image.ImageIndex
         New-BaseVhdxDisk -File $wim -Index $index -Suffix "Development" -Force
     } else {
-        Write-Output "Windows 10 Pro image does not exists in that file!"
+        Write-Output "Windows 11 Pro image does not exists in that file!"
     }
 }
