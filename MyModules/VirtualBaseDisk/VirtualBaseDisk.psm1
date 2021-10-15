@@ -139,7 +139,8 @@ function New-BaseVhdxDisk {
 
     $vhdx = "Win{0}Base{1}.vhdx" -f $OsVersion, $Suffix
 
-    if (doesVhdxBlock -File $vhdx -Force $Force.IsPresent) {
+    if (doesVhdxBlock -File "$((Get-VMHost).VirtualHardDiskPath)/base/$vhdx" -Force:$Force.IsPresent) {
+        Write-Error "File already exist. Use '-Force' to replace."
         return
     }
 
@@ -149,13 +150,13 @@ function New-BaseVhdxDisk {
         $partition = "BIOS"
     }
 
-    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+    Push-Location $env:TEMP
 
     Write-Output "Creating a base disk using ""$($image.ImageName)"" to $vhdx..."
 
     . $PSScriptRoot\Convert-WindowsImage.ps1
     Convert-WindowsImage -SourcePath $wim -Edition $Index `
-        -DiskLayout $partition  -VHDPath $vhdx `
+        -DiskLayout $partition  -VHDPath "$((Get-VMHost).VirtualHardDiskPath)\base\$vhdx" `
         -VHDFormat VHDX -SizeBytes 100GB -Verbose
 
     Pop-Location
