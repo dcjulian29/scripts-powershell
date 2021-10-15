@@ -171,7 +171,8 @@ function New-DevBaseVhdxDisk {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $File
+        [string] $File,
+        $OSVersion = 11
     )
 
     if ((-not (isWimFile($File))) -and (-not (isIsoFile($File)))) {
@@ -181,12 +182,12 @@ function New-DevBaseVhdxDisk {
     $wim = getWIMFileName($File)
 
     $image = Get-WindowsImage -ImagePath $wim `
-        | Where-Object { $_.ImageName -eq 'Windows 11 Pro' }
+        | Where-Object { $_.ImageName -eq 'Windows $OSVersion Pro' }
 
     if ($image) {
         $index = $image.ImageIndex
         New-BaseVhdxDisk -File $wim -Index $index -Suffix "Development" -Force
     } else {
-        Write-Output "Windows 11 Pro image does not exists in that file!"
+        Write-Output "Windows $OSVersion Pro image does not exists in that file!"
     }
 }
