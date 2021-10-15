@@ -192,3 +192,42 @@ function New-DevBaseVhdxDisk {
         Write-Output "Windows $OSVersion Pro image does not exists in that file!"
     }
 }
+
+function New-BaseServeVhdxDisks {
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $OSVersion,
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string] $File,
+        [switch] $Force
+    )
+
+    if ((-not (isWimFile($File))) -and (-not (isIsoFile($File)))) {
+        throw "You must provide a WIM or ISO file!"
+    }
+
+    $wim = getWIMFileName($File)
+
+    $desktopImage = Get-WindowsImage -ImagePath $wim `
+        | Where-Object { $_.ImageName -eq "Windows Server $OSVersion Standard Evaluation (Desktop Experience)" }
+
+    $coreImage = Get-WindowsImage -ImagePath $wim `
+        | Where-Object { $_.ImageName -eq "Windows Server $OSVersion Standard Evaluation" }
+
+    if (-not $desktopImage) {
+        throw "'Windows Server $OSVersion Standard Evaluation (Desktop Experience)' image does not exists in '$wim'!"
+    }
+
+    if (-not $coreImage) {
+        throw "'Windows Server $OSVersion Standard Evaluation' image does not exists in '$wim'!"
+    }
+
+    $desktopIndex = $desktopImage.ImageIndex
+    New-BaseVhdxDisk -File $wim -Index $desktopIndex -Force:$Force.IsPresent
+
+    $coreIndex = $coreImage.ImageIndex
+    New-BaseVhdxDisk -File $wim -Index $coreIndex -Suffix "Core" -Force:$Force.IsPresent
+}
