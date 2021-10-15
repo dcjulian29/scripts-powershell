@@ -172,7 +172,8 @@ function New-DevBaseVhdxDisk {
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string] $File,
-        $OSVersion = 11
+        $OSVersion = 11,
+        [switch]$Force
     )
 
     if ((-not (isWimFile($File))) -and (-not (isIsoFile($File)))) {
@@ -186,7 +187,7 @@ function New-DevBaseVhdxDisk {
 
     if ($image) {
         $index = $image.ImageIndex
-        New-BaseVhdxDisk -File $wim -Index $index -Suffix "Development" -Force
+        New-BaseVhdxDisk -File $wim -Index $index -Suffix "Development" -Force:$Force.IsPresent
     } else {
         Write-Output "Windows $OSVersion Pro image does not exists in that file!"
     }
