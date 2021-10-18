@@ -1,6 +1,6 @@
 @{
     RootModule = 'VirtualBaseDisk.psm1'
-    ModuleVersion = '2110.15.1'
+    ModuleVersion = '2110.18.1'
     GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -11,7 +11,7 @@
         "Get-WindowsImagesInWIM"
         "New-DevBaseVhdxDisk"
         "New-BaseVhdxDisk"
-        "New-BaseServeVhdxDisks"
+        "New-BaseServerVhdxDisks"
     )
     AliasesToExport = @()
     ScriptsToProcess = @()

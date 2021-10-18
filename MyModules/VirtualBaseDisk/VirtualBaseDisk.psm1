@@ -190,7 +190,7 @@ function New-DevBaseVhdxDisk {
     }
 }
 
-function New-BaseServeVhdxDisks {
+function New-BaseServerVhdxDisks {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
