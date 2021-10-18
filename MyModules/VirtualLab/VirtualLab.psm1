@@ -62,7 +62,7 @@ function New-LabDomainController {
 
     Uninstall-VirtualMachine $ComputerName
 
-    New-DifferencingVHDX -ReferenceDisk "$((Get-VMHost).VirtualHardDiskPath)\Win2019ServerBase.vhdx" `
+    New-DifferencingVHDX -ReferenceDisk "$((Get-VMHost).VirtualHardDiskPath)\base\Win2022ServerBase.vhdx" `
         -VhdxFile $vhdx
 
     $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)"
@@ -471,10 +471,10 @@ function New-LabWindowsServer {
 
     Push-Location $((Get-VMHost).VirtualHardDiskPath)
 
-    $baseImage = "$((Get-ChildItem -Path "Win2019ServerCoreBase.vhdx").FullName)"
+    $baseImage = "$((Get-ChildItem -Path "base/Win2022ServerCoreBase.vhdx").FullName)"
 
     if ($UseDesktopExperience) {
-        $baseImage = "$((Get-ChildItem -Path "Win2019ServerBase.vhdx").FullName)"
+        $baseImage = "$((Get-ChildItem -Path "base/Win2022ServerBase.vhdx").FullName)"
     }
 
     New-DifferencingVHDX -referenceDisk $baseImage -vhdxFile "$vhdx"
@@ -536,7 +536,7 @@ function New-LabWindowsWorkstation {
 
     $ComputerName = $ComputerName.ToUpperInvariant()
     $startScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
-    $baseImage = "$((Get-VMHost).VirtualHardDiskPath)\Win10Base.vhdx"
+    $baseImage = "$((Get-VMHost).VirtualHardDiskPath)\base\Win11Base.vhdx"
     $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\$ComputerName.vhdx"
     $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
 
@@ -608,7 +608,7 @@ function Start-LabDomainController {
     )
 
     $vm = Get-VM -VMName $ComputerName  -ErrorAction SilentlyContinue
-    
+
     if ($null -eq $vm) {
         Write-Error "Hyper-V was unable to find a virtual machine with name `"$ComputerName`"."
     } else {
@@ -624,7 +624,7 @@ function Start-LabFirewall {
     )
 
     $vm = Get-VM -VMName $ComputerName -ErrorAction SilentlyContinue
-    
+
     if ($null -eq $vm) {
         New-LabFirewall $ComputerName
     } else {
@@ -640,7 +640,7 @@ function Stop-LabDomainController {
     )
 
     $vm = Get-VM -VMName $ComputerName  -ErrorAction SilentlyContinue
-    
+
     if (($null -ne $vm) -and ($vm.State -eq "Running")) {
         Stop-VM -Name $ComputerName
     }
@@ -652,7 +652,7 @@ function Stop-LabFirewall {
     )
 
     $vm = Get-VM -VMName $ComputerName -ErrorAction SilentlyContinue
-    
+
     if (($null -ne $vm) -and ($vm.State -eq "Running")) {
         Stop-VM -Name $ComputerName
     }
@@ -665,11 +665,11 @@ function Remove-LabDomainController {
     )
 
     Stop-LabDomainController -ComputerName $ComputerName
-    
+
     Remove-VM -Name $ComputerName -Force -Confirm:$false
-    
+
     Push-Location "$((Get-VMHost).VirtualMachinePath)\Discs"
-    
+
     if ((-not $LeaveDisc) -and (Test-Path "$ComputerName.vhdx")) {
         Remove-Item -Path "$ComputerName.vhdx" -Force -Confirm:$false
     }
@@ -682,11 +682,11 @@ function Remove-LabFirewall {
     )
 
     Stop-LabFirewall -ComputerName $ComputerName
-    
+
     Remove-VM -Name $ComputerName -Force -Confirm:$false
-    
+
     Push-Location "$((Get-VMHost).VirtualMachinePath)\Discs"
-    
+
     if ((-not $LeaveDisc) -and (Test-Path "$ComputerName.vhdx")) {
         Remove-Item -Path "$ComputerName.vhdx" -Force -Confirm:$false
     }
