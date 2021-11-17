@@ -452,7 +452,9 @@ function New-LabWindowsServer {
         [switch]$DomainJoin,
         [switch]$UseDefaultSwitch,
         [alias("UseDesktop", "WithGui", "Gui")]
-        [switch]$UseDesktopExperience
+        [switch]$UseDesktopExperience,
+        [ValidateSet("2022", "2019", "2016")]
+        [int]$Version = "2022"
     )
 
     $errorPreviousAction = $ErrorActionPreference
@@ -471,10 +473,10 @@ function New-LabWindowsServer {
 
     Push-Location $((Get-VMHost).VirtualHardDiskPath)
 
-    $baseImage = "$((Get-ChildItem -Path "base/Win2022ServerCoreBase.vhdx").FullName)"
+$baseImage = "$((Get-ChildItem -Path "base/Win${Version}BaseCore.vhdx").FullName)"
 
     if ($UseDesktopExperience) {
-        $baseImage = "$((Get-ChildItem -Path "base/Win2022ServerBase.vhdx").FullName)"
+        $baseImage = "$((Get-ChildItem -Path "base/Win${Version}Base.vhdx").FullName)"
     }
 
     New-DifferencingVHDX -referenceDisk $baseImage -vhdxFile "$vhdx"
