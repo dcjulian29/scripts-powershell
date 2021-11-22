@@ -141,6 +141,24 @@ function Remove-AliasesFromScript {
     }
 }
 
+function Restart-Module {
+    param (
+        [string] $ModuleName
+    )
+
+    if ((Get-Module -list | Where-Object { $_.Name -eq "$ModuleName" } | Measure-Object).Count -gt 0) {
+        if ((Get-Module -all | Where-Object { $_.Name -eq "$ModuleName" } | Measure-Object).count -gt 0) {
+            Remove-Module -Name $ModuleName -Force -Verbose
+        }
+
+        Import-Module $ModuleName -Verbose
+    } else {
+        throw "Module $ModuleName Doesn't Exist"
+    }
+}
+
+Set-Alias -Name Reload-Module -Value Restart-Module
+
 function Search-Command {
     param (
         [string]$Filter
