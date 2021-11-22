@@ -56,13 +56,17 @@ function New-DevVM {
     $ErrorActionPreference = "Stop";
     $startScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
     $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.xml"
-    $baseImage = "$((Get-VMHost).VirtualHardDiskPath)\base\Win11BaseDevelopment.vhdx"
     $computerName = "$(($env:COMPUTERNAME).ToUpper())DEV"
     $vhdx = "$computerName.vhdx"
     $password = $(Get-Credential -Message "Enter Password for VM..." -UserName "julian")
     $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
 
     Uninstall-VirtualMachine $computerName
+
+    $baseImage = (Get-ChildItem -Path "$((Get-VMHost).VirtualHardDiskPath)\base" `
+        | Where-Object { $_.Name -match "^Win11BaseInsider-.*" } `
+        | Sort-Object Name -Descending `
+        | Select-Object -First 1).FullName
 
     Push-Location $((Get-VMHost).VirtualHardDiskPath)
 

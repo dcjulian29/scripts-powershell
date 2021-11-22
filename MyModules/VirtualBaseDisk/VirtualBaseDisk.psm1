@@ -137,7 +137,7 @@ function New-BaseVhdxDisk {
 
     $OsVersion = $image.ImageName -replace '[^0-9]'
 
-    $vhdx = "Win{0}Base{1}.vhdx" -f $OsVersion, $Suffix
+    $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\base\Win{0}Base{1}.vhdx" -f $OsVersion, $Suffix
 
     if (doesVhdxBlock -File $vhdx -Force $Force.IsPresent) {
         return
@@ -149,7 +149,7 @@ function New-BaseVhdxDisk {
         $partition = "BIOS"
     }
 
-    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+    Push-Location $((Get-VMHost).VirtualHardDiskPath)\base
 
     Write-Output "Creating a base disk using ""$($image.ImageName)"" to $vhdx..."
 
@@ -170,7 +170,8 @@ function New-DevBaseVhdxDisk {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $File
+        [string] $File,
+        [int] $OSVersion = 11
     )
 
     if ((-not (isWimFile($File))) -and (-not (isIsoFile($File)))) {
@@ -180,11 +181,15 @@ function New-DevBaseVhdxDisk {
     $wim = getWIMFileName($File)
 
     $image = Get-WindowsImage -ImagePath $wim `
-        | Where-Object { $_.ImageName -eq 'Windows $OSVersion Pro' }
+        | Where-Object { $_.ImageName -eq "Windows $OSVersion Pro" }
 
     if ($image) {
         $index = $image.ImageIndex
-        New-BaseVhdxDisk -File $wim -Index $index -Suffix "Development" -Force:$Force.IsPresent
+
+        $build = (dism /Get-WimInfo /WimFile:D:\sources\install.wim /index:$index `
+            | select-string Version)[1] -Replace('Version : ', '')
+
+        New-BaseVhdxDisk -File $wim -Index $index -Suffix "Insider-$Build"
     } else {
         Write-Output "Windows $OSVersion Pro image does not exists in that file!"
     }
