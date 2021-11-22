@@ -1,5 +1,8 @@
 ﻿function Find-VisualStudio {
     First-Path `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Professional\Common7\IDE\devenv.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.exe') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.exe') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe') `
@@ -45,6 +48,9 @@ Set-Alias vs-solutions Find-VisualStudioSolutions
 
 function Find-VSIX {
     First-Path `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Enterprise\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Professional\Common7\IDE\VSIXInstaller.exe') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Community\Common7\IDE\VSIXInstaller.exe') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\IDE\VSIXInstaller.exe') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\IDE\VSIXInstaller.exe') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\IDE\VSIXInstaller.exe') `
@@ -58,6 +64,9 @@ function Find-VSIX {
 
 function Find-VSVars {
     First-Path `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Professional\Common7\Tools\VsDevCmd.bat') `
+        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\Tools\VsDevCmd.bat') `
         (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat') `
@@ -222,6 +231,18 @@ function Start-VisualStudio2019 {
 }
 
 Set-Alias vs2019 Start-VisualStudio2019
+
+function Start-VisualStudio2022 {
+    param (
+        [string]$Project,
+        [switch]$AsAdmin
+    )
+
+    Start-VisualStudio $Project 2022 -AsAdmin $AsAdmin.IsPresent
+}
+
+Set-Alias vs2022 Start-VisualStudio2022
+
 function Start-VisualStudioCode {
     $code = (Find-ProgramFiles "Microsoft VS Code\Code.exe")
 

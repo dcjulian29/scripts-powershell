@@ -1,6 +1,6 @@
 @{
     RootModule = 'VisualStudio.psm1'
-    ModuleVersion = '2020.11.26.1'
+    ModuleVersion = '2111.22.1'
     GUID = '1f375f95-3e56-426c-831b-3ff97ed8f0a2'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -17,6 +17,7 @@
         "Start-VisualStudio"
         "Start-VisualStudio2017"
         "Start-VisualStudio2019"
+        "Start-VisualStudio2022"
         "Start-VisualStudioCode"
         "Update-CodeSnippets"
     )
@@ -28,6 +29,7 @@
         "vs-solutions"
         "vs2017"
         "vs2019"
+        "vs2022"
         "vscode"
         "vsvars32"
         "VSVariables"
