@@ -24,3 +24,14 @@ if (Test-Path alias:wget) {
 if (Test-Path alias:curl) {
   Remove-Item alias:curl
 }
+
+# Make sure my custom PowerShell modules are available.
+if ((-not ($env:PSModulePath).Contains("$(Split-Path $profile)\MyModules"))) {
+    $PSModulePath = "$(Split-Path $profile)\MyModules;$($env:PSModulePath)"
+
+    $env:PSModulePath = $PSModulePath
+
+    Get-Module -ListAvailable | Out-Null
+
+    Invoke-Expression "[Environment]::SetEnvironmentVariable('PSModulePath', '$PSModulePath', 'User')"
+}
