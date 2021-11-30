@@ -103,21 +103,57 @@ function Get-VSVars {
     return $global:VSVariables
 }
 
+function Install-Vsix {
+  param (
+      [Parameter(Mandatory=$true)]
+      [ValidateNotNullOrEmpty()]
+      [string]$PackageName
+  )
+
+  $baseProtocol = "https:"
+  $baseHostName = "marketplace.visualstudio.com"
+
+  $uri = "$baseProtocol//$baseHostName/items?itemName=$PackageName"
+  $file = "${env:TEMP}\$([Guid]::NewGuid()).vsix"
+
+  Write-Output "- VSIX File: $file"
+
+  $html = Invoke-WebRequest -Uri $uri -UseBasicParsing -SessionVariable session
+  $anchor = $html.Links |
+    Where-Object { $_.class -eq 'install-button-container' } |
+    Select-Object -ExpandProperty href
+
+  if (-not $anchor) {
+    throw "Could not determine download URL on the Visual Studio Extensions page."
+  }
+
+  $href = "$($baseProtocol)//$($baseHostName)$($anchor)"
+
+  Write-Output "-  VSIX Url: $href"
+
+  Invoke-WebRequest $href -OutFile $VsixLocation -WebSession $session
+
+  if (Test-Path $file) {
+    Install-VsixPackage -Package $PackageName -Path $file
+  }
+}
+
 function Install-VsixPackage {
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string]$Path
+        [string]$Path,
+        [string]$Package = $(Resolve-Path $Path)
     )
 
     $vsix = Find-VSIX
     $invalidChars = [IO.Path]::GetInvalidFileNameChars() -join ''
     $re = "[{0} ]" -f [RegEx]::Escape($invalidChars)
     $date = Get-Date -Format "yyyyMMdd_HHmmss"
-    $package = Resolve-Path $Path
-    $logFile = "{1}-vsix-{0}.log" -f ($package -replace $re), $date
-    $vsixFile = $package.FullName
+
+    $logFile = "{1}-vsix-{0}.log" -f ($Package -replace $re), $date
+    $vsixFile = $Package.FullName
 
     Write-Output "- VSIX File: $vsixFile"
     Write-Output "-  Log File: $(Get-LogFolder)\$logFile"
@@ -133,14 +169,14 @@ function Install-VsixPackage {
         $exitCode = [Int32]$run.ExitCode
 
         if ($exitCode -eq 1001) {
-            Write-Output "INFORMATION: The $($package.BaseName) Extension is already installed."
+            Write-Output "INFORMATION: The $($Package.BaseName) Extension is already installed."
         } else {
             if ($exitCode -gt 0) { throw }
         }
     } catch {
         $errorMessage = $_.Exception.Message
         Write-Output " "
-        Write-Output "An error occurred during installation of the $($package.BaseName) Extension..."
+        Write-Output "An error occurred during installation of the $($Package.BaseName) Extension..."
         Write-Output "Error: $errorMessage"
         Write-Output "Review the log file: $(Get-LogFolder)\$logFile"
     }
