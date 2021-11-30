@@ -141,7 +141,7 @@ function Install-VsixPackage {
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string]$Path,
-        [string]$Package = $(Resolve-Path $Path)
+        [string]$Package = $((Resolve-Path $Path | Get-Item).BaseName)
     )
 
     $vsix = Find-VSIX
@@ -149,11 +149,11 @@ function Install-VsixPackage {
     $re = "[{0} ]" -f [RegEx]::Escape($invalidChars)
     $date = Get-Date -Format "yyyyMMdd_HHmmss"
 
-    $logFile = "{1}-vsix-{0}.log" -f ($Package -replace $re), $date
-    $vsixFile = (Resolve-Path $Path).Path
+    $logFile = "$(Get-LogFolder)\{1}-vsix-{0}.log" -f ($Package -replace $re), $date
+    $vsixFile = (Resolve-Path $Path | Get-Item).FullName
 
     Write-Output "- VSIX File: $vsixFile"
-    Write-Output "-  Log File: $(Get-LogFolder)\$logFile"
+    Write-Output "-  Log File: $logFile"
 
     try {
         $arguments = @(
@@ -162,20 +162,56 @@ function Install-VsixPackage {
             "$vsixFile"
         )
 
-        $run = Start-Process -FilePath $vsix -ArgumentList $arguments -PassThru -Wait -NoNewWindow -Verbose
+        $run = Start-Process -FilePath $vsix -ArgumentList $arguments -PassThru -Wait -NoNewWindow
         $exitCode = [Int32]$run.ExitCode
 
-        if ($exitCode -eq 1001) {
+        switch ($exitCode) {
+          1001 {
             Write-Output "INFORMATION: The $($Package.BaseName) Extension is already installed."
-        } else {
-            if ($exitCode -gt 0) { throw }
+          }
+
+          #1002 extensionmanager.notinstalledexception
+          #1003 extensionmanager.notpendingdeletionexception
+          #1005 extensionmanager.identifierconflictexception
+          #1006 extensionmanager.missingtargetframeworkexception
+          #1007 extensionmanager.missingreferencesexception
+          #1008 extensionmanager.breaksexistingextensionsexception
+          #1009 extensionmanager.installbymsiexception
+          #1010 extensionmanager.systemcomponentexception
+          #1011 extensionmanager.missingpackagepartexception
+          #1012 extensionmanager.invalidextensionmanifestexception
+          #1013 extensionmanager.invalidextensionpackageexception
+          #1014 extensionmanager.nestedextensioninstallexception
+          #1015 extensionmanager.requiresadminrightsexception
+          #1016 extensionmanager.proxycredentialsrequiredexception
+          #1017 extensionmanager.invalidpermachineoperationexception
+          #1018 extensionmanager.referenceconstraintexception
+          #1019 extensionmanager.dependencyexception
+          #1020 extensionmanager.inconsistentnestedreferenceidexception
+          #1021 extensionmanager.unsupportedproductexception
+          #1022 extensionmanager.directoryexistsexception
+          #1023 extensionmanager.filesinuseexception
+          #1024 extensionmanager.cannotuninstallorphanedcomponentsexception
+          #2001 vsixinstaller.invalidcommandlineexception
+          #2002 vsixinstaller.invalidlicenseexception
+
+          2003 {
+            Write-Output "Warning: The $($Package.BaseName) Extension isn't compatible with installed SKUs."
+          }
+
+          #2004 vsixinstaller.blockingprocessesexception
+          #3001 means other exception.
+          Default { if ($exitCode -gt 0) { throw } }
         }
     } catch {
         $errorMessage = $_.Exception.Message
         Write-Output " "
         Write-Output "An error occurred during installation of the $($Package.BaseName) Extension..."
-        Write-Output "Error: $errorMessage"
-        Write-Output "Review the log file: $(Get-LogFolder)\$logFile"
+        Write-Output "Error: $errorMessage ($exitCode)"
+        if (Test-Path $logFile) {
+          Write-Output "Review the log file: $logFile"
+          Get-Content -Path $logFile
+        }
     }
 }
 
@@ -192,6 +228,48 @@ Set-Alias Register-VSVariables Set-VsVars
 Set-Alias vsvars32 Set-VsVars
 Set-Alias VSVariables Set-VsVars
 
+function Show-VsixExtensions {
+  $file = "${env:TEMP}\$([Guid]::NewGuid()).log"
+  $arguments = @(
+      "/quiet"
+      "/logFile:$file"
+      "/appIdName:VS"
+      "/uninstall:nosuchxt"
+  )
+
+  Start-Process -FilePath $(Find-VSIX) -ArgumentList $arguments -Wait -NoNewWindow
+
+  $contents = Get-Content $file | Select-String " - Found '"
+
+  $extensions = @()
+
+  foreach ($item in $contents) {
+    $item = $item.ToString()
+    $item = $item.Substring($item.IndexOf('''') + 1)
+    $item = $item.Substring(0, $item.LastIndexOf(''''))
+
+    $xml = [xml](Get-Content $item)
+
+    $extension = [PSCustomObject]@{
+      Id = $xml.PackageManifest.Metadata.Identity.Id
+      Version = $xml.PackageManifest.Metadata.Identity.Version
+      File = $item
+    }
+
+    if (($extension.Id).Length -eq 0) {
+      $extension.Id = (Resolve-Path $item | Get-Item).BaseName
+    }
+
+    if ($extension.Id.Length -gt 0) {
+      $extensions += $extension
+    }
+
+    $extension = $null
+  }
+
+  return $extensions
+}
+
 function Start-VisualStudio {
     param (
         [string]$Project,
@@ -203,6 +281,7 @@ function Start-VisualStudio {
         $vs = Find-VisualStudio
     } else {
         switch ($Version) {
+            2022 { $vsv = "2022" }
             2019 { $vsv = "2019" }
             2017 { $vsv = "2017" }
         }
@@ -243,16 +322,6 @@ function Start-VisualStudio {
     }
 }
 
-function Start-VisualStudio2017 {
-    param (
-        [string]$Project,
-        [switch]$AsAdmin
-    )
-
-    Start-VisualStudio $Project 2017 -AsAdmin $AsAdmin.IsPresent
-}
-
-Set-Alias vs2017 Start-VisualStudio2017
 
 function Start-VisualStudio2019 {
     param (
