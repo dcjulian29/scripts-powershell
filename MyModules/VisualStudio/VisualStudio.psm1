@@ -115,9 +115,6 @@ function Install-Vsix {
 
   $uri = "$baseProtocol//$baseHostName/items?itemName=$PackageName"
   $file = "${env:TEMP}\$([Guid]::NewGuid()).vsix"
-
-  Write-Output "- VSIX File: $file"
-
   $html = Invoke-WebRequest -Uri $uri -UseBasicParsing -SessionVariable session
   $anchor = $html.Links |
     Where-Object { $_.class -eq 'install-button-container' } |
@@ -131,7 +128,7 @@ function Install-Vsix {
 
   Write-Output "-  VSIX Url: $href"
 
-  Invoke-WebRequest $href -OutFile $VsixLocation -WebSession $session
+  Invoke-WebRequest $href -OutFile $file -WebSession $session
 
   if (Test-Path $file) {
     Install-VsixPackage -Package $PackageName -Path $file
@@ -153,7 +150,7 @@ function Install-VsixPackage {
     $date = Get-Date -Format "yyyyMMdd_HHmmss"
 
     $logFile = "{1}-vsix-{0}.log" -f ($Package -replace $re), $date
-    $vsixFile = $Package.FullName
+    $vsixFile = (Resolve-Path $Path).Path
 
     Write-Output "- VSIX File: $vsixFile"
     Write-Output "-  Log File: $(Get-LogFolder)\$logFile"
