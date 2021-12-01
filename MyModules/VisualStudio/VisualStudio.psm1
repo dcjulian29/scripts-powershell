@@ -228,6 +228,37 @@ Set-Alias Register-VSVariables Set-VsVars
 Set-Alias vsvars32 Set-VsVars
 Set-Alias VSVariables Set-VsVars
 
+function Show-VisualStudioInstalledVersions {
+  $installed = @()
+
+  @(2017, 2019, 2022) | ForEach-Object {
+    $vs = $null
+    $vs = First-Path `
+        (Find-ProgramFiles "Microsoft Visual Studio\$_\Enterprise\Common7\IDE\devenv.exe") `
+        (Find-ProgramFiles "Microsoft Visual Studio\$_\Professional\Common7\IDE\devenv.exe") `
+        (Find-ProgramFiles "Microsoft Visual Studio\$_\Community\Common7\IDE\devenv.exe") `
+        (Find-ProgramFiles "Microsoft Visual Studio $_\Common7\IDE\devenv.exe")
+
+    if ($vs) {
+      $installed += $_
+    }
+  }
+
+  if ((Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\devenv.exe')) {
+    $installed += 2015
+  }
+
+  if ((Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe')) {
+    $installed += 2013
+  }
+
+  if ((Find-ProgramFiles 'Microsoft Visual Studio 1q.0\Common7\IDE\devenv.exe')) {
+    $installed += 2012
+  }
+
+  return $installed
+}
+
 function Show-VsixExtensions {
   $file = "${env:TEMP}\$([Guid]::NewGuid()).log"
   $arguments = @(
@@ -358,6 +389,20 @@ function Start-VisualStudioCode {
 Set-Alias code Start-VisualStudioCode
 
 Set-Alias vscode Start-VisualStudioCode
+
+function Test-VisualStudioInstalledVersion {
+  param (
+    [int] $Version
+  )
+
+  $installed = Show-VisualStudioInstalledVersions
+
+  if ($installed.GetType().Name -eq 'Int32') {
+    return $installed -eq $Version
+  } else {
+    return $installed.Contains($Version)
+  }
+}
 
 function Update-CodeSnippets {
     $snippets = First-Path `
