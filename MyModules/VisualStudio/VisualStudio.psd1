@@ -1,6 +1,6 @@
 @{
     RootModule = 'VisualStudio.psm1'
-    ModuleVersion = '2111.30.3'
+    ModuleVersion = '2111.30.4'
     GUID = '1f375f95-3e56-426c-831b-3ff97ed8f0a2'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -12,7 +12,7 @@
         "Find-VSIX"
         "Find-VSVars"
         "Get-VSVars"
-        "Install-Vsix"
+        "Install-VsixByName"
         "Install-VsixPackage"
         "Set-VSVars"
         "Show-VsixExtensions"

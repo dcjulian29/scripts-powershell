@@ -103,7 +103,7 @@ function Get-VSVars {
     return $global:VSVariables
 }
 
-function Install-Vsix {
+function Install-VsixByName {
   param (
       [Parameter(Mandatory=$true)]
       [ValidateNotNullOrEmpty()]
