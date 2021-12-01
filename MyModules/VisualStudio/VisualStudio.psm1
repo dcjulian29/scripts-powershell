@@ -167,7 +167,7 @@ function Install-VsixPackage {
 
         switch ($exitCode) {
           1001 {
-            Write-Output "INFORMATION: The $($Package.BaseName) Extension is already installed."
+            Write-Output "INFORMATION: The '$Package' Extension is already installed."
           }
 
           #1002 extensionmanager.notinstalledexception
@@ -196,7 +196,7 @@ function Install-VsixPackage {
           #2002 vsixinstaller.invalidlicenseexception
 
           2003 {
-            Write-Output "Warning: The $($Package.BaseName) Extension isn't compatible with installed SKUs."
+            Write-Output "Warning: The '$Package' Extension isn't compatible with installed SKUs."
           }
 
           #2004 vsixinstaller.blockingprocessesexception
