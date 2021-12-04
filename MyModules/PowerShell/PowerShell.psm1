@@ -106,6 +106,12 @@ function Import-Assembly {
 
 Set-Alias -Name Load-Assembly -Value Import-Assembly
 
+function Initialize-PSGallery {
+    Import-Module PackageManagement -RequiredVersion 1.0.0.1
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+    Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
+}
+
 function Remove-AliasesFromScript {
     [CmdletBinding()]
     param (
