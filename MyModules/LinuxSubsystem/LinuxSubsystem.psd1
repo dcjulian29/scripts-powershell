@@ -1,21 +1,20 @@
 @{
     RootModule = 'LinuxSubsystem.psm1'
-    ModuleVersion = '2019.9.5.1'
+    ModuleVersion = '2112.9.1'
     GUID = '64252dac-92cf-41fb-9ef7-94e1a42c56ac'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
-        "Disable-WindowsLinuxSubsystem"
-        "Enable-WindowsLinuxSubsystem"
+        "Disable-LinuxSubsystem"
+        "Enable-LinuxSubsystem"
         "Install-KaliLinux"
-        "Install-UbuntuLinux"
+        "Restart-LinuxSubsystem"
         "Start-KaliLinux"
         "Start-UbuntuLinux"
-        "Test-WindowsLinuxSubsystem"
+        "Test-LinuxSubsystem"
         "Uninstall-KaliLinux"
-        "Uninstall-UbuntuLinux"
     )
     AliasesToExport = @(
         "kali"
