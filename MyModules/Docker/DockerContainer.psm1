@@ -316,7 +316,7 @@ function New-DockerContainer {
     }
 
     if ($EntryPoint) {
-        $param += " --entrypoint $EntryPoint"
+        $param += " --entrypoint `"$EntryPoint`""
     }
 
     if ($ReadOnly) {
@@ -337,11 +337,13 @@ function New-DockerContainer {
     $param += " ${Image}:$Tag"
 
     if ($Command) {
-        $param += " $Command"
+        $param += " `"$Command`""
     }
 
-    Write-Verbose $($param.Trim())
-    Invoke-Docker $($param.Trim())
+    $param = $param.Trim()
+
+    Write-Verbose $param
+    Invoke-Docker $param
 }
 
 function Remove-DockerContainer {
