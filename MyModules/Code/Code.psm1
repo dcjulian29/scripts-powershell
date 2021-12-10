@@ -4,7 +4,8 @@ function Import-DevelopmentPowerShellModule {
         [string]$Path = $(Get-DefaultCodeFolder)
     )
 
-    $moduleFolder = (Get-ChildItem -Path $Path -Filter "MyModules" -Recurse).FullName
+    $moduleFolder = (Get-ChildItem -Path $Path -Filter "MyModules" `
+        -Recurse -ErrorAction SilentlyContinue).FullName
 
     if (Test-Path "$moduleFolder\$Module\$Module.psd1") {
         $moduleFile = "$Module.psd1"
