@@ -68,6 +68,18 @@ function Format-FileWithTabIndent {
     }
 }
 
+function Get-AvailableExceptionsList {
+  [AppDomain]::CurrentDomain.GetAssemblies() | ForEach-Object {
+      $_.GetExportedTypes() -match 'Exception' |
+      Where-Object {
+          $_.GetConstructors() -and $(
+          $_exception = New-Object $_.FullName
+          New-Object Management.Automation.ErrorRecord $_exception, ErrorID, OpenError, Target
+          )
+      } | Select-Object -ExpandProperty FullName
+  } 2> $null
+}
+
 Function Get-LastExecutionTime {
     $command = Get-History -Count 1
 
@@ -110,6 +122,75 @@ function Initialize-PSGallery {
     Import-Module PackageManagement -RequiredVersion 1.0.0.1
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
     Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
+}
+
+function New-ErrorRecord {
+  [CmdletBinding(DefaultParameterSetName="Message")]
+  param(
+    [Parameter(Mandatory=$True, Position=0, ParameterSetName="Message")]
+    [string] $Message,
+
+    [Parameter(Mandatory=$True, Position=1, ParameterSetName="Message")]
+    [string] $ExceptionType,
+
+    [Parameter(Mandatory=$True, Position=2, ParameterSetName="Message")]
+    [Parameter(Mandatory=$True, Position=1, ParameterSetName="Exception")]
+    [Alias("Id")]
+    [string] $ErrorId,
+
+    [Parameter(Mandatory=$True, Position=3, ParameterSetName="Message")]
+    [Parameter(Mandatory=$True, Position=2, ParameterSetName="Exception")]
+    [Alias('Category')]
+    [ValidateSet('NotSpecified', 'OpenError', 'CloseError', 'DeviceError',
+                 'DeadlockDetected', 'InvalidArgument', 'InvalidData',
+                 'InvalidOperation', 'InvalidResult', 'InvalidType',
+                 'MetadataError', 'NotImplemented', 'NotInstalled',
+                 'ObjectNotFound', 'OperationStopped', 'OperationTimeout',
+                 'SyntaxError', 'ParserError', 'PermissionDenied', 'ResourceBusy',
+                 'ResourceExists', 'ResourceUnavailable', 'ReadError',
+                 'WriteError', 'FromStdErr', 'SecurityError')]
+    [System.Management.Automation.ErrorCategory] $ErrorCategory,
+
+    [Parameter(Mandatory=$False, ParameterSetName="Message")]
+    [Parameter(Mandatory=$False, ParameterSetName="Exception")]
+    [object] $TargetObject,
+
+    [Parameter(Mandatory=$True, Position = 0, ParameterSetName="Exception")]
+    [Exception] $Exception,
+
+    [Parameter(Mandatory=$False, ParameterSetName="Message")]
+    [Exception] $InnerException
+  )
+
+  BEGIN {
+    $exceptions = Get-AvailableExceptionsList
+  }
+
+  PROCESS {
+    # trap for any of the "exceptional" Exception objects.
+    trap [Microsoft.PowerShell.Commands.NewObjectCommand] {
+      $PSCmdlet.ThrowTerminatingError($_)
+    }
+
+    if ($PSCmdlet.ParameterSetName -eq 'Message') {
+      if ($exceptions -match "^(System\.)?$ExceptionType$") {
+        $Exception = if ($Message -and $InnerException) {
+            New-Object $ExceptionType $Message, $InnerException
+        } elseif ($Message) {
+            New-Object $ExceptionType $Message
+        } else {
+            New-Object $ExceptionType
+        }
+      } else {
+        $PSCmdlet.ThrowTerminatingError((New-Object Management.Automation.ErrorRecord `
+          (New-Object System.InvalidOperationException "Exception '$ExceptionType' is not available."), `
+          'UnknownException', 'InvalidOperation', 'Get-AvailableExceptionsList'))
+      }
+    }
+
+    New-Object Management.Automation.ErrorRecord $Exception, $ErrorID,
+      $ErrorCategory, $TargetObject
+  }
 }
 
 function Remove-AliasesFromScript {
