@@ -151,8 +151,8 @@ function New-ErrorRecord {
                  'WriteError', 'FromStdErr', 'SecurityError')]
     [System.Management.Automation.ErrorCategory] $ErrorCategory,
 
-    [Parameter(Mandatory=$False, ParameterSetName="Message")]
-    [Parameter(Mandatory=$False, ParameterSetName="Exception")]
+    [Parameter(Mandatory=$False, Position=4, ParameterSetName="Message")]
+    [Parameter(Mandatory=$False, Position=3, ParameterSetName="Exception")]
     [object] $TargetObject,
 
     [Parameter(Mandatory=$True, Position = 0, ParameterSetName="Exception")]
