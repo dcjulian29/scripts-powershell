@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2024.22.1'
+    ModuleVersion = '2112.15.1'
     GUID = '6aa69e5b-f92d-41ba-947b-7840504d31da'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -21,7 +21,6 @@
         "Find-MSBuild"
         "Find-StyleCopSettingsEditor"
         "Import-DevelopmentPowerShellModule"
-        "Import-DevelopmentPowerShellModules"
         "Invoke-ArchiveProject"
         "Invoke-BuildProject"
         "Invoke-CleanAllProjects"
