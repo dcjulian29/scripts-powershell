@@ -84,10 +84,9 @@ function Get-DockerServerEngine {
 function Get-FilePathForContainer {
   [CmdletBinding()]
   param (
-      [Parameter()]
-      [string] $Path,
-      [switch] $Absolute,
-      [switch] $MustBeChild
+    [Parameter(Mandatory=$true)]
+    [string] $Path,
+    [switch] $MustBeChild
   )
 
   if (-not (Test-Path -Path $Path -PathType Leaf)) {
@@ -104,9 +103,9 @@ function Get-FilePathForContainer {
 function Get-PathForContainer {
   [CmdletBinding()]
   param (
-      [Parameter()]
-      [string] $Path,
-      [switch] $MustBeChild
+    [Parameter(Mandatory=$true)]
+    [string] $Path,
+    [switch] $MustBeChild
   )
 
   if (-not (Test-Path -Path $Path)) {
