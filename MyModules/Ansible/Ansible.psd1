@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2105.1.1'
+    ModuleVersion = '2105.12.1'
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -8,8 +8,12 @@
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
-      "Invoke-AnsibleContainer"
+      "Get-AnsibleConfig"
+      "Get-AnsibleConfigDump"
+      "Get-AnsibleConfigFile"
       "Invoke-Ansible"
+      "Invoke-AnsibleConfig"
+      "Invoke-AnsibleContainer"
       "Invoke-AnsibleDoc"
       "Invoke-AnsibleGalaxy"
       "Invoke-AnsibleInventory"
@@ -22,6 +26,7 @@
     )
     AliasesToExport = @(
       "ansible"
+      "ansible-config"
       "ansible-doc"
       "ansible-encrypt"
       "ansible-facts"
@@ -29,8 +34,8 @@
       "ansible-inventory"
       "ansible-lint"
       "ansible-playbook"
-      "ansible-vars"
       "ansible-variables"
+      "ansible-vars"
       "ansible-vault"
     )
 }
