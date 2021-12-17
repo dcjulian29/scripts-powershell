@@ -1,16 +1,22 @@
 @{
-    ModuleVersion = '2105.12.1'
+    ModuleVersion = '2105.12.2'
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
     RootModule = 'Ansible.psm1'
-    NestedModules = @()
+    NestedModules = @(
+      "AnsibleInventory.psm1"
+    )
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
       "Get-AnsibleConfig"
       "Get-AnsibleConfigDump"
       "Get-AnsibleConfigFile"
+      "Get-AnsibleInventoryGraph"
+      "Get-AnsibleInventoryAsJson"
+      "Get-AnsibleInventoryAsToml"
+      "Get-AnsibleInventoryAsYaml"
       "Invoke-Ansible"
       "Invoke-AnsibleConfig"
       "Invoke-AnsibleContainer"
