@@ -73,12 +73,6 @@ function Invoke-AnsibleGalaxy {
 
 Set-Alias -Name ansible-galaxy -Value Invoke-AnsibleGalaxy
 
-function Invoke-AnsibleLint {
-    Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-lint" -Command "$args"
-}
-
-Set-Alias -Name ansible-lint -Value Invoke-AnsibleLint
-
 function Invoke-AnsiblePlaybook {
     Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-playbook" -Command "$args"
 }
