@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2105.12.3'
+    ModuleVersion = '2112.17.1'
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -27,6 +27,8 @@
       "Invoke-AnsibleGalaxy"
       "Invoke-AnsibleInventory"
       "Invoke-AnsibleLint"
+      "Invoke-AnsibleLintPlaybook"
+      "Invoke-AnsibleLintRole"
       "Invoke-AnsiblePlaybook"
       "Invoke-AnsibleVault"
       "Show-AnsibleFacts"
@@ -42,6 +44,8 @@
       "ansible-galaxy"
       "ansible-inventory"
       "ansible-lint"
+      "ansible-lint-playbook"
+      "ansible-lint-role"
       "ansible-playbook"
       "ansible-variables"
       "ansible-vars"
