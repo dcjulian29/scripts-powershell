@@ -81,6 +81,57 @@ function Get-DockerServerEngine {
     }
 }
 
+function Get-FilePathForContainer {
+  [CmdletBinding()]
+  param (
+      [Parameter()]
+      [string] $Path,
+      [switch] $Absolute,
+      [switch] $MustBeChild
+  )
+
+  if (-not (Test-Path -Path $Path -PathType Leaf)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+          -Message "File does not exists or object is not a file!" `
+          -ExceptionType "System.Management.Automation.ItemNotFoundException" `
+          -ErrorId "ResourceUnavailable" -ErrorCategory "ResourceUnavailable"))
+  }
+
+  Get-PathForContainer -Path $Path -Absolute:$Absolute.IsPresent `
+    -MustBeChild:$MustBeChild.IsPresent
+}
+
+function Get-PathForContainer {
+  [CmdletBinding()]
+  param (
+      [Parameter()]
+      [string] $Path,
+      [switch] $MustBeChild
+  )
+
+  if (-not (Test-Path -Path $Path)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+          -Message "Path does not exists!" `
+          -ExceptionType "System.Management.Automation.ItemNotFoundException" `
+          -ErrorId "ResourceUnavailable"  -ErrorCategory "ResourceUnavailable"))
+  }
+
+  $Path = (Resolve-Path -Path $Path).Path
+
+  if ($MustBeChild) {
+    if (-not (([IO.Path]::GetDirectoryName($Path)).StartsWith([IO.Path]::GetFullPath($pwd)))) {
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+            -Message "Path is not a child of the current directory!" `
+            -ExceptionType "System.Management.Automation.ItemNotFoundException" `
+            -ErrorId "ResourceUnavailable" -ErrorCategory "ResourceUnavailable"))
+    }
+
+    return $Path.Replace("$([IO.Path]::GetFullPath($pwd))\", "./").Replace('\', '/')
+  }
+
+  return ($Path -replace "([A-Za-z]):", "/mnt/c").Replace('\', '/')
+}
+
 function Invoke-AlpineContainer {
     if (Test-DockerLinuxEngine) {
         New-DockerContainer -Image "alpine" -Tag "latest" -Interactive -Name "alpine_shell"
