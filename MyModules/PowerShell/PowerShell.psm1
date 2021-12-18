@@ -69,15 +69,17 @@ function Format-FileWithTabIndent {
 }
 
 function Get-AvailableExceptionsList {
-  [AppDomain]::CurrentDomain.GetAssemblies() | ForEach-Object {
-      $_.GetExportedTypes() -match 'Exception' |
-      Where-Object {
-          $_.GetConstructors() -and $(
-          $_exception = New-Object $_.FullName
-          New-Object Management.Automation.ErrorRecord $_exception, ErrorID, OpenError, Target
-          )
-      } | Select-Object -ExpandProperty FullName
-  } 2> $null
+  $exceptions = @()
+
+  foreach ($assembly in [AppDomain]::CurrentDomain.GetAssemblies()) {
+    foreach ($className in ($assembly.ExportedTypes -match '.*Exception$')) {
+      if ($null -ne $className.DeclaredConstructors) {
+        $exceptions += $className.FullName
+      }
+    }
+  }
+
+  return $exceptions | Sort-Object -Unique
 }
 
 Function Get-LastExecutionTime {
