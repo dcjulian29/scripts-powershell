@@ -1,3 +1,5 @@
+$script:AnsibleDir = "/opt/ansible/bin"
+
 function executeInventory([string]$Action, [string]$InventoryFile) {
   $Action = $action.Trim()
 
