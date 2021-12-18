@@ -96,8 +96,7 @@ function Get-FilePathForContainer {
           -ErrorId "ResourceUnavailable" -ErrorCategory "ResourceUnavailable"))
   }
 
-  Get-PathForContainer -Path $Path -Absolute:$Absolute.IsPresent `
-    -MustBeChild:$MustBeChild.IsPresent
+  Get-PathForContainer -Path $Path -MustBeChild:$MustBeChild.IsPresent
 }
 
 function Get-PathForContainer {
@@ -110,7 +109,7 @@ function Get-PathForContainer {
 
   if (-not (Test-Path -Path $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-          -Message "Path does not exists!" `
+          -Message "Path '$Path' does not exists!" `
           -ExceptionType "System.Management.Automation.ItemNotFoundException" `
           -ErrorId "ResourceUnavailable"  -ErrorCategory "ResourceUnavailable"))
   }
@@ -120,7 +119,7 @@ function Get-PathForContainer {
   if ($MustBeChild) {
     if (-not (([IO.Path]::GetDirectoryName($Path)).StartsWith([IO.Path]::GetFullPath($pwd)))) {
       $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-            -Message "Path is not a child of the current directory!" `
+            -Message "Path '$Path' is not a child of the current directory!" `
             -ExceptionType "System.Management.Automation.ItemNotFoundException" `
             -ErrorId "ResourceUnavailable" -ErrorCategory "ResourceUnavailable"))
     }
