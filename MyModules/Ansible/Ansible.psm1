@@ -38,7 +38,7 @@ function Invoke-AnsibleContainer {
       Image = "dcjulian29/ansible"
       Tag = "latest"
       Interactive = $true
-      Name = "ansible_$((New-Guid).Guid)"
+      Name = "ansible_shell"
       Volume = @(
         "${workingPath}:/etc/ansible"
         "/mnt/c/etc/ssh/wsl:/root/.ssh"
