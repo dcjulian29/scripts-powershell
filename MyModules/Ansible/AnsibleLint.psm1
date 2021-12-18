@@ -1,3 +1,5 @@
+$script:AnsibleDir = "/opt/ansible/bin"
+
 function executeAnsibleLint {
   param (
     [string] $LintType,
@@ -60,8 +62,63 @@ function executeAnsibleLint {
     }
   }
 
+  if ($Tag.Count -gt 0) {
+    $params += "-t $($Tag -Join ',') "
+  }
 
-  Write-Output "Invoke-AnsibleLint $($params.Trim())"
+  if ($SkipRule.Count -gt 0) {
+    $params += "-x $($SkipRule -Join ',') "
+  }
+
+  if ($WarnRule.Count -gt 0) {
+    $params += "-w $($WarnRule -Join ',') "
+  }
+
+  if ("" -ne $ConfigFile) {
+    $params += "- c '$(Get-FilePathForContainer -Path $ConfigFile)' "
+  }
+
+  if ($NoColor) {
+    $params += "--nocolor "
+  }
+
+  if ($ExcludePath.Count -gt 0) {
+    $params += "--exclude "
+    foreach ($path in $ExcludePath) {
+      $params += "'$(Get-PathForContainer -Path $path -MustBeChild)',"
+    }
+
+    $params = $params.Substring(0, $params.Length -1) + " "
+  }
+
+  if ($LintItem.Count -gt 0) {
+    foreach ($item in $LintItem) {
+      if ("role" -eq $LintType) {
+        if (Test-Path "roles/$item") {
+          $params += Get-PathForContainer -Path "roles/$item" -MustBeChild
+        } else {
+          $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+            -Message "Role does not exists!" `
+            -ExceptionType "System.Management.Automation.ItemNotFoundException" `
+            -ErrorId "ResourceUnavailable" -ErrorCategory "ResourceUnavailable"))
+        }
+      }
+
+      if ("playbook" -eq $LintType) {
+        if (Test-Path "playbook/$item") {
+          $params += Get-PathForContainer -Path "playbook/$item" -MustBeChild
+        } else {
+          $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+            -Message "Playbook does not exists!" `
+            -ExceptionType "System.Management.Automation.ItemNotFoundException" `
+            -ErrorId "ResourceUnavailable" -ErrorCategory "ResourceUnavailable"))
+        }
+      }
+    }
+  }
+
+  Write-Verbose $params
+  Invoke-AnsibleLint $params.Trim()
 }
 
 #------------------------------------------------------------------------------
