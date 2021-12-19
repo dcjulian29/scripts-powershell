@@ -7,10 +7,12 @@
     NestedModules = @(
       "AnsibleInventory.psm1"
       "AnsibleLint.psm1"
+      "AnsiblePlaybook.psm1"
     )
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+      "Confirm-AnsiblePlaybookSyntax"
       "Get-AnsibleConfig"
       "Get-AnsibleConfigDump"
       "Get-AnsibleConfigFile"
@@ -20,6 +22,9 @@
       "Get-AnsibleInventoryAsYaml"
       "Get-AnsibleLintRules"
       "Get-AnsibleLintTags"
+      "Get-AnsiblePlaybookHosts"
+      "Get-AnsiblePlaybookTags"
+      "Get-AnsiblePlaybookTasks"
       "Invoke-Ansible"
       "Invoke-AnsibleConfig"
       "Invoke-AnsibleContainer"
@@ -33,6 +38,7 @@
       "Invoke-AnsibleVault"
       "Show-AnsibleFacts"
       "Show-AnsibleVariables"
+      "Test-AnsiblePlaybookSyntax"
       "Protect-AnsibleVariable"
     )
     AliasesToExport = @(
@@ -47,8 +53,15 @@
       "ansible-lint-playbook"
       "ansible-lint-role"
       "ansible-playbook"
+      "ansible-playbook-hosts"
+      "ansible-playbook-syntaxcheck"
+      "ansible-playbook-tags"
+      "ansible-playbook-tasks"
+      "ansible-playbook-test"
       "ansible-variables"
       "ansible-vars"
       "ansible-vault"
+      "Check-AnsiblePlaybookSyntax"
+      "Validate-AnsiblePlaybookSyntax"
     )
 }
