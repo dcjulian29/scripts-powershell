@@ -1,5 +1,3 @@
-$script:AnsibleDir = "/opt/ansible/bin"
-
 function executeInventory([string]$Action, [string]$InventoryFile) {
   $Action = $action.Trim()
 
@@ -49,10 +47,3 @@ function Get-AnsibleInventoryAsYaml {
 
   executeInventory '--list --yaml' $InventoryFile
 }
-
-function Invoke-AnsibleInventory {
-  $params = "$args"
-  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-inventory" -Command $params
-}
-
-Set-Alias -Name ansible-inventory -Value Invoke-AnsibleInventory

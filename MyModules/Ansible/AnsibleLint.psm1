@@ -1,5 +1,3 @@
-$script:AnsibleDir = "/opt/ansible/bin"
-
 function executeAnsibleLint {
   param (
     [string] $LintType,
@@ -130,12 +128,6 @@ function Get-AnsibleLintRules {
 function Get-AnsibleLintTags {
   Invoke-AnsibleLint -T
 }
-
-function Invoke-AnsibleLint {
-    Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-lint" -Command "$args"
-}
-
-Set-Alias -Name ansible-lint -Value Invoke-AnsibleLint
 
 function Invoke-AnsibleLintRole {
   [CmdletBinding()]
