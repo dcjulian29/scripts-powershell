@@ -1,76 +1,99 @@
-function Invoke-AnsibleContainer {
-    [CmdletBinding()]
-    param (
-        [string]$EntryPoint,
-        [string]$Command
-    )
+$script:AnsibleDir = "/opt/ansible/bin"
 
-    if (Test-DockerLinuxEngine) {
-        $workingPath = "/" + (($pwd.Path -replace "\\","/") -replace ":","").ToLower().Trim("/")
+function Get-AnsibleConfig {
+  Invoke-AnsibleConfig list
+}
 
-        $params = @{
-          Image = "dcjulian29/ansible"
-          Tag = "latest"
-          Interactive = $true
-          Name = "ansible_shell"
-          Volume = @(
-            "${workingPath}:/etc/ansible"
-            "/mnt/c/etc/ssh/wsl:/root/.ssh"
-          )
-        }
+function Get-AnsibleConfigDump {
+  Invoke-AnsibleConfig dump
+}
 
-        if ($EntryPoint) {
-          $params.Add("EntryPoint", $EntryPoint)
-        }
-
-        if ($Command) {
-          $params.Add("Command", $Command)
-        }
-
-        New-DockerContainer @params
-    } else {
-        Write-Error "Ansible requires the Linux Docker Engine!" -Category ResourceUnavailable
-    }
+function Get-AnsibleConfigFile {
+  Invoke-AnsibleConfig view
 }
 
 function Invoke-Ansible {
-    Invoke-AnsibleContainer -EntryPoint "/usr/bin/ansible" -Command "$args"
+  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible" -Command "$args"
 }
 
 Set-Alias -Name ansible -Value Invoke-Ansible
 
+function Invoke-AnsibleConfig {
+  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-config" -Command "$args"
+}
+
+Set-Alias -Name ansible-config -Value Invoke-AnsibleConfig
+
+function Invoke-AnsibleContainer {
+  [CmdletBinding()]
+  param (
+    [string]$EntryPoint,
+    [string]$Command
+  )
+
+  if (Test-DockerLinuxEngine) {
+    $workingPath = "/" + (($pwd.Path -replace "\\","/") -replace ":","").ToLower().Trim("/")
+
+    $params = @{
+      Image = "dcjulian29/ansible"
+      Tag = "latest"
+      Interactive = $true
+      Name = "ansible_shell"
+      Volume = @(
+        "${workingPath}:/etc/ansible"
+        "/mnt/c/etc/ssh/wsl:/root/.ssh"
+      )
+    }
+
+    if ($EntryPoint) {
+      $params.Add("EntryPoint", $EntryPoint)
+    }
+
+    if ($Command) {
+      $params.Add("Command", "`"$Command`"")
+    }
+
+    $params.GetEnumerator().ForEach({ Write-Verbose "$($_.Name)=$($_.Value)" })
+
+    New-DockerContainer @params
+  } else {
+    Write-Error "Ansible module requires the Linux Docker Engine!" -Category ResourceUnavailable
+  }
+}
+
 function Invoke-AnsibleDoc {
-    Invoke-AnsibleContainer -EntryPoint "/usr/bin/ansible-doc" -Command "$args"
+  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-doc" -Command "$args"
 }
 
 Set-Alias -Name ansible-doc -Value Invoke-AnsibleDoc
 
 function Invoke-AnsibleGalaxy {
-    Invoke-AnsibleContainer -EntryPoint "/usr/bin/ansible-galaxy" -Command "$args"
+  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-galaxy" -Command "$args"
 }
 
 Set-Alias -Name ansible-galaxy -Value Invoke-AnsibleGalaxy
 
 function Invoke-AnsibleInventory {
-    Invoke-AnsibleContainer -EntryPoint "/usr/bin/ansible-inventory" -Command "$args"
+  $params = "$args"
+  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-inventory" -Command $params
 }
 
 Set-Alias -Name ansible-inventory -Value Invoke-AnsibleInventory
 
 function Invoke-AnsibleLint {
-    Invoke-AnsibleContainer -EntryPoint "/usr/bin/ansible-lint" -Command "$args"
+  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-lint" -Command "$args"
 }
 
 Set-Alias -Name ansible-lint -Value Invoke-AnsibleLint
 
 function Invoke-AnsiblePlaybook {
-    Invoke-AnsibleContainer -EntryPoint "/usr/bin/ansible-playbook" -Command "$args"
+    Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-playbook" -Command "$args"
 }
 
 Set-Alias -Name ansible-playbook -Value Invoke-AnsiblePlaybook
 
 function Invoke-AnsibleVault {
-    Invoke-AnsibleContainer -EntryPoint "/usr/bin/ansible-vault" -Command "$args"
+    Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-vault" -Command "$args"
 }
 
 Set-Alias -Name ansible-vault -Value Invoke-AnsibleVault
