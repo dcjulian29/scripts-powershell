@@ -330,7 +330,7 @@ function New-DockerContainer {
 
     if (($Volume) -and ($Volume.Count -gt 0)) {
       for ($i = 0; $i -lt $Volume.Count; $i++) {
-        $param += " --volume `"$($Volume[$i])`""
+        $param += " --volume $($Volume[$i])"
       }
     }
 

@@ -59,6 +59,25 @@ function Get-DockerDiskUsage {
 
 Set-Alias -Name docker-diskusage -Value Get-DockerDiskUsage
 
+function Get-DockerMountPoint {
+  [CmdletBinding()]
+  param (
+      [Parameter(Mandatory=$true)]
+      [string] $Path,
+      [switch] $UnixStyle
+  )
+
+  $Path = (Resolve-Path $Path).Path
+
+  if ($UnixStyle) {
+    $driveLetter = (Split-Path $Path -Qualifier).Replace(':', '').ToLower()
+
+    return "/mnt/$driveLetter/" + ($Path -replace "${driveLetter}:","").Replace("\", "/").Trim("/")
+  } else {
+    return $Path.Replace("\", "/").Trim("/")
+  }
+}
+
 function Get-DockerServerEngine {
     $version = Invoke-Docker "version"
 
