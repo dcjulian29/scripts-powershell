@@ -40,8 +40,8 @@ function Invoke-AnsibleContainer {
       Interactive = $true
       Name = "ansible_shell"
       Volume = @(
-        "${workingPath}:/etc/ansible"
-        "/mnt/c/etc/ssh/wsl:/root/.ssh"
+        "$(Get-DockerMountPoint $PWD):/etc/ansible"
+        "$(Get-DockerMountPoint "${env:SYSTEMDRIVE}/etc/ssh/wsl"):/root/.ssh"
       )
     }
 
