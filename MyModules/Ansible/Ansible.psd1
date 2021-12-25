@@ -1,10 +1,11 @@
 @{
-    ModuleVersion = '2112.17.1'
+    ModuleVersion = '2112.23.1'
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
     RootModule = 'Ansible.psm1'
     NestedModules = @(
+      "AnsibleDev.psm1"
       "AnsibleInventory.psm1"
       "AnsibleLint.psm1"
       "AnsiblePlaybook.psm1"
@@ -30,24 +31,37 @@
       "Invoke-AnsibleContainer"
       "Invoke-AnsibleDoc"
       "Invoke-AnsibleGalaxy"
+      "Invoke-AnsibleHostCommand"
       "Invoke-AnsibleInventory"
       "Invoke-AnsibleLint"
       "Invoke-AnsibleLintPlaybook"
       "Invoke-AnsibleLintRole"
+      "Invoke-AnsiblePlayBase"
       "Invoke-AnsiblePlaybook"
+      "Invoke-AnsiblePlayDev"
+      "Invoke-AnsiblePlayTest"
       "Invoke-AnsibleVault"
+      "Ping-AnsibleHost"
+      "Protect-AnsibleVariable"
+      "Reset-AnsibleEnvironmentDev"
+      "Reset-AnsibleEnvironmentTest"
       "Show-AnsibleFacts"
       "Show-AnsibleVariables"
       "Test-AnsiblePlaybookSyntax"
-      "Protect-AnsibleVariable"
+      "Update-AnsibleHost"
     )
     AliasesToExport = @(
       "ansible"
       "ansible-config"
+      "ansible-dev-reset"
+      "ansible-dev-play"
       "ansible-doc"
       "ansible-encrypt"
       "ansible-facts"
       "ansible-galaxy"
+      "ansible-hosts-exec"
+      "ansible-hosts-ping"
+      "ansible-hosts-update"
       "ansible-inventory"
       "ansible-lint"
       "ansible-lint-playbook"
@@ -58,10 +72,21 @@
       "ansible-playbook-tags"
       "ansible-playbook-tasks"
       "ansible-playbook-test"
+      "ansible-play-base"
+      "ansible-play-dev"
+      "ansible-play-test"
+      "ansible-reset-dev"
+      "ansible-reset-test"
+      "ansible-test-play"
+      "ansible-test-reset"
       "ansible-variables"
       "ansible-vars"
       "ansible-vault"
       "Check-AnsiblePlaybookSyntax"
       "Validate-AnsiblePlaybookSyntax"
+      "ping-hosts.sh"
+      "play-base.sh"
+      "play-dev.sh"
+      "update-servers.sh"
     )
 }
