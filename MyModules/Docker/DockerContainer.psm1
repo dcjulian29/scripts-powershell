@@ -43,20 +43,20 @@ function Get-DockerContainer {
 
                 $container = New-Object -TypeName PSObject
 
-                $container | Add-Member -MemberType NoteProperty -Name Id -Value $result.Matches[0].Value
-                $container | Add-Member -MemberType NoteProperty -Name Image -Value $result.Matches[1].Value
-                $container | Add-Member -MemberType NoteProperty -Name Command -Value  $result.Matches[2].Value
-                $container | Add-Member -MemberType NoteProperty -Name Created -Value $result.Matches[3].Value
-                $container | Add-Member -MemberType NoteProperty -Name Status -Value $result.Matches[4].Value
+                $container | Add-Member -MemberType NoteProperty -Name Id -Value $result.Matches[0].Value.Trim()
+                $container | Add-Member -MemberType NoteProperty -Name Image -Value $result.Matches[1].Value.Trim()
+                $container | Add-Member -MemberType NoteProperty -Name Command -Value  $result.Matches[2].Value.Trim()
+                $container | Add-Member -MemberType NoteProperty -Name Created -Value $result.Matches[3].Value.Trim()
+                $container | Add-Member -MemberType NoteProperty -Name Status -Value $result.Matches[4].Value.Trim()
 
                 if ($result.Matches.Length -eq 8) {
-                    $ports = $result.Matches[5].Value
-                    $name = $result.Matches[6].Value
-                    $size = $result.Matches[7].Value
+                    $ports = $result.Matches[5].Value.Trim()
+                    $name = $result.Matches[6].Value.Trim()
+                    $size = $result.Matches[7].Value.Trim()
                 } else {
                     $ports = $null
-                    $name = $result.Matches[5].Value
-                    $size = $result.Matches[6].Value
+                    $name = $result.Matches[5].Value.Trim()
+                    $size = $result.Matches[6].Value.Trim()
                 }
 
                 $container | Add-Member -MemberType NoteProperty -Name Ports -Value $ports
@@ -349,13 +349,11 @@ function New-DockerContainer {
 function Remove-DockerContainer {
     [CmdletBinding(DefaultParameterSetName="ID")]
     param (
-        [Parameter(Position = 0, Mandatory = $true, ParameterSetName = "ID")]
+        [Parameter(ParameterSetName="Container", ValueFromPipeline=$true)]
+        [psobject] $Container,
+        [Parameter(Position = 0, Mandatory = $true, ParameterSetName = "ID", ValueFromPipeline = $true)]
         [Alias("Name")]
         [string]$Id,
-        [Parameter(Position = 0, ParameterSetName = "All")]
-        [Parameter(Position = 1, ParameterSetName = "ID")]
-        [Parameter(Position = 0, ParameterSetName = "Other")]
-        [int]$TimeOut = 15,
         [Parameter(ParameterSetName = "All")]
         [switch]$All,
         [Parameter(ParameterSetName = "Other")]
@@ -363,9 +361,16 @@ function Remove-DockerContainer {
         [Parameter(ParameterSetName = "Other")]
         [switch]$NonRunning
     )
-
     if ($PSCmdlet.ParameterSetName -eq "ID") {
-        Invoke-Docker "rm $Id -t $TimeOut"
+      if ($Id.Length -gt 0) {
+        Invoke-Docker "rm --volumes --force $Id"
+      }
+    }
+
+    if ($PSCmdlet.ParameterSetName -eq "Container") {
+      if ($Container.Id.Length -gt 0) {
+        Invoke-Docker "rm --volumes --force $($Container.Id)"
+      }
     }
 
     if ($PSCmdlet.ParameterSetName -eq "All") {
@@ -376,14 +381,14 @@ function Remove-DockerContainer {
         if ($Exited) {
             (Get-DockerContainerState | Where-Object { $_.State -eq 'exited' }).Id | `
                 ForEach-Object {
-                  Invoke-Docker "rm -v $_"
+                  Invoke-Docker "rm  --volumes --force $_"
                 }
         }
 
         if ($NonRunning) {
             (Get-DockerContainerState | Where-Object { $_.State -ne 'running' }).Id | `
               ForEach-Object {
-                Invoke-Docker "rm -v $_"
+                Invoke-Docker "rm  --volumes --force $_"
               }
         }
     }
