@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2112.23.1'
+    ModuleVersion = '2112.25.1'
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -13,6 +13,7 @@
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+      "Assert-AnsibleProvision"
       "Confirm-AnsiblePlaybookSyntax"
       "Get-AnsibleConfig"
       "Get-AnsibleConfigDump"
@@ -40,6 +41,7 @@
       "Invoke-AnsiblePlaybook"
       "Invoke-AnsiblePlayDev"
       "Invoke-AnsiblePlayTest"
+      "Invoke-AnsibleProvision"
       "Invoke-AnsibleVault"
       "Ping-AnsibleHost"
       "Protect-AnsibleVariable"
@@ -48,11 +50,14 @@
       "Show-AnsibleFacts"
       "Show-AnsibleVariables"
       "Test-AnsiblePlaybookSyntax"
+      "Test-AnsibleProvision"
       "Update-AnsibleHost"
+      "Update-AnsibleProvision"
     )
     AliasesToExport = @(
       "ansible"
       "ansible-config"
+      "ansible-container"
       "ansible-dev-reset"
       "ansible-dev-play"
       "ansible-doc"
@@ -75,6 +80,10 @@
       "ansible-play-base"
       "ansible-play-dev"
       "ansible-play-test"
+      "ansible-provision-check"
+      "ansible-provision-server"
+      "ansible-provision-test"
+      "ansible-provision-update"
       "ansible-reset-dev"
       "ansible-reset-test"
       "ansible-test-play"
@@ -87,6 +96,12 @@
       "ping-hosts.sh"
       "play-base.sh"
       "play-dev.sh"
+      "provision-check.sh"
+      "provision-server.sh"
+      "provision-test.sh"
+      "provision-update.sh"
+      "reset-dev.sh"
+      "reset-test.sh"
       "update-servers.sh"
     )
 }

@@ -58,6 +58,30 @@ function returnAnsibleRoot {
 
 #-----------------------------------------------------------------------------------------------------
 
+function Assert-AnsibleProvision {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory=$true)]
+    [string] $ComputerName
+  )
+
+  ensureAnsibleRoot
+
+  $param  = "--ask-vault-password --check --diff"
+  $param += " -i ./inventories/hosts.ini ./playbooks/$ComputerName.yml"
+
+  Invoke-AnsibleContainer -EntryPoint "ansible-playbook" `
+    -Command "$param" -EnvironmentVariables @{
+      "ANSIBLE_HOST_KEY_CHECKING" = "true"
+      "ANSIBLE_DISPLAY_OK_HOSTS" = "no"
+      "ANSIBLE_DISPLAY_SKIPPED_HOSTS" = "no"
+    }
+
+  returnAnsibleRoot
+}
+
+Set-Alias -Name ansible-provision-check -Value Assert-AnsibleProvision
+
 function Invoke-AnsibleHostCommand {
   [CmdletBinding()]
   param (
@@ -155,6 +179,38 @@ function Invoke-AnsiblePlayDev {
 
 Set-Alias -Name ansible-dev-play -Value Invoke-AnsiblePlayDev
 Set-Alias -Name ansible-play-dev -Value Invoke-AnsiblePlayDev
+
+function Invoke-AnsibleProvision {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory=$true)]
+    [string] $ComputerName
+  )
+
+  ensureAnsibleRoot
+
+  $logfile = "$(Get-LogFileName -Suffix "provision-$ComputerName")"
+  $fileName = Split-Path -Path $logfile -Leaf
+  $param  = "--ask-vault-password --ask-become-pass -v"
+  $param += " -i ./inventories/hosts.ini ./playbooks/$ComputerName.yml"
+
+  $ep  = "#!/bin/bash`n`nansible-playbook $param | tee .tmp/$fileName`n"
+
+  Set-Content -Path ".tmp/entrypoint.sh" -Value $ep -Force -NoNewline
+
+  Invoke-AnsibleContainer -EntryScript ".tmp/entrypoint.sh" `
+    -EnvironmentVariables @{
+      "ANSIBLE_NOCOLOR" = "1"
+    }
+
+  if (Test-Path .tmp/$fileName) {
+    Move-Item -Path .tmp/$fileName -Destination $logfile
+  }
+
+  returnAnsibleRoot
+}
+
+Set-Alias -Name ansible-provision-server -Value Invoke-AnsibleProvision
 
 function Invoke-AnsiblePlayTest {
   [CmdletBinding()]
@@ -294,6 +350,35 @@ function Reset-AnsibleEnvironmentTest {
 Set-Alias "ansible-test-reset" -Value Reset-AnsibleEnvironmentTest
 Set-Alias "ansible-reset-test" -Value Reset-AnsibleEnvironmentTest
 
+function Test-AnsibleProvision {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory=$true)]
+    [string] $ComputerName,
+    [switch] $NoRecreate
+  )
+
+  ensureAnsibleRoot
+
+  if (-not ($NoRecreate)) {
+    Remove-AnsibleVagrantHosts
+
+    & vagrant up ubuntu2004
+  }
+
+  checkReset 5
+
+  Invoke-AnsiblePlaybook $("--ask-vault-password -v " `
+    + "-e `"ansible_host=10.0.0.5`" " `
+    + "-e `"ansible_ssh_private_key_file=~/.ssh/insecure_private_key`" " `
+    + "-e `"ansible_user=vagrant`" " `
+    + "-i ./inventories/hosts.ini ./playbooks/$ComputerName.yml")
+
+  returnAnsibleRoot
+}
+
+Set-Alias -Name ansible-provision-test -Value Test-AnsibleProvision
+
 function Update-AnsibleHost {
   [CmdletBinding()]
   param (
@@ -339,6 +424,47 @@ function Update-AnsibleHost {
 }
 
 Set-Alias -Name ansible-hosts-update -Value Update-AnsibleHost
+
+function Update-AnsibleProvision {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory=$true)]
+    [string] $ComputerName,
+    [switch] $AskBecomePassword
+  )
+
+  ensureAnsibleRoot
+
+  $logfile = "$(Get-LogFileName -Suffix "provision-update-$ComputerName")"
+  $fileName = Split-Path -Path $logfile -Leaf
+  $param = "--ask-vault-password"
+
+  if ($AskBecomePassword) {
+    $param += " --ask-become-pass"
+  }
+
+  $param += " -i ./inventories/hosts.ini ./playbooks/$ComputerName.yml"
+
+  $ep  = "#!/bin/bash`n`nansible-playbook $param | tee .tmp/$fileName`n"
+
+  Set-Content -Path ".tmp/entrypoint.sh" -Value $ep -Force -NoNewline
+
+  Invoke-AnsibleContainer -EntryScript ".tmp/entrypoint.sh" `
+    -EnvironmentVariables @{
+      "ANSIBLE_NOCOLOR" = "1"
+      "ANSIBLE_HOST_KEY_CHECKING" = "true"
+      "ANSIBLE_DISPLAY_OK_HOSTS" = "no"
+      "ANSIBLE_DISPLAY_SKIPPED_HOSTS" = "no"
+    }
+
+  if (Test-Path .tmp/$fileName) {
+    Move-Item -Path .tmp/$fileName -Destination $logfile
+  }
+
+  returnAnsibleRoot
+}
+
+Set-Alias -Name ansible-provision-update -Value Update-AnsibleProvision
 
 #------------------------------------------------------------------------------
 # Temporary as I move from my WSL enviornment to PS/Docker
