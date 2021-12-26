@@ -322,6 +322,97 @@ function Invoke-AnsiblePlayTest {
 Set-Alias -Name ansible-test-play -Value Invoke-AnsiblePlayTest
 Set-Alias -Name ansible-play-test -Value Invoke-AnsiblePlayTest
 
+function New-AnsibleRole {
+  [CmdletBinding()]
+  param (
+      [Parameter(Mandatory=$true)]
+      [string] $Role,
+      [switch] $Force
+  )
+
+  ensureAnsibleRoot
+
+  $Path = (Resolve-Path $PWD).Path + "\roles\$Role"
+
+  Write-Verbose "Role Path: $Path"
+
+  if (Test-Path $Path) {
+    if ($Force) {
+      Remove-Item -Path $Path -Recurse -Force
+    } else {
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "Role exists! Use -Force to replace." `
+      -ExceptionType "System.IO.IOException" `
+      -ErrorId "NewItemIOError" -ErrorCategory "ResourceExists"))
+    }
+  }
+
+  New-Item -Path $Path -ItemType Directory | Out-Null
+  Push-Location -Path $Path
+
+  @("defaults", "files", "handlers", "meta", "tasks", "templates", "vars") `
+    | ForEach-Object {
+      Write-Verbose "Creating directory for $_..."
+      New-Item -Path $_ -ItemType Directory | Out-Null
+    }
+
+  Write-Verbose "Creating template for defaults..."
+  Set-Content -Path "defaults/main.yml" -Value @"
+---
+  # Variable defaults for the role.
+"@
+
+  Write-Verbose "Creating readme for files..."
+  Set-Content -Path "files/README.md" -Value @"
+# Files
+
+File for use with the copy resource.
+Script Files for use with the script resource.
+"@
+
+  Write-Verbose "Creating template for handlers..."
+  Set-Content -Path "handlers/main.yml" -Value @"
+---
+  # Handlers for the role
+"@
+
+  Write-Verbose "Creating template for meta..."
+  Set-Content -Path "meta/main.yml" -Value @"
+---
+  dependencies: []
+"@
+
+  Write-Verbose "Creating template for tasks..."
+  Set-Content -Path "tasks/main.yml" -Value @"
+---
+  # Tasks for the role.
+"@
+
+  Write-Verbose "Creating readme for templates..."
+  Set-Content -Path "templates/README.md" -Value @"
+# Templates
+
+Contains files for use with the template resource.
+
+Templates end in .j2
+"@
+
+  Write-Verbose "Creating template for variables..."
+  Set-Content -Path "vars/main.yml" -Value @"
+---
+  # Variables for the role
+"@
+
+  Pop-Location
+
+  returnAnsibleRoot
+
+  Write-Output "Role '$Role' created."
+}
+
+Set-Alias -Name ansible-role-new -Value New-AnsibleRole
+Set-Alias -Name ansible-new-role -Value New-AnsibleRole
+
 function Ping-AnsibleHost {
   [CmdletBinding()]
   param (
@@ -571,6 +662,7 @@ Set-Alias -Name ansible-provision-update -Value Update-AnsibleProvision
 # Temporary as I move from my WSL enviornment to PS/Docker
 Set-Alias -Name "destroy.sh" -Value Remove-AnsibleVagrantHosts
 Set-Alias -Name "exec-hosts.sh" -Value Invoke-AnsibleHostCommand
+Set-Alias -Name "new-role.sh" -Value New-AnsibleRole
 Set-Alias -Name "ping-hosts.sh" -Value Ping-AnsibleHost
 Set-Alias -Name "play-base.sh" -Value Invoke-AnsiblePlayBase
 Set-Alias -Name "play-dev.sh" -Value Invoke-AnsiblePlayDev
