@@ -51,6 +51,7 @@
       "New-AnsibleRole"
       "Ping-AnsibleHost"
       "Protect-AnsibleVariable"
+      "Remove-AnsibleVagrantHosts"
       "Reset-AnsibleEnvironmentDev"
       "Reset-AnsibleEnvironmentTest"
       "Show-AnsibleFacts"
