@@ -299,10 +299,14 @@ function Update-AnsibleHost {
   param (
     [string] $Role = "updateos",
     [string] $Subset = "all",
-    [string] $InventoryFile = "inventories\vagrant.ini"
+    [string] $InventoryFile = "inventories\vagrant.ini",
+    [switch] $AskBecomePassword
   )
 
   ensureAnsibleRoot
+
+  $logfile = "$(Get-LogFileName -Suffix "ansible-$Role-$Subset")"
+  $fileName = Split-Path -Path $logfile -Leaf
 
   $play  = "---`n- hosts: $Subset`n"
   $play += "  any_errors_fatal: true`n  become: true`n"
@@ -310,12 +314,26 @@ function Update-AnsibleHost {
 
   Set-Content -Path ".tmp/play.yml" -Value $play -Force -NoNewline
 
-  Start-Transcript "$(Get-LogFileName -Suffix "$Role-$Subset")"
+  $param = "-v --limit $Subset"
 
-  Invoke-AnsiblePlaybook $("-v --limit $Subset " `
-    + "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) .tmp/play.yml")
+  if ($AskBecomePassword) {
+    $param += " --ask-become-pass"
+  }
 
-  Stop-Transcript
+  $param += " -i $(Get-FilePathForContainer $InventoryFile -MustBeChild) .tmp/play.yml"
+
+  $ep  = "#!/bin/bash`n`nansible-playbook $param | tee .tmp/$fileName`n"
+
+  Set-Content -Path ".tmp/entrypoint.sh" -Value $ep -Force -NoNewline
+
+  Invoke-AnsibleContainer -EntryScript ".tmp/entrypoint.sh" `
+    -EnvironmentVariables @{
+      "ANSIBLE_NOCOLOR" = "1"
+    }
+
+  if (Test-Path .tmp/$fileName) {
+    Move-Item -Path .tmp/$fileName -Destination $logfile
+  }
 
   returnAnsibleRoot
 }
