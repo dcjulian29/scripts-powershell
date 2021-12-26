@@ -288,6 +288,8 @@ function New-DockerContainer {
         [string]$Name,
         [string]$HostName,
         [string[]]$Volume,
+        [Alias("env")]
+        [hashtable]$EnvironmentVariables,
         [switch]$ReadOnly,
         [string]$EntryPoint,
         [string]$Command,
@@ -323,8 +325,13 @@ function New-DockerContainer {
         $param += " --read-only"
     }
 
+    if (($EnvironmentVariables) -and ($EnvironmentVariables.Count -gt 0)) {
+      foreach ($name in $EnvironmentVariables.Keys) {
+        $param += " -e `"$name=$($EnvironmentVariables[$name])`""
+      }
+    }
+
     # Future Enhancements:
-    # "--env [string[]]$EnvironmentVariables" #Maybe HashTable?
     # "--expose list   (port mapping)"
     # "--network list"
 
