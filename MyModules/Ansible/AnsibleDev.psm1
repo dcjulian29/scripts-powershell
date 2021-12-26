@@ -82,6 +82,69 @@ function Assert-AnsibleProvision {
 
 Set-Alias -Name ansible-provision-check -Value Assert-AnsibleProvision
 
+function Get-AnsibleFacts {
+  param (
+    [string] $ComputerName = "all",
+    [string] $InventoryFile = "./inventories/vagrant.ini",
+    [switch] $OnlyAnsible
+  )
+
+  $play  = "---`n"
+  $play += "- hosts: $ComputerName`n"
+  $play += "  tasks:`n"
+  $play += "    - ansible.builtin.debug:`n"
+  $play += "        msg: `"{{ vars | to_yaml }}`"`n"
+  $play += "      tags:`n"
+  $play += "        - printall`n"
+  $play += "    - ansible.builtin.debug:`n"
+  $play += "        var: ansible_facts`n"
+  $play += "      tags:`n"
+  $play += "        - printfacts`n"
+
+  Set-Content -Path ".tmp/play.yml" -Value $play -Force -NoNewline
+
+  $param = "-v --limit $ComputerName --tags "
+
+  if ($OnlyAnsible) {
+    $param += "printfacts "
+  } else {
+    $param += "printall "
+  }
+
+  $param += "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) .tmp/play.yml"
+
+  Invoke-AnsiblePlaybook $param
+}
+
+Set-Alias -Name ansible-show-facts -Value Get-AnsibleFacts
+
+function Get-AnsibleHostVariables {
+  param (
+    [Parameter(Mandatory=$true)]
+    [string] $ComputerName,
+    [string] $InventoryFile = "./inventories/vagrant.ini"
+  )
+
+  $p = "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) " `
+    + "--yaml --vars -vvv --host $ComputerName"
+
+  Invoke-AnsibleInventory $p
+}
+
+Set-Alias -Name ansible-show-hostvars -Value Get-AnsibleHostVariables
+
+function Get-AnsibleVariables {
+  param (
+    [string] $InventoryFile = "./inventories/vagrant.ini"
+  )
+
+  $p = "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) --graph --vars -vvv"
+
+  Invoke-AnsibleInventory $p
+}
+
+Set-Alias -Name ansible-show-vars -Value Get-AnsibleVariables
+
 function Invoke-AnsibleHostCommand {
   [CmdletBinding()]
   param (
@@ -474,6 +537,13 @@ Set-Alias -Name "ping-hosts.sh" -Value Ping-AnsibleHost
 Set-Alias -Name "play-base.sh" -Value Invoke-AnsiblePlayBase
 Set-Alias -Name "play-dev.sh" -Value Invoke-AnsiblePlayDev
 Set-Alias -Name "play-test.sh" -Value Invoke-AnsiblePlayTest
+Set-Alias -Name "provision-check.sh" -Value Assert-AnsibleProvision
+Set-Alias -Name "provision-server.sh" -Value Invoke-AnsibleProvision
+Set-Alias -Name "provision-test.sh" -Value Test-AnsibleProvision
+Set-Alias -Name "provision-update.sh" -Value Update-AnsibleProvision
 Set-Alias -Name "reset-dev.sh" -Value Reset-AnsibleEnvironmentDev
 Set-Alias -Name "reset-test.sh" -Value Reset-AnsibleEnvironmentTest
+Set-Alias -Name "show-facts.sh" -Value Get-AnsibleFacts
+Set-Alias -Name "show-hostvars.sh" -Value Get-AnsibleHostVariables
+Set-Alias -Name "show-vars.sh" -Value Get-AnsibleVariables
 Set-Alias -Name "update-servers.sh" -Value Update-AnsibleHost
