@@ -101,6 +101,33 @@ function Edit-AnsibleVault {
 
 Set-Alias -Name ansible-vault-edit -Value Edit-AnsibleVault
 
+function Export-AnsibleFacts {
+  param (
+    [string] $ComputerName = "all",
+    [string] $InventoryFile = "./inventories/vagrant.ini"
+  )
+
+  $play  = "---`n"
+  $play += "- hosts: $ComputerName`n"
+  $play += "  tasks:`n"
+  $play += "    - setup:`n"
+  $play += "      register: setupvar`n"
+  $play += "    - copy:`n"
+  $play += "        content: `"{{ setupvar.ansible_facts | to_nice_json }}`"`n"
+  $play += "        dest: `".facts/{{ ansible_host }}.json`"`n"
+  $play += "      delegate_to: localhost`n"
+
+  Set-Content -Path ".tmp/play.yml" -Value $play -Force -NoNewline
+
+  $param = "-v --limit $ComputerName "
+  $param += "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) .tmp/play.yml"
+
+  Invoke-AnsiblePlaybook $param
+}
+
+Set-Alias -Name ansible-save-facts -Value Export-AnsibleFacts
+Set-Alias -Name ansible-facts-save -Value Export-AnsibleFacts
+
 function Get-AnsibleFacts {
   param (
     [string] $ComputerName = "all",
@@ -136,6 +163,7 @@ function Get-AnsibleFacts {
 }
 
 Set-Alias -Name ansible-show-facts -Value Get-AnsibleFacts
+Set-Alias -Name ansible-facts-show -Value Get-AnsibleFacts
 
 function Get-AnsibleHostVariables {
   param (
@@ -673,6 +701,7 @@ Set-Alias -Name "provision-test.sh" -Value Test-AnsibleProvision
 Set-Alias -Name "provision-update.sh" -Value Update-AnsibleProvision
 Set-Alias -Name "reset-dev.sh" -Value Reset-AnsibleEnvironmentDev
 Set-Alias -Name "reset-test.sh" -Value Reset-AnsibleEnvironmentTest
+Set-Alias -Name "save-facts.sh" -Value Export-AnsibleFacts
 Set-Alias -Name "show-facts.sh" -Value Get-AnsibleFacts
 Set-Alias -Name "show-hostvars.sh" -Value Get-AnsibleHostVariables
 Set-Alias -Name "show-vars.sh" -Value Get-AnsibleVariables
