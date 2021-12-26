@@ -292,6 +292,8 @@ function New-DockerContainer {
         [hashtable]$EnvironmentVariables,
         [switch]$ReadOnly,
         [string]$EntryPoint,
+        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+        [string]$EntryScript,
         [string]$Command,
         [switch]$Interactive,
         [switch]$Keep
@@ -319,6 +321,12 @@ function New-DockerContainer {
 
     if ($EntryPoint) {
         $param += " --entrypoint `"$EntryPoint`""
+    } else {
+      if ($EntryScript.Length -gt 0) {
+        $filename = Split-Path $EntryScript -Leaf
+        $Volume += "$(Get-DockerMountPoint $EntryScript):/$filename"
+        $param += " --entrypoint `"/$filename`""
+      }
     }
 
     if ($ReadOnly) {

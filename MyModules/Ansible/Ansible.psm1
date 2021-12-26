@@ -28,12 +28,13 @@ function Invoke-AnsibleContainer {
   [CmdletBinding()]
   param (
     [string]$EntryPoint,
-    [string]$Command
+    [string]$Command,
+    [Alias("env")]
+    [hashtable]$EnvironmentVariables,
+    [string]$EntryScript
   )
 
   if (Test-DockerLinuxEngine) {
-    $workingPath = "/" + (($pwd.Path -replace "\\","/") -replace ":","").ToLower().Trim("/")
-
     $params = @{
       Image = "dcjulian29/ansible"
       Tag = "latest"
@@ -43,10 +44,15 @@ function Invoke-AnsibleContainer {
         "$(Get-DockerMountPoint $PWD):/etc/ansible"
         "$(Get-DockerMountPoint "${env:SYSTEMDRIVE}/etc/ssh/wsl"):/root/.ssh"
       )
+      Environment = $EnvironmentVariables
     }
 
     if ($EntryPoint) {
       $params.Add("EntryPoint", $EntryPoint)
+    }
+
+    if ($EntryScript) {
+      $params.Add("EntryScript", $EntryScript)
     }
 
     if ($Command) {
@@ -60,6 +66,8 @@ function Invoke-AnsibleContainer {
     Write-Error "Ansible module requires the Linux Docker Engine!" -Category ResourceUnavailable
   }
 }
+
+Set-Alias -Name ansible-container -Value Invoke-AnsibleContainer
 
 function Invoke-AnsibleDoc {
   Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-doc" -Command "$args"
