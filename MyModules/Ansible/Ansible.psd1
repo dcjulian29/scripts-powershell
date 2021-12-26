@@ -110,6 +110,7 @@
       "ansible-vault-view"
       "Check-AnsiblePlaybookSyntax"
       "Validate-AnsiblePlaybookSyntax"
+      "destroy.sh"
       "new-role.sh"
       "ping-hosts.sh"
       "play-base.sh"
