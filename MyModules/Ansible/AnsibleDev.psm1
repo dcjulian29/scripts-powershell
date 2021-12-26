@@ -34,7 +34,7 @@ function ensureAnsibleRoot {
 
   # if file still not found, pscmdlet.throwterminatingerror
 
-  Push-Location $PWD
+  Push-Location C:\code\ansible
 
   $script:rootDir = $true
 }
@@ -81,6 +81,25 @@ function Assert-AnsibleProvision {
 }
 
 Set-Alias -Name ansible-provision-check -Value Assert-AnsibleProvision
+
+function Edit-AnsibleVault {
+  [CmdletBinding()]
+  param (
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Vault
+  )
+  ensureAnsibleRoot
+
+  if ($Vault.Length -eq 0) {
+    $Vault = "./secrets.yml"
+  }
+
+  Invoke-AnsibleVault edit ./secrets.yml
+
+  returnAnsibleRoot
+}
+
+Set-Alias -Name ansible-vault-edit -Value Edit-AnsibleVault
 
 function Get-AnsibleFacts {
   param (
@@ -413,6 +432,25 @@ function Reset-AnsibleEnvironmentTest {
 Set-Alias "ansible-test-reset" -Value Reset-AnsibleEnvironmentTest
 Set-Alias "ansible-reset-test" -Value Reset-AnsibleEnvironmentTest
 
+function Show-AnsibleVault {
+  [CmdletBinding()]
+  param (
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Vault
+  )
+  ensureAnsibleRoot
+
+  if ($Vault.Length -eq 0) {
+    $Vault = "./secrets.yml"
+  }
+
+  Invoke-AnsibleVault view ./secrets.yml
+
+  returnAnsibleRoot
+}
+
+Set-Alias -Name ansible-vault-view -Value Show-AnsibleVault
+
 function Test-AnsibleProvision {
   [CmdletBinding()]
   param (
@@ -547,3 +585,5 @@ Set-Alias -Name "show-facts.sh" -Value Get-AnsibleFacts
 Set-Alias -Name "show-hostvars.sh" -Value Get-AnsibleHostVariables
 Set-Alias -Name "show-vars.sh" -Value Get-AnsibleVariables
 Set-Alias -Name "update-servers.sh" -Value Update-AnsibleHost
+Set-Alias -Name "vault-edit.sh" -Value Edit-AnsibleVault
+Set-Alias -Name "vault-view.sh" -Value Show-AnsibleVault

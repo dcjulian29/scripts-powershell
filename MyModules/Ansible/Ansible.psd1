@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2112.25.1'
+    ModuleVersion = '2112.26.1'
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -15,6 +15,7 @@
     FunctionsToExport = @(
       "Assert-AnsibleProvision"
       "Confirm-AnsiblePlaybookSyntax"
+      "Edit-AnsibleVault"
       "Get-AnsibleConfig"
       "Get-AnsibleConfigDump"
       "Get-AnsibleConfigFile"
@@ -52,6 +53,7 @@
       "Reset-AnsibleEnvironmentTest"
       "Show-AnsibleFacts"
       "Show-AnsibleVariables"
+      "Show-AnsibleVault"
       "Test-AnsiblePlaybookSyntax"
       "Test-AnsibleProvision"
       "Update-AnsibleHost"
@@ -97,6 +99,8 @@
       "ansible-variables"
       "ansible-vars"
       "ansible-vault"
+      "ansible-vault-edit"
+      "ansible-vault-view"
       "Check-AnsiblePlaybookSyntax"
       "Validate-AnsiblePlaybookSyntax"
       "ping-hosts.sh"
@@ -112,5 +116,7 @@
       "show-hostvars.sh"
       "show-vars.sh"
       "update-servers.sh"
+      "vault-edit.sh"
+      "vault-view.sh"
     )
 }
