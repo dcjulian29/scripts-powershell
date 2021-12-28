@@ -16,8 +16,6 @@ function checkReset([string[]]$pingHosts) {
         Write-Host -NoNewline "."
       }
     }
-
-    ssh-keygen -R 10.0.0.$ping
   }
 }
 
@@ -501,7 +499,7 @@ function Reset-AnsibleEnvironmentDev {
       -i ./inventories/vagrant.ini ./playbooks/base.yml
 
     if ($Role) {
-      Invoke-AnsibleDevPlay $Role
+      Invoke-AnsiblePlayDev $Role
     }
   } finally {
     $ErrorActionPreference = $ea
@@ -539,7 +537,7 @@ function Reset-AnsibleEnvironmentTest {
       -i ./inventories/vagrant.ini ./playbooks/base.yml
 
     if ($Role) {
-      Invoke-AnsibleDevPlay $Role
+      Invoke-AnsiblePlayTest $Role
     }
   } finally {
     $ErrorActionPreference = $ea
