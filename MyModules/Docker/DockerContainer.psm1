@@ -295,6 +295,7 @@ function New-DockerContainer {
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
         [string]$EntryScript,
         [string]$Command,
+        [string]$AdditionalArgs,
         [switch]$Interactive,
         [switch]$Keep
     )
@@ -355,7 +356,8 @@ function New-DockerContainer {
         $param += " `"$Command`""
     }
 
-    $param = $param.Trim()
+    $param += " $AdditionalArgs"
+    $param  = $param.Trim()
 
     Write-Verbose $param
     Invoke-Docker $param
