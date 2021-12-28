@@ -499,7 +499,7 @@ function Reset-AnsibleEnvironmentDev {
       -i ./inventories/vagrant.ini ./playbooks/base.yml
 
     if ($Role) {
-      Invoke-AnsiblePlayDev $Role
+      Invoke-AnsiblePlayDev -Role $Role -NoStep
     }
   } finally {
     $ErrorActionPreference = $ea
@@ -537,7 +537,7 @@ function Reset-AnsibleEnvironmentTest {
       -i ./inventories/vagrant.ini ./playbooks/base.yml
 
     if ($Role) {
-      Invoke-AnsiblePlayTest $Role
+      Invoke-AnsiblePlayTest -Role $Role -NoStep
     }
   } finally {
     $ErrorActionPreference = $ea
