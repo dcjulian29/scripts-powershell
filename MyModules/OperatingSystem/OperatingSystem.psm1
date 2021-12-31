@@ -159,13 +159,13 @@ function Get-OSArchitecture {
 
 function Get-OSBoot {
     param (
-        [switch]$Elaspsed,
+        [switch]$Elapsed,
         [switch]$Passthru
     )
 
     $date = (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
 
-    if ($Elaspsed) {
+    if ($Elapsed) {
         $t = ((Get-Date) - ($date))
         if ($Passthru) {
             return $t
@@ -190,18 +190,23 @@ function Get-OSCaption {
 }
 
 function Get-OSInstallDate {
-    param (
-        [switch]$Days
-    )
+  param (
+    [switch]$Elapsed
+  )
 
-    $installed = (Get-CimInstance Win32_OperatingSystem).InstallDate
+  $date = (Get-CimInstance Win32_OperatingSystem).InstallDate
 
-    if ($Days) {
-        $elaspsed = ((Get-Date) - ($installed))
-        return $elaspsed.Days
-    } else {
-        return $installed
+  if ($Elapsed) {
+    $t = ((Get-Date) - ($date))
+
+    if ($t.Days -eq 0) {
+      return "{0:d2}:{1:d2}:{2:d2}" -f $t.Hours, $t.Minutes, $t.Seconds
     }
+
+    return "{0}.{1:d2}:{2:d2}:{3:d2}" -f $t.Days, $t.Hours, $t.Minutes, $t.Seconds
+  } else {
+      return $date
+  }
 }
 
 function Get-OSRegisteredOrganization {
@@ -214,6 +219,91 @@ function Get-OSRegisteredUser {
 
 function Get-OSVersion {
     (Get-CimInstance Win32_OperatingSystem).Version
+}
+
+function Install-Font {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [System.IO.FileInfo]$Path
+  )
+
+  $oShell = new-object -com shell.application
+  $folder = $oShell.namespace($Path.DirectoryName)
+  $item = $folder.Items().Item($Path.Name)
+  $fontName = $folder.GetDetailsOf($item, 21)
+
+  switch ($Path.Extension) {
+      ".ttf" {
+        $fontName = $fontName + [char]32 + '(TrueType)'
+      }
+
+      ".otf" {
+        $fontName = $fontName + [char]32 + '(OpenType)'
+      }
+  }
+
+  Write-Verbose "Copying '$($Path.Name)'....."
+  try {
+    Copy-Item -Path $Path.FullName -Destination ("C:\Windows\Fonts\" + $Path.Name) -ErrorAction STOP
+  } catch {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "Access to the Windows Font system denied!" `
+      -ExceptionType "System.UnauthorizedAccessException" `
+      -ErrorId "UnauthorizedAccess" `
+      -ErrorCategory "PermissionDenied"))
+  }
+
+  if ((Test-Path ("C:\Windows\Fonts\" + $Path.Name)) -eq $true) {
+    Write-Verbose '  Success.'
+  } else {
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "Font file did not install correctly!" `
+        -ExceptionType "System.InvalidOperationException" `
+        -ErrorId "System.InvalidOperation" `
+        -ErrorCategory "InvalidOperation"))
+  }
+
+  Write-Output "Adding '$fontName' to the registry....."
+
+  if ($null -ne (Get-ItemProperty -Name $fontName `
+      -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" `
+      -ErrorAction SilentlyContinue)) {
+    if ((Get-ItemPropertyValue -Name $fontName `
+        -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts") -eq $Path.Name) {
+      Write-Warning "'$fontName' is already installed."
+    } else {
+      Remove-ItemProperty -Name $fontName `
+        -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -Force
+      New-ItemProperty -Name $fontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" `
+        -PropertyType string -Value $Path.Name -Force -ErrorAction SilentlyContinue | Out-Null
+      if ((Get-ItemPropertyValue -Name $fontName `
+          -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts") -eq $Path.Name) {
+        Write-Output '  Success.'
+      } else {
+        $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+          -Message "Adding Font to registry failed!" `
+          -ExceptionType "System.InvalidOperationException" `
+          -ErrorId "System.InvalidOperation" `
+          -ErrorCategory "InvalidOperation"))
+      }
+    }
+  } else {
+    New-ItemProperty -Name $fontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" `
+      -PropertyType string -Value $Path.Name -Force -ErrorAction SilentlyContinue | Out-Null
+    If ((Get-ItemPropertyValue -Name $fontName `
+        -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts") -eq $Path.Name) {
+          Write-Output '  Success.'
+    } else {
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "Adding Font to registry failed!" `
+        -ExceptionType "System.InvalidOperationException" `
+        -ErrorId "System.InvalidOperation" `
+        -ErrorCategory "InvalidOperation" `
+        -TargetObject "Path"))
+    }
+  }
 }
 
 function Install-WindowsUpdates {
