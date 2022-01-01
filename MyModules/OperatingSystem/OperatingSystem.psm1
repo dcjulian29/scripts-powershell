@@ -36,6 +36,48 @@ function Find-FolderSize {
 Set-Alias -Name Calculate-Folder-Size -Value Find-FolderSize
 Set-Alias -Name Calculate-FolderSize -Value Find-FolderSize
 
+function Get-InstalledFont {
+  [CmdletBinding()]
+  [OutputType([Windows.Media.FontFamily], [string])]
+  param(
+    [Parameter(Position = 0, ValueFromPipelineByPropertyName = $true)]
+    [string] $Name,
+    [switch]$IncludeDetail,
+    [Switch]$Sort
+  )
+
+  begin {
+    $fontList = [Windows.Media.Fonts]::SystemFontFamilies
+  }
+
+  process {
+    if ($Name.Trim()){
+      $currentFontList = foreach ($f in $fontList) {
+        if ($f.Source -like "$name*") {
+          $f
+        }
+      }
+    } else {
+      $currentFontList = $fontList
+    }
+
+    if ($IncludeDetail) {
+      if ($sort) {
+        $currentFontList | Sort-Object Source |
+          Add-Member ScriptProperty Name { $this.Source } -PassThru -Force
+      } else {
+        $currentFontList | Add-Member ScriptProperty Name { $this.Source } -PassThru -Force
+      }
+    } else {
+      if ($sort) {
+        $currentFontList | Sort-Object Source | Select-Object -ExpandProperty Source
+      } else {
+        $currentFontList | Select-Object -ExpandProperty Source
+      }
+    }
+  }
+}
+
 function Get-InstalledSoftware{
     param(
         [Parameter(Position=0, ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True)]

@@ -9,6 +9,7 @@
     FunctionsToExport = @(
         "ConvertTo-UnixPath"
         "Find-FolderSize"
+        "Get-InstalledFont"
         "Get-InstalledSoftware"
         "Get-Midnight"
         "Get-OSActivationStatus"
