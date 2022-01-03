@@ -16,7 +16,7 @@ function IsWindowsTerminal ($ChildProcess) {
 
 ################################################################################
 
-$env:Prompt="$"
+$env:PromptAdmin="$"
 
 if ($PSVersionTable.PSEdition -eq "Core") {
   $batch = $false
@@ -28,7 +28,7 @@ if ($PSVersionTable.PSEdition -eq "Core") {
 if (-not $batch) {
   $principal = New-Object System.Security.Principal.WindowsPrincipal($env:CurrentUser)
   if ($principal.IsInRole("Administrators")) {
-    $env:Prompt = "#"
+    $env:PromptAdmin = "#"
   }
 
   if ((Get-Command Set-PSReadLineOption).Version.Major -lt 2) {
@@ -129,7 +129,7 @@ function prompt {
     }
   }
 
-  Write-Host($env:Prompt) -nonewline -ForegroundColor Cyan
+  Write-Host($env:PromptAdmin) -nonewline -ForegroundColor Cyan
 
   $Host.UI.RawUI.ForegroundColor = $originalColor
   $global:LASTEXITCODE = $realLASTEXITCODE
