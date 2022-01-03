@@ -26,7 +26,7 @@ if ($PSVersionTable.PSEdition -eq "Core") {
 }
 
 if (-not $batch) {
-  $principal = New-Object System.Security.Principal.WindowsPrincipal($env:CurrentUser)
+  $principal = New-Object System.Security.Principal.WindowsPrincipal($global:CurrentUser)
   if ($principal.IsInRole("Administrators")) {
     $env:PromptAdmin = "#"
   }

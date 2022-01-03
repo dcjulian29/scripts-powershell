@@ -2,7 +2,7 @@
 # This profile is loaded when any "host" is executed. AKA. ALWAYS...
 ################################################################################
 
-$env:CurrentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+$global:CurrentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent()
 
 if (-not ($env:PATH).Contains("$env:SYSTEMDRIVE/tools/binaries")) {
   $env:PATH = "$env:SYSTEMDRIVE/tools/binaries;$($env:PATH)"
