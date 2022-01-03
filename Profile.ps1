@@ -2,27 +2,14 @@
 # This profile is loaded when any "host" is executed. AKA. ALWAYS...
 ################################################################################
 
-$Global:CurrentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+$env:CurrentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent()
 
-if (($env:Home).Length -eq 0) {
-  $env:Home = $env:UserProfile
+if (-not ($env:PATH).Contains("$env:SYSTEMDRIVE/tools/binaries")) {
+  $env:PATH = "$env:SYSTEMDRIVE/tools/binaries;$($env:PATH)"
 }
 
-$env:HomeDrive = ($env:Home).Split(":")[0] + ":"
-$env:HomePath = ($env:Home).Split(":")[1]
-
-$binarydirectory = "$env:SYSTEMDRIVE\Tools\binaries"
-
-if (-not ($env:PATH).Contains($binarydirectory)) {
-  $env:PATH = "$binarydirectory;$($env:PATH)"
-}
-
-if (Test-Path alias:wget) {
-  Remove-Item alias:wget
-}
-
-if (Test-Path alias:curl) {
-  Remove-Item alias:curl
+if (-not ($env:PATH).Contains("$env:SYSTEMDRIVE/bin")) {
+  $env:PATH = "$env:SYSTEMDRIVE/bin;$($env:PATH)"
 }
 
 # Make sure my custom PowerShell modules are available.
@@ -32,6 +19,4 @@ if ((-not ($env:PSModulePath).Contains("$(Split-Path $profile)\MyModules"))) {
     $env:PSModulePath = $PSModulePath
 
     Get-Module -ListAvailable | Out-Null
-
-    Invoke-Expression "[Environment]::SetEnvironmentVariable('PSModulePath', '$PSModulePath', 'User')"
 }
