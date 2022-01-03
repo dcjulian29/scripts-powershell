@@ -111,31 +111,4 @@ if (Get-Command dotnet -ErrorAction SilentlyContinue) {
 
 ################################################################################
 
-function prompt {
-  $realLASTEXITCODE = $LASTEXITCODE
-  $originalColor = $Host.UI.RawUI.ForegroundColor
-
-  Write-Host($env:USERNAME) -nonewline -ForegroundColor Yellow
-  Write-Host("@") -nonewline -ForegroundColor $originalColor
-  Write-Host($env:ComputerName) -nonewline -ForegroundColor Green
-  Write-Host(":") -nonewline -ForegroundColor $originalColor
-  Write-Host($pwd) -ForegroundColor Red
-
-  if  (-not ($principal.IsInRole("Administrators"))) {
-    if (-not $pwd.Path.EndsWith('.git')) {
-      if (Get-Command Write-VcsStatus -errorAction SilentlyContinue) {
-        Write-VcsStatus
-      }
-    }
-  }
-
-  Write-Host($env:PromptAdmin) -nonewline -ForegroundColor Cyan
-
-  $Host.UI.RawUI.ForegroundColor = $originalColor
-  $global:LASTEXITCODE = $realLASTEXITCODE
-  return "  `b"
-}
-
-if ($(IsWindowsTerminal -ChildProcess (Get-Process -Id $PID))) {
-  Invoke-Expression (&starship init powershell)
-}
+Invoke-Expression (&starship init powershell)
