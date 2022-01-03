@@ -1,6 +1,6 @@
 @{
     RootModule = 'OperatingSystem.psm1'
-    ModuleVersion = '2112.31.1'
+    ModuleVersion = '2201.3.1'
     GUID = '3ffbac72-4374-43f7-8b6d-f190478077e7'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'

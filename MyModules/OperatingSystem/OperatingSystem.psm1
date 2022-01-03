@@ -268,10 +268,11 @@ function Install-Font {
   param (
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
-    [System.IO.FileInfo]$Path
+    [string]$Path
   )
 
-  $oShell = new-object -com shell.application
+  $Path = Get-Item (Resolve-Path $Path)
+  $oShell = New-Object -COM Shell.Application
   $folder = $oShell.namespace($Path.DirectoryName)
   $item = $folder.Items().Item($Path.Name)
   $fontName = $folder.GetDetailsOf($item, 21)
