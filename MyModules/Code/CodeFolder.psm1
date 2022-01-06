@@ -10,7 +10,6 @@ function Get-DefaultCodeFolder {
 
 function New-CodeFolder {
     param (
-        [ValidateScript({ -not (Test-Path $(Resolve-Path $_)) })]
         [Alias("CodeFolder", "Folder")]
         [string]$Path = $(Get-DefaultCodeFolder)
     )
@@ -19,7 +18,7 @@ function New-CodeFolder {
         New-Item -Type Directory -Path $Path | Out-Null
     }
 
-    Set-CodeFolder -Path $Path
+    Set-CodeFolder -Path (Resolve-Path $Path).Path
 }
 
 function Set-CodeFolder {
@@ -30,11 +29,17 @@ function Set-CodeFolder {
         [string]$Path
     )
 
+    $Path = (Resolve-Path $Path).Path
+
+    if ($Path.LastIndexOf('\') -eq ($Path.Length - 1)) {
+      $Path = $Path.Substring(0, ($Path.Length - 1))
+    }
+
     $icon = "https://www.iconfinder.com/icons/37070/download/ico"
 
     Download-File $icon $Path\code.ico
 
-    Set-Content $Path\desktop.ini @"
+    Set-Content "$Path\desktop.ini" @"
 [.ShellClassInfo]
 IconResource=$Path\code.ico,0
 [ViewState]
