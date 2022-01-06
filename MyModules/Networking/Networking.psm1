@@ -2,6 +2,21 @@ $Script:dnsCache = @{
     "127.0.0.1" = "localhost"
 }
 
+function int64toIP([int64]$int) {
+  (([math]::truncate($int / 16777216)).tostring() + "." `
+    + ([math]::truncate(($int % 16777216) / 65536)).tostring() + "." `
+    + ([math]::truncate(($int % 65536) / 256)).tostring() + "." `
+    + ([math]::truncate($int % 256)).tostring() )
+}
+
+function iptoInt64 ($ip) {
+  $octets = $ip.split(".")
+  [int64]([int64]$octets[0] * 16777216 `
+    + [int64]$octets[1] * 65536 `
+    + [int64]$octets[2] * 256 `
+    + [int64]$octets[3])
+}
+
 function netFirewall {
     [OutputType([System.String])]
     param (
@@ -78,6 +93,27 @@ function netUrlAcl {
     return ((Get-Content $outputPath) -join "`n")
 }
 
+function toBinary ($dottedDecimal) {
+  $binary = ""
+  $dottedDecimal.split(".") | ForEach-Object {
+    $binary += $([Convert]::ToString($_, 2).padleft(8, "0"))
+  }
+
+  return $binary
+}
+
+function toDottedDecimal($binary) {
+  $dottedDecimal = ""
+  $i = 0
+
+  do {
+    $dottedDecimal += "." + [string]$([convert]::toInt32($binary.substring($i,8),2))
+    $i += 8
+  } while ($i -le 24)
+
+ return $dottedDecimal.substring(1)
+}
+
 function getUrl {
     param (
         [String]$Protocol = "http",
@@ -89,6 +125,116 @@ function getUrl {
 }
 
 #------------------------------------------------------------------------------
+
+
+function Get-IPv4NetworkClass {
+  [CmdletBinding()]
+  param (
+    [parameter(Mandatory = $true, ValueFromPipeline = $true)]
+    [string] $Address
+  )
+
+  switch ($Address.Split('.')[0]) {
+    { $_ -in 0..127 } { 'A' }
+    { $_ -in 128..191 } { 'B' }
+    { $_ -in 192..223 } { 'C' }
+    { $_ -in 224..239 } { 'D' }
+    { $_ -in 240..255 } { 'E' }
+  }
+}
+
+function Get-IPv4NetworkEndAddress {
+  [CmdletBinding()]
+  param (
+      [Parameter(Mandatory = $true)]
+      [string] $Address
+  )
+
+  $mask = ($Address -Split '/')[1]
+  $ip = toBinary ($Address -Split '/')[0]
+
+  return [System.Net.IPAddress](toDottedDecimal $($ip.Substring(0, $mask).PadRight(31, "1") + "0"))
+}
+
+Set-Alias -Name "ipv4-end" -Value Get-IPv4NetworkEndAddress
+
+function Get-IPv4NetworkStartAddress {
+  [CmdletBinding()]
+  param (
+      [Parameter(Mandatory = $true)]
+      [string] $Address
+  )
+
+  $mask = ($Address -Split '/')[1]
+  $ip = ($Address -Split '/')[0]
+
+  return [System.Net.IPAddress](toDottedDecimal $($ip.Substring(0,$mask).PadRight(31,"0") + "1"))
+}
+
+Set-Alias -Name "ipv4-start" -Value Get-IPv4NetworkStartAddress
+
+function Get-IPv4Subnet {
+  [CmdletBinding()]
+  param (
+    [parameter(Mandatory = $true, ValueFromPipeline = $true)]
+    [string] $Address,
+    [ValidateRange(0, 32)]
+    [Alias('CIDR')]
+    [int] $MaskBits
+  )
+
+  if ($PSBoundParameters.ContainsKey('MaskBits')) {
+    $mask = $MaskBits
+  }
+
+  if ($Address -match '/\d') {
+    $Mask = ($Address -Split '/')[1]
+    $Address = ($Address -Split '/')[0]
+  }
+
+  $class = Get-IPv4NetworkClass -Address $Address
+
+  if ($Mask -notin 0..32) {
+    $mask = switch ($Class) {
+      'A' { 8 }
+      'B' { 16 }
+      'C' { 24 }
+      default {
+        throw "Subnet mask size was not specified and could not be inferred because the address is Class $Class."
+      }
+    }
+
+    Write-Warning "Subnet mask size was not specified. Using default subnet size for a Class $Class network of /$Mask."
+  }
+
+  $ip = [System.Net.IPAddress]::Parse($Address)
+  $subnet = [System.Net.IPAddress]::Parse((int64toIP ([Convert]::ToInt64(("1" * $Mask + "0" * (32 - $Mask)), 2))))
+  $network = [System.Net.IPAddress]($subnet.Address -band $ip.Address)
+  $broadcast = `
+    [System.Net.IPAddress](toDottedDecimal $((toBinary $ip.IPAddressToString).Substring(0, $Mask).PadRight(32, "1")))
+
+  $start = (iptoInt64 -ip $network.IPAddressToString) + 1
+  $end = (iptoInt64 -ip $broadcast.IPAddressToString) - 1
+
+  Write-Progress "Calcualting host addresses for $network/$Mask.."
+
+  $addresses = for ($i = $start; $i -le $end; $i++) {
+    int64toIP -int $i
+  }
+
+  return [PSCustomObject]@{
+      IPAddress        = $ip
+      Mask             = $Mask
+      NetworkAddress   = $network
+      BroadcastAddress = $broadcast
+      SubnetMask       = $subnet
+      Range            = "$network ~ $broadcast"
+      HostAddresses    = $addresses
+      HostAddressCount = (($end - $start) + 1)
+  }
+}
+
+Set-Alias -Name "ipv4-subnet" -Value Get-IPv4Subnet
 
 function Get-NetworkEstablishedConnection {
     [CmdletBinding()]
@@ -211,6 +357,28 @@ function Get-PrimaryIP {
     }
 }
 
+function Get-PrimaryMask {
+  param(
+    [switch]$IPv6
+  )
+
+  if ($IPv6) {
+    return (Get-NetIPAddress -InterfaceIndex $((Get-NetRoute -AddressFamily IPv6 `
+      | Where-Object { $_.DestinationPrefix -eq "::/0" }).ifIndex) `
+          -AddressFamily IPv6 -PrefixOrigin "Manual").PrefixLength
+  } else {
+    return (Get-NetIPAddress -InterfaceIndex $((Get-WmiObject -Class Win32_IP4RouteTable `
+      | Where-Object { $_.destination -eq '0.0.0.0' -and $_.mask -eq '0.0.0.0'} `
+      | Sort-Object metric1).InterfaceIndex) -AddressFamily IPv4).PrefixLength
+  }
+}
+
+function Get-PrimarySubnet {
+  $mask = Get-PrimaryMask
+  return ([System.Net.IPAddress]::Parse( `
+      (int64toIP ([Convert]::ToInt64(("1" * $mask + "0" * (32 - $mask)), 2))))).IPAddressToString
+}
+
 function Get-PublicIP {
   param(
     [Switch] $IPv6
@@ -303,6 +471,33 @@ function New-UrlReservation {
     netUrlAcl -Protocol $Protocol -Operation "add" -Url $url -User $User
 }
 
+function Ping-Host {
+  [CmdletBinding()]
+  param (
+    [parameter(Mandatory = $true, ValueFromPipeline = $true)]
+    [string] $Address,
+    [ValidateRange(100,50000)]
+    [int] $Timeout = 2000
+  )
+
+  begin {
+    $Online = @{
+      Name = 'Online'
+      Expression = { $_.Status -eq 'Success' }
+    }
+
+    $ping = New-Object System.Net.NetworkInformation.Ping
+  }
+
+  process {
+    $Address | ForEach-Object { `
+      $ping.Send($_, $Timeout) `
+        | Select-Object -Property $Online, Status, Address, RoundtripTime `
+        | Add-Member -MemberType NoteProperty -Name Name -Value $_ -PassThru
+    }
+  }
+}
+
 function Remove-FirewallRule {
     [CmdletBinding()]
     param (
@@ -333,6 +528,71 @@ function Remove-UrlReservation {
     netUrlAcl -Protocol $Protocol -Operation "del" -Url $url
 }
 
+function Search-Network {
+  param (
+    [string]$Address = "$(Get-PrimaryIP)/$(Get-PrimaryMask)",
+    [int]$TimeOut = 500,
+    [int]$Attempts = 1,
+    [switch]$NoResolve
+  )
+
+  $network = Get-IPv4Subnet $Address
+  $i = 0
+  $offline = $true
+  $results = @()
+  $counter = 0
+
+  if ($network.HostAddressCount -lt 1) {
+    return $null
+  }
+
+  foreach ($target in $network.HostAddresses) {
+    do {
+      Write-Progress -Activity "Searching Network:" `
+      -Status "Pinging '$target'..." `
+      -PercentComplete (($counter / $network.HostAddressCount) * 100)
+
+      $status = Ping-Host -Address $target -TimeOut $TimeOut
+
+      if ($status.Online) {
+        $offline = $false
+
+        if ($NoResolve) {
+          $remoteName = $null
+        } else {
+            if (-not ($dnsCache.ContainsKey($target))) {
+                $dnsCache.Add($target, `
+                    $(Resolve-DnsName $target -NoHostsFile -NetbiosFallback -ErrorAction SilentlyContinue))
+            }
+
+            $remoteName = $dnsCache[$target].NameHost
+
+            if (($remoteName.GetType()).BaseType -eq "System.Array") {
+              $remoteName = $remoteName[0]
+            }
+        }
+
+        $results += [PSCustomObject]@{
+          Address    = $target
+          ResponseTime = $status.RoundtripTime
+          MAC   = $((Get-NetNeighbor -IPAddress $target -ErrorAcction SilentlyContinue).LinkLayerAddress -replace '-', ':')
+          Name     = $remoteName
+        }
+      } else {
+        $offline = $true
+      }
+
+      $i++
+    } while (($i -le $Attempts) -and ($offline))
+
+    $counter++
+  }
+
+  return $results
+}
+
+Set-Alias -Name "scan-network" -Value Search-Network
+
 function Show-UrlReservation {
     [CmdletBinding()]
     param (
@@ -350,4 +610,18 @@ function Show-UrlReservation {
     $url = getUrl $Protocol $Hostname $Port
 
     netUrlAcl -Operation "show" -Url $url -User $User
+}
+
+function Test-PrivateIPv4 {
+  [CmdletBinding()]
+  param(
+    [parameter(Mandatory = $true,ValueFromPipeline = $true)]
+    [string] $Address
+  )
+
+  if ($Address -Match '(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)') {
+        return $true
+  } else {
+    return $false
+  }
 }
