@@ -1,3 +1,8 @@
+trap [System.Exception] {
+  "Exception: {0}" -f $_.Exception.Message
+  [Environment]::Exit(1)
+}
+
 if ($null -eq ${env:NuGetApi}) {
   $profileFile = Join-Path -Path "$($env:SystemDrive)/etc/nuget" -ChildPath "powershell.json"
 
@@ -40,21 +45,22 @@ Pop-Location
 Push-Location $baseDir\MyModules
 
 Get-ChildItem -Directory | ForEach-Object {
-    Push-Location $_.Name
+  Write-Output "##teamcity[blockOpened name='$id']"
+  Push-Location $_.Name
 
-    Remove-Item *.nupkg -Force -ErrorAction SilentlyContinue
-    Remove-Item "package.nuspec" -Force -ErrorAction SilentlyContinue
+  Remove-Item *.nupkg -Force -ErrorAction SilentlyContinue
+  Remove-Item "package.nuspec" -Force -ErrorAction SilentlyContinue
 
-    $id = $_.Name
-    $version = "0.0.0"
+  $id = $_.Name
+  $version = "0.0.0"
 
-    if (Test-Path ".\$id.psd1") {
-      $version = (Import-PowerShellDataFile .\$id.psd1).ModuleVersion
-    }
+  if (Test-Path ".\$id.psd1") {
+    $version = (Import-PowerShellDataFile .\$id.psd1).ModuleVersion
+  }
 
-    Write-Output "`n`n------------> $id (v$version)"
+  Write-Output "------------> $id (v$version)"
 
-    Set-Content -Path "package.nuspec" -Value @"
+  Set-Content -Path "package.nuspec" -Value @"
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
@@ -68,15 +74,21 @@ Get-ChildItem -Directory | ForEach-Object {
 "@
 
 (Get-ChildItem -Filter "*.psd1").Name | ForEach-Object {
-  Add-Content -Path "package.nuspec" -Value "    <file src=`"$_`" />"
+  if ($_) {
+    Add-Content -Path "package.nuspec" -Value "    <file src=`"$_`" />"
+  }
 }
 
 (Get-ChildItem -Filter "*.psm1").Name | ForEach-Object {
-  Add-Content -Path "package.nuspec" -Value "    <file src=`"$_`" />"
+  if ($_) {
+    Add-Content -Path "package.nuspec" -Value "    <file src=`"$_`" />"
+  }
 }
 
 (Get-ChildItem -Filter "*.ps1").Name | ForEach-Object {
-  Add-Content -Path "package.nuspec" -Value "    <file src=`"$_`" />"
+  if ($_) {
+    Add-Content -Path "package.nuspec" -Value "    <file src=`"$_`" />"
+  }
 }
 
 Add-Content -Path "package.nuspec" -Value @"
@@ -87,12 +99,15 @@ Add-Content -Path "package.nuspec" -Value @"
   & "$NUGET_EXE" pack package.nuspec -Verbosity detailed -NoPackageAnalysis -NonInteractive -NoDefaultExcludes
 
   Write-Output "`nPublishing '$id' v$version to $env:NuGetUrl"
-  & "$NUGET_EXE" push *.nupkg $env:NuGetApi -Source $env:NuGetUrl
+  #& "$NUGET_EXE" push *.nupkg $env:NuGetApi -Source $env:NuGetUrl
+
+  Remove-Item *.nupkg -Force -ErrorAction SilentlyContinue
+  Remove-Item "package.nuspec" -Force -ErrorAction SilentlyContinue
 
   Pop-Location
-}
 
-Remove-Item *.nupkg -Force -ErrorAction SilentlyContinue
-Remove-Item "package.nuspec" -Force -ErrorAction SilentlyContinue
+  Write-Output "##teamcity[blockClosed name='$id']"
+  Write-Output "`n`n"
+}
 
 Pop-Location
