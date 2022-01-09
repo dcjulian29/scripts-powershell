@@ -45,14 +45,14 @@ Pop-Location
 Push-Location $baseDir\MyModules
 
 Get-ChildItem -Directory | ForEach-Object {
+  $id = $_.Name
+  $version = "0.0.0"
+
   Write-Output "##teamcity[blockOpened name='$id']"
   Push-Location $_.Name
 
   Remove-Item *.nupkg -Force -ErrorAction SilentlyContinue
   Remove-Item "package.nuspec" -Force -ErrorAction SilentlyContinue
-
-  $id = $_.Name
-  $version = "0.0.0"
 
   if (Test-Path ".\$id.psd1") {
     $version = (Import-PowerShellDataFile .\$id.psd1).ModuleVersion
