@@ -99,7 +99,7 @@ Add-Content -Path "package.nuspec" -Value @"
   & "$NUGET_EXE" pack package.nuspec -Verbosity detailed -NoPackageAnalysis -NonInteractive -NoDefaultExcludes
 
   Write-Output "`nPublishing '$id' v$version to $env:NuGetUrl"
-  #& "$NUGET_EXE" push *.nupkg $env:NuGetApi -Source $env:NuGetUrl
+  & "$NUGET_EXE" push *.nupkg $env:NuGetApi -Source $env:NuGetUrl
 
   Remove-Item *.nupkg -Force -ErrorAction SilentlyContinue
   Remove-Item "package.nuspec" -Force -ErrorAction SilentlyContinue
