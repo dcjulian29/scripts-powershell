@@ -20,14 +20,16 @@ if (-not (Test-Path $NUGET_EXE)) {
   $existingPaths = $Env:Path -Split ';' `
     | Where-Object { (![string]::IsNullOrEmpty($_)) -and (Test-Path $_ -PathType Container) }
   $NUGET_EXE_IN_PATH = Get-ChildItem -Path $existingPaths -Filter "nuget.exe" | Select-Object -First 1
+
   if (($null -ne $NUGET_EXE_IN_PATH) -and (Test-Path $NUGET_EXE_IN_PATH.FullName)) {
     Write-Output "Found in PATH at $($NUGET_EXE_IN_PATH.FullName)."
     $NUGET_EXE = $NUGET_EXE_IN_PATH.FullName
-    if ((Test-Path $baseDir) -and (-not (Test-Path $TOOLS_DIR))) {
+  } else {
+    if (-not (Test-Path $TOOLS_DIR)) {
       Write-Output "Creating tools directory..."
       New-Item -Path $TOOLS_DIR -Type Directory | Out-Null
     }
-  } else {
+
     Write-Output "Downloading NuGet.exe..."
     Invoke-WebRequest -Uri $NUGET_URL -OutFile $NUGET_EXE
   }
@@ -82,10 +84,10 @@ Add-Content -Path "package.nuspec" -Value @"
 </package>
 "@
 
-  & $NUGET_EXE pack package.nuspec -Verbosity detailed -NoPackageAnalysis -NonInteractive -NoDefaultExcludes
+  & "$NUGET_EXE" pack package.nuspec -Verbosity detailed -NoPackageAnalysis -NonInteractive -NoDefaultExcludes
 
   Write-Output "`nPublishing '$id' v$version to $env:NuGetUrl"
-  & $NUGET_EXE push *.nupkg $env:NuGetApi -Source $env:NuGetUrl
+  & "$NUGET_EXE" push *.nupkg $env:NuGetApi -Source $env:NuGetUrl
 
   Pop-Location
 }
