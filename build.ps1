@@ -48,7 +48,7 @@ Get-ChildItem -Directory | ForEach-Object {
   $id = $_.Name
   $version = "0.0.0"
 
-  Write-Output "##teamcity[blockOpened name='$id']"
+  Write-Output "##teamcity[blockOpened name='$id (v$version)']"
   Push-Location $_.Name
 
   Remove-Item *.nupkg -Force -ErrorAction SilentlyContinue
@@ -57,8 +57,6 @@ Get-ChildItem -Directory | ForEach-Object {
   if (Test-Path ".\$id.psd1") {
     $version = (Import-PowerShellDataFile .\$id.psd1).ModuleVersion
   }
-
-  Write-Output "------------> $id (v$version)"
 
   Set-Content -Path "package.nuspec" -Value @"
 <?xml version="1.0"?>
@@ -106,7 +104,7 @@ Add-Content -Path "package.nuspec" -Value @"
 
   Pop-Location
 
-  Write-Output "##teamcity[blockClosed name='$id']"
+  Write-Output "##teamcity[blockClosed name='$id (v$version)']"
   Write-Output "`n`n"
 }
 
