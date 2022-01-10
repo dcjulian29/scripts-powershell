@@ -453,6 +453,36 @@ function Optimize-Path {
 
 Set-Alias -Name Clean-Path -Value Optimize-Path
 
+function Remove-FilePermission {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path,
+    [string] $UserOrGroup = "",
+    [switch] $All
+  )
+
+  $acl = Get-Acl -Path $Path
+
+  if ($UserOrGroup -ne "") {
+    foreach ($access in $acl.Access) {
+      if ($access.IdentityReference.Value -eq $UserOrGroup) {
+        $acl.RemoveAccessRule($access) | Out-Null
+      }
+    }
+  }
+
+  if ($All) {
+    foreach ($access in $acl.Access) {
+      $acl.RemoveAccessRule($access) | Out-Null
+    }
+  }
+
+  Set-Acl -Path $folder.FullName -AclObject $acl
+}
+
 function Remove-Path {
     param (
         [Parameter(Mandatory=$true)]
@@ -482,6 +512,57 @@ function Reset-Path {
 
         Set-EnvironmentVariable "Path" "$windowsPath;$powershellPath"
     }
+}
+
+function Set-FileInheritance {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path,
+    [switch] $DisableInheritance,
+    [switch] $KeepInheritedAcl
+  )
+
+  $acl = Get-Acl -Path $Path
+
+  $acl.SetAccessRuleProtection($DisableInheritance.IsPresent, $KeepInheritedAcl.IsPresent)
+
+  $acl | Set-Acl -Path $Path
+}
+
+function Set-FilePermission {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path,
+    [string] $UserOrGroup = "",
+    [ValidateSet('ContainerInherit', 'ObjectInherit', 'InheritOnly')]
+    [string[]] $InheritedFolderPermissions = @("ContainerInherit", "ObjectInherit"),
+    [string] $AccessControlType = "Allow",
+    [string] $PropagationFlags = "None",
+    [ValidateSet('ListDirectory', 'ReadData', 'WriteData', 'CreateFiles',
+                 'CreateDirectories', 'AppendData', 'Synchronize',
+                 'FullControl', 'ReadExtendedAttributes', 'WriteExtendedAttributes',
+                 'Traverse', 'ExecuteFile', 'DeleteSubdirectoriesAndFiles',
+                 'ReadAttributes', 'WriteAttributes', 'Write', 'Delete',
+                 'ReadPermissions', 'Read', 'ReadAndExecute', 'Modify',
+                 'ChangePermissions', 'TakeOwnership')]
+    [string[]] $AclRightsToAssign
+  )
+
+  $acl = Get-Acl -Path $Path
+  $perm = $UserOrGroup, $AclRightsToAssign, $InheritedFolderPermissions, `
+    $PropagationFlags, $AccessControlType
+  $rule = New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule `
+    -ArgumentList $perm
+
+  $acl.SetAccessRule($rule)
+
+  Set-Acl -Path $Path $acl
 }
 
 function Set-FileShortCut {
@@ -570,10 +651,7 @@ function Set-Path {
 
     $pathList.Insert($Position, $Path)
     $pathString = $pathList -join ';'
-    # $pathString
-    # if ($pathString)
-    # $pathString = $pathString.Substring(0, $pathString.Length - 1)
-    # $pathString
+
     Set-EnvironmentVariable "Path" $pathString
 }
 

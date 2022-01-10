@@ -1,6 +1,6 @@
 @{
     RootModule = 'FileSystem.psm1'
-    ModuleVersion = '2020.2.13.1'
+    ModuleVersion = '2201.10.1'
     GUID = 'aaad40aa-30a0-495c-8377-53e89ea1ec11'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -24,7 +24,10 @@
         "Invoke-TouchFile"
         "Invoke-UnzipFile"
         "Optimize-Path"
+        "Remove-FilePermission"
         "Remove-Path"
+        "Set-FileInheritance"
+        "Set-FilePermission"
         "Set-FileShortCut"
         "Set-Path"
         "Set-PathAtPosition"
