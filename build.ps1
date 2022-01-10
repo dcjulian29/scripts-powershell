@@ -55,12 +55,18 @@ Get-ChildItem -Path $modulesDir -Directory | ForEach-Object {
   Push-Location $(Join-Path -Path $modulesDir -ChildPath $id)
 
   if (Test-Path ".\$id.psd1") {
-    $version = (Import-PowerShellDataFile .\$id.psd1).ModuleVersion
-    $author = (Import-PowerShellDataFile .\$id.psd1).Author
+    $data = Import-PowerShellDataFile .\$id.psd1
+    $version = $data.ModuleVersion
+    $author = $data.Author
+    $description = $data.Description
+    $depends = $data.RequiredModules
+  }
+
+  if ($description.Length -lt 1) {
+    $description = "A Julian Easterling Custom Powershell Module"
   }
 
   Write-Output "##teamcity[blockOpened name='$id (v$version)']"
-
 
   Remove-Item *.nupkg -Force -ErrorAction SilentlyContinue
   Remove-Item "package.nuspec" -Force -ErrorAction SilentlyContinue
@@ -71,12 +77,38 @@ Get-ChildItem -Path $modulesDir -Directory | ForEach-Object {
   <metadata>
     <id>$id</id>
     <version>$version</version>
-    <authors>$author</authors>
+    <authors>$author</authors>$readme
     <projectUrl>https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/$id</projectUrl>
-    <description>A Julian Easterling Custom Powershell Module</description>
+    <description>$description</description>
+    <license type="expression">Apache-2.0</license>
+    <copyright>(c) 2022 By Julian Easterling. Some rights reserved.</copyright>
+"@
+
+if (Test-Path -Path "./README.md") {
+  Add-Content -Path "package.nuspec" -Value "<readme>README.md</readme>"
+}
+
+if ($depends) {
+  Add-Content -Path "package.nuspec" -Value "<dependencies><group>"
+
+  foreach ($depend in $depends) {
+    Add-Content -Path "package.nuspec" `
+      -Value "<dependency id=`"$($depend.ModuleName)`" version=`"$($depend.ModuleVersion)`" />"
+  }
+
+  Add-Content -Path "package.nuspec" -Value "</group></dependencies>"
+}
+
+Add-Content -Path "package.nuspec" -Value @"
   </metadata>
   <files>
 "@
+
+(Get-ChildItem -Filter "*.md").Name | ForEach-Object {
+  if ($_) {
+    Add-Content -Path "package.nuspec" -Value "    <file src=`"$_`" />"
+  }
+}
 
 (Get-ChildItem -Filter "*.psd1").Name | ForEach-Object {
   if ($_) {
