@@ -52,13 +52,15 @@ Get-ChildItem -Path $modulesDir -Directory | ForEach-Object {
   $id = $_.Name
   $version = "0.0.0"
 
+  Push-Location $(Join-Path -Path $modulesDir -ChildPath $id)
+
   if (Test-Path ".\$id.psd1") {
     $version = (Import-PowerShellDataFile .\$id.psd1).ModuleVersion
+    $author = (Import-PowerShellDataFile .\$id.psd1).Author
   }
 
   Write-Output "##teamcity[blockOpened name='$id (v$version)']"
 
-  Push-Location $(Join-Path -Path $modulesDir -ChildPath $_.Name)
 
   Remove-Item *.nupkg -Force -ErrorAction SilentlyContinue
   Remove-Item "package.nuspec" -Force -ErrorAction SilentlyContinue
@@ -69,8 +71,8 @@ Get-ChildItem -Path $modulesDir -Directory | ForEach-Object {
   <metadata>
     <id>$id</id>
     <version>$version</version>
-    <authors>Julian Easterling</authors>
-    <projectUrl>https://github.com/dcjulian29/scripts-powershell/tree/main/MyModules/$id</projectUrl>
+    <authors>$author</authors>
+    <projectUrl>https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/$id</projectUrl>
     <description>A Julian Easterling Custom Powershell Module</description>
   </metadata>
   <files>
