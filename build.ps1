@@ -3,6 +3,7 @@ trap [System.Exception] {
   [Environment]::Exit(1)
 }
 
+$ErrorActionPreference = Stop
 $baseDir = (Resolve-Path $("$PSScriptRoot")).Path
 $modulesDir = Join-Path -Path $baseDir -ChildPath Modules
 
