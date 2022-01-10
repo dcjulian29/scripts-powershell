@@ -1,5 +1,23 @@
 $script:regexmicrosoft = '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?$'
 
+function incrementVersionElement([Int32]$v, [Int32]$i=1) {
+  if ($v -eq -1) {
+    $i
+  } else {
+    $v + $i
+  }
+}
+
+function resetVersionElement([Int32]$v) {
+  if ($v -eq -1) {
+    -1
+  } else {
+    0
+  }
+}
+
+#------------------------------------------------------------------------------
+
 function ConvertFrom-DatedVersion {
     [CmdletBinding()]
     param (
@@ -49,19 +67,11 @@ function Get-Version {
 
     $Version -match $script:regexmicrosoft | Out-Null
 
-    $detail = New-Object PSObject
-
-    $detail | Add-Member -Type NoteProperty -Name 'Major' -Value $Matches[1]
-    $detail | Add-Member -Type NoteProperty -Name 'Minor' -Value $Matches[2]
-    $detail | Add-Member -Type NoteProperty -Name 'Build' -Value $Matches[3]
-
     if ($Matches.Count -gt 3){
-        $detail | Add-Member -Type NoteProperty -Name 'Revision' -Value $Matches[4]
+      return (New-Version $Matches[1] $Matches[2] $Matches[3] $Matches[4])
     } else {
-        $detail | Add-Member -Type NoteProperty -Name 'Revision' -Value $null
+      return (New-Version $Matches[1] $Matches[2] $Matches[3])
     }
-
-    return $detail
 }
 
 function New-Version {
@@ -74,7 +84,7 @@ function New-Version {
         [Parameter(Position = 2, Mandatory = $true)]
         [int] $Build,
         [Parameter(Position = 3)]
-        [int] $Revision
+        [int] $Revision = 0
     )
 
     $version = "$Major.$Minor.$Build"
@@ -83,7 +93,7 @@ function New-Version {
         $version = "$version.$Revision"
     }
 
-    return $version
+    return New-Object -TypeName 'System.Version' -ArgumentList $Major, $Minor, $Build, $Revision
 }
 
 function Set-Version {
@@ -98,46 +108,36 @@ function Set-Version {
     )
 
     process {
-        $versions = @()
+      $ver = Get-Version $Version
 
-        if ($Version.GetType().BaseType.Name -eq "Array") {
-            $versions = $Version
-        } else {
-            $versions += $Version
-        }
+      $major = $ver.Major
+      $minor = $ver.Minor
+      $build = $ver.Build
+      $revision = $ver.Revision
 
-        foreach ($item in $versions) {
-            if (Test-Version $item) {
-                $ver = Get-Version $item
+      if ($NextMajor) {
+          $major    = incrementVersionElement $major
+          $minor    = resetVersionElement $minor
+          $build    = resetVersionElement $build
+          $revision = resetVersionElement $revision
+      }
 
-                $major = $ver.Major
-                $minor = $ver.Minor
-                $build = $ver.Build
-                $revision = $ver.Revision
+      if ($NextMinor) {
+          $minor    = incrementVersionElement $minor
+          $build    = resetVersionElement $build
+          $revision = resetVersionElement $revision
+      }
 
-                if ($NextMajor) {
-                    $major = ([int]$major) + 1
-                }
+      if ($NextBuild) {
+          $build    = incrementVersionElement $build
+          $revision = resetVersionElement $revision
+      }
 
-                if ($NextMinor) {
-                    $minor = ([int]$minor) + 1
-                }
+      if ($NextRevision) {
+        $revision = incrementVersionElement $revision
+      }
 
-                if ($NextBuild) {
-                    $build = ([int]$build) + 1
-                }
-
-                if ($NextRevision) {
-                    if ($null -eq $revision) {
-                        $revision = 1
-                    } else {
-                        $revision = ([int]$revision) + 1
-                    }
-                }
-
-                New-Version -Major $major -Minor $minor -Build $build -Revision $revision
-            }
-        }
+      New-Version -Major $major -Minor $minor -Build $build -Revision $revision
     }
 }
 
