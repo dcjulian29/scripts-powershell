@@ -3,6 +3,9 @@ trap [System.Exception] {
   [Environment]::Exit(1)
 }
 
+$baseDir = (Resolve-Path $("$PSScriptRoot")).Path
+$modulesDir = Join-Path -Path $baseDir -ChildPath Modules
+
 if ($null -eq ${env:NuGetApi}) {
   $profileFile = Join-Path -Path "$($env:SystemDrive)/etc/nuget" -ChildPath "powershell.json"
 
@@ -12,7 +15,7 @@ if ($null -eq ${env:NuGetApi}) {
   $env:NuGetApi = $json.Api
 }
 
-$baseDir = (Resolve-Path $("$PSScriptRoot")).Path
+#------------------------------------------------------------------------------
 
 Push-Location $baseDir
 
@@ -42,21 +45,22 @@ if (-not (Test-Path $NUGET_EXE)) {
 
 Pop-Location
 
-Push-Location $baseDir\MyModules
+#------------------------------------------------------------------------------
 
 Get-ChildItem -Directory | ForEach-Object {
   $id = $_.Name
   $version = "0.0.0"
 
-  Write-Output "##teamcity[blockOpened name='$id (v$version)']"
-  Push-Location $_.Name
-
-  Remove-Item *.nupkg -Force -ErrorAction SilentlyContinue
-  Remove-Item "package.nuspec" -Force -ErrorAction SilentlyContinue
-
   if (Test-Path ".\$id.psd1") {
     $version = (Import-PowerShellDataFile .\$id.psd1).ModuleVersion
   }
+
+  Write-Output "##teamcity[blockOpened name='$id (v$version)']"
+
+  Push-Location $(Join-Path -Path $modulesDir -ChildPath $_.Name)
+
+  Remove-Item *.nupkg -Force -ErrorAction SilentlyContinue
+  Remove-Item "package.nuspec" -Force -ErrorAction SilentlyContinue
 
   Set-Content -Path "package.nuspec" -Value @"
 <?xml version="1.0"?>
@@ -97,6 +101,7 @@ Add-Content -Path "package.nuspec" -Value @"
   & "$NUGET_EXE" pack package.nuspec -Verbosity detailed -NoPackageAnalysis -NonInteractive -NoDefaultExcludes
 
   Write-Output "`nPublishing '$id' v$version to $env:NuGetUrl"
+
   & "$NUGET_EXE" push *.nupkg $env:NuGetApi -Source $env:NuGetUrl
 
   Remove-Item *.nupkg -Force -ErrorAction SilentlyContinue
@@ -107,5 +112,3 @@ Add-Content -Path "package.nuspec" -Value @"
   Write-Output "##teamcity[blockClosed name='$id (v$version)']"
   Write-Output "`n`n"
 }
-
-Pop-Location
