@@ -61,62 +61,56 @@ function New-SemanticVersion {
 }
 
 Set-Alias -Name "New-SemVer" -Value "New-SemanticVersion"
+
 function Set-SemanticVersion {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [string]$Version,
-        [switch] $NextMajor,
-        [switch] $NextMinor,
-        [switch] $NextPatch,
-        [string] $SetPreRelease,
-        [string] $SetBuildMetaData
-    )
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+    [string]$Version,
+    [switch] $NextMajor,
+    [switch] $NextMinor,
+    [switch] $NextPatch,
+    [string] $SetPreRelease,
+    [string] $SetBuildMetaData
+  )
 
-    process {
-        $versions = @()
+  process {
+    if (Test-SemanticVersion $version) {
+      $semver = Get-SemanticVersion $version
 
-        if ($Version.GetType().BaseType.Name -eq "Array") {
-            $versions = $Version
-        } else {
-            $versions += $Version
-        }
+      $major = $semver.Major
+      $minor = $semver.Minor
+      $patch = $semver.Patch
+      $prerelease = $semver.PreRelease
+      $buildmetadata = $semver.BuildMetaData
 
-        foreach ($item in $versions) {
-            if (Test-SemanticVersion $item) {
-                $semver = Get-SemanticVersion $item
+      if ($NextMajor) {
+        $major = ([int]$major) + 1
+        $minor = 0
+        $patch = 0
+      }
 
-                $major = $semver.Major
-                $minor = $semver.Minor
-                $patch = $semver.Patch
-                $prerelease = $semver.PreRelease
-                $buildmetadata = $semver.BuildMetaData
+      if ($NextMinor) {
+        $minor = ([int]$minor) + 1
+        $patch = 0
+      }
 
-                if ($NextMajor) {
-                    $major = ([int]$major) + 1
-                }
+      if ($NextPatch) {
+        $patch = ([int]$patch) + 1
+      }
 
-                if ($NextMinor) {
-                    $minor = ([int]$minor) + 1
-                }
+      if ($SetPreRelease) {
+        $prerelease = $SetPreRelease
+      }
 
-                if ($NextPatch) {
-                    $patch = ([int]$patch) + 1
-                }
+      if ($SetBuildMetaData) {
+        $buildmetadata = $SetBuildMetaData
+      }
 
-                if ($SetPreRelease) {
-                    $prerelease = $SetPreRelease
-                }
-
-                if ($SetBuildMetaData) {
-                    $buildmetadata = $SetBuildMetaData
-                }
-
-                New-SemanticVersion -Major $major -Minor $minor -Patch $patch `
-                    -PreRelease $prerelease -BuildMetaData $buildmetadata
-            }
-        }
+      New-SemanticVersion -Major $major -Minor $minor -Patch $patch `
+        -PreRelease $prerelease -BuildMetaData $buildmetadata
     }
+  }
 }
 
 function Step-SemanticMajorVersion {
