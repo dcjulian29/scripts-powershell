@@ -48,7 +48,7 @@ Pop-Location
 
 #------------------------------------------------------------------------------
 
-Get-ChildItem -Directory | ForEach-Object {
+Get-ChildItem -Path $modulesDir -Directory | ForEach-Object {
   $id = $_.Name
   $version = "0.0.0"
 
