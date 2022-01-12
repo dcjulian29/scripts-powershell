@@ -15,12 +15,12 @@ if (-not ($env:PATH).Contains("$env:SYSTEMDRIVE/bin")) {
   }
 }
 
-if ((-not ($env:PSModulePath).Contains("$(Split-Path $profile)\MyModules"))) {
-  if (Test-Path "$(Split-Path $profile)\MyModules") {
-    $PSModulePath = "$(Split-Path $profile)\MyModules;$($env:PSModulePath)"
+$docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
+$poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
+$modulesDir = Join-Path -Path $poshDir -ChildPath Modules
 
-    $env:PSModulePath = $PSModulePath
+if ((-not ($env:PSModulePath).Contains($modulesDir))) {
+  $PSModulePath = "$modulesDir;$([Environment]::GetEnvironmentVariable('PSModulePath', 'User'))"
 
-    Get-Module -ListAvailable | Out-Null
-  }
+  $env:PSModulePath = $PSModulePath + [Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')
 }

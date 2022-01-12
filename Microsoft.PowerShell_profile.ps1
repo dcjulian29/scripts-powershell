@@ -31,12 +31,14 @@ if (-not $batch) {
     $env:PromptAdmin = "#"
   }
 
-  if ((Get-Command Set-PSReadLineOption).Version.Major -lt 2) {
+  if ((Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue).Version.Major -lt 2) {
     Set-PSReadLineOption -TokenKind Parameter -ForegroundColor Cyan
     Set-PSReadlineOption -TokenKind Operator -ForegroundColor Green
   } else {
+    if (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue) {
       Set-PSReadLineOption -Colors @{ "Parameter" = "$([char]0x1b)[1;35m"  }
       Set-PSReadLineOption -Colors @{ "Operator" = "$([char]0x1b)[1;32m"  }
+    }
   }
 
   $OutputEncoding = [Console]::InputEncoding `
@@ -59,6 +61,8 @@ if (-not $batch) {
     Write-Host ""
   }
 }
+
+#------------------------------------------------------------------------------
 
 # Load the Posh-GIT module if it exist
 if (Test-Path "$env:SymtemDrive/tools/poshgit") {
@@ -109,7 +113,11 @@ if (Get-Command dotnet -ErrorAction SilentlyContinue) {
   }
 }
 
-################################################################################
+if (Test-Path("${env:ChocolateyInstall}\helpers\chocolateyProfile.psm1")) {
+  Import-Module "${env:ChocolateyInstall}\helpers\chocolateyProfile.psm1"
+}
+
+#------------------------------------------------------------------------------
 
 if (Get-Command starship -ErrorAction SilentlyContinue) {
   Invoke-Expression (&starship init powershell)
