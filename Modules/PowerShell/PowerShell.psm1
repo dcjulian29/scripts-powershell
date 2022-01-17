@@ -1,3 +1,18 @@
+function clearRepoDownloads {
+  @(
+    "${env:TEMP}\scripts-powershell-main.zip"
+    "${env:TEMP}\scripts-powershell-main"
+    "${env:TEMP}\posh-go.zip"
+    "${env:TEMP}\Go-Shell-master"
+  ) | ForEach-Object {
+    if (Test-Path $_) {
+        Remove-Item $_ -Recurse -Force
+    }
+  }
+}
+
+#------------------------------------------------------------------------------
+
 function Edit-Profile {
     Start-Notepad $profile
 }
@@ -273,6 +288,92 @@ function Test-PowerShellVerb {
     }
 
     return $false
+}
+
+function Update-AllPowershellModules {
+  Write-Host "Updating third-party Powershell modules...`n" -ForegroundColor Magenta
+  Update-PowershellModules
+
+  Write-Host "`n`nUpdating my Powershell modules...`n" -ForegroundColor Cyan
+  Update-MyPowershellModules
+}
+
+function Update-MyPowershellModules {
+  $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
+  $poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
+  $modulesDir = Join-Path -Path $poshDir -ChildPath Modules
+
+  clearRepoDownloads
+
+  Download-File "https://github.com/dcjulian29/scripts-powershell/archive/refs/heads/main.zip" `
+    "${env:TEMP}\scripts-powershell-main.zip"
+
+  Unzip-File "${env:TEMP}\scripts-powershell-main.zip" "${env:TEMP}\"
+
+  Download-File "https://github.com/cameronharp/Go-Shell/archive/master.zip" `
+    "${env:TEMP}\posh-go.zip"
+
+  Unzip-File "${env:TEMP}\posh-go.zip" "${env:TEMP}\"
+
+  if (-not (Test-Path "$modulesDir\go")) {
+    New-Item -Type Directory -Path "$modulesDir\go" | Out-Null
+  }
+
+  Copy-Item -Path "${env:TEMP}\Go-Shell-master\*" -Destination "$modulesDir\go" -Force
+
+  (Get-ChildItem -Directory -Path "${env:TEMP}\scripts-powershell-main\Modules").FullName |
+    Copy-Item -Force -Destination { $_ -replace [regex]::Escape("${env:TEMP}\scripts-powershell-main\modules"), $modulesDir } -Recurse
+
+  $modules = (Get-InstalledModule).Name
+
+  foreach ($module in $modules) {
+    if (Test-Path "$modulesDir\$module") {
+      if (Get-Module $module) {
+        Remove-Module $module -Force
+      }
+
+      Remove-Item -Path "$modulesDir\$module" -Recurse -Force
+    }
+  }
+
+  Get-Module -ListAvailable | Out-Null
+
+  clearRepoDownloads
+}
+
+function Update-PowershellModules {
+  $modules = (Get-InstalledModule).Name
+  $first = $true
+
+  foreach ($module in $modules) {
+    if (-not $first) {
+      Write-Output "`n--------------------------------------`n"
+    }
+
+    Update-Module -Name $module -Confirm:$false -Verbose
+
+    $first = $false
+  }
+
+  Get-Module -ListAvailable | Out-Null
+}
+
+function Update-PreCompiledAssemblies {
+  Write-Output "Ensuring all currrently loaded runtime assemblies are pre-compiled..."
+
+  $originalPath = $env:PATH
+  $env:PATH = "$([Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory());${env:PATH}"
+
+  [AppDomain]::CurrentDomain.GetAssemblies() | ForEach-Object {
+    $path = $_.Location
+    if ($path) {
+      $name = Split-Path $path -Leaf
+      Write-Output "`n`nRunning ngen.exe on '$name'..."
+      ngen.exe install $path /nologo
+    }
+  }
+
+  $env:PATH = $originalPath
 }
 
 function Update-Profile {

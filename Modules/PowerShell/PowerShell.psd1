@@ -1,6 +1,6 @@
 @{
     RootModule = 'PowerShell.psm1'
-    ModuleVersion = '2112.14.1'
+    ModuleVersion = '2201.17.1'
     GUID = 'f7824b54-f08e-415c-b661-c4605dda0603'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -23,6 +23,10 @@
         "Search-Command"
         "Test-IsNonInteractive"
         "Test-PowerShellVerb"
+        "Update-AllPowershellModules"
+        "Update-MyPowershellModules"
+        "Update-PowershellModules"
+        "Update-PreCompiledAssemblies"
         "Update-Profile"
     )
     AliasesToExport = @(
