@@ -11,7 +11,16 @@ function Get-WebCredential {
     [switch] $Username
   )
 
-  $vaultCredential = $script:vault.FindAllByResource($Name)
+  try {
+    $vaultCredential = $script:vault.FindAllByResource($Name)
+  } catch {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "Element not found. Cannot find credential in Vault!" `
+      -ExceptionType "System.ArgumentException" `
+      -ErrorId "ArgumentException" `
+      -ErrorCategory NotSpecified `
+      -TargetObject $Name))
+  }
 
   if ($vaultCredential) {
     if ($vaultCredential.AdditionalTypeData) {
@@ -49,7 +58,17 @@ function Remove-WebCredential {
     [string] $Name
   )
 
-  $vaultCredential = $script:vault.FindAllByResource($Name)
+  try {
+    $vaultCredential = $script:vault.FindAllByResource($Name)
+  } catch {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "Element not found. Cannot find credential in Vault!" `
+      -ExceptionType "System.ArgumentException" `
+      -ErrorId "ArgumentException" `
+      -ErrorCategory NotSpecified `
+      -TargetObject $Name))
+  }
+
 
   if ($vaultCredential) {
     if ($vaultCredential.AdditionalTypeData) {
