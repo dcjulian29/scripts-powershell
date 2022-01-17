@@ -11,12 +11,15 @@ function Import-DevelopmentPowerShellModule {
   )
 
   if (-not (Test-Path $Path)) {
-    $PSCmdlet.ThrowTerminatingError( `
-      (New-ErrorRecord "'$Path' was not found or available." 'System.IO.DirectoryNotFoundException' `
-        'ResourceUnavailable' 'ResourceUnavailable' 'Import-DevelopmentPowerShellModule'))
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "'$Path' was not found or available!" `
+      -ExceptionType "System.IO.DirectoryNotFoundException" `
+      -ErrorId "ResourceUnavailable" `
+      -ErrorCategory "ResourceUnavailable" `
+      -TargetObject 'Import-DevelopmentPowerShellModule'))
   }
 
-  $moduleFolder = (Get-ChildItem -Path $Path -Filter "MyModules" `
+  $moduleFolder = (Get-ChildItem -Path $Path -Filter "Modules" `
     -Recurse -ErrorAction SilentlyContinue).FullName
 
   if ($PSCmdlet.ParameterSetName -eq 'Module') {
@@ -42,10 +45,13 @@ function Import-DevelopmentPowerShellModule {
       Import-Module -Global "$moduleFolder\$Module\$moduleFile" `
         -Verbose:($PSBoundParameters.ContainsKey('Verbose'))
     } else {
-      $PSCmdlet.ThrowTerminatingError( `
-        (New-ErrorRecord "'$Module' was not found or available." 'System.Management.Automation.ItemNotFoundException' `
-          'ResourceUnavailable' 'ResourceUnavailable' 'Import-DevelopmentPowerShellModule'))
-    }
+        $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+          -Message "'$Module' was not found or available!" `
+          -ExceptionType "System.IO.DirectoryNotFoundException" `
+          -ErrorId "ResourceUnavailable" `
+          -ErrorCategory "ResourceUnavailable" `
+          -TargetObject $Module))
+        }
   } else {
     $modules = (Get-ChildItem -Path $moduleFolder).Name
 
