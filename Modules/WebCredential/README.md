@@ -4,6 +4,6 @@ Provides the ability to store and retrieve username and passwords in the Web Cre
 
 ## Functions
 
-- [Get-WebCredential](docs/Get-WebCredential)
-- [Remove-WebCredential](docs/Remove-WebCredential)
-- [Set-WebCredential](docs/Set-WebCredential)
+- [Get-WebCredential](docs/Get-WebCredential.md)
+- [Remove-WebCredential](docs/Remove-WebCredential.md)
+- [Set-WebCredential](docs/Set-WebCredential.md)

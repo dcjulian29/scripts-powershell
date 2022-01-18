@@ -1,7 +1,7 @@
 ---
 external help file: WebCredential-help.xml
 Module Name: WebCredential
-online version:
+online version:https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/WebCredential/docs/Set-WebCredential.md
 schema: 2.0.0
 ---
 
