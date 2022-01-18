@@ -1,0 +1,13 @@
+A cmdlet is a .NET class written in C# or other language and contained in a DLL (i.e. in a binary module).
+A function is specified directly in PowerShell in a script, script module or at the command line.
+A module manifest may include both script and binary modules so the manifest needs to be able to export both cmdlets and functions.
+
+# you should have module imported in the session
+Import-Module MyAwesomeModule
+New-MarkdownHelp -Module MyAwesomeModule -OutputFolder .\docs
+
+New-ExternalHelp .\docs -OutputPath en-US\
+
+# re-import your module with latest changes
+Import-Module MyAwesomeModule -Force
+Update-MarkdownHelp .\docs
