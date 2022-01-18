@@ -8,9 +8,10 @@ My PowerShell Profile Scripts and various modules I maintain and use.
 
 ## My Published Modules
 
-| Module                                                                                            | Version                                                                        |
-| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| [WebCredential](https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/WebCredential) | ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/WebCredential) |
+| Module                                                                                              | Version                                                                          |
+| --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [VirtualBaseDisk](https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/WebCredential) | ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/VirtualBaseDisk) |
+| [WebCredential](https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/WebCredential)   | ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/WebCredential)   |
 
 ## Third-Party Modules
 

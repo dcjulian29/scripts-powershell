@@ -20,7 +20,7 @@ function getWIMFileName($File) {
   $wim = Resolve-Path $File
 
   if (isIsoFile($File)) {
-    $wim = "{0}:\sources\install.wim" -f $(mountISO $File)
+    $wim = "{0}:\sources\install.wim" -f $(mountISO $wim)
   }
 
   return $wim
@@ -51,14 +51,6 @@ function isIsoFile($File) {
 #------------------------------------------------------------------------------
 
 function Get-WindowsImagesInISO {
-  <#
-  .SYNOPSIS
-    Gets information about all Windows images in an ISO file.
-  .DESCRIPTION
-    The Get-WindowsImagesInISO cmdlet gets a list of Windows images in an ISO file.
-  .PARAMETER IsoFile
-    Specifies the location of an ISO file.
-  #>
   param (
     [Parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
@@ -66,6 +58,8 @@ function Get-WindowsImagesInISO {
     [Alias("Path")]
     [string] $IsoFile
   )
+
+  $IsoFile = (Resolve-Path $IsoFile).Path
 
   if (isIsoFile($IsoFile)) {
     $wim = (getWimFileName $IsoFile)
@@ -79,14 +73,6 @@ function Get-WindowsImagesInISO {
 }
 
 function Get-WindowsImagesInWIM {
-  <#
-  .SYNOPSIS
-    Gets information about all Windows images in an WIM file.
-  .DESCRIPTION
-    The Get-WindowsImagesInWIM cmdlet gets a list of Windows images in a WIM file.
-  .PARAMETER IsoFile
-    Specifies the location of an WIM file.
-  #>
   param (
     [Parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
@@ -106,21 +92,6 @@ function Get-WindowsImagesInWIM {
 }
 
 function New-BaseVhdxDisk {
-  <#
-  .SYNOPSIS
-    Create a "base" VHDX from the Windows image in a WIM or ISO file.
-  .DESCRIPTION
-    The New-BaseVhdxDisk cmdlet creates a VHDX file from a Windows Image contained
-    in a WIM or ISO file.
-  .PARAMETER File
-    Specifies the location of a WIM or ISO file.
-  .PARAMETER Index
-    Specifies the index number of a Windows image in a WIM or ISO file.
-  .PARAMETER Force
-    Specifies that the target VHDX file should be overwritten if it exists.
-  .PARAMETER Suffix
-    Specifies a suffix to add to the generated VHDX file name.
-  #>
   param (
     [Parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
@@ -131,6 +102,8 @@ function New-BaseVhdxDisk {
     [switch] $Force,
     [string] $Suffix
   )
+
+  $File = (Resolve-Path $File).Path
 
   if ((-not (isWimFile($File))) -and (-not (isIsoFile($File)))) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
@@ -145,7 +118,7 @@ function New-BaseVhdxDisk {
     Get-WindowsImagesInWIM -WimFile $File
     Get-WindowsImagesInISO -IsoFile $File
 
-    $Index = Read-Host "Enter the number for the OS you want:"
+    $Index = Read-Host "Enter the number for the OS you want"
   }
 
   if (-not $index) {
@@ -198,22 +171,6 @@ function New-BaseVhdxDisk {
 }
 
 function New-BaseServerVhdxDisks {
-  <#
-  .SYNOPSIS
-    Create two "base" VHDX from a Windows Server image in a WIM or ISO file.
-  .DESCRIPTION
-    The New-BaseServerVhdxDisk cmdlet creates two VHDX files from a Windows Server Image
-    contained in a WIM or ISO file. One VHDX is the "Desktop Experience" and the other is
-    the "Core" style.
-  .PARAMETER OsVersion
-    Specifies the version of the operating system in the WIM or ISO file.
-  .PARAMETER File
-    Specifies the location of a WIM or ISO file.
-  .PARAMETER Force
-    Specifies that the target VHDX files should be overwritten if it exists.
-  .PARAMETER EvalIso
-    Specifies that the WIM or ISO is from an Evaluation Media source.
-  #>
   param (
     [Parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
@@ -276,17 +233,6 @@ function New-BaseServerVhdxDisks {
 }
 
 function New-DevBaseVhdxDisk {
-  <#
-  .SYNOPSIS
-    Create a "base" VHDX from the Windows Insiders image in a WIM or ISO file.
-  .DESCRIPTION
-    The New-DevBaseVhdxDisk cmdlet creates a VHDX file from a Windows Insiders Image contained
-    in a WIM or ISO file.
-  .PARAMETER File
-    Specifies the location of a Windows Insiders WIM or ISO file.
-  .PARAMETER OsVersion
-    Specifies the version of the operating system in the WIM or ISO file.
-  #>
   param (
     [Parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]

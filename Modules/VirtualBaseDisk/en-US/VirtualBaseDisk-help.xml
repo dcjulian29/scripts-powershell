@@ -1,0 +1,712 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<helpItems schema="maml" xmlns="http://msh">
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-WindowsImagesInISO</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>WindowsImagesInISO</command:noun>
+      <maml:description>
+        <maml:para>Gets information about all Windows images in an ISO file.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Get-WindowsImagesInISO cmdlet gets a list of Windows images in an ISO file.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-WindowsImagesInISO</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="Path">
+          <maml:name>IsoFile</maml:name>
+          <maml:description>
+            <maml:para>Specifies the location of an ISO file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="Path">
+        <maml:name>IsoFile</maml:name>
+        <maml:description>
+          <maml:para>Specifies the location of an ISO file.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-WindowsImagesInISO Windows11_InsiderPreview_Client_x64_en-us_22533.iso
+
+ # Name
+ - ----
+ 1 Windows 11 Home
+ 2 Windows 11 Home N
+ 3 Windows 11 Home Single Language
+ 4 Windows 11 Education
+ 5 Windows 11 Education N
+ 6 Windows 11 Pro
+ 7 Windows 11 Pro N
+ 8 Windows 11 Pro Education
+ 9 Windows 11 Pro Education N
+10 Windows 11 Pro for Workstations
+11 Windows 11 Pro N for Workstations</dev:code>
+        <dev:remarks>
+          <maml:para>This example list the Windows Images contained in the install.wim file inside the ISO file..</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/VirtualBaseDisk/docs/Get-WindowsImagesInISO.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-WindowsImagesInWIM</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>WindowsImagesInWIM</command:noun>
+      <maml:description>
+        <maml:para>Gets information about all Windows images in an WIM file.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Get-WindowsImagesInWIM cmdlet gets a list of Windows images in a WIM file.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-WindowsImagesInWIM</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="Path">
+          <maml:name>WimFile</maml:name>
+          <maml:description>
+            <maml:para>The WIM file is containing a file-based imaging format that are used to manage files such as drivers, updates, and components without booting the operating system image.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="Path">
+        <maml:name>WimFile</maml:name>
+        <maml:description>
+          <maml:para>The WIM file is containing a file-based imaging format that are used to manage files such as drivers, updates, and components without booting the operating system image.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-WindowsImagesInWIM D:\sources\install.wim
+
+ # Name
+ - ----
+ 1 Windows 11 Home
+ 2 Windows 11 Home N
+ 3 Windows 11 Home Single Language
+ 4 Windows 11 Education
+ 5 Windows 11 Education N
+ 6 Windows 11 Pro
+ 7 Windows 11 Pro N
+ 8 Windows 11 Pro Education
+ 9 Windows 11 Pro Education N
+10 Windows 11 Pro for Workstations
+11 Windows 11 Pro N for Workstations</dev:code>
+        <dev:remarks>
+          <maml:para>This example list the Windows Images contained in the WIM file.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/VirtualBaseDisk/docs/Get-WindowsImagesInWIM.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>New-BaseServerVhdxDisks</command:name>
+      <command:verb>New</command:verb>
+      <command:noun>BaseServerVhdxDisks</command:noun>
+      <maml:description>
+        <maml:para>Create two "base" VHDX from a Windows Server image in a WIM or ISO file.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The New-BaseServerVhdxDisks cmdlet creates two VHDX files from a Windows Server Image contained in a WIM or ISO file. One VHDX is the "Desktop Experience" and the other is the "Core" style.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>New-BaseServerVhdxDisks</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+          <maml:name>OSVersion</maml:name>
+          <maml:description>
+            <maml:para>Specifies the version of the operating system in the WIM or ISO file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>0</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+          <maml:name>File</maml:name>
+          <maml:description>
+            <maml:para>Specifies the location of a WIM or ISO file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>Specifies that the target VHDX files should be overwritten if it exists.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>EvalIso</maml:name>
+          <maml:description>
+            <maml:para>Specifies that the WIM or ISO is from an Evaluation Media source.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+        <maml:name>OSVersion</maml:name>
+        <maml:description>
+          <maml:para>Specifies the version of the operating system in the WIM or ISO file.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>0</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+        <maml:name>File</maml:name>
+        <maml:description>
+          <maml:para>Specifies the location of a WIM or ISO file.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>Specifies that the target VHDX files should be overwritten if it exists.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>EvalIso</maml:name>
+        <maml:description>
+          <maml:para>Specifies that the WIM or ISO is from an Evaluation Media source.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; New-BaseServerVhdxDisks -OSVersion 2022 -File .\windows_server_2022_updated_dec_2021_x64_dvd_6905f97b.iso
+Creating a base disk using 'Windows Server 2022 Standard (Desktop Experience)' to 'C:\Virtual Machines\Discs\base\Win2022Base.vhdx' ...
+
+Windows(R) Image to Virtual Hard Disk Converter for Windows(R) 10
+Copyright (C) Microsoft Corporation.  All rights reserved.
+Version 10.0.14278.1000.amd64fre.rs1_es_media.160201-1707
+
+VERBOSE: Target Image Version 10.0.19044.1466
+VERBOSE: isUserAdmin? True
+VERBOSE: is Windows 8 or Higher? True
+VERBOSE: Temporary VHDX path is : C:\Virtual Machines\Discs\base\abe92ff5-a6cf-49c8-ba0e-452146d2bca8.vhdx
+INFO   : Looking for the requested Windows image in the WIM file
+INFO   : Image 2 selected (ServerStandard)...
+INFO   : Creating sparse disk...
+INFO   : Mounting VHDX...
+INFO   : Initializing disk...
+INFO   : Creating EFI system partition...
+INFO   : Formatting system volume...
+INFO   : Applying image to VHDX. This could take a while...
+INFO   : Image was applied successfully.
+INFO   : Making image bootable...
+VERBOSE: Running bcdboot.exe H:\Windows /s F: /v /f UEFI
+VERBOSE: Return code was 0.
+INFO   : Drive is bootable.  Cleaning up...
+INFO   : Dismounting VHDX...
+VERBOSE: VHDX final path is : C:\Virtual Machines\Discs\base\Win2022Base.vhdx
+VERBOSE: Renaming VHDX at C:\Virtual Machines\Discs\base\abe92ff5-a6cf-49c8-ba0e-452146d2bca8.vhdx to Win2022Base.vhdx
+INFO   : Closing Windows image...
+INFO   : Done.
+Creating a base disk using 'Windows Server 2022 Standard' to 'C:\Virtual Machines\Discs\base\Win2022BaseCore.vhdx'...
+
+Windows(R) Image to Virtual Hard Disk Converter for Windows(R) 10
+Copyright (C) Microsoft Corporation.  All rights reserved.
+Version 10.0.14278.1000.amd64fre.rs1_es_media.160201-1707
+
+VERBOSE: Target Image Version 10.0.19044.1466
+VERBOSE: isUserAdmin? True
+VERBOSE: is Windows 8 or Higher? True
+VERBOSE: Temporary VHDX path is : C:\Virtual Machines\Discs\base\6e0c17f6-d98e-4b25-8774-2b2674630b98.vhdx
+INFO   : Looking for the requested Windows image in the WIM file
+INFO   : Image 1 selected (ServerStandardCore)...
+INFO   : Creating sparse disk...
+INFO   : Mounting VHDX...
+INFO   : Initializing disk...
+INFO   : Creating EFI system partition...
+INFO   : Formatting system volume...
+INFO   : Setting system partition as ESP...
+INFO   : Creating MSR partition...
+INFO   : Creating windows partition...
+INFO   : Formatting windows volume...
+INFO   : Windows path (H:) has been assigned.
+INFO   : Windows path (H:) took 1 attempts to be assigned.
+INFO   : System volume location: F:
+INFO   : Applying image to VHDX. This could take a while...
+INFO   : Image was applied successfully.
+INFO   : Making image bootable...
+VERBOSE: Running bcdboot.exe H:\Windows /s F: /v /f UEFI
+VERBOSE: Return code was 0.
+INFO   : Drive is bootable.  Cleaning up...
+INFO   : Dismounting VHDX...
+VERBOSE: VHDX final path is : C:\Virtual Machines\Discs\base\Win2022BaseCore.vhdx
+VERBOSE: Renaming VHDX at C:\Virtual Machines\Discs\base\6e0c17f6-d98e-4b25-8774-2b2674630b98.vhdx to
+Win2022BaseCore.vhdx
+INFO   : Closing Windows image...
+INFO   : Done.</dev:code>
+        <dev:remarks>
+          <maml:para>This example builds and creates two VHDX files: Win2022Base.vhdx and Win2022BaseCore.vhdx</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/VirtualBaseDisk/docs/New-BaseServerVhdxDisks.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>New-BaseVhdxDisk</command:name>
+      <command:verb>New</command:verb>
+      <command:noun>BaseVhdxDisk</command:noun>
+      <maml:description>
+        <maml:para>Create a "base" VHDX from the Windows image in a WIM or ISO file.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The New-BaseVhdxDisk cmdlet creates a VHDX file from a Windows Image contained in a WIM or ISO file.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>New-BaseVhdxDisk</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="Path">
+          <maml:name>File</maml:name>
+          <maml:description>
+            <maml:para>Specifies the location of a WIM or ISO file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+          <maml:name>Index</maml:name>
+          <maml:description>
+            <maml:para>Specifies the index number of a Windows image in a WIM or ISO file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+          <maml:name>Suffix</maml:name>
+          <maml:description>
+            <maml:para>Specifies a suffix to add to the generated VHDX file name.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>Specifies that the target VHDX file should be overwritten if it exists.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="Path">
+        <maml:name>File</maml:name>
+        <maml:description>
+          <maml:para>Specifies the location of a WIM or ISO file.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+        <maml:name>Index</maml:name>
+        <maml:description>
+          <maml:para>Specifies the index number of a Windows image in a WIM or ISO file.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>Specifies that the target VHDX file should be overwritten if it exists.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+        <maml:name>Suffix</maml:name>
+        <maml:description>
+          <maml:para>Specifies a suffix to add to the generated VHDX file name.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; New-BaseVhdxDisk -File .\windows_11_consumer_editions_updated_dec_2021_x64_dvd_bcf90d0b.iso
+
+ # Name
+ - ----
+ 1 Windows 11 Home
+ 2 Windows 11 Home N
+ 3 Windows 11 Home Single Language
+ 4 Windows 11 Education
+ 5 Windows 11 Education N
+ 6 Windows 11 Pro
+ 7 Windows 11 Pro N
+ 8 Windows 11 Pro Education
+ 9 Windows 11 Pro Education N
+10 Windows 11 Pro for Workstations
+11 Windows 11 Pro N for Workstations
+
+
+Enter the number for the OS you want: 6
+Creating a base disk using 'Windows 11 Pro' to 'C:\Virtual Machines\Discs\base\Win11Base.vhdx'...
+
+Windows(R) Image to Virtual Hard Disk Converter for Windows(R) 10
+Copyright (C) Microsoft Corporation.  All rights reserved.
+Version 10.0.14278.1000.amd64fre.rs1_es_media.160201-1707
+
+VERBOSE: Target Image Version 10.0.19044.1466
+VERBOSE: isUserAdmin? True
+VERBOSE: is Windows 8 or Higher? True
+VERBOSE: Temporary VHDX path is : C:\Virtual Machines\Discs\base\fda6df23-eb25-4751-9690-e382d49e5ed5.vhdx
+INFO   : Looking for the requested Windows image in the WIM file
+INFO   : Image 6 selected (Professional)...
+INFO   : Creating sparse disk...
+INFO   : Mounting VHDX...
+INFO   : Initializing disk...
+INFO   : Creating EFI system partition...
+INFO   : Formatting system volume...
+INFO   : Setting system partition as ESP...
+INFO   : Creating MSR partition...
+INFO   : Creating windows partition...
+INFO   : Formatting windows volume...
+INFO   : Windows path (I:) has been assigned.
+INFO   : Windows path (I:) took 1 attempts to be assigned.
+INFO   : System volume location: H:
+INFO   : Applying image to VHDX. This could take a while...
+INFO   : Image was applied successfully.
+INFO   : Making image bootable...
+VERBOSE: Running bcdboot.exe I:\Windows /s H: /v /f UEFI
+VERBOSE: Return code was 0.
+INFO   : Drive is bootable.  Cleaning up...
+INFO   : Dismounting VHDX...
+VERBOSE: VHDX final path is : C:\Virtual Machines\Discs\base\Win11Base.vhdx
+VERBOSE: Renaming VHDX at C:\Virtual Machines\Discs\base\fda6df23-eb25-4751-9690-e382d49e5ed5.vhdx to Win11Base.vhdx
+INFO   : Closing Windows image...
+INFO   : Done.</dev:code>
+        <dev:remarks>
+          <maml:para>This example generates a 'Win11Base.vhdx' file.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- Example 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; New-BaseVhdxDisk -File .\windows_11_consumer_editions_updated_dec_2021_x64_dvd_bcf90d0b.iso -Index 1 -Suffix "Home"
+
+Creating a base disk using 'Windows 11 Home' to 'C:\Virtual Machines\Discs\base\Win11BaseHome.vhdx'...
+
+Windows(R) Image to Virtual Hard Disk Converter for Windows(R) 10
+Copyright (C) Microsoft Corporation.  All rights reserved.
+Version 10.0.14278.1000.amd64fre.rs1_es_media.160201-1707
+
+VERBOSE: Target Image Version 10.0.19044.1466
+VERBOSE: isUserAdmin? True
+VERBOSE: is Windows 8 or Higher? True
+VERBOSE: Temporary VHDX path is : C:\Virtual Machines\Discs\base\a3086fa8-892c-4d72-984d-d414e0ef1cb1.vhdx
+INFO   : Looking for the requested Windows image in the WIM file
+INFO   : Image 1 selected (Core)...
+INFO   : Creating sparse disk...
+INFO   : Mounting VHDX...
+INFO   : Initializing disk...
+INFO   : Creating EFI system partition...
+INFO   : Formatting system volume...
+INFO   : Setting system partition as ESP...
+INFO   : Creating MSR partition...
+INFO   : Creating windows partition...
+INFO   : Formatting windows volume...
+INFO   : Windows path (I:) has been assigned.
+INFO   : Windows path (I:) took 1 attempts to be assigned.
+INFO   : System volume location: H:
+INFO   : Applying image to VHDX. This could take a while...
+INFO   : Image was applied successfully.
+INFO   : Making image bootable...
+VERBOSE: Running bcdboot.exe I:\Windows /s H: /v /f UEFI
+VERBOSE: Return code was 0.
+INFO   : Drive is bootable.  Cleaning up...
+INFO   : Dismounting VHDX...
+VERBOSE: VHDX final path is : C:\Virtual Machines\Discs\base\Win11BaseHome.vhdx
+VERBOSE: Renaming VHDX at C:\Virtual Machines\Discs\base\a3086fa8-892c-4d72-984d-d414e0ef1cb1.vhdx to
+Win11BaseHome.vhdx
+INFO   : Closing Windows image...
+INFO   : Done.</dev:code>
+        <dev:remarks>
+          <maml:para>This example generates a 'Win11BaseHome.vhdx' file.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/VirtualBaseDisk/docs/New-BaseVhdxDisk.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>New-DevBaseVhdxDisk</command:name>
+      <command:verb>New</command:verb>
+      <command:noun>DevBaseVhdxDisk</command:noun>
+      <maml:description>
+        <maml:para>Create a "base" VHDX from the Windows Insiders image in a WIM or ISO file.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The New-DevBaseVhdxDisk cmdlet creates a VHDX file from a Windows Insiders Image contained in a WIM or ISO file.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>New-DevBaseVhdxDisk</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+          <maml:name>File</maml:name>
+          <maml:description>
+            <maml:para>Specifies the location of a Windows Insiders WIM or ISO file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+          <maml:name>OSVersion</maml:name>
+          <maml:description>
+            <maml:para>Specifies the version of the operating system in the WIM or ISO file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>11</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+        <maml:name>File</maml:name>
+        <maml:description>
+          <maml:para>Specifies the location of a Windows Insiders WIM or ISO file.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+        <maml:name>OSVersion</maml:name>
+        <maml:description>
+          <maml:para>Specifies the version of the operating system in the WIM or ISO file.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>11</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; New-DevBaseVhdxDisk -File .\Windows11_InsiderPreview_Client_x64_en-us_22533.iso
+Creating a base disk using 'Windows 11 Pro' to 'C:\Virtual Machines\Discs\base\Win11BaseInsider-10.0.22533.vhdx'...
+
+Windows(R) Image to Virtual Hard Disk Converter for Windows(R) 10
+Copyright (C) Microsoft Corporation.  All rights reserved.
+Version 10.0.14278.1000.amd64fre.rs1_es_media.160201-1707
+
+VERBOSE: Target Image Version 10.0.19044.1466
+VERBOSE: isUserAdmin? True
+VERBOSE: is Windows 8 or Higher? True
+VERBOSE: Temporary VHDX path is : C:\Virtual Machines\Discs\base\e59134c9-3c70-4b9c-81f3-cd494d76c4fe.vhdx
+INFO   : Looking for the requested Windows image in the WIM file
+INFO   : Image 6 selected (Professional)...
+INFO   : Creating sparse disk...
+INFO   : Mounting VHDX...
+INFO   : Initializing disk...
+INFO   : Creating EFI system partition...
+INFO   : Formatting system volume...
+INFO   : Setting system partition as ESP...
+INFO   : Creating MSR partition...
+INFO   : Creating windows partition...
+INFO   : Formatting windows volume...
+INFO   : Windows path (H:) has been assigned.
+INFO   : Windows path (H:) took 1 attempts to be assigned.
+INFO   : System volume location: F:
+INFO   : Applying image to VHDX. This could take a while...
+INFO   : Image was applied successfully.
+INFO   : Making image bootable...
+VERBOSE: Running bcdboot.exe H:\Windows /s F: /v /f UEFI
+VERBOSE: Return code was 0.
+INFO   : Drive is bootable.  Cleaning up...
+INFO   : Dismounting VHDX...
+VERBOSE: VHDX final path is : C:\Virtual Machines\Discs\base\Win11BaseInsider-10.0.22533.vhdx
+VERBOSE: Renaming VHDX at C:\Virtual Machines\Discs\base\e59134c9-3c70-4b9c-81f3-cd494d76c4fe.vhdx to
+Win11BaseInsider-10.0.22533.vhdx
+INFO   : Closing Windows image...
+INFO   : Done.</dev:code>
+        <dev:remarks>
+          <maml:para>This example generates a 'Win11BaseInsider-10.0.22533.vhdx' file.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/VirtualBaseDisk/docs/New-DevBaseVhdxDisk.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+</helpItems>
