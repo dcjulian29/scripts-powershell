@@ -1,6 +1,6 @@
 ---
 external help file: WebCredential-help.xml
-Module Name: webcredential
+Module Name: WebCredential
 online version:
 schema: 2.0.0
 ---

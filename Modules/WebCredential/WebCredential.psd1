@@ -11,12 +11,12 @@
   TypesToProcess = @()
   FormatsToProcess = @()
   NestedModules = @()
-  FunctionsToExport = @()
-  CmdletsToExport = @(
+  FunctionsToExport = @(
     "Get-WebCredential"
     "Remove-WebCredential"
     "Set-WebCredential"
   )
+  CmdletsToExport = @()
   VariablesToExport = @()
   AliasesToExport = @()
   PrivateData = @{
