@@ -4,7 +4,7 @@ A module manifest may include both script and binary modules so the manifest nee
 
 # you should have module imported in the session
 Import-Module "$((Get-Item $PWD.Path).BaseName).psd1"
-New-MarkdownHelp -Module MyAwesomeModule -OutputFolder .\docs
+New-MarkdownHelp -Module "$((Get-Item $PWD.Path).BaseName)" -OutputFolder .\docs
 
 New-ExternalHelp .\docs -OutputPath en-US\ -Force
 
