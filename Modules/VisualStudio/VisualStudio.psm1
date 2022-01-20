@@ -149,6 +149,7 @@ function Install-VsixPackage {
     $re = "[{0} ]" -f [RegEx]::Escape($invalidChars)
     $date = Get-Date -Format "yyyyMMdd_HHmmss"
 
+    $tempLog = "{1}-vsix-{0}.log" -f ($Package -replace $re), $date
     $logFile = "$(Get-LogFolder)\{1}-vsix-{0}.log" -f ($Package -replace $re), $date
     $vsixFile = (Resolve-Path $Path | Get-Item).FullName
 
@@ -158,12 +159,14 @@ function Install-VsixPackage {
     try {
         $arguments = @(
             "/quiet"
-            "/logFile:$logFile"
+            "/logFile:$tempLog"
             "$vsixFile"
         )
 
         $run = Start-Process -FilePath $vsix -ArgumentList $arguments -PassThru -Wait -NoNewWindow
         $exitCode = [Int32]$run.ExitCode
+
+        Move-Item -Path "${env:TEMP}\$tempLog" -Destination $logFile
 
         switch ($exitCode) {
           1001 {
