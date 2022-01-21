@@ -1,0 +1,565 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<helpItems schema="maml" xmlns="http://msh">
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Install-DevVmPackage</command:name>
+      <command:verb>Install</command:verb>
+      <command:noun>DevVmPackage</command:noun>
+      <maml:description>
+        <maml:para>Install a chocolatey package in a Development VM.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>This cmdlet installs a Chocolatey package in a Development VM with logging. It is designed to run meta-packages that install the entire system.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Install-DevVmPackage</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+          <maml:name>Package</maml:name>
+          <maml:description>
+            <maml:para>Specify the name of the Chocolatey package.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="dv">
+          <maml:name>DebugVerbose</maml:name>
+          <maml:description>
+            <maml:para>Pass the 'debug' and 'verbose' flags to Chocolatey.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="dv">
+        <maml:name>DebugVerbose</maml:name>
+        <maml:description>
+          <maml:para>Pass the 'debug' and 'verbose' flags to Chocolatey.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+        <maml:name>Package</maml:name>
+        <maml:description>
+          <maml:para>Specify the name of the Chocolatey package.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Install-DevVmPackage -Package "mytools-scm"
+
+Transcript started, output file is C:\etc\log\20220118_190837-HOSTMACHINEDEV-mytools-scm.log
+Chocolatey v0.12.0
+Installing the following packages:
+mytools-scm
+By installing, you accept licenses for the packages.
+
+git.install v2.34.1
+git.install package files install completed. Performing other installation steps.
+Using Git LFS
+Installing 64-bit git.install...
+git.install has been installed.
+WARNING: Can't find git.install install location
+  git.install can be automatically uninstalled.
+Environment Vars (like PATH) have changed. Close/reopen your shell to
+ see the changes (or in powershell/cmd.exe just type `refreshenv`).
+ The install of git.install was successful.
+  Software installed to 'C:\Program Files\Git\'
+
+git v2.34.1
+git package files install completed. Performing other installation steps.
+ The install of git was successful.
+  Software installed to 'C:\ProgramData\chocolatey\lib\git'
+
+mysettings-git v2201.14.1
+mysettings-git package files install completed. Performing other installation steps.
+
+...
+
+mytools-scm v2111.26.1
+mytools-scm package files install completed. Performing other installation steps.
+ The install of mytools-scm was successful.
+  Software installed to 'C:\ProgramData\chocolatey\lib\mytools-scm'
+
+Chocolatey installed 11/11 packages.
+ See the log for details (C:\ProgramData\chocolatey\logs\chocolatey.log).
+
+Installed:
+ - dotnet4.6.1 v4.6.01055.20170308
+ - lazygit v0.32.1
+ - mysettings-winmerge v2019.12.27.1
+ - winmerge v2.16.16
+ - mytools-scm v2111.26.1
+ - mysettings-git v2201.14.1
+ - git.install v2.34.1
+ - gitextensions v3.5.4
+ - poshgit v0.7.3.1
+ - mysettings-gitextensions v2020.5.7.1
+ - git v2.34.1
+
+Enjoy using Chocolatey? Explore more amazing features to take your
+experience to the next level at
+ https://chocolatey.org/compare
+Transcript stopped, output file is C:\etc\log\20220118_190837-HOSTMACHINEDEV-mytools-scm.log</dev:code>
+        <dev:remarks>
+          <maml:para>This example installs the 'mytools-scm' meta-package.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/VirtualDevelopment/docs/Install-DevVmPackage.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>New-DevVM</command:name>
+      <command:verb>New</command:verb>
+      <command:noun>DevVM</command:noun>
+      <maml:description>
+        <maml:para>Create a Development VM.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The New-DevVM cmdlet creates a VM based on the Host machine's name using the latest Windows Insiders base disk.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>New-DevVM</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>None</maml:name>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false"></command:parameterValue>
+        <dev:type>
+          <maml:name></maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; New-DevVM
+
+Creating a Differencing Disk [HOSTMACHINEDEV.vhdx] based on [C:\Virtual Machines\Discs\base\Win11BaseInsider-10.0.22533.vhdx]
+
+ComputerName            : HOSTMACHINE
+Path                    : C:\Virtual Machines\Discs\HOSTMACHINEDEV.vhdx
+VhdFormat               : VHDX
+VhdType                 : Differencing
+FileSize                : 4194304
+Size                    : 107374182400
+MinimumSize             : 107373150720
+LogicalSectorSize       : 512
+PhysicalSectorSize      : 4096
+BlockSize               : 2097152
+ParentPath              : C:\Virtual Machines\Discs\base\Win11BaseInsider-10.0.22533.vhdx
+DiskIdentifier          : B87479B3-E57C-4029-BE23-F9CD995E325B
+FragmentationPercentage :
+Alignment               : 1
+Attached                : False
+DiskNumber              :
+IsPMEMCompatible        : False
+AddressAbstractionType  : None
+Number                  :
+
+Creating HOSTMACHINEDEV VM...
+
+Name             : HOSTMACHINEDEV
+State            : Off
+CpuUsage         : 0
+MemoryAssigned   : 0
+MemoryDemand     : 0
+MemoryStatus     :
+Uptime           : 00:00:00
+Status           : Operating normally
+ReplicationState : Disabled
+Generation       : 2</dev:code>
+        <dev:remarks>
+          <maml:para>This example creates the Development VM based on the host computer's name.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/VirtualDevelopment/docs/New-DevVM.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>New-LinuxDevVM</command:name>
+      <command:verb>New</command:verb>
+      <command:noun>LinuxDevVM</command:noun>
+      <maml:description>
+        <maml:para>Create a Development Linux VM.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The New-DevVM cmdlet creates a Linux-based VM based on the Host machine's name using the specified ISO file. You can also specify some distributions to search and use that.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>New-LinuxDevVM</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>IsoFilePath</maml:name>
+          <maml:description>
+            <maml:para>Specifies the path to an ISO file to use to attach to VM.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>New-LinuxDevVM</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>UseMint</maml:name>
+          <maml:description>
+            <maml:para>Search the ISO storage folder for Mint Linux ISO and use that to attach to the VM.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>New-LinuxDevVM</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>UseUbuntu</maml:name>
+          <maml:description>
+            <maml:para>Search the ISO storage folder for Ubuntu Desktop Linux ISO and use that to attach to the VM.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>New-LinuxDevVM</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>UseXubuntu</maml:name>
+          <maml:description>
+            <maml:para>Search the ISO storage folder for Xbuntu Linux ISO and use that to attach to the VM.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>IsoFilePath</maml:name>
+        <maml:description>
+          <maml:para>Specifies the path to an ISO file to use to attach to VM.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>UseMint</maml:name>
+        <maml:description>
+          <maml:para>Search the ISO storage folder for Mint Linux ISO and use that to attach to the VM.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>UseUbuntu</maml:name>
+        <maml:description>
+          <maml:para>Search the ISO storage folder for Ubuntu Desktop Linux ISO and use that to attach to the VM.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>UseXubuntu</maml:name>
+        <maml:description>
+          <maml:para>Search the ISO storage folder for Xbuntu Linux ISO and use that to attach to the VM.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; New-LinuxDevVM
+
+ComputerName            : HOSTNAME
+Path                    : C:\Virtual Machines\Discs\HOSTNAMELNXDEV.vhdx
+VhdFormat               : VHDX
+VhdType                 : Dynamic
+FileSize                : 4194304
+Size                    : 85899345920
+MinimumSize             :
+LogicalSectorSize       : 512
+PhysicalSectorSize      : 4096
+BlockSize               : 33554432
+ParentPath              :
+DiskIdentifier          : F892C578-7DA2-4605-916D-29A91FEA3C97
+FragmentationPercentage : 0
+Alignment               : 1
+Attached                : False
+DiskNumber              :
+IsPMEMCompatible        : False
+AddressAbstractionType  : None
+Number                  :
+
+Name             : HOSTNAMELNXDEV
+State            : Off
+CpuUsage         : 0
+MemoryAssigned   : 0
+MemoryDemand     : 0
+MemoryStatus     :
+Uptime           : 00:00:00
+Status           : Operating normally
+ReplicationState : Disabled
+Generation       : 2</dev:code>
+        <dev:remarks>
+          <maml:para>This example creates a Linux DevVM using the latest Pop-OS file in the ISO storage folder.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- Example 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; New-LinuxDevVM -UseMint
+
+
+ComputerName            : HOSTNAME
+Path                    : C:\Virtual Machines\Discs\HOSTNAMELNXDEV.vhdx
+VhdFormat               : VHDX
+VhdType                 : Dynamic
+FileSize                : 4194304
+Size                    : 85899345920
+MinimumSize             :
+LogicalSectorSize       : 512
+PhysicalSectorSize      : 4096
+BlockSize               : 33554432
+ParentPath              :
+DiskIdentifier          : 0E521B93-9EB2-4EC2-AB78-003A44E99044
+FragmentationPercentage : 0
+Alignment               : 1
+Attached                : False
+DiskNumber              :
+IsPMEMCompatible        : False
+AddressAbstractionType  : None
+Number                  :
+
+Name             : HOSTNAMELNXDEV
+State            : Off
+CpuUsage         : 0
+MemoryAssigned   : 0
+MemoryDemand     : 0
+MemoryStatus     :
+Uptime           : 00:00:00
+Status           : Operating normally
+ReplicationState : Disabled
+Generation       : 2</dev:code>
+        <dev:remarks>
+          <maml:para>This example creates a Linux DevVM using the latest Mint Linux file in the ISO storage folder.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/VirtualDevelopment/docs/New-LinuxDevVM.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-DevVmPackages</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>DevVmPackages</command:noun>
+      <maml:description>
+        <maml:para>Update all of the installed chocolatey packages and log it.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Update-DevVmPackages cmdlet updates all installed chocolatey and logs it.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-DevVmPackages</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="dv">
+          <maml:name>DebugVerbose</maml:name>
+          <maml:description>
+            <maml:para>Pass the 'debug' and 'verbose' flags to Chocolatey.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="dv">
+        <maml:name>DebugVerbose</maml:name>
+        <maml:description>
+          <maml:para>Pass the 'debug' and 'verbose' flags to Chocolatey.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Update-DevVmPackages
+
+
+Transcript started, output file is C:\etc\log\20220121_163842-HOSTNAMEDEV-upgrade.log
+Chocolatey v0.12.0
+Upgrading the following packages:
+all
+By upgrading, you accept licenses for the packages.
+7zip v21.7 is the latest version available based on your source(s).
+7zip.install v21.7 is the latest version available based on your source(s).
+AdoptOpenJDKjre v16.0.1.900 is the latest version available based on your source(s).
+baretail v3.50.0.20120226 is the latest version available based on your source(s).
+chocolatey v0.12.0 is the latest version available based on your source(s).
+chocolatey-core.extension v1.3.5.1 is the latest version available based on your source(s).
+
+...
+
+mycomputers-common v2201.8.1 is the latest version available based on your source(s).
+
+You have mypowershell v2201.17.1 installed. Version 2201.19.1 is available based on your source(s).
+Progress: Downloading mypowershell 2201.19.1... 100%
+
+mypowershell v2201.19.1
+mypowershell package files upgrade completed. Performing other installation steps.
+Removing previous version of package...
+
+Making sure all runtime assemblies are pre-compiled if necessary...
+Running ngen.exe on 'mscorlib.dll'...
+Running ngen.exe on 'choco.exe'...
+Running ngen.exe on 'System.dll'...
+Running ngen.exe on 'System.Core.dll'...
+
+...
+
+mytools-scm v2111.26.1 is the latest version available based on your source(s).
+
+You have myvm-development v2201.19.4 installed. Version 2201.19.5 is available based on your source(s).
+Progress: Downloading myvm-development 2201.19.5... 100%
+
+myvm-development v2201.19.5
+myvm-development package files upgrade completed. Performing other installation steps.
+WARNING: Package already installed, no need to upgrade...
+ The upgrade of myvm-development was successful.
+  Software install location not explicitly set, it could be in package or
+  default install location of installer.
+myvm-workstation v2201.6.3 is the latest version available based on your source(s).
+netfx-4.5.2-devpack v4.5.5165101.20180721 is the latest version available based on your source(s).
+
+...
+
+winmerge v2.16.16 is the latest version available based on your source(s).
+xmlquire v1.17.220120 is the latest version available based on your source(s).
+
+Chocolatey upgraded 2/123 packages.
+ See the log for details (C:\ProgramData\chocolatey\logs\chocolatey.log).
+
+Upgraded:
+ - mypowershell v2201.19.1
+ - myvm-development v2201.19.5
+Transcript stopped, output file is C:\etc\log\20220121_163842-HOSTNAMEDEV-upgrade.log</dev:code>
+        <dev:remarks>
+          <maml:para>This example updates the installed chocolatey packages.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/VirtualDevelopment/docs/Update-DevVmPackages.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+</helpItems>

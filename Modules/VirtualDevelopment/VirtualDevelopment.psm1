@@ -130,88 +130,94 @@ function New-DevVM {
 }
 
 function New-LinuxDevVM {
-    [cmdletbinding(DefaultParameterSetName="Default")]
-    param (
-        [Parameter(ParameterSetName = "Ubuntu")]
-        [Switch]$UseUbuntu,
-        [Parameter(ParameterSetName = "Xubuntu")]
-        [Switch]$UseXubuntu,
-        [Parameter(ParameterSetName = "LinuxMint")]
-        [Switch]$UseMint,
-        [Parameter(ParameterSetName="Default")]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string]$IsoFilePath
-    )
+  [cmdletbinding(DefaultParameterSetName="Default")]
+  param (
+    [Parameter(ParameterSetName = "Ubuntu")]
+    [Switch]$UseUbuntu,
+    [Parameter(ParameterSetName = "Xubuntu")]
+    [Switch]$UseXubuntu,
+    [Parameter(ParameterSetName = "LinuxMint")]
+    [Switch]$UseMint,
+    [Parameter(ParameterSetName="Default")]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string]$IsoFilePath
+  )
 
-    $ErrorPreviousAction = $ErrorActionPreference
-    $ErrorActionPreference = "Stop";
+  $ErrorPreviousAction = $ErrorActionPreference
+  $ErrorActionPreference = "Stop";
 
-    $computerName = "$(($env:COMPUTERNAME).ToUpper())LNXDEV"
-    $vhdx = "$computerName.vhdx"
+  $computerName = "$(($env:COMPUTERNAME).ToUpper())LNXDEV"
+  $vhdx = "$computerName.vhdx"
 
-    if (-not $IsoFilePath) {
-        $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
+  if (-not $IsoFilePath) {
+    $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
 
-        if ($UseXubuntu) {
-            $latest = Get-ChildItem -Filter "xubuntu-*" -Path $isoDir `
-                | Sort-Object Name -Descending `
-                | Select-Object -First 1
-        }
+    $latest = Get-ChildItem -Filter "pop-os_*" -Path $isoDir `
+      | Sort-Object Name -Descending `
+      | Select-Object -First 1
 
-        if ($UseMint) {
-            $latest = Get-ChildItem -Filter "linuxmint-*" -Path $isoDir `
-                | Sort-Object Name -Descending `
-                | Select-Object -First 1
-        }
-
-        if ($UseUbuntu -or ($null -eq $latest)) {
-            $latest = Get-ChildItem -Filter "ubuntu-mate-*" -Path $isoDir `
-                | Sort-Object Name -Descending `
-                | Select-Object -First 1
-        }
-
-        $isoFile = $latest.name
-
-        $IsoFilePath = "$isoDir\$isoFile"
+    if ($UseXubuntu) {
+      $latest = Get-ChildItem -Filter "xubuntu-*" -Path $isoDir `
+        | Sort-Object Name -Descending `
+        | Select-Object -First 1
     }
 
-    Uninstall-VirtualMachine $computerName
+    if ($UseMint) {
+      $latest = Get-ChildItem -Filter "linuxmint-*" -Path $isoDir `
+        | Sort-Object Name -Descending `
+        | Select-Object -First 1
+    }
 
-    $numOfCpu = $(Get-WmiObject -class Win32_processor `
-        | Select-Object NumberOfLogicalProcessors).NumberOfLogicalProcessors / 2
-    $maxMem = $(Get-WMIObject -class Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum `
-        | Select-Object @{N="TotalRam"; E={$_.Sum}}).TotalRam * .60
+    if ($UseUbuntu -or ($null -eq $latest)) {
+      $latest = Get-ChildItem -Filter "ubuntu-mate-*" -Path $isoDir `
+        | Sort-Object Name -Descending `
+        | Select-Object -First 1
+    }
 
-    $maxMem = [Math]::Round($maxMem)
-    $maxMem = $maxMem - ($maxMem % 2MB)
+    $isoFile = $latest.name
 
-    if ($maxMem -gt 8GB) { $maxMem = 8GB }
+    $IsoFilePath = "$isoDir\$isoFile"
+  }
 
-    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+  $IsoFilePath = ((Resolve-Path $IsoFilePath).Path)
 
-    New-VHD -Path $vhdx -SizeBytes 80GB -Dynamic
+  Uninstall-VirtualMachine $computerName
 
-    New-VirtualMachine -VhdxFile $vhdx -ComputerName $computerName `
-        -Memory 2GB -MaximumMemory $maxMem -CPU $numOfCpu
+  $numOfCpu = $(Get-WmiObject -class Win32_processor `
+    | Select-Object NumberOfLogicalProcessors).NumberOfLogicalProcessors / 2
 
-    Connect-IsoToVirtual $computerName $IsoFilePath
+  $maxMem = $(Get-WMIObject -class Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum `
+    | Select-Object @{N="TotalRam"; E={$_.Sum}}).TotalRam * .60
 
-    Set-VMFirmware $computerName -FirstBootDevice $(Get-VMDvdDrive $computerName)
-    Set-VMFirmware $computerName -EnableSecureBoot Off
+  $maxMem = ([Math]::Round($maxMem)) - ($maxMem % 2MB)
 
-    Set-VMMemory -VMName $computerName -MaximumBytes $maxMem -MinimumBytes 1GB
-    Set-VM -Name $computerName -AutomaticStartAction Nothing
-    Set-Vm -Name $computerName -AutomaticStopAction Save
-    Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false
-    Set-VM -VMName $computerName -EnhancedSessionTransportType HvSocket
+  if ($maxMem -gt 8GB) { $maxMem = 8GB }
 
-    Pop-Location
+  Push-Location $((Get-VMHost).VirtualHardDiskPath)
 
-    Start-VM -VMName $computerName
+  New-VHD -Path $vhdx -SizeBytes 80GB -Dynamic
 
-    Start-Process -FilePath "vmconnect.exe" -ArgumentList "localhost $computerName"
+  New-VirtualMachine -VhdxFile $vhdx -ComputerName $computerName `
+    -Memory 2GB -MaximumMemory $maxMem -CPU $numOfCpu
 
-    $ErrorActionPreference = $errorPreviousAction
+  Connect-IsoToVirtual $computerName $IsoFilePath
+
+  Set-VMFirmware $computerName -FirstBootDevice $(Get-VMDvdDrive $computerName)
+  Set-VMFirmware $computerName -EnableSecureBoot Off
+
+  Set-VMMemory -VMName $computerName -MaximumBytes $maxMem -MinimumBytes 1GB
+  Set-VM -Name $computerName -AutomaticStartAction Nothing
+  Set-Vm -Name $computerName -AutomaticStopAction Save
+  Set-Vm -Name $computerName -AutomaticCheckpointsEnabled $false
+  Set-VM -VMName $computerName -EnhancedSessionTransportType HvSocket
+
+  Pop-Location
+
+  Start-VM -VMName $computerName
+
+  Start-Process -FilePath "vmconnect.exe" -ArgumentList "localhost $computerName"
+
+  $ErrorActionPreference = $errorPreviousAction
 }
 
 function Update-DevVmPackages {
@@ -234,7 +240,7 @@ function Update-DevVmPackages {
 
     $Bytes = [System.Text.Encoding]::Unicode.GetBytes($Command)
 
-    powershell.exe -encodedCommand [Convert]::ToBase64String($Bytes)
+    powershell.exe -encodedCommand "$([Convert]::ToBase64String($Bytes))"
 
     if (Test-PendingReboot) {
         Write-Warning "One of the packages recently upgraded has set the PendingReboot flag..."
