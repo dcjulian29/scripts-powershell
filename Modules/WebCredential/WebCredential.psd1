@@ -1,6 +1,7 @@
 @{
   RootModule = 'WebCredential.psm1'
   ModuleVersion = '2201.17.1'
+  Description = "A collection of commands to interact with the Windows Credential Manager."
   GUID = 'e2f61e99-799f-4f18-9a1e-d217dceea068'
   Author = 'Julian Easterling'
   Copyright = '(c) Julian Easterling. Some rights reserved.'
