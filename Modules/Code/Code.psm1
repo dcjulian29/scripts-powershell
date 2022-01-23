@@ -31,7 +31,7 @@ function Import-DevelopmentPowerShellModule {
         }
     }
 
-    if  ($moduleFile) {
+    if (Test-Path $moduleFile) {
       $removal = Get-Module  | Where-Object { $_.Name -eq $Module }
 
       do {
@@ -45,13 +45,13 @@ function Import-DevelopmentPowerShellModule {
       Import-Module -Global "$moduleFolder\$Module\$moduleFile" `
         -Verbose:($PSBoundParameters.ContainsKey('Verbose'))
     } else {
-        $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-          -Message "'$Module' was not found or available!" `
-          -ExceptionType "System.IO.DirectoryNotFoundException" `
-          -ErrorId "ResourceUnavailable" `
-          -ErrorCategory "ResourceUnavailable" `
-          -TargetObject $Module))
-        }
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "'$Module' was not found or available!" `
+        -ExceptionType "System.IO.DirectoryNotFoundException" `
+        -ErrorId "ResourceUnavailable" `
+        -ErrorCategory "ResourceUnavailable" `
+        -TargetObject $Module))
+    }
   } else {
     $modules = (Get-ChildItem -Path $moduleFolder).Name
 
@@ -63,10 +63,10 @@ function Import-DevelopmentPowerShellModule {
       Import-DevelopmentPowerShellModule -Module $module -Path $Path `
         -Verbose:($PSBoundParameters.ContainsKey('Verbose'))
     }
-
-    Get-Module -All | Select-Object Name, Version, Path | `
-        Where-Object { $_.Path -like "$moduleFolder*"} | Format-Table
   }
+
+  Get-Module -All | Select-Object Name, Version, Path | `
+    Where-Object { $_.Path -like "$moduleFolder*"} | Format-Table
 }
 
 Set-Alias -Name idpsm -Value Import-DevelopmentPowerShellModule
