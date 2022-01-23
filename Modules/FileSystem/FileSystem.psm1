@@ -116,6 +116,72 @@ function Find-ProgramFiles {
     }
 }
 
+function Format-FileWithSpaceIndent {
+  [CmdletBinding()]
+  param (
+      [Parameter(Mandatory=$true)]
+      [ValidateNotNullOrEmpty()]
+      [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+      [string] $Path,
+      [int]$spaces = 4
+  )
+
+  $tab = "`t"
+  $space = " " * $spaces
+  $text = Get-Content -Path $Path
+
+  $newText = ""
+
+  foreach ($line in $text -split [Environment]::NewLine) {
+      if ($line -match "\S") {
+          $pos = $line.IndexOf($Matches[0])
+          $indentation = $line.SubString(0, $pos)
+          $remainder = $line.SubString($pos)
+
+          $replaced = $indentation -replace $tab, $space
+
+          $newText += $replaced + $remainder + [Environment]::NewLine
+      } else {
+          $newText += $line + [Environment]::NewLine
+      }
+
+      Set-Content -Path $Path -Value $text
+  }
+}
+
+function Format-FileWithTabIndent {
+  [CmdletBinding()]
+  param (
+      [Parameter(Mandatory=$true)]
+      [ValidateNotNullOrEmpty()]
+      [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+      [string] $Path,
+      [int]$Spaces = 4
+  )
+
+  $tab = "`t"
+  $space = " " * $spaces
+  $text = Get-Content -Path $Path
+
+  $newText = ""
+
+  foreach ($line in $text -split [Environment]::NewLine) {
+      if ($line -match "\S") {
+          $pos = $line.IndexOf($Matches[0])
+          $indentation = $line.SubString(0, $pos)
+          $remainder = $line.SubString($pos)
+
+          $replaced = $indentation -replace $space, $tab
+
+          $newText += $replaced + $remainder + [Environment]::NewLine
+      } else {
+          $newText += $line + [Environment]::NewLine
+      }
+
+      Set-Content -Path $Path -Value $text
+  }
+}
+
 function Get-FullDirectoryPath {
     param (
         [Parameter(Mandatory=$true)]

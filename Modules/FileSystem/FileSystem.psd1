@@ -1,6 +1,6 @@
 @{
     RootModule = 'FileSystem.psm1'
-    ModuleVersion = '2201.10.1'
+    ModuleVersion = '2201.22.1'
     GUID = 'aaad40aa-30a0-495c-8377-53e89ea1ec11'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -15,6 +15,8 @@
         "Separator"
         "Find-FirstPath"
         "Find-ProgramFiles"
+        "Format-FileWithSpaceIndent"
+        "Format-FileWithTabIndent"
         "Get-Md5"
         "Get-Path"
         "Get-Sha1"

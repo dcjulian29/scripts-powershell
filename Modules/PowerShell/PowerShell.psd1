@@ -8,8 +8,6 @@
     FormatsToProcess = @()
     FunctionsToExport = @(
         "Edit-Profile"
-        "Format-FileWithSpaceIndent"
-        "Format-FileWithTabIndent"
         "Get-AvailableExceptionsList"
         "Get-LastExecutionTime"
         "Get-PowerShellVerbs"
