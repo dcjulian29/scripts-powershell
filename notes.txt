@@ -8,8 +8,6 @@ Import-Module "$((Get-Item $PWD.Path).BaseName).psd1" -Verbose -Force
 or
 idpdm $((Get-Item $PWD.Path).BaseName)
 
-# OnlineVersionUrl: https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/VirtualDevelopment/docs/
-
 New-MarkdownHelp -Module "$((Get-Item $PWD.Path).BaseName)" -OutputFolder .\docs -WithModulePage
 
 New-ExternalHelp .\docs -OutputPath en-US\ -Force
@@ -17,3 +15,7 @@ New-ExternalHelp .\docs -OutputPath en-US\ -Force
 # re-import your module with latest changes
 Import-Module "$((Get-Item $PWD.Path).BaseName).psd1" -Force
 Update-MarkdownHelp .\docs
+
+
+
+online version: https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/VirtualDevelopment/docs/
