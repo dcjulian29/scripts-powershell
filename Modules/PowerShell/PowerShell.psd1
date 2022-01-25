@@ -1,6 +1,6 @@
 @{
   RootModule = 'Powershell.psm1'
-  ModuleVersion = '2201.22.1'
+  ModuleVersion = '2201.24.1'
   Description = "A collection of utilities, commands, and functions specific to Powershell."
   GUID = 'f7824b54-f08e-415c-b661-c4605dda0603'
   Author = 'Julian Easterling'
@@ -30,6 +30,7 @@
     "Update-InstalledModules"
     "Update-MyModules"
     "Update-MyProfile"
+    "Update-MyPublishedModules"
     "Update-PreCompiledAssemblies"
     "Update-Profile"
   )
