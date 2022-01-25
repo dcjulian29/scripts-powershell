@@ -342,7 +342,8 @@ function Update-MyPublishedModules {
       Remove-Item "$modulesDir\$_" -Recurse -Force
     }
 
-    if (Get-InstalledModule -Name $_ -ErrorAction SilentlyContinue) {
+    if (Get-InstalledModule -Name $_ -ErrorAction SilentlyContinue `
+        | Where-Object { $_.Repository -eq "dcjulian29-powershell" }) {
       Write-Output "Updating my '$_' module..."
       Update-Module -Name $_ -Verbose:$Verbose -Confirm:$false
     } else {
@@ -356,8 +357,8 @@ function Update-MyPublishedModules {
   Get-Module -ListAvailable | Out-Null
 
   if ($Verbose) {
-    Write-Output (Get-InstalledModule `
-      | Select-Object Name,Version,PublishedDate,RepositorySourceLocation `
+    Write-Output (Get-InstalledModule | Where-Object { $_.Repository -eq "dcjulian29-powershell" } `
+      | Select-Object Name,Version,PublishedDate,Description `
       | Sort-Object PublishedDate -Descending `
       | Format-Table | Out-String)
   }
@@ -372,7 +373,8 @@ function Update-MyThirdPartyModules {
 
   (Get-Content "${env:TEMP}\thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
 
-    if (Get-InstalledModule -Name $_ -ErrorAction SilentlyContinue) {
+    if (Get-InstalledModule -Name $_ -ErrorAction SilentlyContinue  `
+        | Where-Object { $_.Repository -ne "dcjulian29-powershell" } ) {
       Write-Output "Updating my '$_' module..."
       Update-Module -Name $_ -Verbose:$Verbose -Confirm:$false
     } else {
@@ -386,7 +388,7 @@ function Update-MyThirdPartyModules {
   Get-Module -ListAvailable | Out-Null
 
   if ($Verbose) {
-    Write-Output (Get-InstalledModule `
+    Write-Output (Get-InstalledModule | Where-Object { $_.Repository -ne "dcjulian29-powershell" } `
       | Select-Object Name,Version,PublishedDate,RepositorySourceLocation `
       | Sort-Object PublishedDate -Descending `
       | Format-Table | Out-String)
