@@ -296,10 +296,10 @@ function Update-MyModules {
       Remove-Item -Path "$modulesDir\$module" -Recurse -Force
     }
 
-    Copy-Item -Path $_ -Destination $destination -Container
+    Copy-Item -Path $_ -Destination $destination -Container -Recurse
   }
 
-      $modules = (Get-InstalledModule).Name
+  $modules = (Get-InstalledModule).Name
 
   foreach ($module in $modules) {
     if (Test-Path "$modulesDir\$module") {
