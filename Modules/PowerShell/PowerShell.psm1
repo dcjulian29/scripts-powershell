@@ -363,6 +363,36 @@ function Update-MyPublishedModules {
   }
 }
 
+function Update-MyThirdPartyModules {
+  param (
+    [switch] $Verbose
+  )
+
+  Download-File "https://raw.githubusercontent.com/dcjulian29/choco-packages/main/mypowershell/tools/thirdparty.json" "${env:TEMP}\thirdparty.json"
+
+  (Get-Content "${env:TEMP}\thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
+
+    if (Get-InstalledModule -Name $_ -ErrorAction SilentlyContinue) {
+      Write-Output "Updating my '$_' module..."
+      Update-Module -Name $_ -Verbose:$Verbose -Confirm:$false
+    } else {
+      Write-Output "Installing my '$_' module..."
+      Install-Module -Name $_ -Repository "dcjulian29-powershell" -Verbose:$Verbose -AllowClobber
+    }
+
+    Write-Output " "
+  }
+
+  Get-Module -ListAvailable | Out-Null
+
+  if ($Verbose) {
+    Write-Output (Get-InstalledModule `
+      | Select-Object Name,Version,PublishedDate,RepositorySourceLocation `
+      | Sort-Object PublishedDate -Descending `
+      | Format-Table | Out-String)
+  }
+}
+
 function Update-PreCompiledAssemblies {
   Write-Output "Ensuring all currently loaded runtime assemblies are pre-compiled..."
 
