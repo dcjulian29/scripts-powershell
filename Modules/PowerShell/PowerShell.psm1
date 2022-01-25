@@ -299,10 +299,10 @@ function Update-MyModules {
     }
 
     if (Test-Path "$modulesDir\$module") {
-      Remove-Item -Path "$modulesDir\$module" -Recurse -Force -Whatif
+      Remove-Item -Path "$modulesDir\$module" -Recurse -Force
     }
 
-    Copy-Item -Path "$_/*" -Destination "$destination/" -Recurse -Whatif
+    Copy-Item -Path "$_/*" -Destination "$destination/" -Recurse
   }
 
       $modules = (Get-InstalledModule).Name
