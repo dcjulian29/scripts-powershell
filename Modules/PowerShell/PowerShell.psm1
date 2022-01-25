@@ -14,9 +14,7 @@ function clearRepoDownloads {
 #------------------------------------------------------------------------------
 
 function Edit-Profile {
-    Start-Notepad $profile
-}
-
+  Start-Notepad $profile
 }
 
 function Get-AvailableExceptionsList {
@@ -33,49 +31,34 @@ function Get-AvailableExceptionsList {
   return $exceptions | Sort-Object -Unique
 }
 
-Function Get-LastExecutionTime {
-    $command = Get-History -Count 1
+function Get-LastExecutionTime {
+  $command = Get-History -Count 1
 
-    return $command.EndExecutionTime - $command.StartExecutionTime
+  return $command.EndExecutionTime - $command.StartExecutionTime
 }
 
-function Get-PowerShellVerb {
-    param (
-        [Parameter(Mandatory = $true)]
-        [string] $Verb
-   )
-
-   Get-Verb | Where-Object { $_.Verb -eq $Verb }
-}
-
-function Get-PowerShellVerbs {
-    Get-Verb | Sort-Object -Property Verb
+function Get-PowershellVerbs {
+  Get-Verb | Sort-Object -Property Verb
 }
 
 function Get-Profile {
-    Get-Content $profile
+  Get-Content $profile
 }
 
 function Import-Assembly {
-    param (
-        [string]$Assembly
-    )
+  param (
+    [string]$Assembly
+  )
 
-    if (Test-Path $Assembly) {
-        $assemblyPath = Get-Item $assembly
-        [System.Reflection.Assembly]::LoadFrom($assemblyPath)
-    } else {
-        [System.Reflection.Assembly]::LoadWithPartialName("$assembly") # Load from GAC
-    }
+  if (Test-Path $Assembly) {
+    $assemblyPath = Get-Item $assembly
+    [System.Reflection.Assembly]::LoadFrom($assemblyPath)
+  } else {
+    [System.Reflection.Assembly]::LoadWithPartialName("$assembly") # Load from GAC
+  }
 }
 
 Set-Alias -Name Load-Assembly -Value Import-Assembly
-
-function Initialize-PSGallery {
-    Import-Module PackageManagement -RequiredVersion 1.0.0.1
-    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-    Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
-}
 
 function New-ErrorRecord {
   [CmdletBinding(DefaultParameterSetName="Message")]
@@ -147,94 +130,138 @@ function New-ErrorRecord {
 }
 
 function Remove-AliasesFromScript {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string] $Path
-    )
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path
+  )
 
-    $aliases = @{}
+  $aliases = @{}
 
-    Get-Alias | Select-Object Name, Definition | ForEach-Object {
-        $aliases.Add($_.Name, $_.Definition)
+  Get-Alias | Select-Object Name, Definition | ForEach-Object {
+    $aliases.Add($_.Name, $_.Definition)
+  }
+
+  $errors = $null
+  $text = Get-Content -Path $Path
+
+  [System.Management.Automation.PSParser]::Tokenize($text, [ref]$errors) |
+    Where-Object { $_.Type -eq "command" } |
+    ForEach-Object {
+      if ($aliases.($_.Content)) {
+        Write-Output "Replacing '$($_.Content)' with '$($aliases.($_.Content))'..."
+        $text = $text `
+          -replace ('(?<=(\W|\b|^))' + [regex]::Escape($_.Content) + '(?=(\W|\b|$))'), $aliases.($_.Content)
+      }
     }
 
-    $errors = $null
-    $text = Get-Content -Path $Path
-
-    [System.Management.Automation.PSParser]::Tokenize($text, [ref]$errors) |
-        Where-Object { $_.Type -eq "command" } |
-        ForEach-Object {
-            if ($aliases.($_.Content)) {
-                $text = $text -replace
-                    ('(?<=(\W|\b|^))' + [regex]::Escape($_.Content) + '(?=(\W|\b|$))'),
-                    $a.($_.Content)
-            }
-        }
-
-    if ($null -eq $errors) {
-        Set-Content -Path $Path -Value $text
-    } else {
-        Write-Error $errors
-    }
+  if ($null -eq $errors) {
+    Set-Content -Path $Path -Value $text
+  } else {
+    Write-Error $errors
+  }
 }
 
-function Restart-Module {
-    param (
-        [string] $ModuleName
-    )
+function Reset-Module {
+  param (
+    [Parameter(Mandatory = $true)]
+    [Alias("ModuleName")]
+    [string] $Name
+  )
 
-    if ((Get-Module -list | Where-Object { $_.Name -eq "$ModuleName" } | Measure-Object).Count -gt 0) {
-        if ((Get-Module -all | Where-Object { $_.Name -eq "$ModuleName" } | Measure-Object).count -gt 0) {
-            Remove-Module -Name $ModuleName -Force -Verbose
-        }
-
-        Import-Module $ModuleName -Verbose
-    } else {
-        throw "Module $ModuleName Doesn't Exist"
+  if ((Get-Module -list | Where-Object { $_.Name -eq "$Name" } | Measure-Object).Count -gt 0) {
+    if ((Get-Module -all | Where-Object { $_.Name -eq "$Name" } | Measure-Object).count -gt 0) {
+      Remove-Module -Name $Name -Force -Verbose
     }
+  }
+}
+
+Set-Alias -Name "Unload-Module" -Value Reset-Module
+
+function Restart-Module {
+  param (
+    [Parameter(Mandatory = $true)]
+    [Alias("ModuleName")]
+    [string] $Name
+  )
+
+  if ((Get-Module -list | Where-Object { $_.Name -eq "$ModuleName" } | Measure-Object).Count -gt 0) {
+    Reset-Module $Name
+    Import-Module $ModuleName -Verbose
+  }
 }
 
 Set-Alias -Name Reload-Module -Value Restart-Module
 
 function Search-Command {
-    param (
-        [string]$Filter
-    )
+  param (
+    [Parameter(Mandatory = $true)]
+    [string]$Filter
+  )
 
-    Get-Command | Where-Object { $_.Name -like "*$Filter*" } | Sort-Object Name | Format-Table Name,Version, Source
+  Get-Command | Where-Object { $_.Name -like "*$Filter*" } `
+    | Sort-Object Name | Format-Table Name,Version, Source
 }
 
 Set-Alias -Name Find-PSCommand -Value Search-Command
 
 function Test-IsNonInteractive {
-    return (Get-WmiObject Win32_Process -filter "ProcessID=$pid").CommandLine -match "-NonInteractive"
+  return (Get-WmiObject Win32_Process -filter "ProcessID=$pid").CommandLine `
+    -match "-NonInteractive"
 }
 
-function Test-PowerShellVerb {
-    param (
-        [Parameter(Mandatory = $true)]
-        [string] $Verb
-   )
+function Test-PowershellVerb {
+  param (
+    [Parameter(Mandatory = $true)]
+    [string] $Verb
+ )
 
-    if (Get-PowerShellVerb $Verb) {
-        return $true
+  if (Get-Verb $Verb) {
+    return $true
+  }
+
+  return $false
+}
+
+function Update-AllModules {
+  Write-Host "Updating third-party Powershell modules..." -ForegroundColor Magenta
+  Update-InstalledModules
+
+  Write-Host "`nUpdating my Powershell modules..." -ForegroundColor Cyan
+  Update-MyModules
+}
+
+function Update-InstalledModules {
+  param (
+    [switch] $Verbose
+  )
+
+  $modules = (Get-InstalledModule).Name
+  $first = $true
+
+  foreach ($module in $modules) {
+    if ($Verbose -and (-not $first)) {
+      Write-Output "`n--------------------------------------`n"
     }
 
-    return $false
+    Update-Module -Name $module -Confirm:$false -Verbose:$Verbose
+
+    $first = $false
+  }
+
+  if ($Verbose -and (-not $first)) {
+    Write-Output "`n--------------------------------------`n"
+
+    Write-Output (Get-InstalledModule `
+      | Select-Object Name,Version,PublishedDate,RepositorySourceLocation `
+      | Sort-Object PublishedDate -Descending `
+      | Format-Table | Out-String)
+  }
 }
 
-function Update-AllPowershellModules {
-  Write-Host "Updating third-party Powershell modules...`n" -ForegroundColor Magenta
-  Update-PowershellModules
-
-  Write-Host "`n`nUpdating my Powershell modules...`n" -ForegroundColor Cyan
-  Update-MyPowershellModules
-}
-
-function Update-MyPowershellModules {
+function Update-MyModules {
   $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
   $poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
   $modulesDir = Join-Path -Path $poshDir -ChildPath Modules
@@ -277,25 +304,67 @@ function Update-MyPowershellModules {
   clearRepoDownloads
 }
 
-function Update-PowershellModules {
-  $modules = (Get-InstalledModule).Name
-  $first = $true
+function Update-MyProfile {
+  $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
+  $poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
 
-  foreach ($module in $modules) {
-    if (-not $first) {
-      Write-Output "`n--------------------------------------`n"
+  clearRepoDownloads
+
+  Download-File "https://github.com/dcjulian29/scripts-powershell/archive/refs/heads/main.zip" `
+    "${env:TEMP}\scripts-powershell-main.zip"
+
+  Unzip-File "${env:TEMP}\scripts-powershell-main.zip" "${env:TEMP}\"
+
+  Copy-Item -Path "${env:TEMP}\scripts-powershell-main\profile.ps1" -Destination $poshDir -Force
+  Copy-Item -Path "${env:TEMP}\scripts-powershell-main\Microsoft.PowerShell_profile.ps1" `
+    -Destination $poshDir -Force
+  Copy-Item -Path "${env:TEMP}\scripts-powershell-main\Microsoft.VSCode_profile.ps1" `
+    -Destination $poshDir -Force
+
+  clearRepoDownloads
+
+  Reload-Profile
+}
+
+function Update-MyPublishedModules {
+  param (
+    [switch] $Verbose
+  )
+
+  $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
+  $poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
+  $modulesDir = Join-Path -Path $poshDir -ChildPath Modules
+
+  Download-File "https://raw.githubusercontent.com/dcjulian29/choco-packages/main/mypowershell/tools/mine.json" "${env:TEMP}\mymodules.json"
+
+  (Get-Content "${env:TEMP}\mymodules.json" | ConvertFrom-Json) | ForEach-Object {
+    if (Test-Path "$modulesDir\$_") {
+      Remove-Item "$modulesDir\$_" -Recurse -Force
     }
 
-    Update-Module -Name $module -Confirm:$false -Verbose
+    if (Get-InstalledModule -Name $_ -ErrorAction SilentlyContinue) {
+      Write-Output "Updating my '$_' module..."
+      Update-Module -Name $_ -Verbose:$Verbose -Confirm:$false
+    } else {
+      Write-Output "Installing my '$_' module..."
+      Install-Module -Name $_ -Repository "dcjulian29-powershell" -Verbose:$Verbose -AllowClobber
+    }
 
-    $first = $false
+    Write-Output " "
   }
 
   Get-Module -ListAvailable | Out-Null
+
+  if ($Verbose) {
+    Write-Output (Get-InstalledModule `
+      | Select-Object Name,Version,PublishedDate,RepositorySourceLocation `
+      | Sort-Object PublishedDate -Descending `
+      | Format-Table | Out-String)
+  }
 }
 
 function Update-PreCompiledAssemblies {
-  Write-Output "Ensuring all currrently loaded runtime assemblies are pre-compiled..."
+  Write-Output "Ensuring all currently loaded runtime assemblies are pre-compiled..."
 
   $originalPath = $env:PATH
   $env:PATH = "$([Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory());${env:PATH}"
@@ -313,7 +382,7 @@ function Update-PreCompiledAssemblies {
 }
 
 function Update-Profile {
-    . $profile
+  . $profile
 }
 
 Set-Alias -Name Reload-Profile -Value Update-Profile
