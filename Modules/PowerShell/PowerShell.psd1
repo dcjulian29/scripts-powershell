@@ -1,6 +1,6 @@
 @{
   RootModule = 'Powershell.psm1'
-  ModuleVersion = '2201.25.3'
+  ModuleVersion = '2201.25.4'
   Description = "A collection of utilities, commands, and functions specific to Powershell."
   GUID = 'f7824b54-f08e-415c-b661-c4605dda0603'
   Author = 'Julian Easterling'

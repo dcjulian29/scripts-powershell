@@ -302,7 +302,7 @@ function Update-MyModules {
       Remove-Item -Path "$modulesDir\$module" -Recurse -Force
     }
 
-    Copy-Item -Path "$_/*" -Destination "$destination/" -Recurse
+    Copy-Item -Path $_ -Destination $destination -Container
   }
 
       $modules = (Get-InstalledModule).Name
