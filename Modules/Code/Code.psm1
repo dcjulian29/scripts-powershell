@@ -31,6 +31,8 @@ function Import-DevelopmentPowerShellModule {
         }
     }
 
+    $moduleFile = "$moduleFolder\$Module\$moduleFile"
+
     if (Test-Path $moduleFile) {
       $removal = Get-Module  | Where-Object { $_.Name -eq $Module }
 
@@ -42,8 +44,7 @@ function Import-DevelopmentPowerShellModule {
         $removal = Get-Module  | Where-Object { $_.Name -eq $Module }
       } until ($null -eq $removal)
 
-      Import-Module -Global "$moduleFolder\$Module\$moduleFile" `
-        -Verbose:($PSBoundParameters.ContainsKey('Verbose'))
+      Import-Module -Global $moduleFile -Verbose:($PSBoundParameters.ContainsKey('Verbose'))
     } else {
       $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
         -Message "'$Module' was not found or available!" `
