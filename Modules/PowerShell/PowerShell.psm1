@@ -1,18 +1,3 @@
-function clearRepoDownloads {
-  @(
-    "${env:TEMP}\scripts-powershell-main.zip"
-    "${env:TEMP}\scripts-powershell-main"
-    "${env:TEMP}\posh-go.zip"
-    "${env:TEMP}\Go-Shell-master"
-  ) | ForEach-Object {
-    if (Test-Path $_) {
-        Remove-Item $_ -Recurse -Force
-    }
-  }
-}
-
-#------------------------------------------------------------------------------
-
 function Edit-Profile {
   Start-Notepad $profile
 }
@@ -272,7 +257,16 @@ function Update-MyModules {
 
   Import-Module -Name Powershell -Force
 
-  clearRepoDownloads
+  @(
+    "${env:TEMP}\scripts-powershell-main.zip"
+    "${env:TEMP}\scripts-powershell-main"
+    "${env:TEMP}\posh-go.zip"
+    "${env:TEMP}\Go-Shell-master"
+  ) | ForEach-Object {
+    if (Test-Path $_) {
+        Remove-Item $_ -Recurse -Force
+    }
+  }
 
   Download-File "https://github.com/dcjulian29/scripts-powershell/archive/refs/heads/main.zip" `
     "${env:TEMP}\scripts-powershell-main.zip"
@@ -324,7 +318,16 @@ function Update-MyProfile {
   $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
   $poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
 
-  clearRepoDownloads
+  @(
+    "${env:TEMP}\scripts-powershell-main.zip"
+    "${env:TEMP}\scripts-powershell-main"
+    "${env:TEMP}\posh-go.zip"
+    "${env:TEMP}\Go-Shell-master"
+  ) | ForEach-Object {
+    if (Test-Path $_) {
+        Remove-Item $_ -Recurse -Force
+    }
+  }
 
   Download-File "https://github.com/dcjulian29/scripts-powershell/archive/refs/heads/main.zip" `
     "${env:TEMP}\scripts-powershell-main.zip"
