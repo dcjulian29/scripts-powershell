@@ -262,9 +262,15 @@ function Update-InstalledModules {
 }
 
 function Update-MyModules {
+  param (
+    [switch] $Verbose
+  )
+
   $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
   $poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
   $modulesDir = Join-Path -Path $poshDir -ChildPath Modules
+
+  Import-Module -Name Powershell -Force
 
   clearRepoDownloads
 
@@ -284,10 +290,22 @@ function Update-MyModules {
 
   Copy-Item -Path "${env:TEMP}\Go-Shell-master\*" -Destination "$modulesDir\go" -Force
 
-  (Get-ChildItem -Directory -Path "${env:TEMP}\scripts-powershell-main\Modules").FullName |
-    Copy-Item -Force -Destination { $_ -replace [regex]::Escape("${env:TEMP}\scripts-powershell-main\modules"), $modulesDir } -Recurse
+  (Get-ChildItem -Directory -Path "${env:TEMP}\scripts-powershell-main\Modules").FullName | ForEach-Object {
+    $destination = $_ -replace [regex]::Escape("${env:TEMP}\scripts-powershell-main\modules"), $modulesDir
+    $module = $_.Substring($_.LastIndexOf('\') + 1)
 
-  $modules = (Get-InstalledModule).Name
+    if ($Verbose) {
+      Write-Output "'$_' --> '$destination'"
+    }
+
+    if (Test-Path "$modulesDir\$module") {
+      Remove-Item -Path "$modulesDir\$module" -Recurse -Force -Whatif
+    }
+
+    Copy-Item -Path "$_/*" -Destination "$destination/" -Recurse -Whatif
+  }
+
+      $modules = (Get-InstalledModule).Name
 
   foreach ($module in $modules) {
     if (Test-Path "$modulesDir\$module") {
@@ -300,8 +318,6 @@ function Update-MyModules {
   }
 
   Get-Module -ListAvailable | Out-Null
-
-  clearRepoDownloads
 }
 
 function Update-MyProfile {
@@ -320,8 +336,6 @@ function Update-MyProfile {
     -Destination $poshDir -Force
   Copy-Item -Path "${env:TEMP}\scripts-powershell-main\Microsoft.VSCode_profile.ps1" `
     -Destination $poshDir -Force
-
-  clearRepoDownloads
 
   Reload-Profile
 }
@@ -372,14 +386,13 @@ function Update-MyThirdPartyModules {
   Download-File "https://raw.githubusercontent.com/dcjulian29/choco-packages/main/mypowershell/tools/thirdparty.json" "${env:TEMP}\thirdparty.json"
 
   (Get-Content "${env:TEMP}\thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
-
     if (Get-InstalledModule -Name $_ -ErrorAction SilentlyContinue  `
         | Where-Object { $_.Repository -ne "dcjulian29-powershell" } ) {
       Write-Output "Updating my '$_' module..."
       Update-Module -Name $_ -Verbose:$Verbose -Confirm:$false
     } else {
       Write-Output "Installing my '$_' module..."
-      Install-Module -Name $_ -Repository "dcjulian29-powershell" -Verbose:$Verbose -AllowClobber
+      Install-Module -Name $_ -Verbose:$Verbose -AllowClobber
     }
 
     Write-Output " "
@@ -396,6 +409,25 @@ function Update-MyThirdPartyModules {
 }
 
 function Update-PreCompiledAssemblies {
+  param (
+    [switch] $Full,
+    [switch] $Verbose,
+    [switch] $DisableNameChecking
+  )
+
+  if ($Full) {
+    Write-Output "Importing all available modules to make sure assemblies are loaded..."
+
+    Get-Module | Remove-Module -Force -Verbose:$Verbose
+
+    foreach ($module in $(Get-Module -ListAvailable | Where-Object { $_.Name -ne 'GlobalScripts' })) {
+      try {
+        Import-Module -Name $module -ErrorAction SilentlyContinue -Force `
+          -Verbose:$Verbose -DisableNameChecking:$DisableNameChecking
+      } catch {}
+    }
+  }
+
   Write-Output "Ensuring all currently loaded runtime assemblies are pre-compiled..."
 
   $originalPath = $env:PATH
