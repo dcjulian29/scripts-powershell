@@ -20,7 +20,23 @@ idpdm $((Get-Item $PWD.Path).BaseName)
 New-MarkdownHelp -Module "$((Get-Item $PWD.Path).BaseName)" -OutputFolder .\docs -WithModulePage
 ```
 
-Update and correct each markdown file with online links and remove the extra stuff at bottom. Don't generate the external help until this is complete.
+```powershell
+(Get-ChildItem ./docs/*.md -Recurse).FullName | ForEach-Object {
+  $text = ""
+  $file = (Split-Path -Leaf $_ )
+  Get-Content $_ | ForEach-Object {
+    $text += $_ -creplace "^online version:$", "online version: https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/$((Get-Item $PWD.Path).BaseName)/docs/$file"
+    $text += [System.Environment]::NewLine
+  }
+
+  Set-Content -Path $_ -Value $text
+  Write-Output "Processed '$file'"
+}
+```
+
+- Update and correct each markdown file with online links and remove the extra stuff at bottom.
+- Add Examples.
+- Don't generate the external help until this is complete.
 
 ## Generate/Update Powershell Documentation
 
@@ -34,10 +50,4 @@ New-ExternalHelp .\docs -OutputPath en-US\ -Force
 Remove-Module "./$((Get-Item $PWD.Path).BaseName)" -Force -ErrorAction Continue
 Import-Module "./$((Get-Item $PWD.Path).BaseName).psd1" -Verbose -Force
 Update-MarkdownHelp .\docs
-```
-
-## Fields To Update
-
-```text
-online version: https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/***/docs/
 ```
