@@ -1,0 +1,1639 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<helpItems schema="maml" xmlns="http://msh">
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Edit-Profile</command:name>
+      <command:verb>Edit</command:verb>
+      <command:noun>Profile</command:noun>
+      <maml:description>
+        <maml:para>Open the current profile script in Notepad.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Edit-Profile cmdlet opens the current profile script in Notepad.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Edit-Profile</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>None</maml:name>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false"></command:parameterValue>
+        <dev:type>
+          <maml:name></maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Edit-Profile</dev:code>
+        <dev:remarks>
+          <maml:para>This example opens the current profile script in Notepad.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Edit-Profile.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-AvailableExceptionsList</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>AvailableExceptionsList</command:noun>
+      <maml:description>
+        <maml:para>Get a list of Exception classes available from the currently loaded assemblies.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Get-AvailableExceptionsList scans each loaded assembly for class names that end with the word Exception.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-AvailableExceptionsList</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>None</maml:name>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false"></command:parameterValue>
+        <dev:type>
+          <maml:name></maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-AvailableExceptionsList
+
+
+Microsoft.CSharp.RuntimeBinder.RuntimeBinderException
+Microsoft.CSharp.RuntimeBinder.RuntimeBinderInternalCompilerException
+Microsoft.Management.Infrastructure.CimException
+Microsoft.PowerShell.Cmdletization.Cim.CimJobException
+Microsoft.PowerShell.Commands.CertificateNotFoundException
+Microsoft.PowerShell.Commands.CertificateProviderItemNotFoundException
+Microsoft.PowerShell.Commands.CertificateStoreLocationNotFoundException
+Microsoft.PowerShell.Commands.CertificateStoreNotFoundException
+Microsoft.PowerShell.Commands.HelpCategoryInvalidException
+Microsoft.PowerShell.Commands.HelpNotFoundException
+Microsoft.PowerShell.Commands.HttpResponseException
+Microsoft.PowerShell.Commands.ProcessCommandException
+Microsoft.PowerShell.Commands.RestartComputerTimeoutException
+Microsoft.PowerShell.Commands.ServiceCommandException
+Microsoft.PowerShell.Commands.WriteErrorException
+Microsoft.PowerShell.CrossCompatibility.CompatibilityAnalysisException
+Microsoft.VisualBasic.FileIO.MalformedLineException
+Newtonsoft.Json.JsonException
+Newtonsoft.Json.JsonReaderException
+Newtonsoft.Json.JsonSerializationException
+Newtonsoft.Json.JsonWriterException
+Newtonsoft.Json.Schema.JsonSchemaException
+System.AccessViolationException
+System.AggregateException
+System.AppDomainUnloadedException
+System.ApplicationException
+System.ArgumentException
+System.ArgumentNullException
+System.ArgumentOutOfRangeException
+System.ArithmeticException
+System.ArrayTypeMismatchException
+System.BadImageFormatException
+
+...
+
+System.Threading.ThreadAbortException
+System.Threading.ThreadInterruptedException
+System.Threading.ThreadStartException
+System.Threading.ThreadStateException
+System.Threading.WaitHandleCannotBeOpenedException
+System.TimeoutException
+System.TimeZoneNotFoundException
+System.TypeAccessException
+System.TypeInitializationException
+System.TypeLoadException
+System.TypeUnloadedException
+System.UnauthorizedAccessException
+System.UriFormatException
+System.Xml.Schema.XmlSchemaException
+System.Xml.Schema.XmlSchemaInferenceException
+System.Xml.Schema.XmlSchemaValidationException
+System.Xml.XmlException
+System.Xml.XPath.XPathException
+System.Xml.Xsl.XsltCompileException
+System.Xml.Xsl.XsltException</dev:code>
+        <dev:remarks>
+          <maml:para>This example returns the current available exception types.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Get-AvailableExceptionsList.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-LastExecutionTime</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>LastExecutionTime</command:noun>
+      <maml:description>
+        <maml:para>Return the elapsed time of the last command.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Get-LastExecutionTime cmdlet returns the elapsed time of the last command executed.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-LastExecutionTime</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>None</maml:name>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false"></command:parameterValue>
+        <dev:type>
+          <maml:name></maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-LastExecutionTime
+
+Days              : 0
+Hours             : 0
+Minutes           : 0
+Seconds           : 1
+Milliseconds      : 716
+Ticks             : 17161638
+TotalDays         : 1.98630069444444E-05
+TotalHours        : 0.000476712166666667
+TotalMinutes      : 0.02860273
+TotalSeconds      : 1.7161638
+TotalMilliseconds : 1716.1638</dev:code>
+        <dev:remarks>
+          <maml:para>This example returns the elapsed time of the last command.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Get-LastExecutionTime.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-PowershellVerbs</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>PowershellVerbs</command:noun>
+      <maml:description>
+        <maml:para>Return a list of Approved Powershell Verbs.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Get-PowershellVerbs returns the list of approved verbs in the current Powershell session.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-PowershellVerbs</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>None</maml:name>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false"></command:parameterValue>
+        <dev:type>
+          <maml:name></maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-PowershellVerbs
+
+Verb        AliasPrefix Group          Description
+----        ----------- -----          -----------
+Add         a           Common         Adds a resource to a container, or attaches an item to another item
+Approve     ap          Lifecycle      Confirms or agrees to the status of a resource or process
+Assert      as          Lifecycle      Affirms the state of a resource
+Backup      ba          Data           Stores data by replicating it
+Block       bl          Security       Restricts access to a resource
+Build       bd          Lifecycle      Creates an artifact (usually a binary or document) out of some set of input files (usually s…
+Checkpoint  ch          Data           Creates a snapshot of the current state of the data or of its configuration
+Clear       cl          Common         Removes all the resources from a container but does not delete the container
+Close       cs          Common         Changes the state of a resource to make it inaccessible, unavailable, or unusable
+Compare     cr          Data           Evaluates the data from one resource against the data from another resource
+Complete    cmp         Lifecycle      Concludes an operation
+
+...
+
+Use         u           Other          Uses or includes a resource to do something
+Wait        w           Lifecycle      Pauses an operation until a specified event occurs
+Watch       wc          Common         Continually inspects or monitors a resource for changes
+Write       wr          Communications Adds information to a target</dev:code>
+        <dev:remarks>
+          <maml:para>This example shows the current approved verbs that can be used for Powershell cmdlets.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Get-PowershellVerbs.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-Profile</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>Profile</command:noun>
+      <maml:description>
+        <maml:para>Get the contents of the currently loaded profile script.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Get-Profile cmdlet returns the contents of the currently loaded profile script.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-Profile</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>None</maml:name>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false"></command:parameterValue>
+        <dev:type>
+          <maml:name></maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-Profile
+
+function prompt {
+  ...
+}</dev:code>
+        <dev:remarks>
+          <maml:para>This example shows the contents of the currently loaded profile script.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Get-Profile.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Import-Assembly</command:name>
+      <command:verb>Import</command:verb>
+      <command:noun>Assembly</command:noun>
+      <maml:description>
+        <maml:para>Import a .Net Assembly.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Import-Assembly imports a .Net assembly based on the name of the assembly file or the name of assembly if loading from GAC.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Import-Assembly</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+          <maml:name>Assembly</maml:name>
+          <maml:description>
+            <maml:para>Specifies the name of the assembly file or the name of assembly if loading from GAC.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+        <maml:name>Assembly</maml:name>
+        <maml:description>
+          <maml:para>Specifies the name of the assembly file or the name of assembly if loading from GAC.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-Assembly -Assembly "System.Text"</dev:code>
+        <dev:remarks>
+          <maml:para>This example imports the System.Text assembly from the GAC.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Import-Assembly.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>New-ErrorRecord</command:name>
+      <command:verb>New</command:verb>
+      <command:noun>ErrorRecord</command:noun>
+      <maml:description>
+        <maml:para>Create a new Error Record.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The New-ErrorRecord cmdlet wraps an exception into a Powershell Error Record.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>New-ErrorRecord</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+          <maml:name>Exception</maml:name>
+          <maml:description>
+            <maml:para>An Exception describing the error.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Exception</command:parameterValue>
+          <dev:type>
+            <maml:name>Exception</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="Id">
+          <maml:name>ErrorId</maml:name>
+          <maml:description>
+            <maml:para>String which uniquely identifies this error condition.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="Category">
+          <maml:name>ErrorCategory</maml:name>
+          <maml:description>
+            <maml:para>Information regarding the ErrorCategory associated with this error, and with the categorized error message for that ErrorCategory.</maml:para>
+          </maml:description>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" command:variableLength="false">NotSpecified</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">OpenError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">CloseError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">DeviceError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">DeadlockDetected</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">InvalidArgument</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">InvalidData</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">InvalidOperation</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">InvalidResult</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">InvalidType</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">MetadataError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">NotImplemented</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">NotInstalled</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">ObjectNotFound</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">OperationStopped</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">OperationTimeout</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">SyntaxError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">ParserError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">PermissionDenied</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">ResourceBusy</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">ResourceExists</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">ResourceUnavailable</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">ReadError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">WriteError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">FromStdErr</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">SecurityError</command:parameterValue>
+          </command:parameterValueGroup>
+          <command:parameterValue required="true" variableLength="false">ErrorCategory</command:parameterValue>
+          <dev:type>
+            <maml:name>ErrorCategory</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+          <maml:name>TargetObject</maml:name>
+          <maml:description>
+            <maml:para>This is the object against which the cmdlet or provider was operating when the error occurred. This is optional.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>New-ErrorRecord</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+          <maml:name>Message</maml:name>
+          <maml:description>
+            <maml:para>The message that describes the current exception.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="Id">
+          <maml:name>ErrorId</maml:name>
+          <maml:description>
+            <maml:para>String which uniquely identifies this error condition.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+          <maml:name>ExceptionType</maml:name>
+          <maml:description>
+            <maml:para>Human-readable text that describes the error.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="Category">
+          <maml:name>ErrorCategory</maml:name>
+          <maml:description>
+            <maml:para>Information regarding the ErrorCategory associated with this error, and with the categorized error message for that ErrorCategory.</maml:para>
+          </maml:description>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" command:variableLength="false">NotSpecified</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">OpenError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">CloseError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">DeviceError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">DeadlockDetected</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">InvalidArgument</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">InvalidData</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">InvalidOperation</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">InvalidResult</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">InvalidType</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">MetadataError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">NotImplemented</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">NotInstalled</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">ObjectNotFound</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">OperationStopped</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">OperationTimeout</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">SyntaxError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">ParserError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">PermissionDenied</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">ResourceBusy</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">ResourceExists</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">ResourceUnavailable</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">ReadError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">WriteError</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">FromStdErr</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">SecurityError</command:parameterValue>
+          </command:parameterValueGroup>
+          <command:parameterValue required="true" variableLength="false">ErrorCategory</command:parameterValue>
+          <dev:type>
+            <maml:name>ErrorCategory</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+          <maml:name>TargetObject</maml:name>
+          <maml:description>
+            <maml:para>This is the object against which the cmdlet or provider was operating when the error occurred. This is optional.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>InnerException</maml:name>
+          <maml:description>
+            <maml:para>The Exception instance that caused the current exception.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Exception</command:parameterValue>
+          <dev:type>
+            <maml:name>Exception</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="Category">
+        <maml:name>ErrorCategory</maml:name>
+        <maml:description>
+          <maml:para>Information regarding the ErrorCategory associated with this error, and with the categorized error message for that ErrorCategory.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ErrorCategory</command:parameterValue>
+        <dev:type>
+          <maml:name>ErrorCategory</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="Id">
+        <maml:name>ErrorId</maml:name>
+        <maml:description>
+          <maml:para>String which uniquely identifies this error condition.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+        <maml:name>Exception</maml:name>
+        <maml:description>
+          <maml:para>An Exception describing the error.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Exception</command:parameterValue>
+        <dev:type>
+          <maml:name>Exception</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+        <maml:name>ExceptionType</maml:name>
+        <maml:description>
+          <maml:para>Human-readable text that describes the error.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>InnerException</maml:name>
+        <maml:description>
+          <maml:para>The Exception instance that caused the current exception.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Exception</command:parameterValue>
+        <dev:type>
+          <maml:name>Exception</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+        <maml:name>Message</maml:name>
+        <maml:description>
+          <maml:para>The message that describes the current exception.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+        <maml:name>TargetObject</maml:name>
+        <maml:description>
+          <maml:para>This is the object against which the cmdlet or provider was operating when the error occurred. This is optional.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; New-ErrorRecord -Message "New Error Record" -ExceptionType "System.Exception" -ErrorId "EX01" -ErrorCategory NotSpecified
+
+New Error Record
+    + CategoryInfo          : NotSpecified: (:) [], Exception
+    + FullyQualifiedErrorId : EX01</dev:code>
+        <dev:remarks>
+          <maml:para>This example produces a new error record based on the message provided.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- Example 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; New-ErrorRecord -Exception $(New-Object System.Exception) -ErrorId "4567" -ErrorCategory NotSpecified
+
+Exception of type 'System.Exception' was thrown.
+    + CategoryInfo          : NotSpecified: (:) [], Exception
+    + FullyQualifiedErrorId : 4567</dev:code>
+        <dev:remarks>
+          <maml:para>This example produces a new error record base on the exception provided.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/New-ErrorRecord.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Remove-AliasesFromScript</command:name>
+      <command:verb>Remove</command:verb>
+      <command:noun>AliasesFromScript</command:noun>
+      <maml:description>
+        <maml:para>Remove Powershell aliases from a script file.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Remove-AliasesFromScript allows you to quickly create a Powershell script containing aliases and then remove them and replace them with the cmdlet names.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Remove-AliasesFromScript</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>Specifies a path to a Powershell script file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>Specifies a path to a Powershell script file.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Remove-AliasesFromScript -Path test1.ps1
+
+Replacing 'gci' with 'Get-ChildItem'...
+Replacing '%' with 'ForEach-Object'...</dev:code>
+        <dev:remarks>
+          <maml:para>This example replaces any Powershell aliases with their equivalent Powershell command.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Remove-AliasesFromScript.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Reset-Module</command:name>
+      <command:verb>Reset</command:verb>
+      <command:noun>Module</command:noun>
+      <maml:description>
+        <maml:para>Unload a Powershell module loaded into the current session.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Reset-Module command unloads a module if it is loaded within the current Powershell session.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Reset-Module</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="ModuleName">
+          <maml:name>Name</maml:name>
+          <maml:description>
+            <maml:para>Specifies the name of the module.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="ModuleName">
+        <maml:name>Name</maml:name>
+        <maml:description>
+          <maml:para>Specifies the name of the module.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Reset-Module -Name Powershell</dev:code>
+        <dev:remarks>
+          <maml:para>This example unloads the Powershell module if it is loaded.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Reset-Module.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Restart-Module</command:name>
+      <command:verb>Restart</command:verb>
+      <command:noun>Module</command:noun>
+      <maml:description>
+        <maml:para>Import a Powershell module after unloading it if it is loaded.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Restart-Module cmdlet will unload a Powershell module with the same name before attempting to import the specified module.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Restart-Module</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="ModuleName">
+          <maml:name>Name</maml:name>
+          <maml:description>
+            <maml:para>Specifies the name of the module.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="ModuleName">
+        <maml:name>Name</maml:name>
+        <maml:description>
+          <maml:para>Specifies the name of the module.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Restart-Module -Name Powershell</dev:code>
+        <dev:remarks>
+          <maml:para>This example will unload the module, if loaded, before importing the module.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Restart-Module.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Search-Command</command:name>
+      <command:verb>Search</command:verb>
+      <command:noun>Command</command:noun>
+      <maml:description>
+        <maml:para>Display a list of matching commands.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Search-Command cmdlet will search for a command that matches a filter. Sometimes it is helpful to search for a part of a cmdlet's name when you can't remember the exact spelling of the cmdlet.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Search-Command</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+          <maml:name>Filter</maml:name>
+          <maml:description>
+            <maml:para>Specify a filter to look for.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+        <maml:name>Filter</maml:name>
+        <maml:description>
+          <maml:para>Specify a filter to look for.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Search-Command -Filter "Assert-"
+
+Name                   Version Source
+----                   ------- ------
+Assert-Elevation       0.0     Elevation
+Assert-MockCalled      3.4.0   Pester
+Assert-PSRule          1.11.0  PSRule
+Assert-VerifiableMocks 3.4.0   Pester</dev:code>
+        <dev:remarks>
+          <maml:para>This example shows all available commands that start with 'Assert-'.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- Example 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Search-Command -Filter "container"
+
+Name                                        Version Source
+----                                        ------- ------
+Add-AppProvisionedSharedPackageContainer    3.0     Dism
+Add-AppSharedPackageContainer               2.0.1.0 Appx
+Add-ProvisionedAppSharedPackageContainer    3.0     Dism
+Get-AppProvisionedSharedPackageContainer    3.0     Dism
+Get-AppSharedPackageContainer               2.0.1.0 Appx
+Get-ProvisionedAppSharedPackageContainer    3.0     Dism
+Get-PveContainerStatus                      0.0     Proxmox
+New-HTMLContainer                           0.0.164 PSWriteHTML
+Remove-AppProvisionedSharedPackageContainer 3.0     Dism
+Remove-AppSharedPackageContainer            2.0.1.0 Appx
+Remove-ProvisionedAppSharedPackageContainer 3.0     Dism
+Reset-AppSharedPackageContainer             2.0.1.0 Appx</dev:code>
+        <dev:remarks>
+          <maml:para>This example shows all available commands that contain the word 'container'.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Search-Command.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Test-IsNonInteractive</command:name>
+      <command:verb>Test</command:verb>
+      <command:noun>IsNonInteractive</command:noun>
+      <maml:description>
+        <maml:para>Test if the current Powershell session is non-interactive.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Test-IsNonInteractive cmdlet will test if the powershell session is non-interactive or launched as a interactive process.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Test-IsNonInteractive</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>None</maml:name>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false"></command:parameterValue>
+        <dev:type>
+          <maml:name></maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Test-IsNonInteractive
+False</dev:code>
+        <dev:remarks>
+          <maml:para>This example returns false when executed from a Powershell console host.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Test-IsNonInteractive.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Test-PowershellVerb</command:name>
+      <command:verb>Test</command:verb>
+      <command:noun>PowershellVerb</command:noun>
+      <maml:description>
+        <maml:para>Test if a verb is an approved Powershell verb.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Test-PowershellVerb is a way to test if the specified verb is on the approved list. While Powershell doesn't prevent someone from using a non-approved verb in cmdlets, it does generate warnings when imported.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Test-PowershellVerb</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+          <maml:name>Verb</maml:name>
+          <maml:description>
+            <maml:para>Specifies the name of the Powershell verb to test.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+        <maml:name>Verb</maml:name>
+        <maml:description>
+          <maml:para>Specifies the name of the Powershell verb to test.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Test-PowershellVerb -Verb Get
+True</dev:code>
+        <dev:remarks>
+          <maml:para>This example returns true because 'get' is an approved Powershell verb.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- Example 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Test-PowershellVerb -Verb Unload
+False</dev:code>
+        <dev:remarks>
+          <maml:para>This example returns false because 'unload' is not an approved Powershell verb.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Test-PowershellVerb.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-AllModules</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>AllModules</command:noun>
+      <maml:description>
+        <maml:para>Update all modules that can be updated.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Update-AllModules wraps Update-InstalledModules and Update-MyModules to update all available modules that can be updated.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-AllModules</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>None</maml:name>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false"></command:parameterValue>
+        <dev:type>
+          <maml:name></maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Update-AllModules
+
+Updating third-party Powershell modules...
+
+
+Updating my Powershell modules...</dev:code>
+        <dev:remarks>
+          <maml:para>This example updated both installed modules and my modules.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Update-AllModules.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-InstalledModules</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>InstalledModules</command:noun>
+      <maml:description>
+        <maml:para>Update, if available, modules installed via a repository.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Update-InstalledModules cmdlet updates modules installed via a repository. If an update is not available, nothing is done.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-InstalledModules</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Verbose</maml:name>
+          <maml:description>
+            <maml:para>Displays detailed information about the operation done by the command. This information resembles the information in a trace or in a transaction log.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Verbose</maml:name>
+        <maml:description>
+          <maml:para>Displays detailed information about the operation done by the command. This information resembles the information in a trace or in a transaction log.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Update-InstalledModules</dev:code>
+        <dev:remarks>
+          <maml:para>This example updates all of the installed modules.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Update-InstalledModules.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-MyModules</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>MyModules</command:noun>
+      <maml:description>
+        <maml:para>Download and update my modules.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Update-MyModules cmdlet downloads and replaces my modules directory in my user profile directory. It removes any "published" modules so they aren't duplicated.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-MyModules</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>None</maml:name>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false"></command:parameterValue>
+        <dev:type>
+          <maml:name></maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Update-MyModules</dev:code>
+        <dev:remarks>
+          <maml:para>This example downloads and replaces my modules directory.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Update-MyModules.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-MyProfile</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>MyProfile</command:noun>
+      <maml:description>
+        <maml:para>Download and update my profile scripts.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Update-MyProfile cmdlet downloads and replaces my profile scripts in my user profile directory. It then reloads the profile script for the current host.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-MyProfile</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>None</maml:name>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false"></command:parameterValue>
+        <dev:type>
+          <maml:name></maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Update-MyProfile</dev:code>
+        <dev:remarks>
+          <maml:para>This example downloads and replaces my profile scripts.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Update-MyProfile.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-MyPublishedModules</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>MyPublishedModules</command:noun>
+      <maml:description>
+        <maml:para>Update the list of my published modules and install or update them.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Update-MyPublishedModules cmdlet will download the lastest list of my published modules from my chocolatey repository and then install or update any modules in that list.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-MyPublishedModules</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Verbose</maml:name>
+          <maml:description>
+            <maml:para>Displays detailed information about the operation done by the command. This information resembles the information in a trace or in a transaction log.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Verbose</maml:name>
+        <maml:description>
+          <maml:para>Displays detailed information about the operation done by the command. This information resembles the information in a trace or in a transaction log.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Update-MyPublishedModules</dev:code>
+        <dev:remarks>
+          <maml:para>This example downloads the latest list and installs or updates them.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Update-MyPublishedModules.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-MyThirdPartyModules</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>MyThirdPartyModules</command:noun>
+      <maml:description>
+        <maml:para>Update the list of installed third-party modules and install or update them.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Update-MyThirdPartyModules cmdlet will download the lastest list of third-party modules from my chocolatey repository and then install or update any modules in that list.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-MyThirdPartyModules</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Verbose</maml:name>
+          <maml:description>
+            <maml:para>Displays detailed information about the operation done by the command. This information resembles the information in a trace or in a transaction log.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Verbose</maml:name>
+        <maml:description>
+          <maml:para>Displays detailed information about the operation done by the command. This information resembles the information in a trace or in a transaction log.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Update-MyThirdPartyModules</dev:code>
+        <dev:remarks>
+          <maml:para>This example downloads the latest list and installs or updates them.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Update-MyThirdPartyModules.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-PreCompiledAssemblies</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>PreCompiledAssemblies</command:noun>
+      <maml:description>
+        <maml:para>Update all of the pre-compiled assemblies.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Update-PreCompiledAssemblies cmdlet gathers all of the loaded assemblies and runs ngen.exe on each.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-PreCompiledAssemblies</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>None</maml:name>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false"></command:parameterValue>
+        <dev:type>
+          <maml:name></maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Update-PreCompiledAssemblies
+Ensuring all currently loaded runtime assemblies are pre-compiled...
+
+
+Running ngen.exe on 'mscorlib.dll'...
+All compilation targets are up to date.
+
+
+Running ngen.exe on 'Microsoft.PowerShell.ConsoleHost.dll'...
+All compilation targets are up to date.
+
+
+Running ngen.exe on 'System.dll'...
+All compilation targets are up to date.
+
+
+Running ngen.exe on 'System.Core.dll'...
+All compilation targets are up to date.
+
+...
+
+Running ngen.exe on 'Windows.Security.winmd'...
+All compilation targets are up to date.
+
+
+Running ngen.exe on 'Microsoft.HostCompute.PowerShell.Cmdlets.dll'...
+2&gt;    Compiling assembly Microsoft.HostCompute.PowerShell.Views, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35 (CLR v4.0.30319) ...
+1&gt;    Compiling assembly C:\Windows\Microsoft.Net\assembly\GAC_64\Microsoft.HostCompute.PowerShell.Cmdlets\v4.0_10.0.0.0__31bf3856ad364e35\Microsoft.HostCompute.PowerShell.Cmdlets.dll (CLR v4.0.30319) ...
+1&gt;    Compiling assembly Microsoft.HostCompute.Interop, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35 (CLR v4.0.30319) ...
+
+
+Running ngen.exe on 'Microsoft.CertificateServices.PKIClient.Cmdlets.dll'...
+All compilation targets are up to date.</dev:code>
+        <dev:remarks>
+          <maml:para>This example updates all of the loaded assemblies pre-compile.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Update-PreCompiledAssemblies.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-Profile</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>Profile</command:noun>
+      <maml:description>
+        <maml:para>Reload the profile script.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Update-Profile cmdlet reloads the profile script into the current session.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-Profile</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>None</maml:name>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false"></command:parameterValue>
+        <dev:type>
+          <maml:name></maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Update-Profile</dev:code>
+        <dev:remarks>
+          <maml:para>This example reloads the profile script in the current session.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Update-Profile.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+</helpItems>
