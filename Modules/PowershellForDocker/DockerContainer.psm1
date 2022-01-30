@@ -155,15 +155,6 @@ function Get-DockerContainerIPAddress {
   return $containerList
 }
 
-function Get-DockerContainerLog {
-  param (
-    [Parameter(Mandatory = $true)]
-    [string]$Id
-  )
-
-  Invoke-Docker "container logs $Id"
-}
-
 function Get-DockerContainerNames {
   param (
     [switch]$Running,
@@ -263,22 +254,23 @@ function Invoke-DockerContainerShell {
 function Invoke-DockerLog {
   param(
     [Parameter(Mandatory = $true)]
-    [string] $ContainerName
+    [string] $Id
   )
 
-  Invoke-Docker "logs $ContainerName"
+  Invoke-Docker "logs $Id"
 }
 
 Set-Alias -Name "dlog" -Value "Invoke-DockerLog"
+Set-Alias -Name "Get-DockerContainerLog" -Value "Invoke-DockerLog"
 
 function Invoke-DockerLogTail {
   param(
     [Parameter(Mandatory = $true)]
-    [string] $ContainerName,
+    [string] $Id,
     [int] $Lines = 50
   )
 
-  Invoke-Docker "logs -tf --tail=$Lines $ContainerName"
+  Invoke-Docker "logs -tf --tail=$Lines $Id"
 }
 
 Set-Alias -Name "dtail" -Value "Invoke-DockerLogTail"
@@ -397,33 +389,41 @@ function Remove-DockerContainer {
   }
 
   if ($PSCmdlet.ParameterSetName -eq "All") {
-    Invoke-Docker "rm $(Invoke-Docker ps -a -q)"
+    Invoke-Docker "rm --volumes --force $(Invoke-Docker ps -a -q)"
   }
 
   if ($PSCmdlet.ParameterSetName -eq "Other") {
     if ($Exited) {
       (Get-DockerContainerState | Where-Object { $_.State -eq 'exited' }).Id | `
-      ForEach-Object {
-        Invoke-Docker "rm  --volumes --force $_"
-      }
+        ForEach-Object {
+          Invoke-Docker "rm --volumes --force $_"
+        }
     }
 
     if ($NonRunning) {
       (Get-DockerContainerState | Where-Object { $_.State -ne 'running' }).Id | `
         ForEach-Object {
-      Invoke-Docker "rm  --volumes --force $_"
+          Invoke-Docker "rm  --volumes --force $_"
         }
     }
   }
 }
 
 function Start-DockerContainer {
+  [CmdletBinding(DefaultParameterSetName="ID")]
   param (
-    [Parameter(Mandatory = $true)]
-    [string]$Id
+    [Parameter(Position = 0, Mandatory = $true, ParameterSetName = "ID")]
+    [Alias("Name")]
+    [string]$Id,
+    [Parameter(ParameterSetName = "All")]
+    [switch]$All
   )
 
-  Invoke-Docker "start $Id"
+  if ($PSCmdlet.ParameterSetName -eq "ID") {
+    Invoke-Docker "start $Id"
+  } else {
+    Invoke-Docker "start $(Invoke-Docker ps -f 'status=exited' -q)"
+  }
 }
 
 function Start-LinuxServerCommunityContainer {
@@ -441,7 +441,7 @@ function Start-LinuxServerCommunityContainer {
     $param += " -v `"$volume`""
   }
 
-  if ($param -like "-v *:/config`"*") {
+  if (-not ($param -like "-v *:/config`"*")) {
     $param += " -v `"$(ConvertTo-UnixPath $PWD):/config`""
   }
 
