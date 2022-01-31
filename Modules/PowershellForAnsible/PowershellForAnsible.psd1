@@ -10,7 +10,7 @@
         ModuleVersion = "2112.28.1"
        }
     )
-    RootModule = 'Ansible.psm1'
+    RootModule = 'PowershellForAnsible.psm1'
     NestedModules = @(
       "AnsibleDev.psm1"
       "AnsibleInventory.psm1"
