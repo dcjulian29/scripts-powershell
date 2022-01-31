@@ -83,10 +83,10 @@ function Remove-DockerImage {
   )
 
   if ($Id) {
-    $images = (Get-DockerImage | Where-Object { $_.Id -eq $Id }).Id
+    $images = (Get-DockerImage | Where-Object { $_.Id -like "$Id*" }).Id
   } else {
     if ($Name) {
-      $images = (Get-DockerImage | Where-Object { $_.Id -eq $Id }).Id
+      $images = (Get-DockerImage | Where-Object { $_.Id -like "$Name*" }).Id
     } else {
       if ($Unused) {
         $images = (Get-DockerImage -Unused).Id
