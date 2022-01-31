@@ -94,10 +94,40 @@ function New-DockerNetwork {
   [CmdletBinding()]
   param (
     [Parameter(Mandatory = $true)]
-    [string] $Name
+    [string] $Name,
+    [string] $Driver = "bridge",
+    [string] $Gateway,
+    [string] $Subnet,
+    [string] $IpRange,
+    [switch] $Internal,
+    [switch] $IPv6
   )
 
-  Invoke-Docker network create $Name
+  $param = "network create --attachable --driver $Driver "
+
+  if ($Gateway) {
+    $param += "--gateway $Gateway "
+  }
+
+  if ($Subnet) {
+    $param += "--subnet $Subnet "
+  }
+
+  if ($IpRange) {
+    $param += "--ip-range $IpRange "
+  }
+
+  if ($Internal) {
+    $param += "--internal "
+  }
+
+  if ($IPv6) {
+    $param += "--ipv6 "
+  }
+
+  $param += "$Name"
+
+  Invoke-Docker $param
 }
 
 function Optimize-DockerNetwork {
