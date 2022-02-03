@@ -41,12 +41,19 @@ function New-DockerNfsVolume {
     [Parameter(Mandatory = $true)]
     [string] $Server,
     [Parameter(Mandatory = $true)]
-    [string] $Path
+    [string] $Path,
+    [switch] $ReadOnly
   )
+
+  if ($ReadOnly) {
+    $access = "ro"
+  } else {
+    $access = "rw"
+  }
 
   $options = @(
     "type=nfs"
-    "o=addr=$Server,rw"
+    "o=addr=$Server,$access"
     "device=:$Path"
   )
 
@@ -54,26 +61,57 @@ function New-DockerNfsVolume {
 }
 
 function New-DockerVolume {
-  [CmdletBinding()]
+  [CmdletBinding(DefaultParameterSetName = 'Name')]
   param (
-    [Parameter(Mandatory = $true)]
+    [Parameter(ParameterSetName = "Name", Position = 0, Mandatory = $true)]
+    [Parameter(ParameterSetName = "Path", Position = 0, Mandatory = $true)]
+    [Parameter(ParameterSetName = "Driver", Position = 0, Mandatory = $true)]
+    [Parameter(ParameterSetName = "TempFS", Position = 0, Mandatory = $true)]
     [string] $Name,
+    [Parameter(ParameterSetName = "Path", Position = 1, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path,
+    [Parameter(ParameterSetName = "Driver", Position = 1, Mandatory = $true)]
     [string] $Driver,
-    [string[]] $DriverOptions
+    [Parameter(ParameterSetName = "Driver", Position = 2)]
+    [string[]] $DriverOptions,
+    [Parameter(ParameterSetName = "TempFS")]
+    [string] $Size = "512m",
+    [Parameter(ParameterSetName = "TempFS")]
+    [int] $UserID = 0,
+    [Parameter(ParameterSetName = "TempFS")]
+    [Alias("TempFS")]
+    [switch] $TemporaryFS
   )
 
-  $options = ""
+  switch ($PSCmdlet.ParameterSetName) {
+    "Driver" {
+      $options = " --driver $Driver"
 
-  if ($Driver) {
-    $options = " --driver $Driver"
-  }
+      if ($DriverOptions) {
+        foreach ($option in $DriverOptions) {
+          $options += " --opt $option"
+        }
+      }
+    }
 
-  if ($DriverOptions) {
-    foreach ($option in $DriverOptions) {
-      $options += " --opt $option"
+    "TempFS" {
+      $options  = " --driver local --opt type=tmpfs --opt device=tmpfs"
+      $options += " --opt o=size=$Size,uid=$UserID"
+    }
+
+    "Path" {
+      $Path = $(Resolve-Path $Path)
+      $options  = " --driver local --opt o=bind --opt type=mount"
+      $options += " --opt device=$(ConvertTo-UnixPath $Path)"
+    }
+
+    Default {
+      $options = ""
     }
   }
 
+  Write-Verbose "Arguments: 'volume create$options $Name'"
   Invoke-Docker volume create$options $Name
 }
 
