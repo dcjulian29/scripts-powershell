@@ -21,6 +21,8 @@ Invoke-Docker
 
 The Invoke-Docker function wraps the docker.exe to run processes in isolated containers.
 
+> **_NOTE:_** Anything after the function name is passed unmodified as arguments.
+
 ## EXAMPLES
 
 ### Example 1
@@ -122,7 +124,3 @@ To get more help with docker, check out our guides at https://docs.docker.com/go
 ```
 
 This example invokes docker with no parameters.
-
-## PARAMETERS
-
-- Anything after the function name is passed unmodified as arguments.

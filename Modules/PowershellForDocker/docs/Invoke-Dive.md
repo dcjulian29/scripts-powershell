@@ -21,6 +21,8 @@ Invoke-Dive
 
 The Invoke-Dive function is a wrapper around a tool for exploring a docker image, layer contents, and discovering ways to shrink the size of your Docker/OCI image. Additionally the tool estimates the amount of wasted space and identifies the offending files from the image.
 
+> **_NOTE:_** Anything after the function name is passed unmodified as arguments.
+
 ## EXAMPLES
 
 ### Example 1
@@ -31,7 +33,3 @@ No image argument given
 ```
 
 This example invokes the Dive tool.
-
-## PARAMETERS
-
-- Anything after the function name is passed unmodified as arguments.

@@ -21,6 +21,8 @@ Invoke-DockerCompose
 
 The Invoke-DockerCompose function wraps the docker-compose.exe to define and run multi-container services with Docker.
 
+> **_NOTE:_** Anything after the function name is passed unmodified as arguments.
+
 ## EXAMPLES
 
 ### Example 1
@@ -112,7 +114,3 @@ services:
     - C:\docker\apt-mirror.list:/etc/apt/mirror.list:ro
 version: '3.9'
 ```
-
-## PARAMETERS
-
-- Anything after the function name is passed unmodified as arguments.
