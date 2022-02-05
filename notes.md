@@ -18,9 +18,9 @@ idpdm $((Get-Item $PWD.Path).BaseName)
 
 ```powershell
 New-MarkdownHelp -Module "$((Get-Item $PWD.Path).BaseName)" -OutputFolder .\docs -WithModulePage
-```
 
-```powershell
+Move-Item -Path "docs/$((Get-Item $PWD.Path).BaseName).md" -Destination "./README.md"
+
 (Get-ChildItem ./docs/*.md -Recurse).FullName | ForEach-Object {
   $text = ""
   $file = (Split-Path -Leaf $_ )
