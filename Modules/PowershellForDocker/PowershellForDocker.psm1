@@ -13,7 +13,7 @@ function convertSizeString($Size) {
     "TB" { $size = $size * 1TB }
   }
 
-  $size = [int][Math]::Round($size, 0, [MidPointRounding]::AwayFromZero)
+  $size = [long][Math]::Round($size, 0, [MidPointRounding]::AwayFromZero)
 
   return $size
 }
@@ -146,10 +146,10 @@ function Get-PathForContainer {
         -ErrorId "ResourceUnavailable" -ErrorCategory "ResourceUnavailable"))
     }
 
-    return $Path.Replace("$([IO.Path]::GetFullPath($pwd))\", "./").Replace('\', '/')
+    return ((Get-DockerMountPoint $Path).Replace("$(Get-DockerMountPoint $pwd.Path)", "."))
   }
 
-  return ($Path -replace "([A-Za-z]):", "/mnt/c").Replace('\', '/')
+  return Get-DockerMountPoint $Path -UnixStyle
 }
 
 function Invoke-AlpineContainer {
@@ -164,7 +164,7 @@ Set-Alias -Name alpine -Value Invoke-AlpineContainer
 
 function Invoke-DebianContainer {
   if (Test-DockerLinuxEngine) {
-    New-DockerContainer -Image "debian" -Tag "buster-slim" -Interactive -Name "debian_shell"
+    New-DockerContainer -Image "debian" -Tag "bullseye-slim" -Interactive -Name "debian_shell"
   } else {
     Write-Error "Debian Linux requires the Linux Docker Engine!" -Category ResourceUnavailable
   }
@@ -205,7 +205,7 @@ function Optimize-Docker {
     $params += " --force"
   }
 
-  Invoke-Docker "system prune"
+  Invoke-Docker "system prune $params"
 }
 
 Set-Alias -Name Prune-Docker -Value Optimize-Docker

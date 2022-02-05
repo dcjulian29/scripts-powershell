@@ -1,6 +1,6 @@
 @{
   RootModule = 'PowershellForDocker.psm1'
-  ModuleVersion = '2201.30.1'
+  ModuleVersion = '2202.5.1'
   Description = "A collection of commands to interact with Docker."
   GUID = '2cd0c771-ed8b-48bc-b6bc-be8540c915e4'
   Author = 'Julian Easterling'
