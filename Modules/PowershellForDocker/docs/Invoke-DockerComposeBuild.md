@@ -1,11 +1,11 @@
 ---
 external help file: PowershellForDocker-help.xml
 Module Name: PowershellForDocker
-online version: https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/PowershellForDocker/docs/Build-DockerCompose.md
+online version: https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/PowershellForDocker/docs/Invoke-DockerComposeBuild.md
 schema: 2.0.0
 ---
 
-# Build-DockerCompose
+# Invoke-DockerComposeBuild
 
 ## SYNOPSIS
 
@@ -14,19 +14,19 @@ Build or rebuild services.
 ## SYNTAX
 
 ```powershell
-Build-DockerCompose [[-ComposeFile] <String>] [<CommonParameters>]
+Invoke-DockerComposeBuild [[-ComposeFile] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-The Build-DockerCompose function will call docker compose cli to build or rebuild services defined in the docker compose file.
+The Invoke-DockerComposeBuild function will call docker compose cli to build or rebuild services defined in the docker compose file.
 
 ## EXAMPLES
 
 ### Example 1
 
 ```powershell
-PS C:\> Build-DockerCompose -ComposeFile ./docker-compose.yml
+PS C:\> Invoke-DockerComposeBuild -ComposeFile ./docker-compose.yml
 
 Building apt-mirror
 [+] Building 3.8s (8/8) FINISHED

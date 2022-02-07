@@ -1,17 +1,3 @@
-function Build-DockerCompose {
-  [CmdletBinding()]
-  param (
-    [ValidateNotNullOrEmpty()]
-    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-    [Alias("Path")]
-    [string]$ComposeFile = "docker-compose.yml"
-  )
-
-  Invoke-DockerCompose "-f $ComposeFile build"
-}
-
-Set-Alias -Name "dcb" -Value "Build-DockerCompose"
-
 function Find-DockerCompose {
   First-Path `
    ((Get-Command 'docker-compose.exe' -ErrorAction SilentlyContinue).Source) `
@@ -35,6 +21,20 @@ function Invoke-DockerCompose {
 }
 
 Set-Alias -Name "dc" -Value "Invoke-DockerCompose"
+
+function Invoke-DockerComposeBuild {
+  [CmdletBinding()]
+  param (
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [Alias("Path")]
+    [string]$ComposeFile = "docker-compose.yml"
+  )
+
+  Invoke-DockerCompose "-f $ComposeFile build"
+}
+
+Set-Alias -Name "dcb" -Value "Build-DockerCompose"
 
 function Invoke-DockerComposeLog {
   param(

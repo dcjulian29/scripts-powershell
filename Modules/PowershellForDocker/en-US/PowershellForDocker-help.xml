@@ -2,87 +2,6 @@
 <helpItems schema="maml" xmlns="http://msh">
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
     <command:details>
-      <command:name>Build-DockerCompose</command:name>
-      <command:verb>Build</command:verb>
-      <command:noun>DockerCompose</command:noun>
-      <maml:description>
-        <maml:para>Build or rebuild services.</maml:para>
-      </maml:description>
-    </command:details>
-    <maml:description>
-      <maml:para>The Build-DockerCompose function will call docker compose cli to build or rebuild services defined in the docker compose file.</maml:para>
-    </maml:description>
-    <command:syntax>
-      <command:syntaxItem>
-        <maml:name>Build-DockerCompose</maml:name>
-        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="Path">
-          <maml:name>ComposeFile</maml:name>
-          <maml:description>
-            <maml:para>Specify a docker compose file. (default: docker-compose.yml)</maml:para>
-          </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-          <dev:type>
-            <maml:name>String</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
-        </command:parameter>
-      </command:syntaxItem>
-    </command:syntax>
-    <command:parameters>
-      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="Path">
-        <maml:name>ComposeFile</maml:name>
-        <maml:description>
-          <maml:para>Specify a docker compose file. (default: docker-compose.yml)</maml:para>
-        </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-        <dev:type>
-          <maml:name>String</maml:name>
-          <maml:uri />
-        </dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
-      </command:parameter>
-    </command:parameters>
-    <command:inputTypes />
-    <command:returnValues />
-    <maml:alertSet>
-      <maml:alert />
-    </maml:alertSet>
-    <command:examples>
-      <command:example>
-        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
-        <dev:code>PS C:\&gt; Build-DockerCompose -ComposeFile ./docker-compose.yml
-
-Building apt-mirror
-[+] Building 3.8s (8/8) FINISHED
- =&gt; [internal] load build definition from Dockerfile                                                               0.0s
- =&gt; =&gt; transferring dockerfile: 32B                                                                                0.0s
- =&gt; [internal] load .dockerignore                                                                                  0.0s
- =&gt; =&gt; transferring context: 2B                                                                                    0.0s
- =&gt; [internal] load metadata for docker.io/library/alpine:latest                                                   0.0s
- =&gt; CACHED [1/3] FROM docker.io/library/alpine:latest                                                              0.0s
- =&gt; [internal] load build context                                                                                  0.0s
- =&gt; =&gt; transferring context: 651B                                                                                  0.0s
- =&gt; [2/3] RUN apk add --update --no-cache gzip xz bzip2 tzdata perl wget curl ca-certificates thttpd   &amp;&amp; wget -O  2.8s
- =&gt; [3/3] COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh                                                        0.1s
- =&gt; exporting to image                                                                                             0.7s
- =&gt; =&gt; exporting layers                                                                                            0.7s
- =&gt; =&gt; writing image sha256:13e536207cb55de00ed69ba6076f318a368ace9a22b41710c8c8e0e42aee44e2                       0.0s
- =&gt; =&gt; naming to docker.io/library/apt-mirror_apt-mirror                                                           0.0s</dev:code>
-        <dev:remarks>
-          <maml:para>This example builds the apt-mirror docker compose file.</maml:para>
-        </dev:remarks>
-      </command:example>
-    </command:examples>
-    <command:relatedLinks>
-      <maml:navigationLink>
-        <maml:linkText>Online Version:</maml:linkText>
-        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/PowershellForDocker/docs/Build-DockerCompose.md</maml:uri>
-      </maml:navigationLink>
-    </command:relatedLinks>
-  </command:command>
-  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
-    <command:details>
       <command:name>Connect-DockerContainer</command:name>
       <command:verb>Connect</command:verb>
       <command:noun>DockerContainer</command:noun>
@@ -2350,6 +2269,87 @@ version: '3.9'</dev:code>
       <maml:navigationLink>
         <maml:linkText>Online Version:</maml:linkText>
         <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/PowershellForDocker/docs/Invoke-DockerCompose.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Invoke-DockerComposeBuild</command:name>
+      <command:verb>Invoke</command:verb>
+      <command:noun>DockerComposeBuild</command:noun>
+      <maml:description>
+        <maml:para>Build or rebuild services.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Invoke-DockerComposeBuild function will call docker compose cli to build or rebuild services defined in the docker compose file.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Invoke-DockerComposeBuild</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="Path">
+          <maml:name>ComposeFile</maml:name>
+          <maml:description>
+            <maml:para>Specify a docker compose file. (default: docker-compose.yml)</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="Path">
+        <maml:name>ComposeFile</maml:name>
+        <maml:description>
+          <maml:para>Specify a docker compose file. (default: docker-compose.yml)</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert />
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Invoke-DockerComposeBuild -ComposeFile ./docker-compose.yml
+
+Building apt-mirror
+[+] Building 3.8s (8/8) FINISHED
+ =&gt; [internal] load build definition from Dockerfile                                                               0.0s
+ =&gt; =&gt; transferring dockerfile: 32B                                                                                0.0s
+ =&gt; [internal] load .dockerignore                                                                                  0.0s
+ =&gt; =&gt; transferring context: 2B                                                                                    0.0s
+ =&gt; [internal] load metadata for docker.io/library/alpine:latest                                                   0.0s
+ =&gt; CACHED [1/3] FROM docker.io/library/alpine:latest                                                              0.0s
+ =&gt; [internal] load build context                                                                                  0.0s
+ =&gt; =&gt; transferring context: 651B                                                                                  0.0s
+ =&gt; [2/3] RUN apk add --update --no-cache gzip xz bzip2 tzdata perl wget curl ca-certificates thttpd   &amp;&amp; wget -O  2.8s
+ =&gt; [3/3] COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh                                                        0.1s
+ =&gt; exporting to image                                                                                             0.7s
+ =&gt; =&gt; exporting layers                                                                                            0.7s
+ =&gt; =&gt; writing image sha256:13e536207cb55de00ed69ba6076f318a368ace9a22b41710c8c8e0e42aee44e2                       0.0s
+ =&gt; =&gt; naming to docker.io/library/apt-mirror_apt-mirror                                                           0.0s</dev:code>
+        <dev:remarks>
+          <maml:para>This example builds the apt-mirror docker compose file.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/PowershellForDocker/docs/Invoke-DockerComposeBuild.md</maml:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
