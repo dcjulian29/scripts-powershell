@@ -484,7 +484,7 @@ $baseImage = "$((Get-ChildItem -Path "base/Win${Version}BaseCore.vhdx").FullName
 
     if ($DomainJoin) {
         if ($null -eq $Credentials) {
-            $Credentials = $(Get-Credentials -Message "Enter Lab Domain Administrator Account (UPN)")
+            $Credentials = $(Get-Credential -Message "Enter Lab Domain Administrator Account (UPN)")
         }
 
         $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.server.domain.xml"
