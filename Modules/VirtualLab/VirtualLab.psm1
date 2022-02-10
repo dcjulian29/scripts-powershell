@@ -62,8 +62,9 @@ function New-LabDomainController {
 
     Uninstall-VirtualMachine $ComputerName
 
-    New-DifferencingVHDX -ReferenceDisk "$((Get-VMHost).VirtualHardDiskPath)\base\Win2022ServerBase.vhdx" `
-        -VhdxFile $vhdx
+    $reference = "$((Get-VMHost).VirtualHardDiskPath)\base\Win2022Base.vhdx"
+
+    New-DifferencingVHDX -ReferenceDisk $reference -VhdxFile $vhdx
 
     $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)"
     Copy-Item -Path $unattend -Destination $unattendFile  -Force
