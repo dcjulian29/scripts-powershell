@@ -54,7 +54,7 @@ function returnAnsibleRoot {
   }
 }
 
-#-----------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 function Assert-AnsibleProvision {
   [CmdletBinding()]
@@ -491,7 +491,7 @@ function Reset-AnsibleEnvironmentDev {
   try {
     Remove-AnsibleVagrantHosts
 
-    & vagrant up ubuntu2004 centos8
+    & vagrant up ubuntu2004 rocky8
 
     checkReset 5,6
 
@@ -533,7 +533,7 @@ function Reset-AnsibleEnvironmentTest {
 
     checkReset 5,6,7,8,9,10
 
-    Invoke-AnsiblePlaybook -v --limit ansibledev --tags minimal --flush-cache `
+    Invoke-AnsiblePlaybook -v --tags minimal --flush-cache `
       -i ./inventories/vagrant.ini ./playbooks/base.yml
 
     if ($Role) {
