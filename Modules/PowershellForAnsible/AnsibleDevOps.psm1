@@ -3,9 +3,46 @@ $script:nested = 0
 
 function checkReset([string[]]$pingHosts) {
   foreach ($ping in $pingHosts) {
+    Write-Output " "
+    switch ($ping)
+    {
+      5 {
+        & vagrant up ubuntu2004
+      }
+      6 {
+        & vagrant up rocky8
+      }
+      7 {
+        & vagrant up alma8
+      }
+      8 {
+        & vagrant up ubuntu1804
+      }
+      9 {
+        & vagrant up debian11
+      }
+      10 {
+        & vagrant up fedora35
+      }
+      default {
+        $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+          -Message "Vagrant host '$ping' is not configured!" `
+          -ExceptionType "System.NotImplementedException" `
+          -ErrorId "NotImplementedException" -ErrorCategory "NotImplemented"))
+      }
+    }
 
+    if (-not $?) {
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "Vagrant host failed to spin up!" `
+        -ExceptionType "System.Management.Automation.RuntimeException" `
+        -ErrorId "RuntimeException" -ErrorCategory "DeviceError"))
+    }
+
+    Write-Output " "
     Write-Host -NoNewline "Searching for 10.10.10.$ping..."
     $found = $false
+    $count = 0
 
     while (-not $found) {
       $found = Test-Connection -ComputerName "10.0.0.$ping" -Quiet -Count 1
@@ -13,7 +50,16 @@ function checkReset([string[]]$pingHosts) {
       if ($found) {
         Write-Host -ForegroundColor Green " [Found]"
       } else {
-        Write-Host -NoNewline "."
+        if ($count -lt 20) {
+          Write-Host -NoNewline "."
+          $count++
+        } else {
+          Write-Host -ForegroundColor Red " [NotFound]"
+          $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+            -Message "Vagrant host is not responding via networking!" `
+            -ExceptionType "System.Runtime.Remoting.RemotingTimeoutException" `
+            -ErrorId "RemotingTimeoutException" -ErrorCategory "ObjectNotFound"))
+        }
       }
     }
   }
@@ -491,7 +537,6 @@ function Reset-AnsibleEnvironmentDev {
   try {
     Remove-AnsibleVagrantHosts
 
-    & vagrant up ubuntu2004 rocky8
 
     checkReset 5,6
 
@@ -525,11 +570,11 @@ function Reset-AnsibleEnvironmentTest {
   try {
     Remove-AnsibleVagrantHosts
 
+    Write-Output " "
     & vagrant box update
 
     & vagrant box prune --force --keep-active-boxes
 
-    & vagrant up
 
     checkReset 5,6,7,8,9,10
 
@@ -581,7 +626,6 @@ function Test-AnsibleProvision {
   if (-not ($NoRecreate)) {
     Remove-AnsibleVagrantHosts
 
-    & vagrant up ubuntu2004
   }
 
   checkReset 5
