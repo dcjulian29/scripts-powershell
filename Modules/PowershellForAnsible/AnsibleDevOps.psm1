@@ -80,6 +80,10 @@ function ensureAnsibleRoot {
 
   Push-Location C:\code\ansible
 
+  if (-not (Test-Path ./.tmp)) {
+    New-Item -Path ./.tmp -ItemType Directory | Out-Null
+  }
+
   $script:rootDir = $true
 }
 
@@ -269,7 +273,11 @@ function Invoke-AnsiblePlayBase {
 
   ensureAnsibleRoot
 
-  $param = "-v"
+  if ($PSBoundParameters.ContainsKey('Verbose')) {
+    $param = "-vvv"
+  } else {
+    $param = "-v"
+  }
 
   if ($PSBoundParameters.ContainsKey('OnlyDevelopment')) {
     if ($Subset.Length -gt 0) {
@@ -317,7 +325,11 @@ function Invoke-AnsiblePlayDev {
 
   Set-Content -Path ".tmp/play.yml" -Value $play -Force -NoNewline
 
-  $param = "-v "
+  if ($PSBoundParameters.ContainsKey('Verbose')) {
+    $param = "-vvv "
+  } else {
+    $param = "-v "
+  }
 
   if (-not ($PSBoundParameters.ContainsKey('NoStep'))) {
     $param += "--step "
@@ -383,7 +395,13 @@ function Invoke-AnsiblePlayTest {
 
   Set-Content -Path ".tmp/play.yml" -Value $play -Force -NoNewline
 
-  $param = "-v --limit $Subset --tags " + $Tags -join ","
+  if ($PSBoundParameters.ContainsKey('Verbose')) {
+    $param = "-vvv"
+  } else {
+    $param = "-v"
+  }
+
+  $param += " --limit $Subset --tags " + $Tags -join ","
   $param += " -i ./inventories/vagrant.ini .tmp/play.yml"
 
   Invoke-AnsiblePlaybook $param
@@ -661,7 +679,13 @@ function Update-AnsibleHost {
 
   Set-Content -Path ".tmp/play.yml" -Value $play -Force -NoNewline
 
-  $param = "-v --limit $Subset"
+  if ($PSBoundParameters.ContainsKey('Verbose')) {
+    $param = "-vvv"
+  } else {
+    $param = "-v"
+  }
+
+  $param += " --limit $Subset"
 
   if ($AskBecomePassword) {
     $param += " --ask-become-pass"
