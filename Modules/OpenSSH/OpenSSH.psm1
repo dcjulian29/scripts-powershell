@@ -197,19 +197,20 @@ function New-OpenSSHHostShortcut {
 
 function New-OpenSSHKey {
   param(
-    [string] $User = "${env:USERNAME}",
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $true, Position = 0)]
     [Alias("ComputerName")]
     [string] $Host,
+    [string] $User = "${env:USERNAME}",
     [switch] $CopyToRemote
   )
 
   $file = "`"$etc\$Host.key`""
 
-  & C:\Windows\System32\OpenSSH\ssh-keygen.exe -t ed25519 -C `"$User@$Host`" -N `"`" -f $file
+  & C:\Windows\System32\OpenSSH\ssh-keygen.exe -t ecdsa -b 521 -m PEM -C `"$User@$Host`" -N `"`" -f $file
 
   if ($CopyToRemote) {
-    & C:\Windows\System32\OpenSSH\ssh-copy-id.exe -i $file $User@$Host
+    Send-FileScp -LocalPath $file -RemotePath "~/.ssh/authorized_keys" `
+      -RemoteHost $Host -RemoteUser $User
   }
 }
 
