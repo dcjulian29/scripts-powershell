@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2201.6.1'
+    ModuleVersion = '2203.27.1'
     GUID = 'd8dcfccc-7a12-4dfd-a27a-c647b408e1bf'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -53,6 +53,7 @@
         "Invoke-NSUpdate"
         "Invoke-PingScanNetwork"
         "Invoke-ScanHost"
+        "Invoke-ScanHostPort"
         "Invoke-ScanLocalNetwork"
         "Invoke-ScanNetwork"
         "Invoke-TShark"
@@ -88,6 +89,7 @@
         "ipv4-subnet"
         "nmap"
         "nmap-host"
+        "nmap-port"
         "nmap-scan"
         "scan-network"
         "nslookup"

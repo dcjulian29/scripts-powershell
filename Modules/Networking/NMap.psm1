@@ -61,6 +61,24 @@ function Invoke-ScanHost {
 
 Set-Alias nmap-host Invoke-ScanHost
 
+function Invoke-ScanHostPort {
+  param (
+      [ValidateNotNullOrEmpty()]
+      [Parameter(Mandatory = $true)]
+      [String]$HostIP,
+      [int] $StartPort = 0,
+      [int] $EndPort = 65535
+  )
+
+  if (testDockerOrElevated) {
+    Invoke-Nmap -v -r -sS -sU -p $StartPort-$EndPort -A $HostIP/32
+  } else {
+    Invoke-Nmap -v -r -sT -sU -p $StartPort-$EndPort -A $HostIP/32
+  }
+}
+
+Set-Alias nmap-port Invoke-ScanHostPort
+
 function Invoke-ScanLocalNetwork {
     $gw = Get-WmiObject -Class Win32_IP4RouteTable `
         | Where-Object { $_.destination -eq '0.0.0.0' -and $_.mask -eq '0.0.0.0'} `
