@@ -1,5 +1,6 @@
 $script:rootDir = $false
 $script:nested = 0
+$script:vaultPasswd = "./.tmp/.vault_pass"
 
 function checkReset([string[]]$pingHosts) {
   foreach ($ping in $pingHosts) {
@@ -221,7 +222,7 @@ function Get-AnsibleHostVariables {
   )
 
   $p = "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) " `
-    + "--yaml --vars -vvv --host $ComputerName"
+    + "--yaml --vars --host $ComputerName"
 
   Invoke-AnsibleInventory $p
 }
@@ -612,6 +613,61 @@ function Reset-AnsibleEnvironmentTest {
 Set-Alias "ansible-test-reset" -Value Reset-AnsibleEnvironmentTest
 Set-Alias "ansible-reset-test" -Value Reset-AnsibleEnvironmentTest
 
+function Remove-AnsibleVaultPassword {
+  [CmdletBinding(SupportsShouldProcess)]
+  param ()
+
+  if (Test-Path $script:vaultPasswd) {
+    if ($PSCmdlet.ShouldProcess("Stored Ansible Vault Password")) {
+      Remove-Item $script:vaultPasswd -Force
+
+      Write-Output "Ok."
+    }
+  } else {
+    Write-Output "Ansible vault password is not currently stored."
+  }
+}
+
+function Set-AnsibleVaultPassword {
+  [CmdletBinding(SupportsShouldProcess)]
+  param (
+      [Parameter(Mandatory = $true)]
+      [string] $Passwd,
+      [Alias('AllowClobber')]
+      [switch] $Force
+  )
+
+  ensureAnsibleRoot
+
+  if (Test-Path $script:vaultPasswd) {
+    if (-not $Force) {
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "Ansible Vault password already set! Use -AllowClobber to overwrite." `
+        -ExceptionType "System.Management.Automation.RuntimeException" `
+        -ErrorId "RuntimeException" -ErrorCategory "ResourceExists"))
+    }
+
+    Remove-Item $script:vaultPasswd -Force
+  }
+
+  if ($Force -or ($PSCmdlet.ShouldContinue( `
+      "Are you sure you want to store the Ansible Vault password unencrypted?", `
+      "Ansible Vault Password"))) {
+
+    @(
+      "#!/usr/bin/env python`n`n"
+      "import os`n"
+      "print(`"$($Passwd)`")`n"
+    ) | Set-Content -Path $script:vaultPasswd -NoNewLine
+
+    Write-Output "Done."
+  } else {
+    Write-Output "Ok, password not stored."
+  }
+
+  returnAnsibleRoot
+}
+
 function Show-AnsibleVault {
   [CmdletBinding()]
   param (
@@ -644,12 +700,23 @@ function Test-AnsibleProvision {
   if (-not ($NoRecreate)) {
     Remove-AnsibleVagrantHosts
 
+    checkReset 5
   }
 
-  checkReset 5
+  if (Test-Path $script:vaultPasswd) {
+    $vault = "--vault-password-file $($script:vaultPasswd)"
+  } else {
+    $vault = "--ask-vault-password"
+  }
 
-  Invoke-AnsiblePlaybook $("--ask-vault-password -v " `
-    + "-e `"ansible_host=10.0.0.5`" " `
+  if ($PSBoundParameters.ContainsKey('Verbose')) {
+    $v = "-vvv"
+  } else {
+    $v = "-v"
+  }
+
+
+  Invoke-AnsiblePlaybook $("$vault $v -e `"ansible_host=10.0.0.5`" " `
     + "-e `"ansible_ssh_private_key_file=~/.ssh/insecure_private_key`" " `
     + "-e `"ansible_user=vagrant`" " `
     + "-i ./inventories/hosts.ini ./playbooks/$ComputerName.yml")
