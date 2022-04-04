@@ -391,10 +391,10 @@ function Update-MyThirdPartyModules {
   (Get-Content "${env:TEMP}\thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
     if (Get-InstalledModule -Name $_ -ErrorAction SilentlyContinue  `
         | Where-Object { $_.Repository -ne "dcjulian29-powershell" } ) {
-      Write-Output "Updating my '$_' module..."
+      Write-Output "Updating '$_' module..."
       Update-Module -Name $_ -Verbose:$Verbose -Confirm:$false
     } else {
-      Write-Output "Installing my '$_' module..."
+      Write-Output "Installing '$_' module..."
       Install-Module -Name $_ -Verbose:$Verbose -AllowClobber
     }
 
