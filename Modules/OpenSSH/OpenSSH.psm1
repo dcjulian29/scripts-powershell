@@ -240,25 +240,49 @@ function Receive-FileScp {
 }
 
 function Remove-OpenSSHKnownHost {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string] $RemoteHost
-    )
+  [CmdletBinding(DefaultParameterSetName = "Named")]
+  param (
+    [Parameter(Mandatory=$true, ParameterSetName = "Named")]
+    [string] $RemoteHost,
+    [Parameter(Mandatory=$true, ParameterSetName = "Numbered")]
+    [Alias("Line")]
+    [int] $LineNumber
+  )
 
-    $content = Get-Content -Path "$env:USERPROFILE/.ssh/known_hosts"
-    $newContent = @()
+  $content = Get-Content -Path "$env:USERPROFILE/.ssh/known_hosts"
+  $newContent = @()
+
+  if ($PsCmdlet.ParameterSetName -eq "Named") {
     foreach ($line in $content) {
-        if (-not ($line -imatch ".*$([Regex]::Escape($RemoteHost)).*")) {
-            $newContent += $line
-        }
+      if (-not ($line -imatch ".*$([Regex]::Escape($RemoteHost)).*")) {
+          $newContent += $line
+      }
     }
+  }
 
-    if ($content.Length -eq $newContent.Length) {
-        Write-Warning "$RemoteHost was not found in Known Hosts file."
-    } else {
-        Set-Content -Path "$env:USERPROFILE/.ssh/known_hosts" -Value $newContent
+  if ($PsCmdlet.ParameterSetName -eq "Numbered") {
+    # Index is 0 based but we say line 1 for that...
+    $LineNumber--
+
+    for ($i = 0; $i -lt $content.Count; $i++) {
+      if ($LineNumber -ne $i) {
+        $newContent += $content[$i]
+      }
     }
+  }
+
+  if ($content.Length -eq $newContent.Length) {
+    if ($PsCmdlet.ParameterSetName -eq "Numbered") {
+      Write-Warning "Line '$LineNumber' was not found in Known Hosts file."
+    } else {
+      Write-Warning "'$RemoteHost' was not found in Known Hosts file."
+    }
+  } else {
+    Set-Content -Path "$env:USERPROFILE/.ssh/known_hosts" -Value $newContent
+  }
 }
+
+Set-Alias -Name ssh-knownhost-remove -Value Remove-OpenSSHKnownHost
 
 function Send-FileScp {
     [CmdletBinding()]

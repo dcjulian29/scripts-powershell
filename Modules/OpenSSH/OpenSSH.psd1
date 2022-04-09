@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2203.30.1'
+    ModuleVersion = '2204.9.2'
     GUID = '2b2add2f-ba2d-461a-8bac-6cfb19894a0d'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -37,6 +37,7 @@
         "Execute-OpenSSHCommand"
         "scp"
         "ssh"
+        "ssh-knownhost-remove"
         "sshell"
         "sshellc"
     )
