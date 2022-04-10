@@ -210,14 +210,6 @@ function Test-PowershellVerb {
   return $false
 }
 
-function Update-AllModules {
-  Write-Host "Updating third-party Powershell modules..." -ForegroundColor Magenta
-  Update-InstalledModules
-
-  Write-Host "`nUpdating my Powershell modules..." -ForegroundColor Cyan
-  Update-MyModules
-}
-
 function Update-InstalledModules {
   param (
     [switch] $Verbose
@@ -246,73 +238,6 @@ function Update-InstalledModules {
   }
 }
 
-function Update-MyModules {
-  param (
-    [switch] $Verbose
-  )
-
-  $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
-  $poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
-  $modulesDir = Join-Path -Path $poshDir -ChildPath Modules
-
-  Import-Module -Name Powershell -Force
-
-  @(
-    "${env:TEMP}\scripts-powershell-main.zip"
-    "${env:TEMP}\scripts-powershell-main"
-    "${env:TEMP}\posh-go.zip"
-    "${env:TEMP}\Go-Shell-master"
-  ) | ForEach-Object {
-    if (Test-Path $_) {
-        Remove-Item $_ -Recurse -Force
-    }
-  }
-
-  Download-File "https://github.com/dcjulian29/scripts-powershell/archive/refs/heads/main.zip" `
-    "${env:TEMP}\scripts-powershell-main.zip"
-
-  Unzip-File "${env:TEMP}\scripts-powershell-main.zip" "${env:TEMP}\"
-
-  Download-File "https://github.com/cameronharp/Go-Shell/archive/master.zip" `
-    "${env:TEMP}\posh-go.zip"
-
-  Unzip-File "${env:TEMP}\posh-go.zip" "${env:TEMP}\"
-
-  if (-not (Test-Path "$modulesDir\go")) {
-    New-Item -Type Directory -Path "$modulesDir\go" | Out-Null
-  }
-
-  Copy-Item -Path "${env:TEMP}\Go-Shell-master\*" -Destination "$modulesDir\go" -Force
-
-  (Get-ChildItem -Directory -Path "${env:TEMP}\scripts-powershell-main\Modules").FullName | ForEach-Object {
-    $destination = $_ -replace [regex]::Escape("${env:TEMP}\scripts-powershell-main\modules"), $modulesDir
-    $module = $_.Substring($_.LastIndexOf('\') + 1)
-
-    if ($Verbose) {
-      Write-Output "'$_' --> '$destination'"
-    }
-
-    if (Test-Path "$modulesDir\$module") {
-      Remove-Item -Path "$modulesDir\$module" -Recurse -Force
-    }
-
-    Copy-Item -Path $_ -Destination $destination -Container -Recurse
-  }
-
-  $modules = (Get-InstalledModule).Name
-
-  foreach ($module in $modules) {
-    if (Test-Path "$modulesDir\$module") {
-      if (Get-Module $module) {
-        Remove-Module $module -Force
-      }
-
-      Remove-Item -Path "$modulesDir\$module" -Recurse -Force
-    }
-  }
-
-  Get-Module -ListAvailable | Out-Null
-}
 
 function Update-MyProfile {
   $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
@@ -321,8 +246,6 @@ function Update-MyProfile {
   @(
     "${env:TEMP}\scripts-powershell-main.zip"
     "${env:TEMP}\scripts-powershell-main"
-    "${env:TEMP}\posh-go.zip"
-    "${env:TEMP}\Go-Shell-master"
   ) | ForEach-Object {
     if (Test-Path $_) {
         Remove-Item $_ -Recurse -Force
@@ -341,74 +264,6 @@ function Update-MyProfile {
     -Destination $poshDir -Force
 
   Reload-Profile
-}
-
-function Update-MyPublishedModules {
-  param (
-    [switch] $Verbose
-  )
-
-  $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
-  $poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
-  $modulesDir = Join-Path -Path $poshDir -ChildPath Modules
-
-  Download-File "https://raw.githubusercontent.com/dcjulian29/choco-packages/main/mypowershell/tools/mine.json" "${env:TEMP}\mymodules.json"
-
-  (Get-Content "${env:TEMP}\mymodules.json" | ConvertFrom-Json) | ForEach-Object {
-    if (Test-Path "$modulesDir\$_") {
-      Remove-Item "$modulesDir\$_" -Recurse -Force
-    }
-
-    if (Get-InstalledModule -Name $_ -ErrorAction SilentlyContinue `
-        | Where-Object { $_.Repository -eq "dcjulian29-powershell" }) {
-      Write-Output "Updating my '$_' module..."
-      Update-Module -Name $_ -Verbose:$Verbose -Confirm:$false
-    } else {
-      Write-Output "Installing my '$_' module..."
-      Install-Module -Name $_ -Repository "dcjulian29-powershell" -Verbose:$Verbose -AllowClobber
-    }
-
-    Write-Output " "
-  }
-
-  Get-Module -ListAvailable | Out-Null
-
-  if ($Verbose) {
-    Write-Output (Get-InstalledModule | Where-Object { $_.Repository -eq "dcjulian29-powershell" } `
-      | Select-Object Name,Version,PublishedDate,Description `
-      | Sort-Object PublishedDate -Descending `
-      | Format-Table | Out-String)
-  }
-}
-
-function Update-MyThirdPartyModules {
-  param (
-    [switch] $Verbose
-  )
-
-  Download-File "https://raw.githubusercontent.com/dcjulian29/choco-packages/main/mypowershell/tools/thirdparty.json" "${env:TEMP}\thirdparty.json"
-
-  (Get-Content "${env:TEMP}\thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
-    if (Get-InstalledModule -Name $_ -ErrorAction SilentlyContinue  `
-        | Where-Object { $_.Repository -ne "dcjulian29-powershell" } ) {
-      Write-Output "Updating '$_' module..."
-      Update-Module -Name $_ -Verbose:$Verbose -Confirm:$false
-    } else {
-      Write-Output "Installing '$_' module..."
-      Install-Module -Name $_ -Verbose:$Verbose -AllowClobber
-    }
-
-    Write-Output " "
-  }
-
-  Get-Module -ListAvailable | Out-Null
-
-  if ($Verbose) {
-    Write-Output (Get-InstalledModule | Where-Object { $_.Repository -ne "dcjulian29-powershell" } `
-      | Select-Object Name,Version,PublishedDate,RepositorySourceLocation `
-      | Sort-Object PublishedDate -Descending `
-      | Format-Table | Out-String)
-  }
 }
 
 function Update-PreCompiledAssemblies {
