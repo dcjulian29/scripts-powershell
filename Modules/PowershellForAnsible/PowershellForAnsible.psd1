@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2203.3.1'
+    ModuleVersion = '2204.20.1'
     Description = "A collection of commands to interact with a docker container running the control node instance. Allows a very similar workflow as on a Linux system."
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
@@ -52,6 +52,7 @@
       "Invoke-AnsiblePlayBase"
       "Invoke-AnsiblePlaybook"
       "Invoke-AnsiblePlayDev"
+      "Invoke-AnsiblePlayRaspi"
       "Invoke-AnsiblePlayTest"
       "Invoke-AnsibleProvision"
       "Invoke-AnsibleVault"
@@ -61,6 +62,7 @@
       "Remove-AnsibleVagrantHosts"
       "Remove-AnsibleVaultPassword"
       "Reset-AnsibleEnvironmentDev"
+      "Reset-AnsibleEnvironmentRaspi"
       "Reset-AnsibleEnvironmentTest"
       "Set-AnsibleVaultPassword"
       "Show-AnsibleFacts"
@@ -99,12 +101,16 @@
       "ansible-playbook-test"
       "ansible-play-base"
       "ansible-play-dev"
+      "ansible-play-raspi"
       "ansible-play-test"
       "ansible-provision-check"
       "ansible-provision-server"
       "ansible-provision-test"
       "ansible-provision-update"
+      "ansible-raspi-play"
+      "ansible-raspi-reset"
       "ansible-reset-dev"
+      "ansible-reset-raspi"
       "ansible-reset-test"
       "ansible-role-new"
       "ansible-save-facts"

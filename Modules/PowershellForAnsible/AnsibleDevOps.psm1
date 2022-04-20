@@ -379,6 +379,20 @@ function Invoke-AnsibleProvision {
 
 Set-Alias -Name ansible-provision-server -Value Invoke-AnsibleProvision
 
+function Invoke-AnsiblePlayRaspi {
+  [CmdletBinding()]
+  param (
+      [Parameter(Mandatory=$true)]
+      [string] $Role,
+      [string[]] $Tags = @("all")
+  )
+
+  Invoke-AnsiblePlayTest -Role $Role -Subset "debian11" -Tags $Tags
+}
+
+Set-Alias -Name ansible-raspi-play -Value Invoke-AnsiblePlayRaspi
+Set-Alias -Name ansible-play-raspi -Value Invoke-AnsiblePlayRaspi
+
 function Invoke-AnsiblePlayTest {
   [CmdletBinding()]
   param (
@@ -574,6 +588,38 @@ function Reset-AnsibleEnvironmentDev {
 
 Set-Alias "ansible-dev-reset" -Value Reset-AnsibleEnvironmentDev
 Set-Alias "ansible-reset-dev" -Value Reset-AnsibleEnvironmentDev
+
+function Reset-AnsibleEnvironmentRaspi {
+  [CmdletBinding()]
+  param (
+    [string] $Role
+  )
+
+  $ea = $ErrorActionPreference
+  $ErrorActionPreference = "Stop"
+  ensureAnsibleRoot
+
+  try {
+    Remove-AnsibleVagrantHosts
+
+
+    checkReset 11
+
+    Invoke-AnsiblePlaybook -v --limit debian11 --tags minimal --flush-cache `
+      -i ./inventories/vagrant.ini ./playbooks/base.yml
+
+    if ($Role) {
+      Invoke-AnsiblePlayDev -Role $Role -NoStep
+    }
+  } finally {
+    $ErrorActionPreference = $ea
+
+    returnAnsibleRoot
+  }
+}
+
+Set-Alias "ansible-raspi-reset" -Value Reset-AnsibleEnvironmentRaspi
+Set-Alias "ansible-reset-raspi" -Value Reset-AnsibleEnvironmentRaspi
 
 function Reset-AnsibleEnvironmentTest {
   [CmdletBinding()]
