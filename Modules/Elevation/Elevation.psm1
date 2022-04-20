@@ -29,7 +29,7 @@ Function Invoke-ElevatedCommand {
         [string]$ArgumentList,
         [switch]$Wait = $false
     )
-    
+
     if (-not (Test-Elevation)) {
         $process = New-Object System.Diagnostics.ProcessStartInfo $File
         $process.Arguments = $ArgumentList
@@ -49,6 +49,7 @@ Function Invoke-ElevatedCommand {
     }
 }
 
+Set-Alias sudo Invoke-ElevatedCommand
 
 Function Invoke-ElevatedCommandAs {
     param (
@@ -64,11 +65,13 @@ Function Invoke-ElevatedCommandAs {
     $process.Verb = "runasuser"
 
     $handle = [System.Diagnostics.Process]::Start($process)
-    
+
     if ($Wait) {
         $handle.WaitForExit()
     }
 }
+
+Set-Alias runas Invoke-ElevatedCommandAs
 
 Function Invoke-ElevatedScript {
     param (
@@ -167,23 +170,6 @@ Function Start-RemoteProcess {
         [ValidateNotNullOrEmpty()]
         [string]$Command
     )
-  
+
     ([WMICLASS]"\\$ComputerName\ROOT\CIMV2:win32_process").Create($Command)
 }
-
-##############################################################################
-
-Export-ModuleMember Assert-Elevation
-Export-ModuleMember Test-Elevation
-Export-ModuleMember Invoke-ElevatedCommand
-Export-ModuleMember Invoke-ElevatedCommandAs
-Export-ModuleMember Invoke-ElevatedScript
-Export-ModuleMember Invoke-ElevatedExpression
-Export-ModuleMember Start-RemoteProcess
-
-Set-Alias sudo Invoke-ElevatedCommand
-Export-ModuleMember -Alias sudo
-
-Set-Alias runas Invoke-ElevatedCommandAs
-Export-ModuleMember -Alias runas
-

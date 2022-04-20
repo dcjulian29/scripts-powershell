@@ -18,9 +18,3 @@ Function Get-Drives
     | Select-Object DeviceID, ProviderName, Size, FreeSpace `
     | Format-List
 }
-
-##############################################################################
-
-Export-ModuleMember Get-UsbDrives
-Export-ModuleMember Get-FixedDrives
-Export-ModuleMember Get-Drives

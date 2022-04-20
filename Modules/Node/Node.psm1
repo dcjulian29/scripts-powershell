@@ -9,7 +9,7 @@ Function Get-Npm {
 }
 
 Function Get-NodeVersion {
-    Start-Node -p -e "process.versions.node + ' (' + process.arch + ')'"    
+    Start-Node -p -e "process.versions.node + ' (' + process.arch + ')'"
 }
 
 Function Start-NodePackageManager {
@@ -30,13 +30,5 @@ Function Test-Node {
 
 ###############################################################################
 
-Export-ModuleMember Get-NodeVersion
-Export-ModuleMember Start-NodePackageManager
-Export-ModuleMember Start-Node
-Export-ModuleMember Test-Node
-
 Set-Alias npm Start-NodePackageManager
 Set-Alias node Start-Node
-
-Export-ModuleMember -Alias npm
-Export-ModuleMember -Alias node
