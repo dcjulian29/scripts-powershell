@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2203.27.1'
+    ModuleVersion = '2204.19.1'
     GUID = 'd8dcfccc-7a12-4dfd-a27a-c647b408e1bf'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -71,6 +71,7 @@
         "Start-PacketCapture"
         "Stop-PacketCapture"
         "Test-PrivateIPv4"
+        "Test-Url"
     )
     AliasesToExport = @(
         "arpaname"
