@@ -1,0 +1,417 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<helpItems schema="maml" xmlns="http://msh">
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-InstalledModuleReport</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>InstalledModuleReport</command:noun>
+      <maml:description>
+        <maml:para>Report the installed modules decending by published date.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Get-InstalledModuleReport command reports the installed modules decending by published date.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-InstalledModuleReport</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters />
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-InstalledModuleReport -Name Powershell
+Name                                  Version      PublishedDate         RepositorySourceLocation
+----                                  -------      -------------         ------------------------
+GitlabCli                             1.59.0       4/14/2022 3:36:15 PM  https://www.powershellgallery.com/api/v2
+MicrosoftTeams                        4.2.0        4/13/2022 2:56:54 PM  https://www.powershellgallery.com/api/v2
+Posh-ACME                             4.14.0       4/13/2022 5:33:10 AM  https://www.powershellgallery.com/api/v2
+AzureDevOps                           2020.7.24.1  4/9/2022 9:11:17 PM   https://www.myget.org/F/dcjulian29-powershe...
+PSWriteHTML                           0.0.173      4/9/2022 12:12:30 PM  https://www.powershellgallery.com/api/v2
+Lability                              0.21.1       4/1/2022 11:48:18 AM  https://www.powershellgallery.com/api/v2
+PSRule                                2.0.0        3/25/2022 12:23:51 AM https://www.powershellgallery.com/api/v2
+VSTeam                                7.6.1        3/7/2022 4:28:20 PM   https://www.powershellgallery.com/api/v2
+PowershellForDocker                   2202.7.1     3/3/2022 3:34:22 PM   https://www.myget.org/F/dcjulian29-powershe...
+Microsoft.PowerShell.SecretManagement 1.1.2        1/27/2022 6:16:33 PM  https://www.powershellgallery.com/api/v2
+Microsoft.PowerShell.SecretStore      1.0.6        1/27/2022 6:13:46 PM  https://www.powershellgallery.com/api/v2
+VirtualDevelopment                    2201.19.1    1/25/2022 4:20:39 AM  https://www.myget.org/F/dcjulian29-powershe...
+WebCredential                         2201.17.1    1/18/2022 5:14:10 AM  https://www.myget.org/F/dcjulian29-powershe...
+VirtualBaseDisk                       2201.17.1    1/18/2022 5:13:53 AM  https://www.myget.org/F/dcjulian29-powershe...
+PSParseHTML                           0.0.20       1/16/2022 8:21:28 PM  https://www.powershellgallery.com/api/v2
+PSWriteWord                           1.1.14       1/11/2022 5:15:37 PM  https://www.powershellgallery.com/api/v2
+Grok                                  1.1.0        1/9/2022 12:54:48 AM  https://www.powershellgallery.com/api/v2
+7Zip4Powershell                       2.1.0        1/2/2022 3:55:38 PM   https://www.powershellgallery.com/api/v2
+PSWritePDF                            0.0.18       12/23/2021 8:48:56 AM https://www.powershellgallery.com/api/v2
+PSScriptAnalyzer                      1.20.0       8/24/2021 7:43:49 PM  https://www.powershellgallery.com/api/v2
+Trackyon.Utils                        0.2.1        8/8/2021 9:21:13 PM   https://www.powershellgallery.com/api/v2
+platyPS                               0.14.2       7/2/2021 10:53:28 PM  https://www.powershellgallery.com/api/v2
+PSSlack                               1.0.6        7/1/2021 12:46:21 AM  https://www.powershellgallery.com/api/v2
+Microsoft.PowerShell.ConsoleGuiTools  0.6.2        4/29/2021 9:23:48 PM  https://www.powershellgallery.com/api/v2
+PowerShellForGitHub                   0.16.0       1/5/2021 8:03:58 PM   https://www.powershellgallery.com/api/v2
+BurntToast                            0.8.5        12/30/2020 9:00:59 PM https://www.powershellgallery.com/api/v2
+PSWriteExcel                          0.1.12       11/21/2020 8:58:14 AM https://www.powershellgallery.com/api/v2
+PowerShellGet                         2.2.5        9/22/2020 10:42:00 PM https://www.powershellgallery.com/api/v2
+AnsibleVault                          0.3.0        12/2/2019 9:41:11 AM  https://www.powershellgallery.com/api/v2
+PsIni                                 3.1.2        4/24/2019 8:45:08 AM  https://www.powershellgallery.com/api/v2
+SHiPS                                 0.8.1        9/21/2018 7:08:52 PM  https://www.powershellgallery.com/api/v2</dev:code>
+        <dev:remarks>
+          <maml:para>This example reports the installed modules decending by published date.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/PSModules/docs/Get-InstalledModuleReport.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Reset-Module</command:name>
+      <command:verb>Reset</command:verb>
+      <command:noun>Module</command:noun>
+      <maml:description>
+        <maml:para>Unload a Powershell module loaded into the current session.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Reset-Module command unloads a module if it is loaded within the current Powershell session.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Reset-Module</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="ModuleName">
+          <maml:name>Name</maml:name>
+          <maml:description>
+            <maml:para>Specifies the name of the module.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="ModuleName">
+        <maml:name>Name</maml:name>
+        <maml:description>
+          <maml:para>Specifies the name of the module.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Reset-Module -Name Powershell</dev:code>
+        <dev:remarks>
+          <maml:para>This example unloads the Powershell module if it is loaded.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/PSModules/docs/Reset-Module.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Restart-Module</command:name>
+      <command:verb>Restart</command:verb>
+      <command:noun>Module</command:noun>
+      <maml:description>
+        <maml:para>Import a Powershell module after unloading it if it is loaded.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Restart-Module cmdlet will unload a Powershell module with the same name before attempting to import the specified module.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Restart-Module</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="ModuleName">
+          <maml:name>Name</maml:name>
+          <maml:description>
+            <maml:para>Specifies the name of the module.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="ModuleName">
+        <maml:name>Name</maml:name>
+        <maml:description>
+          <maml:para>Specifies the name of the module.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Restart-Module -Name Powershell</dev:code>
+        <dev:remarks>
+          <maml:para>This example will unload the module, if loaded, before importing the module.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Restart-Module.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-InstalledModules</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>InstalledModules</command:noun>
+      <maml:description>
+        <maml:para>Update, if available, modules installed via a repository.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Update-InstalledModules cmdlet updates modules installed via a repository. If an update is not available, nothing is done.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-InstalledModules</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Verbose</maml:name>
+          <maml:description>
+            <maml:para>Displays detailed information about the operation done by the command. This information resembles the information in a trace or in a transaction log.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Verbose</maml:name>
+        <maml:description>
+          <maml:para>Displays detailed information about the operation done by the command. This information resembles the information in a trace or in a transaction log.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Update-InstalledModules</dev:code>
+        <dev:remarks>
+          <maml:para>This example updates all of the installed modules.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/PSModules/docs/Update-InstalledModules.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-PreCompiledAssemblies</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>PreCompiledAssemblies</command:noun>
+      <maml:description>
+        <maml:para>Update all of the pre-compiled assemblies.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>The Update-PreCompiledAssemblies cmdlet gathers all of the loaded assemblies and runs ngen.exe on each.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-PreCompiledAssemblies</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>DisableNameChecking</maml:name>
+          <maml:description>
+            <maml:para>Indicates to suppress messages that warn when an a module contains a cmdlet or function whose name includes an unapproved verb or a prohibited character is imported before pre-compile.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Full</maml:name>
+          <maml:description>
+            <maml:para>Indicates that all available modules should be imported before pre-compile.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Verbose</maml:name>
+          <maml:description>
+            <maml:para>Output verbose output when importing modules.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>DisableNameChecking</maml:name>
+        <maml:description>
+          <maml:para>Indicates to suppress messages that warn when an a module contains a cmdlet or function whose name includes an unapproved verb or a prohibited character is imported before pre-compile.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Full</maml:name>
+        <maml:description>
+          <maml:para>Indicates that all available modules should be imported before pre-compile.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Verbose</maml:name>
+        <maml:description>
+          <maml:para>Output verbose output when importing modules.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Update-PreCompiledAssemblies
+Ensuring all currently loaded runtime assemblies are pre-compiled...
+
+
+Running ngen.exe on 'mscorlib.dll'...
+All compilation targets are up to date.
+
+
+Running ngen.exe on 'Microsoft.PowerShell.ConsoleHost.dll'...
+All compilation targets are up to date.
+
+
+Running ngen.exe on 'System.dll'...
+All compilation targets are up to date.
+
+
+Running ngen.exe on 'System.Core.dll'...
+All compilation targets are up to date.
+
+...
+
+Running ngen.exe on 'Windows.Security.winmd'...
+All compilation targets are up to date.
+
+
+Running ngen.exe on 'Microsoft.HostCompute.PowerShell.Cmdlets.dll'...
+2&gt;    Compiling assembly Microsoft.HostCompute.PowerShell.Views, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35 (CLR v4.0.30319) ...
+1&gt;    Compiling assembly C:\Windows\Microsoft.Net\assembly\GAC_64\Microsoft.HostCompute.PowerShell.Cmdlets\v4.0_10.0.0.0__31bf3856ad364e35\Microsoft.HostCompute.PowerShell.Cmdlets.dll (CLR v4.0.30319) ...
+1&gt;    Compiling assembly Microsoft.HostCompute.Interop, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35 (CLR v4.0.30319) ...
+
+
+Running ngen.exe on 'Microsoft.CertificateServices.PKIClient.Cmdlets.dll'...
+All compilation targets are up to date.</dev:code>
+        <dev:remarks>
+          <maml:para>This example updates all of the loaded assemblies pre-compile.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/PSModules/docs/Update-PreCompiledAssemblies.md</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+</helpItems>

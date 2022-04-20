@@ -1,8 +1,8 @@
 @{
-  RootModule = 'Powershell.psm1'
-  ModuleVersion = '2204.9.1'
-  Description = "A collection of utilities, commands, and functions specific to Powershell."
-  GUID = 'f7824b54-f08e-415c-b661-c4605dda0603'
+  RootModule = 'PSExtensions.psm1'
+  ModuleVersion = '2204.20.1'
+  Description = "A collection of utilities, commands, and functions specific to extending Powershell."
+  GUID = '72b96fb6-bfd3-47cc-88ca-39558e0d3fa1'
   Author = 'Julian Easterling'
   Copyright = '(c) Julian Easterling. Some rights reserved.'
   PowerShellVersion = '5.1'
@@ -21,14 +21,10 @@
     "Import-Assembly"
     "New-ErrorRecord"
     "Remove-AliasesFromScript"
-    "Reset-Module"
-    "Restart-Module"
     "Search-Command"
     "Test-IsNonInteractive"
     "Test-PowershellVerb"
-    "Update-InstalledModules"
     "Update-MyProfile"
-    "Update-PreCompiledAssemblies"
     "Update-Profile"
   )
   CmdletsToExport = @()
@@ -36,15 +32,13 @@
   AliasesToExport = @(
     "Load-Assembly"
     "Find-PSCommand"
-    "Reload-Module"
     "Reload-Profile"
-    "Unload-Module"
   )
   PrivateData = @{
     PSData = @{
       Tags = @(
         "dcjulian29"
-        "Powershell"
+        "PSExtensions"
       )
       LicenseUri = 'https://github.com/dcjulian29/scripts-powershell/LICENSE.md'
       ProjectUri = 'https://github.com/dcjulian29/scripts-powershell'
@@ -52,5 +46,5 @@
       ExternalModuleDependencies = @()
     }
   }
-  HelpInfoURI = 'https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/Powershell'
+  HelpInfoURI = 'https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/PSExtensions'
 }

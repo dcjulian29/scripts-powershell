@@ -1,6 +1,6 @@
-# Powershell ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/Powershell)
+# PSExtensions ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/PSExtensions)
 
-A collection of utilities, commands, and functions specific to Powershell.
+A collection of utilities, commands, and functions specific to extending Powershell.
 
 ## Functions
 
@@ -20,25 +20,13 @@ A collection of utilities, commands, and functions specific to Powershell.
 
 ### [Remove-AliasesFromScript](docs/Remove-AliasesFromScript.md)
 
-### [Reset-Module](docs/Reset-Module.md)
-
-### [Restart-Module](docs/Restart-Module.md)
-
 ### [Search-Command](docs/Search-Command.md)
 
 ### [Test-IsNonInteractive](docs/Test-IsNonInteractive.md)
 
 ### [Test-PowershellVerb](docs/Test-PowershellVerb.md)
 
-### [Update-AllModules](docs/Update-AllModules.md)
-
-### [Update-InstalledModules](docs/Update-InstalledModules.md)
-
-### [Update-MyModules](docs/Update-MyModules.md)
-
 ### [Update-MyProfile](docs/Update-MyProfile.md)
-
-### [Update-PreCompiledAssemblies](docs/Update-PreCompiledAssemblies.md)
 
 ### [Update-Profile](docs/Update-Profile.md)
 
@@ -47,9 +35,3 @@ A collection of utilities, commands, and functions specific to Powershell.
 ### [Load-Assembly](docs/Import-Assembly.md)
 
 ### [Find-PSCommand](docs/Search-Command.md)
-
-### [Reload-Module](docs/Restart-Module.md)
-
-### [Reload-Profile](docs/Update-Profile.md)
-
-### [Unload-Module](docs/Update-Profile.md)

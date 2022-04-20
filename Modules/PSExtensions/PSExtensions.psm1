@@ -149,37 +149,6 @@ function Remove-AliasesFromScript {
   }
 }
 
-function Reset-Module {
-  param (
-    [Parameter(Mandatory = $true)]
-    [Alias("ModuleName")]
-    [string] $Name
-  )
-
-  if ((Get-Module -list | Where-Object { $_.Name -eq "$Name" } | Measure-Object).Count -gt 0) {
-    if ((Get-Module -all | Where-Object { $_.Name -eq "$Name" } | Measure-Object).count -gt 0) {
-      Remove-Module -Name $Name -Force -Verbose
-    }
-  }
-}
-
-Set-Alias -Name "Unload-Module" -Value Reset-Module
-
-function Restart-Module {
-  param (
-    [Parameter(Mandatory = $true)]
-    [Alias("ModuleName")]
-    [string] $Name
-  )
-
-  if ((Get-Module -list | Where-Object { $_.Name -eq "$ModuleName" } | Measure-Object).Count -gt 0) {
-    Reset-Module $Name
-    Import-Module $ModuleName -Verbose
-  }
-}
-
-Set-Alias -Name Reload-Module -Value Restart-Module
-
 function Search-Command {
   param (
     [Parameter(Mandatory = $true)]
@@ -210,35 +179,6 @@ function Test-PowershellVerb {
   return $false
 }
 
-function Update-InstalledModules {
-  param (
-    [switch] $Verbose
-  )
-
-  $modules = (Get-InstalledModule).Name
-  $first = $true
-
-  foreach ($module in $modules) {
-    if ($Verbose -and (-not $first)) {
-      Write-Output "`n--------------------------------------`n"
-    }
-
-    Update-Module -Name $module -Confirm:$false -Verbose:$Verbose
-
-    $first = $false
-  }
-
-  if ($Verbose -and (-not $first)) {
-    Write-Output "`n--------------------------------------`n"
-
-    Write-Output (Get-InstalledModule `
-      | Select-Object Name,Version,PublishedDate,RepositorySourceLocation `
-      | Sort-Object PublishedDate -Descending `
-      | Format-Table | Out-String)
-  }
-}
-
-
 function Update-MyProfile {
   $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
   $poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
@@ -252,55 +192,40 @@ function Update-MyProfile {
     }
   }
 
-  Download-File "https://github.com/dcjulian29/scripts-powershell/archive/refs/heads/main.zip" `
-    "${env:TEMP}\scripts-powershell-main.zip"
+  Invoke-WebRequest -Uri "https://github.com/dcjulian29/scripts-powershell/archive/refs/heads/main.zip" `
+    -UseBasicParsing -OutFile "${env:TEMP}\scripts-powershell-main.zip"
 
-  Unzip-File "${env:TEMP}\scripts-powershell-main.zip" "${env:TEMP}\"
+  Microsoft.PowerShell.Archive\Expand-Archive -Path "${env:TEMP}\scripts-powershell-main.zip" `
+    -DestinationPath "${env:TEMP}\" -Force
 
-  Copy-Item -Path "${env:TEMP}\scripts-powershell-main\profile.ps1" -Destination $poshDir -Force
-  Copy-Item -Path "${env:TEMP}\scripts-powershell-main\Microsoft.PowerShell_profile.ps1" `
-    -Destination $poshDir -Force
-  Copy-Item -Path "${env:TEMP}\scripts-powershell-main\Microsoft.VSCode_profile.ps1" `
-    -Destination $poshDir -Force
+  if (Test-Path "$poshDir\Profile.ps1") {
+    Write-Output "Removing previous installed profile..."
+
+    @(
+      "$poshDir\Microsoft.PowerShell_profile.ps1"
+      "$poshDir\Microsoft.VSCode_profile.ps1"
+      "$poshDir\profile.ps1"
+    ) | ForEach-Object {
+      if (Test-Path $_) {
+        Remove-Item -Path $_ -Force -ErrorAction SilentlyContinue
+      }
+    }
+  }
+
+  Write-Output "Installing latest profile to '$poshDir' ..."
+
+  @(
+    "${env:TEMP}\scripts-powershell-main\Microsoft.PowerShell_profile.ps1"
+    "${env:TEMP}\scripts-powershell-main\Microsoft.VSCode_profile.ps1"
+    "${env:TEMP}\scripts-powershell-main\profile.ps1"
+  ) | ForEach-Object {
+    Copy-Item -Path $_ -Destination $poshDir -Recurse -Force
+  }
+
+  Remove-Item -Path "${env:TEMP}\scripts-powershell-main.zip" -Force
+  Remove-Item -Path "${env:TEMP}\scripts-powershell-main" -Recurse -Force
 
   Reload-Profile
-}
-
-function Update-PreCompiledAssemblies {
-  param (
-    [switch] $Full,
-    [switch] $Verbose,
-    [switch] $DisableNameChecking
-  )
-
-  if ($Full) {
-    Write-Output "Importing all available modules to make sure assemblies are loaded..."
-
-    Get-Module | Remove-Module -Force -Verbose:$Verbose
-
-    foreach ($module in $(Get-Module -ListAvailable | Where-Object { $_.Name -ne 'GlobalScripts' })) {
-      try {
-        Import-Module -Name $module -ErrorAction SilentlyContinue -Force `
-          -Verbose:$Verbose -DisableNameChecking:$DisableNameChecking
-      } catch {}
-    }
-  }
-
-  Write-Output "Ensuring all currently loaded runtime assemblies are pre-compiled..."
-
-  $originalPath = $env:PATH
-  $env:PATH = "$([Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory());${env:PATH}"
-
-  [AppDomain]::CurrentDomain.GetAssemblies() | ForEach-Object {
-    $path = $_.Location
-    if ($path) {
-      $name = Split-Path $path -Leaf
-      Write-Output "`n`nRunning ngen.exe on '$name'..."
-      ngen.exe install $path /nologo
-    }
-  }
-
-  $env:PATH = $originalPath
 }
 
 function Update-Profile {

@@ -1,7 +1,7 @@
 ---
-external help file: Powershell-help.xml
-Module Name: Powershell
-online version: https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Update-PreCompiledAssemblies.md
+external help file: PSModules-help.xml
+Module Name: PSModules
+online version: https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/PSModules/docs/Update-PreCompiledAssemblies.md
 schema: 2.0.0
 ---
 
@@ -14,7 +14,7 @@ Update all of the pre-compiled assemblies.
 ## SYNTAX
 
 ```powershell
-Update-PreCompiledAssemblies
+Update-PreCompiledAssemblies [-Full] [-Verbose] [-DisableNameChecking] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -65,4 +65,62 @@ This example updates all of the loaded assemblies pre-compile.
 
 ## PARAMETERS
 
-### None
+### -DisableNameChecking
+
+Indicates to suppress messages that warn when an a module contains a cmdlet or function whose name includes an unapproved verb or a prohibited character is imported before pre-compile.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Full
+
+Indicates that all available modules should be imported before pre-compile.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Verbose
+
+Output verbose output when importing modules.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS

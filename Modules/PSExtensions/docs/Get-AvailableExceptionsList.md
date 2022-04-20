@@ -1,7 +1,7 @@
 ---
-external help file: Powershell-help.xml
-Module Name: Powershell
-online version: https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/Powershell/docs/Get-AvailableExceptionsList.md
+external help file: PSExtensions-help.xml
+Module Name: PSExtensions
+online version: https://github.com/dcjulian29/scripts-powershell/blob/main/Modules/PSExtensions/docs/Get-AvailableExceptionsList.md
 schema: 2.0.0
 ---
 
@@ -14,7 +14,7 @@ Get a list of Exception classes available from the currently loaded assemblies.
 ## SYNTAX
 
 ```powershell
-Get-AvailableExceptionsList
+Get-AvailableExceptionsList [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -27,7 +27,6 @@ The Get-AvailableExceptionsList scans each loaded assembly for class names that 
 
 ```powershell
 PS C:\> Get-AvailableExceptionsList
-
 
 Microsoft.CSharp.RuntimeBinder.RuntimeBinderException
 Microsoft.CSharp.RuntimeBinder.RuntimeBinderInternalCompilerException
@@ -90,4 +89,14 @@ This example returns the current available exception types.
 
 ## PARAMETERS
 
-### None
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
