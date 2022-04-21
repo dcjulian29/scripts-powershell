@@ -603,7 +603,7 @@ function Reset-AnsibleEnvironmentRaspi {
     Remove-AnsibleVagrantHosts
 
 
-    checkReset 11
+    checkReset 9
 
     Invoke-AnsiblePlaybook -v --limit debian11 --tags minimal --flush-cache `
       -i ./inventories/vagrant.ini ./playbooks/base.yml
