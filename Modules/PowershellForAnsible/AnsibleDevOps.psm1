@@ -609,7 +609,7 @@ function Reset-AnsibleEnvironmentRaspi {
       -i ./inventories/vagrant.ini ./playbooks/base.yml
 
     if ($Role) {
-      Invoke-AnsiblePlayDev -Role $Role -NoStep
+      Invoke-AnsiblePlayRaspi -Role $Role -NoStep
     }
   } finally {
     $ErrorActionPreference = $ea
