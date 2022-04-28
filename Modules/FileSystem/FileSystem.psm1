@@ -565,21 +565,6 @@ function Remove-Path {
     }
 }
 
-function Reset-Path {
-    param (
-        [switch]$Empty
-    )
-
-    if ($Empty) {
-        Remove-EnvironmentVariable "Path"
-    } else {
-        $windowsPath = "C:\WINDOWS;C:\WINDOWS\system32;C:\WINDOWS\System32\Wbem"
-        $powershellPath = "C:\WINDOWS\System32\WindowsPowerShell\v1.0"
-
-        Set-EnvironmentVariable "Path" "$windowsPath;$powershellPath"
-    }
-}
-
 function Set-FileInheritance {
   [CmdletBinding()]
   param (
