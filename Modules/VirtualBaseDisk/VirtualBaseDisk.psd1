@@ -1,6 +1,6 @@
 @{
   RootModule = 'VirtualBaseDisk.psm1'
-  ModuleVersion = '2201.17.1'
+  ModuleVersion = '2204.29.1'
   Description = "A collection of commands to create Windows VHDX file that can be used with differencing disks."
   GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
   Author = 'Julian Easterling'

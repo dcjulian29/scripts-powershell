@@ -62,7 +62,7 @@ function New-LabDomainController {
 
     Uninstall-VirtualMachine $ComputerName
 
-    $reference = "$((Get-VMHost).VirtualHardDiskPath)\base\Win2022Base.vhdx"
+    $reference = "$env:SystemDrive\Virtual Machines\BaseVHDX\Win2022Base.vhdx"
 
     New-DifferencingVHDX -ReferenceDisk $reference -VhdxFile $vhdx
 
@@ -539,7 +539,7 @@ function New-LabWindowsWorkstation {
 
     $ComputerName = $ComputerName.ToUpperInvariant()
     $startScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
-    $baseImage = "$((Get-VMHost).VirtualHardDiskPath)\base\Win11Base.vhdx"
+    $baseImage = "$env:SystemDrive\Virtual Machines\BaseVHDX\Win11Base.vhdx"
     $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\$ComputerName.vhdx"
     $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
 

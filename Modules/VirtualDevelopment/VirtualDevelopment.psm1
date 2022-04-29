@@ -63,7 +63,7 @@ function New-DevVM {
 
     Uninstall-VirtualMachine $computerName
 
-    $baseImage = (Get-ChildItem -Path "$((Get-VMHost).VirtualHardDiskPath)\base" `
+    $baseImage = (Get-ChildItem -Path "$env:SytemDrive\Virtual Machines\BaseVHDX" `
         | Where-Object { $_.Name -match "^Win11BaseInsider-.*" } `
         | Sort-Object Name -Descending `
         | Select-Object -First 1).FullName

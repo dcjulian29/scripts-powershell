@@ -28,7 +28,7 @@ The New-DevVM cmdlet creates a VM based on the Host machine's name using the lat
 ```powershell
 PS C:\> New-DevVM
 
-Creating a Differencing Disk [HOSTMACHINEDEV.vhdx] based on [C:\Virtual Machines\Discs\base\Win11BaseInsider-10.0.22533.vhdx]
+Creating a Differencing Disk [HOSTMACHINEDEV.vhdx] based on [C:\Virtual Machines\BaseVHDX\Win11BaseInsider-10.0.22533.vhdx]
 
 ComputerName            : HOSTMACHINE
 Path                    : C:\Virtual Machines\Discs\HOSTMACHINEDEV.vhdx
@@ -40,7 +40,7 @@ MinimumSize             : 107373150720
 LogicalSectorSize       : 512
 PhysicalSectorSize      : 4096
 BlockSize               : 2097152
-ParentPath              : C:\Virtual Machines\Discs\base\Win11BaseInsider-10.0.22533.vhdx
+ParentPath              : C:\Virtual Machines\BaseVHDX\Win11BaseInsider-10.0.22533.vhdx
 DiskIdentifier          : B87479B3-E57C-4029-BE23-F9CD995E325B
 FragmentationPercentage :
 Alignment               : 1

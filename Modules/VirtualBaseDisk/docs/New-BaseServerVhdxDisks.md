@@ -30,7 +30,7 @@ the "Core" style.
 
 ```powershell
 PS C:\> New-BaseServerVhdxDisks -OSVersion 2022 -File .\windows_server_2022_updated_dec_2021_x64_dvd_6905f97b.iso
-Creating a base disk using 'Windows Server 2022 Standard (Desktop Experience)' to 'C:\Virtual Machines\Discs\base\Win2022Base.vhdx' ...
+Creating a base disk using 'Windows Server 2022 Standard (Desktop Experience)' to 'C:\Virtual Machines\BaseVHDX\Win2022Base.vhdx' ...
 
 Windows(R) Image to Virtual Hard Disk Converter for Windows(R) 10
 Copyright (C) Microsoft Corporation.  All rights reserved.
@@ -39,7 +39,7 @@ Version 10.0.14278.1000.amd64fre.rs1_es_media.160201-1707
 VERBOSE: Target Image Version 10.0.19044.1466
 VERBOSE: isUserAdmin? True
 VERBOSE: is Windows 8 or Higher? True
-VERBOSE: Temporary VHDX path is : C:\Virtual Machines\Discs\base\abe92ff5-a6cf-49c8-ba0e-452146d2bca8.vhdx
+VERBOSE: Temporary VHDX path is : C:\Virtual Machines\BaseVHDX\abe92ff5-a6cf-49c8-ba0e-452146d2bca8.vhdx
 INFO   : Looking for the requested Windows image in the WIM file
 INFO   : Image 2 selected (ServerStandard)...
 INFO   : Creating sparse disk...
@@ -54,11 +54,11 @@ VERBOSE: Running bcdboot.exe H:\Windows /s F: /v /f UEFI
 VERBOSE: Return code was 0.
 INFO   : Drive is bootable.  Cleaning up...
 INFO   : Dismounting VHDX...
-VERBOSE: VHDX final path is : C:\Virtual Machines\Discs\base\Win2022Base.vhdx
-VERBOSE: Renaming VHDX at C:\Virtual Machines\Discs\base\abe92ff5-a6cf-49c8-ba0e-452146d2bca8.vhdx to Win2022Base.vhdx
+VERBOSE: VHDX final path is : C:\Virtual Machines\BaseVHDX\Win2022Base.vhdx
+VERBOSE: Renaming VHDX at C:\Virtual Machines\BaseVHDX\abe92ff5-a6cf-49c8-ba0e-452146d2bca8.vhdx to Win2022Base.vhdx
 INFO   : Closing Windows image...
 INFO   : Done.
-Creating a base disk using 'Windows Server 2022 Standard' to 'C:\Virtual Machines\Discs\base\Win2022BaseCore.vhdx'...
+Creating a base disk using 'Windows Server 2022 Standard' to 'C:\Virtual Machines\BaseVHDX\Win2022BaseCore.vhdx'...
 
 Windows(R) Image to Virtual Hard Disk Converter for Windows(R) 10
 Copyright (C) Microsoft Corporation.  All rights reserved.
@@ -67,7 +67,7 @@ Version 10.0.14278.1000.amd64fre.rs1_es_media.160201-1707
 VERBOSE: Target Image Version 10.0.19044.1466
 VERBOSE: isUserAdmin? True
 VERBOSE: is Windows 8 or Higher? True
-VERBOSE: Temporary VHDX path is : C:\Virtual Machines\Discs\base\6e0c17f6-d98e-4b25-8774-2b2674630b98.vhdx
+VERBOSE: Temporary VHDX path is : C:\Virtual Machines\BaseVHDX\6e0c17f6-d98e-4b25-8774-2b2674630b98.vhdx
 INFO   : Looking for the requested Windows image in the WIM file
 INFO   : Image 1 selected (ServerStandardCore)...
 INFO   : Creating sparse disk...
@@ -89,8 +89,8 @@ VERBOSE: Running bcdboot.exe H:\Windows /s F: /v /f UEFI
 VERBOSE: Return code was 0.
 INFO   : Drive is bootable.  Cleaning up...
 INFO   : Dismounting VHDX...
-VERBOSE: VHDX final path is : C:\Virtual Machines\Discs\base\Win2022BaseCore.vhdx
-VERBOSE: Renaming VHDX at C:\Virtual Machines\Discs\base\6e0c17f6-d98e-4b25-8774-2b2674630b98.vhdx to
+VERBOSE: VHDX final path is : C:\Virtual Machines\BaseVHDX\Win2022BaseCore.vhdx
+VERBOSE: Renaming VHDX at C:\Virtual Machines\BaseVHDX\6e0c17f6-d98e-4b25-8774-2b2674630b98.vhdx to
 Win2022BaseCore.vhdx
 INFO   : Closing Windows image...
 INFO   : Done.

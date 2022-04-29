@@ -28,7 +28,7 @@ in a WIM or ISO file.
 
 ```powershell
 PS C:\> New-DevBaseVhdxDisk -File .\Windows11_InsiderPreview_Client_x64_en-us_22533.iso
-Creating a base disk using 'Windows 11 Pro' to 'C:\Virtual Machines\Discs\base\Win11BaseInsider-10.0.22533.vhdx'...
+Creating a base disk using 'Windows 11 Pro' to 'C:\Virtual Machines\BaseVHDX\Win11BaseInsider-10.0.22533.vhdx'...
 
 Windows(R) Image to Virtual Hard Disk Converter for Windows(R) 10
 Copyright (C) Microsoft Corporation.  All rights reserved.
@@ -37,7 +37,7 @@ Version 10.0.14278.1000.amd64fre.rs1_es_media.160201-1707
 VERBOSE: Target Image Version 10.0.19044.1466
 VERBOSE: isUserAdmin? True
 VERBOSE: is Windows 8 or Higher? True
-VERBOSE: Temporary VHDX path is : C:\Virtual Machines\Discs\base\e59134c9-3c70-4b9c-81f3-cd494d76c4fe.vhdx
+VERBOSE: Temporary VHDX path is : C:\Virtual Machines\BaseVHDX\e59134c9-3c70-4b9c-81f3-cd494d76c4fe.vhdx
 INFO   : Looking for the requested Windows image in the WIM file
 INFO   : Image 6 selected (Professional)...
 INFO   : Creating sparse disk...
@@ -59,8 +59,8 @@ VERBOSE: Running bcdboot.exe H:\Windows /s F: /v /f UEFI
 VERBOSE: Return code was 0.
 INFO   : Drive is bootable.  Cleaning up...
 INFO   : Dismounting VHDX...
-VERBOSE: VHDX final path is : C:\Virtual Machines\Discs\base\Win11BaseInsider-10.0.22533.vhdx
-VERBOSE: Renaming VHDX at C:\Virtual Machines\Discs\base\e59134c9-3c70-4b9c-81f3-cd494d76c4fe.vhdx to
+VERBOSE: VHDX final path is : C:\Virtual Machines\BaseVHDX\Win11BaseInsider-10.0.22533.vhdx
+VERBOSE: Renaming VHDX at C:\Virtual Machines\BaseVHDX\e59134c9-3c70-4b9c-81f3-cd494d76c4fe.vhdx to
 Win11BaseInsider-10.0.22533.vhdx
 INFO   : Closing Windows image...
 INFO   : Done.

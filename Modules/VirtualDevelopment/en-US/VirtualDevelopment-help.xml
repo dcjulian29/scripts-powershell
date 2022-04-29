@@ -182,7 +182,7 @@ Transcript stopped, output file is C:\etc\log\20220118_190837-HOSTMACHINEDEV-myt
         <maml:title>-------------------------- Example 1 --------------------------</maml:title>
         <dev:code>PS C:\&gt; New-DevVM
 
-Creating a Differencing Disk [HOSTMACHINEDEV.vhdx] based on [C:\Virtual Machines\Discs\base\Win11BaseInsider-10.0.22533.vhdx]
+Creating a Differencing Disk [HOSTMACHINEDEV.vhdx] based on [C:\Virtual Machines\BaseVHDX\Win11BaseInsider-10.0.22533.vhdx]
 
 ComputerName            : HOSTMACHINE
 Path                    : C:\Virtual Machines\Discs\HOSTMACHINEDEV.vhdx
@@ -194,7 +194,7 @@ MinimumSize             : 107373150720
 LogicalSectorSize       : 512
 PhysicalSectorSize      : 4096
 BlockSize               : 2097152
-ParentPath              : C:\Virtual Machines\Discs\base\Win11BaseInsider-10.0.22533.vhdx
+ParentPath              : C:\Virtual Machines\BaseVHDX\Win11BaseInsider-10.0.22533.vhdx
 DiskIdentifier          : B87479B3-E57C-4029-BE23-F9CD995E325B
 FragmentationPercentage :
 Alignment               : 1

@@ -1,6 +1,6 @@
 @{
   RootModule = 'VirtualDevelopment.psm1'
-  ModuleVersion = '2201.19.1'
+  ModuleVersion = '2204.29.1'
   Description = "A collection of commands to create and manage my development virtual machine."
   GUID = '3d789869-88e4-46e8-a9f8-8cd1f8652e10'
   Author = 'Julian Easterling'

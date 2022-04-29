@@ -143,7 +143,7 @@ function New-BaseVhdxDisk {
   }
 
   $OsVersion = $image.ImageName -replace '[^0-9]'
-  $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\base\Win{0}Base{1}.vhdx" -f $OsVersion, $Suffix
+  $vhdx = "$env:SystemDrive\Virtual Machines\BaseVHDX\Win{0}Base{1}.vhdx" -f $OsVersion, $Suffix
 
   if (doesVhdxBlock -File $vhdx -Force $Force.IsPresent) {
     return
@@ -155,7 +155,7 @@ function New-BaseVhdxDisk {
     $partition = "BIOS"
   }
 
-  Push-Location "$((Get-VMHost).VirtualHardDiskPath)\base"
+  Push-Location "$env:SystemDrive\Virtual Machines\BaseVHDX"
 
   Write-Output "Creating a base disk using '$($image.ImageName)' to '$vhdx'..."
 
