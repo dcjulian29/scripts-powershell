@@ -1,6 +1,6 @@
 @{
     RootModule = 'FileSystem.psm1'
-    ModuleVersion = '2201.22.1'
+    ModuleVersion = '2204.28.1'
     GUID = 'aaad40aa-30a0-495c-8377-53e89ea1ec11'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -21,10 +21,15 @@
         "Get-Path"
         "Get-Sha1"
         "Get-Sha256"
+        "Get-Share"
         "Invoke-DownloadFile"
         "Invoke-PurgeFiles"
         "Invoke-TouchFile"
         "Invoke-UnzipFile"
+        "New-FileLink"
+        "New-Folder"
+        "New-FolderLink"
+        "New-Share"
         "Optimize-Path"
         "Remove-FilePermission"
         "Remove-Path"

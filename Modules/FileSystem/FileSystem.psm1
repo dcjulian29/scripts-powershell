@@ -294,6 +294,10 @@ function Get-Sha256 {
 
 Set-Alias -Name sha256 -Value Get-Sha256
 
+function Get-Share {
+  Get-WMIObject Win32_share
+}
+
 function Invoke-DownloadFile {
     [CmdletBinding()]
     param (
@@ -502,6 +506,205 @@ function Invoke-UnzipFile {
 }
 
 Set-Alias -Name Unzip-File -Value Invoke-UnzipFile
+
+function New-FileLink {
+  [CmdletBinding()]
+  param (
+      [Parameter(Mandatory = $true)]
+      [string] $LinkPath,
+      [Parameter(Mandatory = $true)]
+      [string] $TargetPath,
+      [Alias("Recreate")]
+      [switch] $Force,
+      [Alias("Quiet")]
+      [switch] $Silent,
+      [switch] $TargetNotFoundOk,
+      [switch] $TargetExistsOk
+  )
+
+  if (-not (Test-Path $TargetPath)) {
+    if ($TargetNotFoundOk) { return }
+
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "'$TargetPath' does not exists!" `
+      -ExceptionType "System.Management.Automation.ItemNotFoundException" `
+      -ErrorId "ResourceUnavailable" -ErrorCategory "ResourceUnavailable"))
+  }
+
+  if (-not (Test-Path (Split-Path -Parent $LinkPath))) {
+    New-Folder (Split-Path -Parent $LinkPath)
+  }
+
+  if (Test-Path $LinkPath) {
+    if ($Force) {
+      Remove-Item -Path $LinkPath -Recurse -Force
+    } else {
+      if ($Silent) {
+        return
+      }
+
+      if ($TargetExistsOk) {
+        Write-Output "Already exist '$LinkPath' ---> '$TargetPath'"
+        return
+      }
+
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "An item with the specified name '$LinkPath' already exists." `
+        -ExceptionType "Microsoft.PowerShell.Commands.NewItemCommand" `
+        -ErrorId "DirectoryExist" -ErrorCategory "ResourceExist"))
+    }
+  }
+
+  if (-not ($Silent)) {
+    Write-Output "Creating '$LinkPath' ---> '$TargetPath'"
+  }
+
+  New-Item -ItemType SymbolicLink -Path $LinkPath -Value $TargetPath | Out-Null
+}
+
+function New-Folder {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty]
+    [string] $Folder
+  )
+
+  if (-not (Test-Path $Folder)) {
+    do {
+      $parent = Split-Path -Parent $Folder
+      do {
+        if (Test-Path $parent) {
+          if (($Folder.LastIndexOf("\") -eq $parent.Length)) {
+            break
+          } else {
+            New-Item -ItemType Directory -Path $last  | Out-Null
+            $parent = ""
+          }
+        }
+
+        if ("" -ne $parent) {
+          $last = $parent
+          $parent = Split-Path -Parent $parent
+        }
+      } until ("" -eq $parent)
+    } until ($parent -eq (Split-Path -Parent $Folder))
+  }
+}
+
+function New-FolderLink {
+  [CmdletBinding()]
+  param (
+      [Parameter(Mandatory = $true)]
+      [string] $LinkPath,
+      [Parameter(Mandatory = $true)]
+      [string] $TargetPath,
+      [Alias("Recreate")]
+      [switch] $Force,
+      [Alias("Quiet")]
+      [switch] $Silent,
+      [switch] $TargetNotFoundOk,
+      [switch] $TargetExistsOk
+  )
+
+  if (-not (Test-Path $TargetPath)) {
+    if ($TargetNotFoundOk) { return }
+
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "'$TargetPath' does not exists!" `
+      -ExceptionType "System.Management.Automation.ItemNotFoundException" `
+      -ErrorId "ResourceUnavailable" -ErrorCategory "ResourceUnavailable"))
+  }
+
+  if (-not (Test-Path (Split-Path -Parent $LinkPath))) {
+    New-Folder (Split-Path -Parent $LinkPath)
+  }
+
+  if (Test-Path $LinkPath) {
+    if ($Force) {
+      Remove-Item -Path $LinkPath -Recurse -Force
+    } else {
+      if ($Silent) {
+        return
+      }
+
+      if ($TargetExistsOk) {
+        Write-Output "Already exist '$LinkPath' ---> '$TargetPath'"
+        return
+      }
+
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "An item with the specified name '$LinkPath' already exists." `
+        -ExceptionType "Microsoft.PowerShell.Commands.NewItemCommand" `
+        -ErrorId "DirectoryExist" -ErrorCategory "ResourceExist"))
+    }
+  }
+
+  if (-not ($Silent)) {
+    Write-Output "Creating '$LinkPath' ---> '$TargetPath'"
+  }
+
+  New-Item -ItemType Junction -Path (Split-Path -Parent $LinkPath) `
+    -Value $TargetPath | Out-Null
+}
+
+function New-Share {
+  param (
+    [parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true)]
+    [string]$FolderName,
+    [parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true)]
+    [string]$ShareName,
+    [parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$false)]
+    [string]$Description
+  )
+
+  if (-not (Test-Path $FolderName)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "$($FolderName) does not exists!" `
+      -ExceptionType "System.Management.Automation.ItemNotFoundException" `
+      -ErrorId "ResourceUnavailable" -ErrorCategory "ResourceUnavailable"))
+  }
+
+  if (-not (Get-WMIObject Win32_share -filter "name='$ShareName'")) {
+    $trustee = ([WMIClass] "Win32_Trustee").CreateInstance()
+    $trustee.Name = "EVERYONE"
+    $trustee.Domain = $Null
+    $trustee.SID = @(1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0)
+
+    $ace = ([WMIClass] "Win32_ACE").CreateInstance()
+    $ace.AccessMask = 2032127
+    $ace.AceFlags = 3
+    $ace.AceType = 0
+    $ace.Trustee = $trustee
+
+    $sd = ([WMIClass] "Win32_SecurityDescriptor").CreateInstance()
+    $sd.DACL += $ace.psObject.baseobject
+
+    $shares = [WMICLASS]"WIN32_Share"
+    $params =  $shares.psbase.GetMethodParameters("Create")
+
+    $params.Access = $sd
+    $params.Description = $Description
+    $params.MaximumAllowed = $Null
+    $params.Name = $ShareName
+    $params.Password = $Null
+    $params.Path = $FolderName
+    $params.Type = [uint32]0
+
+    $r = $shares.PSBase.InvokeMethod("Create", $params, $Null)
+
+    if ($r.ReturnValue -eq 0) {
+      Write-Output "Share $($ShareName) created at $($FolderName)..."
+    } else {
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "Error creating share '$ShareName'!" `
+        -ExceptionType "System.Runtime.InteropServices.ExternalException" `
+        -ErrorId "InvalidOperation" -ErrorCategory "InvalidOperation"))
+    }
+  } else {
+    Write-Warning "Share $($ShareName) already exists..."
+  }
+}
 
 function Optimize-Path {
     Get-Path | ForEach-Object {
