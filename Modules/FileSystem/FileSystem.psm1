@@ -519,7 +519,7 @@ function New-FileLink {
       [Alias("Quiet")]
       [switch] $Silent,
       [switch] $TargetNotFoundOk,
-      [switch] $TargetExistsOk
+      [switch] $LinkExistOk
   )
 
   if (-not (Test-Path $TargetPath)) {
@@ -543,7 +543,7 @@ function New-FileLink {
         return
       }
 
-      if ($TargetExistsOk) {
+      if ($LinkExistOk) {
         Write-Output "Already exist '$LinkPath' ---> '$TargetPath'"
         return
       }
@@ -606,7 +606,7 @@ function New-FolderLink {
       [Alias("Quiet")]
       [switch] $Silent,
       [switch] $TargetNotFoundOk,
-      [switch] $TargetExistsOk
+      [switch] $LinkExistOk
   )
 
   if (-not (Test-Path $TargetPath)) {
@@ -630,7 +630,7 @@ function New-FolderLink {
         return
       }
 
-      if ($TargetExistsOk) {
+      if ($LinkExistOk) {
         Write-Output "Already exist '$LinkPath' ---> '$TargetPath'"
         return
       }
