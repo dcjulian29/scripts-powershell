@@ -1,3 +1,16 @@
+function removeDownloads() {
+  @(
+    "${env:TEMP}\scripts-powershell-main.zip"
+    "${env:TEMP}\scripts-powershell-main"
+    "${env:TEMP}\posh-go.zip"
+    "${env:TEMP}\Go-Shell-master"
+  ) | ForEach-Object {
+    if (Test-Path $_) {
+        Remove-Item $_ -Recurse -Force
+    }
+  }
+}
+
 $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
 $poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
 $pwshDir = Join-Path -Path $docDir -ChildPath PowerShell
@@ -5,16 +18,7 @@ $modulesDir = Join-Path -Path $poshDir -ChildPath Modules
 $binDir = Join-Path -Path $env:SYSTEMDRIVE -ChildPath bin
 $url = "https://github.com/dcjulian29/scripts-powershell/archive/refs/heads/main.zip"
 
-@(
-  "${env:TEMP}\scripts-powershell-main.zip"
-  "${env:TEMP}\scripts-powershell-main"
-  "${env:TEMP}\posh-go.zip"
-  "${env:TEMP}\Go-Shell-master"
-) | ForEach-Object {
-  if (Test-Path $_) {
-      Remove-Item $_ -Recurse -Force
-  }
-}
+removeDownloads
 
 Invoke-WebRequest -Uri $url -UseBasicParsing `
   -OutFile "${env:TEMP}\scripts-powershell-main.zip"
@@ -74,9 +78,6 @@ Write-Output "Installing profile to '$poshDir' ..."
   Copy-Item -Path $_ -Destination $poshDir -Recurse -Force
 }
 
-Remove-Item -Path "${env:TEMP}\scripts-powershell-main.zip" -Force
-Remove-Item -Path "${env:TEMP}\scripts-powershell-main" -Recurse -Force
-
 Write-Output "Checking modules path for '$modulesDir' ..."
 
 if ((-not ($env:PSModulePath).Contains($modulesDir))) {
@@ -111,9 +112,6 @@ Write-Output "Installing posh-go module..."
 New-Item -Type Directory -Path "$modulesDir\go" | Out-Null
 
 Copy-Item -Path "${env:TEMP}\Go-Shell-master\*" -Destination "$modulesDir\go"
-
-Remove-Item -Path "${env:TEMP}\posh-go.zip" -Force
-Remove-Item -Path "${env:TEMP}\Go-Shell-master" -Recurse -Force
 
 #------------------------------------------------------------------------------
 
@@ -236,6 +234,8 @@ Import-Module "${env:USERPROFILE}\Documents\WindowsPowerShell\Modules\go\go.psm1
     gd -Key $_.Key -SelectedPath $_.Value -add
   }
 }
+
+removeDownloads
 
 if (Test-Path "$poshDir\installed.txt") {
   Add-Content -Path "$poshDir\installed.txt" -Value "$(Get-Date)"
