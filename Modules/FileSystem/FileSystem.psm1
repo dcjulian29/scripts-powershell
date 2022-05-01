@@ -589,6 +589,8 @@ function New-Folder {
         }
       } until ("" -eq $parent)
     } until ($parent -eq (Split-Path -Parent $Folder))
+
+    New-Item -ItemType Directory -Path $Folder  | Out-Null
   }
 }
 
