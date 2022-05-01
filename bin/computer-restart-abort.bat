@@ -1,0 +1,1 @@
+@psshutdown.exe -a

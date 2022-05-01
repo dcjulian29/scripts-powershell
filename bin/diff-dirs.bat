@@ -1,0 +1,1 @@
+@start "" /B %SYSTEMDRIVE%\Tools\PortableApps\WinMergePortable\WinMergePortable.exe /s /r /u %*
