@@ -566,7 +566,7 @@ function New-Folder {
   [CmdletBinding()]
   param (
     [Parameter(Mandatory = $true)]
-    [ValidateNotNullOrEmpty]
+    [ValidateNotNullOrEmpty()]
     [string] $Folder
   )
 
