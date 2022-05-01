@@ -126,7 +126,7 @@ if ((Get-Module PackageManagement -ListAvailable | Measure-Object).Count -gt 1) 
   Import-Module PackageManagement
 }
 
-Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force | Out-Null
 
 if ((Get-Module PowershellGet -ListAvailable | Measure-Object).Count -gt 1) {
   Import-Module PowerShellGet -RequiredVersion `
@@ -158,10 +158,10 @@ Push-Location "${env:TEMP}\scripts-powershell-main"
 (Get-Content "thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
   if (-not (($_ -eq "PackageManagement") -or ($_ -eq "PowerShellGet"))) {
     if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-      Write-Output "Updating third-party '$_' module..."
+      Write-Output ">>Updating third-party '$_' module..."
       Update-Module -Name $_ -Confirm:$false -Verbose
     } else {
-      Write-Output "Installing third-party '$_' module..."
+      Write-Output ">>Installing third-party '$_' module..."
       Install-Module -Name $_ -AllowClobber -Verbose
     }
   }
@@ -171,10 +171,10 @@ Write-Output ">>>Installing my modules..."
 
 (Get-Content "mine.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Write-Output "Updating my '$_' module..."
+    Write-Output ">>Updating my '$_' module..."
     Update-Module -Name $_ -Confirm:$false -Verbose
   } else {
-    Write-Output "Installing my '$_' module..."
+    Write-Output ">>Installing my '$_' module..."
     Install-Module -Name $_ -Repository "dcjulian29-powershell" -AllowClobber -Verbose
   }
 }
