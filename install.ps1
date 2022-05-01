@@ -117,7 +117,7 @@ Remove-Item -Path "${env:TEMP}\Go-Shell-master" -Recurse -Force
 
 #------------------------------------------------------------------------------
 
-Write-Output "Configuring Package Repositories..."
+Write-Output ">>>Configuring Package Repositories..."
 
 if ((Get-Module PackageManagement -ListAvailable | Measure-Object).Count -gt 1) {
   Import-Module PackageManagement -RequiredVersion `
@@ -155,7 +155,7 @@ Set-PSRepository -Name "dcjulian29-powershell" -InstallationPolicy Trusted
 
 Write-Output ">>>Installing third-party modules..."
 
-Push-Location $PSScriptRoot
+Push-Location "${env:TEMP}\scripts-powershell-main"
 
 (Get-Content "thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
   if (-not (($_ -eq "PackageManagement") -or ($_ -eq "PowerShellGet"))) {
