@@ -3,7 +3,7 @@
         [string]$Pattern
     )
 
-    $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
+    $isoDir = "$env:SystemDrive\Virtual Machines\ISO"
 
     $latest = Get-ChildItem -Path $IsoDir `
         | Where-Object { $_.Name -match "^$($Pattern).*" } `
