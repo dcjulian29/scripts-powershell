@@ -150,7 +150,7 @@ function New-LinuxDevVM {
   $vhdx = "$computerName.vhdx"
 
   if (-not $IsoFilePath) {
-    $isoDir = "$((Get-VMHost).VirtualMachinePath)\ISO"
+    $isoDir = "$env:SystemDrive\Virtual Machines\ISO"
 
     $latest = Get-ChildItem -Filter "pop-os_*" -Path $isoDir `
       | Sort-Object Name -Descending `
