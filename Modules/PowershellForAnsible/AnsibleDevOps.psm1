@@ -315,7 +315,8 @@ function Invoke-AnsiblePlayDev {
       [string] $Role,
       [string] $Subset = "ansibledev",
       [string[]] $Tags = @("all"),
-      [switch] $NoStep
+      [switch] $NoStep,
+      [switch] $Step
   )
 
   ensureAnsibleRoot
@@ -332,12 +333,14 @@ function Invoke-AnsiblePlayDev {
     $param = "-v "
   }
 
-  if (-not ($PSBoundParameters.ContainsKey('NoStep'))) {
+  if ($PSBoundParameters.ContainsKey('Step')) {
     $param += "--step "
   }
 
   $param += "--limit $Subset --tags " + $Tags -join ","
   $param += " -i ./inventories/vagrant.ini .tmp/play.yml"
+
+  Write-Verbose "ansible-playbook $param"
 
   Invoke-AnsiblePlaybook $param
 
