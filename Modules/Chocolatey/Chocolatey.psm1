@@ -102,6 +102,83 @@ function Install-ChocolateyPackage {
     }
 }
 
+function Invoke-ChocolateyInstall {
+  [CmdletBinding()]
+  param (
+    [string[]] $InstallArguments = "",
+    [string[]] $PackageParameters = ""
+  )
+
+  $pshell = "${env:windir}\System32\WindowsPowerShell\v1.0\powershell.exe"
+  $install = "${env:ChocolateyInstall}\helpers\chocolateyInstaller.psm1"
+  $runner = "${env:ChocolateyInstall}\helpers\chocolateyScriptRunner.ps1"
+  $script = "$PWD\chocolateyInstall.ps1"
+
+  if (-not (Test-Path $script)) {
+    throw "ERROR"
+  }
+
+  $cmd = "[System.Threading.Thread]::CurrentThread.CurrentCulture = '';" `
+    + "[System.Threading.Thread]::CurrentThread.CurrentUICulture = '';"
+
+  if ($PSBoundParameters['Debug']) {
+    $cmd = $cmd + "`$env:ChocolateyEnvironmentDebug='true';"
+   }
+
+  if ($PSBoundParameters['Verbose']) {
+    $cmd = $cmd + "`$env:ChocolateyEnvironmentVerbose='true';"
+  }
+
+  $cmd = $cmd + "& import-module -name '$install';" `
+    + "& '$runner' -packageScript '$script' " `
+    + "-installArguments '$InstallArguments' " `
+    + "-packageParameters '$PackageParameters'"
+
+  Write-Verbose "cmd: $cmd"
+
+  Start-Process -FilePath $pshell -ArgumentList @(
+    "-NoProfile"
+    "-NoLogo"
+    "-ExecutionPolicy Bypass"
+    "-Command `"$cmd`""
+  ) -NoNewWindow -Wait -WorkingDirectory $env:SystemDrive `
+    -Debug:($PSBoundParameters['Debug'] -eq $true) `
+    -Verbose:($PSBoundParameters['Verbose'] -eq $true)
+}
+
+function Invoke-ChocolateyShell {
+  [CmdletBinding()]
+  param ()
+
+  $pshell = "${env:windir}\System32\WindowsPowerShell\v1.0\powershell.exe"
+  $install = "${env:ChocolateyInstall}\helpers\chocolateyInstaller.psm1"
+
+  $cmd = "[System.Threading.Thread]::CurrentThread.CurrentCulture = '';" `
+    + "[System.Threading.Thread]::CurrentThread.CurrentUICulture = '';"
+
+  if ($PSBoundParameters['Debug']) {
+    $cmd = $cmd + "`$env:ChocolateyEnvironmentDebug='true';"
+   }
+
+  if ($PSBoundParameters['Verbose']) {
+    $cmd = $cmd + "`$env:ChocolateyEnvironmentVerbose='true';"
+  }
+
+  $cmd = $cmd + "& import-module -name '$install'"
+
+  Write-Verbose "cmd: $cmd"
+
+  Start-Process -FilePath $pshell -ArgumentList @(
+    "-NoProfile"
+    "-NoLogo"
+    "-ExecutionPolicy Bypass"
+    "-NoExit"
+    "-Command `"$cmd`""
+  ) -NoNewWindow -Wait -WorkingDirectory $pwd `
+    -Debug:($PSBoundParameters['Debug'] -eq $true) `
+    -Verbose:($PSBoundParameters['Verbose'] -eq $true)
+}
+
 function New-ChocolateyPackage {
     param (
         [ValidateScript({ Test-Path $(Resolve-Path $_) })]
