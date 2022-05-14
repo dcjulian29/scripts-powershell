@@ -88,13 +88,21 @@ function New-DevVM {
     $source = "${env:SYSTEMDRIVE}\etc\syncthing"
     $c = "$source\$computerName"
 
-    $files = @(
-        "$c.id"
-        "$source\server.id"
-        "$source\server.name"
-        "$c.key"
-        "$c.cert"
-    )
+    if (Test-Path "$c\config.xml") {
+      $files = @(
+          "$c\config.xml"
+          "$c\key.pem"
+          "$c\cert.pem"
+      )
+    } else {
+      $files = @(
+          "$c.id"
+          "$source\server.id"
+          "$source\server.name"
+          "$c.key"
+          "$c.cert"
+      )
+    }
 
     Move-FilesToVM -VhdxFile $vhdx -Files $files -RelativeDestination $destination | Out-Null
 
