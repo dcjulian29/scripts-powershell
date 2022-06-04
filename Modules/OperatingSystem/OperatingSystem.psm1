@@ -36,6 +36,14 @@ function Find-FolderSize {
 Set-Alias -Name Calculate-Folder-Size -Value Find-FolderSize
 Set-Alias -Name Calculate-FolderSize -Value Find-FolderSize
 
+function Find-UwpApp {
+  param (
+    [string] $Name
+  )
+
+  Get-UwpApp | Where-Object { $_.Name -like "*$Name*" }
+}
+
 function Get-InstalledFont {
   [CmdletBinding()]
   [OutputType([Windows.Media.FontFamily], [string])]
@@ -263,6 +271,28 @@ function Get-OSVersion {
     (Get-CimInstance Win32_OperatingSystem).Version
 }
 
+function Get-UwpApp {
+  Get-AppxPackage | Sort-Object Name | Select-Object Name,InstallLocation,PackageFamilyName
+}
+
+function Get-UwpAppManifest {
+  param (
+    [string] $Name
+  )
+
+  $package = Find-UwpApp $Name
+
+  if ($package.Count -gt 1) {
+    throw "Name not specific enough"
+  }
+
+  if ($package.InstallLocation -eq "") {
+    throw "Name not found"
+  }
+
+  return ([xml](Get-Content -Path "$($package.InstallLocation)\AppxManifest.xml")).Package
+}
+
 function Install-Font {
   [CmdletBinding()]
   param (
@@ -443,6 +473,31 @@ function Install-WindowsUpdates {
     }
 }
 
+function New-UwpAppShortcut {
+  param (
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$Name,
+    [string]$Path = "$Name.lnk"
+  )
+
+  $package = Find-UwpApp $Name
+  $manifest = Get-UwpAppManifest $Name
+
+  $appid = $manifest.Applications.Application.Id
+  $appname = $package.PackageFamilyName
+
+Start-Process -FilePath "${env:WINDIR}\explorer.exe" `
+  -ArgumentList "shell:appsFolder\$appname!$appid"
+
+
+  Set-FileShortCut -Path $Path.ToUpper() `
+    -TargetPath "${env:WINDIR}\explorer.exe"  `
+    -Arguments "shell:appsFolder\$appname!$appid" `
+    -Description "Launch UWP Application: $($appname.ToUpper())" `
+    -IconPath "${env:SystemRoot}\System32\SHELL32.dll,162"
+}
+
 function Remove-EnvironmentVariable {
     param (
         [string]$Name,
@@ -491,6 +546,21 @@ function Set-Tls13Client {
     }
 
     New-ItemProperty -Path $key -Name "Enabled" -PropertyType "DWORD" -Value $value
+}
+
+function Start-UwpApp {
+  param (
+    [string] $Name
+  )
+
+  $package = Find-UwpApp $Name
+  $manifest = Get-UwpAppManifest $Name
+
+  $appid = $manifest.Applications.Application.Id
+  $appname = $package.PackageFamilyName
+
+  Start-Process -FilePath "${env:WINDIR}\explorer.exe" `
+    -ArgumentList "shell:appsFolder\$appname!$appid"
 }
 
 function Test-DaylightSavingsInEffect {
