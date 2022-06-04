@@ -38,6 +38,8 @@ Set-Alias -Name Calculate-FolderSize -Value Find-FolderSize
 
 function Find-UwpApp {
   param (
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
     [string] $Name
   )
 
@@ -277,6 +279,8 @@ function Get-UwpApp {
 
 function Get-UwpAppManifest {
   param (
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
     [string] $Name
   )
 
@@ -487,10 +491,6 @@ function New-UwpAppShortcut {
   $appid = $manifest.Applications.Application.Id
   $appname = $package.PackageFamilyName
 
-Start-Process -FilePath "${env:WINDIR}\explorer.exe" `
-  -ArgumentList "shell:appsFolder\$appname!$appid"
-
-
   Set-FileShortCut -Path $Path.ToUpper() `
     -TargetPath "${env:WINDIR}\explorer.exe"  `
     -Arguments "shell:appsFolder\$appname!$appid" `
@@ -550,6 +550,8 @@ function Set-Tls13Client {
 
 function Start-UwpApp {
   param (
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
     [string] $Name
   )
 
