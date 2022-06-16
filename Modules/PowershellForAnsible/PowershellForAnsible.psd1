@@ -7,7 +7,7 @@
     RequiredModules = @(
       @{
         ModuleName = "PowerShellForDocker"
-        ModuleVersion = "2202.5.1"
+        ModuleVersion = "2206.16.1"
        }
     )
     RootModule = 'PowershellForAnsible.psm1'

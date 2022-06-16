@@ -1,4 +1,4 @@
-$script:AnsibleDir = "/opt/ansible/bin"
+$script:AnsibleDir = "/root/ansible/bin"
 
 function Get-AnsibleConfig {
   Invoke-AnsibleConfig list
@@ -43,6 +43,8 @@ function Invoke-AnsibleContainer {
       Volume = @(
         "$(Get-DockerMountPoint $PWD):/etc/ansible"
         "$(Get-DockerMountPoint "${env:SYSTEMDRIVE}/etc/ssh/wsl"):/root/.ssh"
+        "$(Get-DockerMountPoint "${env:USERPROFILE}/.azure"):/root/.azure"
+        "$(Get-DockerMountPoint "${env:USERPROFILE}/.aws"):/root/.aws"
       )
       Environment = $EnvironmentVariables
     }
