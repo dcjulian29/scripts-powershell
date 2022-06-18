@@ -37,6 +37,18 @@ function Invoke-FetchGitRepository {
 Set-Alias Fetch-GitRepository Invoke-FetchGitRepository
 Set-Alias gfetch Invoke-FetchGitRepository
 
+function Invoke-GitAdd {
+  & "$(Find-Git)" add $("$args")
+}
+
+Set-Alias -Name "ga" -Value "Invoke-GitAdd"
+
+function Invoke-GitLog {
+  & "$(Find-Git)" log $("$args")
+}
+
+Set-Alias -Name "gl" -Value "Invoke-GitLog"
+
 function Invoke-GraphicalGit {
     param (
         [ValidateNotNullorEmpty()]
@@ -201,6 +213,22 @@ function Start-GitGraphicalInterface {
 
 Set-Alias gitk Start-GitGraphicalInterface
 
+function Test-GitCommit {
+  param (
+    [string] $Path = $PWD.Path
+  )
+
+  & "$(Find-Git)" -C $Path rev-parse --short HEAD 2>&1 | Out-Null
+
+  if ($LASTEXITCODE -gt 0) {
+    return $false
+  }
+
+  return $true
+}
+
+Set-Alias -Name "has_git_commit" -Value "Test-GitCommit"
+
 function Test-GitRepository {
     param (
         [string] $Path = $PWD.Path
@@ -215,6 +243,8 @@ function Test-GitRepository {
 
     return $true
 }
+
+Set-Alias -Name "is_git_repo" -Value Test-GitRepository
 
 function Test-GitRepositoryDirty {
     param (

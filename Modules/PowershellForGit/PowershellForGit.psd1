@@ -3,9 +3,8 @@
     GUID = '099256ed-ac18-4e56-8017-bb9d9077fb74'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
-    RootModule = 'Git.psm1'
+    RootModule = 'PowershellForGit.psm1'
     NestedModules = @(
-        "GitAlias.psm1"
         "GitBackups.psm1"
         "GitBranches.psm1"
         "GitCommits.psm1"
@@ -38,6 +37,8 @@
         "Get-LastGitCommit"
         "Get-LastGitTag"
         "Invoke-FetchGitRepository"
+        "Invoke-GitAdd"
+        "Invoke-GitLog"
         "Invoke-GraphicGit"
         "Invoke-GraphicGitHistory"
         "Invoke-PullGitRepository"
@@ -59,6 +60,7 @@
         "Show-AllGitRepositoryStatus"
         "Show-GitInformation"
         "Start-GitGraphicalInterface"
+        "Test-GitCommit"
         "Test-GitRepository"
         "Test-GitRepositoryDirty"
         "Update-AllGitRepositories"
@@ -66,6 +68,7 @@
     )
     AliasesToExport = @(
         "Fetch-GitRepository"
+        "ga"
         "gb"
         "gbr"
         "gfetch"
@@ -73,11 +76,14 @@
         "gitk"
         "git-gc-all"
         "git-info"
+        "gl"
         "gpull"
         "gpush"
         "gpushall"
         "gs"
         "gup"
+        "has_git_commit"
+        "is_git_repo"
         "Pull-GitRepository"
         "status-all-projects"
     )
