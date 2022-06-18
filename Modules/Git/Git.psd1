@@ -1,10 +1,11 @@
 @{
-    ModuleVersion = '2106.19.1'
+    ModuleVersion = '2206.3.1'
     GUID = '099256ed-ac18-4e56-8017-bb9d9077fb74'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
     RootModule = 'Git.psm1'
     NestedModules = @(
+        "GitAlias.psm1"
         "GitBackups.psm1"
         "GitBranches.psm1"
         "GitCommits.psm1"
@@ -80,4 +81,18 @@
         "Pull-GitRepository"
         "status-all-projects"
     )
+    PrivateData = @{
+      PSData = @{
+        Tags = @(
+          "dcjulian29"
+          "Credentials"
+          "Web"
+        )
+        LicenseUri = 'https://github.com/dcjulian29/scripts-powershell/LICENSE.md'
+        ProjectUri = 'https://github.com/dcjulian29/scripts-powershell'
+        RequireLicenseAcceptance = $false
+        ExternalModuleDependencies = @()
+      }
+    }
+    HelpInfoURI = 'https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/Git'
 }

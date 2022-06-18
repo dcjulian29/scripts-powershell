@@ -1,7 +1,8 @@
 function Get-GitConfigValue {
     [CmdletBinding()]
     param (
-        [string] $Key
+      [Parameter(Mandatory=$true, Position=0)]
+      [string] $Key
     )
 
     $parameters = "config --get $Key"
