@@ -8,6 +8,7 @@
       @{
         ModuleName = "PowerShellForDocker"
         ModuleVersion = "2202.7.1"
+        GUID = "2cd0c771-ed8b-48bc-b6bc-be8540c915e4"
        }
     )
     RootModule = 'PowershellForAnsible.psm1'
