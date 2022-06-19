@@ -563,7 +563,8 @@ function Remove-AnsibleVagrantHosts {
 function Reset-AnsibleEnvironmentDev {
   [CmdletBinding()]
   param (
-    [string] $Role
+    [string] $Role,
+    [switch] $Docker
   )
 
   $ea = $ErrorActionPreference
@@ -578,6 +579,10 @@ function Reset-AnsibleEnvironmentDev {
 
     Invoke-AnsiblePlaybook -v --limit ansibledev --tags minimal --flush-cache `
       -i ./inventories/vagrant.ini ./playbooks/base.yml
+
+    if ($Docker) {
+      Invoke-AnsiblePlayDev -Role "Docker" -NoStep
+    }
 
     if ($Role) {
       Invoke-AnsiblePlayDev -Role $Role -NoStep
@@ -595,7 +600,8 @@ Set-Alias "ansible-reset-dev" -Value Reset-AnsibleEnvironmentDev
 function Reset-AnsibleEnvironmentRaspi {
   [CmdletBinding()]
   param (
-    [string] $Role
+    [string] $Role,
+    [switch] $Docker
   )
 
   $ea = $ErrorActionPreference
@@ -610,6 +616,10 @@ function Reset-AnsibleEnvironmentRaspi {
 
     Invoke-AnsiblePlaybook -v --limit debian11 --tags minimal --flush-cache `
       -i ./inventories/vagrant.ini ./playbooks/base.yml
+
+    if ($Docker) {
+      Invoke-AnsiblePlayRaspi -Role "Docker" -NoStep
+    }
 
     if ($Role) {
       Invoke-AnsiblePlayRaspi -Role $Role -NoStep
@@ -627,7 +637,8 @@ Set-Alias "ansible-reset-raspi" -Value Reset-AnsibleEnvironmentRaspi
 function Reset-AnsibleEnvironmentTest {
   [CmdletBinding()]
   param (
-    [string] $Role
+    [string] $Role,
+    [switch] $Docker
   )
 
   $ea = $ErrorActionPreference
@@ -648,6 +659,10 @@ function Reset-AnsibleEnvironmentTest {
 
     Invoke-AnsiblePlaybook -v --tags minimal --flush-cache `
       -i ./inventories/vagrant.ini ./playbooks/base.yml
+
+    if ($Docker) {
+      Invoke-AnsiblePlayTest -Role "Docker" -NoStep
+    }
 
     if ($Role) {
       Invoke-AnsiblePlayTest -Role $Role -NoStep
