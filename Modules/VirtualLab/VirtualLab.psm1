@@ -472,13 +472,15 @@ function New-LabWindowsServer {
         $switch = "LAB"
     }
 
-    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+    Push-Location "$env:SystemDrive\Virtual Machines\BaseVHDX"
 
-$baseImage = "$((Get-ChildItem -Path "base/Win${Version}BaseCore.vhdx").FullName)"
+    $baseImage = "$((Get-ChildItem -Path "base/Win${Version}BaseCore.vhdx").FullName)"
 
     if ($UseDesktopExperience) {
         $baseImage = "$((Get-ChildItem -Path "base/Win${Version}Base.vhdx").FullName)"
     }
+
+    Pop-Location
 
     New-DifferencingVHDX -referenceDisk $baseImage -vhdxFile "$vhdx"
 
@@ -511,8 +513,6 @@ $baseImage = "$((Get-ChildItem -Path "base/Win${Version}BaseCore.vhdx").FullName
     Set-VM -Name $ComputerName -AutomaticStartAction Nothing
     Set-Vm -Name $ComputerName -AutomaticStopAction Save
     Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false
-
-    Pop-Location
 
     Write-Output "Starting Virtual Macine..."
     Start-VM -VMName $ComputerName
