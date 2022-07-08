@@ -474,10 +474,10 @@ function New-LabWindowsServer {
 
     Push-Location "$env:SystemDrive\Virtual Machines\BaseVHDX"
 
-    $baseImage = "$((Get-ChildItem -Path "base/Win${Version}BaseCore.vhdx").FullName)"
+    $baseImage = "$((Get-ChildItem -Path "Win${Version}BaseCore.vhdx").FullName)"
 
     if ($UseDesktopExperience) {
-        $baseImage = "$((Get-ChildItem -Path "base/Win${Version}Base.vhdx").FullName)"
+        $baseImage = "$((Get-ChildItem -Path "Win${Version}Base.vhdx").FullName)"
     }
 
     Pop-Location
