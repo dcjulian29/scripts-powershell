@@ -482,6 +482,8 @@ function New-LabWindowsServer {
 
     Pop-Location
 
+    Push-Location $((Get-VMHost).VirtualHardDiskPath)
+
     New-DifferencingVHDX -referenceDisk $baseImage -vhdxFile "$vhdx"
 
     if ($DomainJoin) {
@@ -513,6 +515,8 @@ function New-LabWindowsServer {
     Set-VM -Name $ComputerName -AutomaticStartAction Nothing
     Set-Vm -Name $ComputerName -AutomaticStopAction Save
     Set-Vm -Name $ComputerName -AutomaticCheckpointsEnabled $false
+
+    Pop-Location
 
     Write-Output "Starting Virtual Macine..."
     Start-VM -VMName $ComputerName
