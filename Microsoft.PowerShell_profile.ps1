@@ -45,48 +45,48 @@ if (-not $batch) {
                   = [Console]::OutputEncoding `
                   = [System.Text.Utf8Encoding]::new()
 
-  if ($PSVersionTable.PSEdition -eq "Core") {
-    Write-Host "    ____                          _____ __         ____   ______              " -ForegroundColor Yellow
-    Write-Host "   / __ \____ _      _____  _____/ ___// /_  ___  / / /  / ____/___  ________ " -ForegroundColor Yellow
-    Write-Host "  / /_/ / __ \ | /| / / _ \/ ___/\__ \/ __ \/ _ \/ / /  / /   / __ \/ ___/ _ \" -ForegroundColor Yellow
-    Write-Host " / ____/ /_/ / |/ |/ /  __/ /   ___/ / / / /  __/ / /  / /___/ /_/ / /  /  __/" -ForegroundColor Yellow
-    Write-Host "/_/    \____/|__/|__/\___/_/   /____/_/ /_/\___/_/_/   \____/\____/_/   \___/ " -ForegroundColor Yellow
-    Write-Host ""
-  } else {
-    Write-Host "  ____                        ____  _          _ _ " -ForegroundColor Yellow
-    Write-Host " |  _ \ _____      _____ _ __/ ___|| |__   ___| | |" -ForegroundColor Yellow
-    Write-Host " | |_) / _ \ \ /\ / / _ \ '__\___ \| '_ \ / _ \ | |" -ForegroundColor Yellow
-    Write-Host " |  __/ (_) \ V  V /  __/ |   ___) | | | |  __/ | |" -ForegroundColor Yellow
-    Write-Host " |_|   \___/ \_/\_/ \___|_|  |____/|_| |_|\___|_|_|" -ForegroundColor Yellow
-    Write-Host ""
-  }
+  # if ($PSVersionTable.PSEdition -eq "Core") {
+  #   Write-Host "    ____                          _____ __         ____   ______              " -ForegroundColor Yellow
+  #   Write-Host "   / __ \____ _      _____  _____/ ___// /_  ___  / / /  / ____/___  ________ " -ForegroundColor Yellow
+  #   Write-Host "  / /_/ / __ \ | /| / / _ \/ ___/\__ \/ __ \/ _ \/ / /  / /   / __ \/ ___/ _ \" -ForegroundColor Yellow
+  #   Write-Host " / ____/ /_/ / |/ |/ /  __/ /   ___/ / / / /  __/ / /  / /___/ /_/ / /  /  __/" -ForegroundColor Yellow
+  #   Write-Host "/_/    \____/|__/|__/\___/_/   /____/_/ /_/\___/_/_/   \____/\____/_/   \___/ " -ForegroundColor Yellow
+  #   Write-Host ""
+  # } else {
+  #   Write-Host "  ____                        ____  _          _ _ " -ForegroundColor Yellow
+  #   Write-Host " |  _ \ _____      _____ _ __/ ___|| |__   ___| | |" -ForegroundColor Yellow
+  #   Write-Host " | |_) / _ \ \ /\ / / _ \ '__\___ \| '_ \ / _ \ | |" -ForegroundColor Yellow
+  #   Write-Host " |  __/ (_) \ V  V /  __/ |   ___) | | | |  __/ | |" -ForegroundColor Yellow
+  #   Write-Host " |_|   \___/ \_/\_/ \___|_|  |____/|_| |_|\___|_|_|" -ForegroundColor Yellow
+  #   Write-Host ""
+  # }
 }
 
 #------------------------------------------------------------------------------
 
 # Load the Posh-GIT module if it exist
-if (Test-Path "$env:SymtemDrive/tools/poshgit") {
-  $poshgit = Get-ChildItem -Path "$env:SymtemDrive/tools/poshgit" |  `
-    Where-Object { $_.psIsContainer } | `
-    Sort-Object { $_.CreationTime } -Descending
+# if (Test-Path "$env:SymtemDrive/tools/poshgit") {
+#   $poshgit = Get-ChildItem -Path "$env:SymtemDrive/tools/poshgit" |  `
+#     Where-Object { $_.psIsContainer } | `
+#     Sort-Object { $_.CreationTime } -Descending
 
-  Import-Module "$env:SymtemDrive/tools/poshgit/$($poshgit.name)/src/posh-git.psd1"
+#   Import-Module "$env:SymtemDrive/tools/poshgit/$($poshgit.name)/src/posh-git.psd1"
 
-  # The default colors are hard to see on dark background so set bright colors.
-  $s = $global:GitPromptSettings
+#   # The default colors are hard to see on dark background so set bright colors.
+#   $s = $global:GitPromptSettings
 
-  if ($s.WorkingForegroundColor -ne $s.WorkingForegroundBrightColor) {
-    $s.LocalDefaultStatusForegroundColor = $s.LocalDefaultStatusForegroundBrightColor
-    $s.LocalWorkingStatusForegroundColor = $s.LocalWorkingStatusForegroundBrightColor
-    $s.BeforeIndexForegroundColor = $s.BeforeIndexForegroundBrightColor
-    $s.IndexForegroundColor = $s.IndexForegroundBriteColor
-    $s.WorkingForegroundColor = $s.WorkingForegroundBrightColor
-    $s.EnableWindowTitle = ""
-    $s.BeforeText = "["
+#   if ($s.WorkingForegroundColor -ne $s.WorkingForegroundBrightColor) {
+#     $s.LocalDefaultStatusForegroundColor = $s.LocalDefaultStatusForegroundBrightColor
+#     $s.LocalWorkingStatusForegroundColor = $s.LocalWorkingStatusForegroundBrightColor
+#     $s.BeforeIndexForegroundColor = $s.BeforeIndexForegroundBrightColor
+#     $s.IndexForegroundColor = $s.IndexForegroundBriteColor
+#     $s.WorkingForegroundColor = $s.WorkingForegroundBrightColor
+#     $s.EnableWindowTitle = ""
+#     $s.BeforeText = "["
 
-    $global:GitPromptSettings = $s
-  }
-}
+#     $global:GitPromptSettings = $s
+#   }
+# }
 
 # Argument Completers
 if (Get-Command winget -ErrorAction SilentlyContinue) {
