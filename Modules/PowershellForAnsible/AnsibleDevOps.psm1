@@ -46,7 +46,7 @@ function checkReset([string[]]$pingHosts) {
     $count = 0
 
     while (-not $found) {
-      $found = Test-Connection -ComputerName "10.0.0.$ping" -Quiet -Count 1
+      $found = Test-Connection -ComputerName "192.168.57.$ping" -Quiet -Count 1
 
       if ($found) {
         Write-Host -ForegroundColor Green " [Found]"
@@ -780,7 +780,7 @@ function Test-AnsibleProvision {
   }
 
 
-  Invoke-AnsiblePlaybook $("$vault $v -e `"ansible_host=10.0.0.5`" " `
+  Invoke-AnsiblePlaybook $("$vault $v -e `"ansible_host=192.168.57.5`" " `
     + "-e `"ansible_ssh_private_key_file=~/.ssh/insecure_private_key`" " `
     + "-e `"ansible_user=vagrant`" " `
     + "-i ./inventories/hosts.ini ./playbooks/$ComputerName.yml")
