@@ -18,6 +18,11 @@ function IsWindowsTerminal ($ChildProcess) {
 
 $env:PromptAdmin="$"
 
+if($env:TERM_PROGRAM -eq 'vscode') {
+  . "$(Split-Path -Path $PROFILE -Parent)\Microsoft.VSCode_profile.ps1"
+  exit
+}
+
 if ($PSVersionTable.PSEdition -eq "Core") {
   $batch = $false
 } else {
