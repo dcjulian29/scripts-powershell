@@ -41,7 +41,7 @@ function checkReset([string[]]$pingHosts) {
     }
 
     Write-Output " "
-    Write-Host -NoNewline "Searching for 10.10.10.$ping..."
+    Write-Host -NoNewline "Searching for 192.168.57.$ping..."
     $found = $false
     $count = 0
 
