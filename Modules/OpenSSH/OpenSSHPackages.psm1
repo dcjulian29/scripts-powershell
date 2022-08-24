@@ -11,54 +11,106 @@ function getClientPackageName {
 ###############################################################################
 
 function Add-OpenSSHClient {
+  [CmdletBinding()]
+  param ()
+
+  if (Test-Elevation) {
     if (-not (Test-OpenSSHClient)) {
-        if (Test-Elevation) {
-            Add-WindowsCapability -Online -Name $(getClientPackageName)
-        }
+      Add-WindowsCapability -Online -Name $(getClientPackageName)
     }
+  } else {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "The requested operation requires elevation." `
+      -ExceptionType "System.UnauthorizedAccessException" `
+      -ErrorId "PrivilegeNotHeldException" -ErrorCategory "SecurityError"))
+  }
 }
 
 function Add-OpenSSHServer {
+  [CmdletBinding()]
+  param ()
+
+  if (Test-Elevation) {
     if (-not (Test-OpenSSHServer)) {
-        if (Test-Elevation) {
-            Add-WindowsCapability -Online -Name $(getServerPackageName)
+      Add-WindowsCapability -Online -Name $(getServerPackageName)
 
-            if (Test-OpenSSHServer) {
-                Set-OpenSSHDefaultShell "$env:windir\System32\WindowsPowerShell\v1.0\powershell.exe"
+      if (Test-OpenSSHServer) {
+        Set-OpenSSHDefaultShell "$env:windir\System32\WindowsPowerShell\v1.0\powershell.exe"
 
-                if (Get-Service -Name 'sshd') {
-                    Set-Service -Name 'sshd' -StartupType 'Automatic'
-                    Start-Service -Name 'sshd'
-                }
-            }
+        if (Get-Service -Name 'sshd') {
+          Set-Service -Name 'sshd' -StartupType 'Automatic'
+          Start-Service -Name 'sshd'
         }
+      }
     }
+  } else {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "The requested operation requires elevation." `
+      -ExceptionType "System.UnauthorizedAccessException" `
+      -ErrorId "PrivilegeNotHeldException" -ErrorCategory "SecurityError"))
+  }
 }
 
 function Remove-OpenSSHClient {
+  [CmdletBinding()]
+  param ()
+
+  if (Test-Elevation) {
     if (Test-OpenSSHClient) {
-        if (Test-Elevation) {
-            Remove-WindowsCapability -Online -Name $(getClientPackageName)
-        }
+      Remove-WindowsCapability -Online -Name $(getClientPackageName)
     }
+  } else {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "The requested operation requires elevation." `
+      -ExceptionType "System.UnauthorizedAccessException" `
+      -ErrorId "PrivilegeNotHeldException" -ErrorCategory "SecurityError"))
+  }
 }
 
 function Remove-OpenSSHServer {
-     if (Test-OpenSSHServer) {
-        if (Test-Elevation) {
-            if (Get-Service -Name 'sshd') {
-                Stop-Service -Name 'sshd' -Force
-            }
+  [CmdletBinding()]
+  param ()
 
-            Remove-WindowsCapability -Online -Name $(getServerPackageName) | Out-Null
-        }
+  if (Test-Elevation) {
+    if (Test-OpenSSHServer) {
+      if (Get-Service -Name 'sshd') {
+        Stop-Service -Name 'sshd' -Force
+      }
+
+      Remove-WindowsCapability -Online -Name $(getServerPackageName) | Out-Null
     }
+  } else {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "The requested operation requires elevation." `
+      -ExceptionType "System.UnauthorizedAccessException" `
+      -ErrorId "PrivilegeNotHeldException" -ErrorCategory "SecurityError"))
+  }
 }
 
 function Test-OpenSSHClient {
+  [CmdletBinding()]
+  param ()
+
+  if (Test-Elevation) {
     return ((Get-WindowsCapability -Online -Name $(getClientPackageName)).State -eq "Installed")
+  } else {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "The requested operation requires elevation." `
+      -ExceptionType "System.UnauthorizedAccessException" `
+      -ErrorId "PrivilegeNotHeldException" -ErrorCategory "SecurityError"))
+  }
 }
 
 function Test-OpenSSHServer {
+  [CmdletBinding()]
+  param ()
+
+  if (Test-Elevation) {
     return ((Get-WindowsCapability -Online -Name $(getServerPackageName)).State -eq "Installed")
+  } else {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "The requested operation requires elevation." `
+      -ExceptionType "System.UnauthorizedAccessException" `
+      -ErrorId "PrivilegeNotHeldException" -ErrorCategory "SecurityError"))
+  }
 }
