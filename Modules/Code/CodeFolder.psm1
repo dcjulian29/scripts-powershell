@@ -49,7 +49,7 @@ FolderType=Generic
 "@
 
     attrib.exe +S +H $Path\desktop.ini
-    attrib.exe +S $Path
+    attrib.exe +R $Path
 }
 
 function Set-DefaultCodeFolder {
