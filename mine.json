@@ -25,6 +25,7 @@
     "PowershellForAnsible",
     "PowershellForDocker",
     "PowershellForGit",
+    "PowershellForOpenSSL",
     "PSExtensions",
     "PSModules",
     "RemoteRDP",
