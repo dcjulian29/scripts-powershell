@@ -1,3 +1,68 @@
+function ConvertFrom-Base64 {
+  param (
+    [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true)]
+    [psobject] $InputObject
+  )
+
+  begin {
+    $inputValue = ""
+    $output = ""
+    $fileName = "$(Get-OpenSSLRandom 25 -Hex).dat"
+  }
+
+  process {
+
+    foreach ($object in $InputObject) {
+      $inputValue = $inputValue + ($object | Out-String)
+    }
+  }
+
+  end {
+    Push-Location $env:TEMP
+    $inputValue | Set-Content -Path $fileName
+    $output = (Invoke-OpenSSL base64 -d -in $fileName)
+    Remove-Item -Path $fileName -Force
+    Pop-Location
+
+    return $output
+  }
+}
+
+function ConvertTo-Base64 {
+  param (
+    [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true)]
+    [psobject] $InputObject
+  )
+
+  begin {
+    $inputValue = ""
+    $output = ""
+    $fileName = "$(Get-OpenSSLRandom 25 -Hex).dat"
+    $outputFileName = "$(Get-OpenSSLRandom 25 -Hex).dat"
+  }
+
+  process {
+
+    foreach ($object in $InputObject) {
+      $inputValue = $inputValue + ($object | Out-String)
+    }
+  }
+
+  end {
+    Push-Location $env:TEMP
+
+    $inputValue | Set-Content -Path $fileName
+    Invoke-OpenSSL base64 -in $fileName -out $outputFileName
+    $output = Get-Content $outputFileName
+    Remove-Item -Path $fileName -Force
+    Remove-Item -Path $outputFileName -Force
+
+    Pop-Location
+
+    return $output
+  }
+}
+
 function Get-OpenSSLRandom {
   [CmdletBinding(DefaultParameterSetName = 'Bytes')]
   param (

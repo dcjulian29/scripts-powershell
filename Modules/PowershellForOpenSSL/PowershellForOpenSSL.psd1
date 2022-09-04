@@ -1,6 +1,6 @@
 @{
   RootModule = 'OpenSSL.psm1'
-  ModuleVersion = '2209.2.1'
+  ModuleVersion = '2209.3.1'
   Description = "A collection of commands to interact with OpenSSL."
   GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
   Author = 'Julian Easterling'
@@ -13,6 +13,8 @@
   FormatsToProcess = @()
   NestedModules = @()
   FunctionsToExport = @(
+    "ConvertFrom-Base64"
+    "ConvertTo-Base64"
     "Get-OpenSSLRandom"
     "Get-OpenSSLVersion"
     "Find-OpenSSL"
