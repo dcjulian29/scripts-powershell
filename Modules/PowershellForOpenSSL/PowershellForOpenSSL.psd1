@@ -1,6 +1,6 @@
 @{
   RootModule = 'OpenSSL.psm1'
-  ModuleVersion = '2209.3.1'
+  ModuleVersion = '2209.4.1'
   Description = "A collection of commands to interact with OpenSSL."
   GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
   Author = 'Julian Easterling'
@@ -11,15 +11,23 @@
   ScriptsToProcess = @()
   TypesToProcess = @()
   FormatsToProcess = @()
-  NestedModules = @()
+  NestedModules = @(
+    "Hashes.psm1"
+    "x509.psm1"
+  )
   FunctionsToExport = @(
+    "Get-AvailableOpenSSLCiphers"
+    "Get-AvailableOpenSSLDigestAlgorithms"
+    "Get-AvailableOpenSSLEllipticCurves"
     "ConvertFrom-Base64"
     "ConvertTo-Base64"
+    "Get-OpenSSLRsaPrivateKey"
     "Get-OpenSSLRandom"
     "Get-OpenSSLVersion"
     "Find-OpenSSL"
     "Invoke-OpenSSL"
     "Invoke-OpenSSLContainer"
+    "New-OpenSSLRsaPrivateKey"
   )
   CmdletsToExport = @()
   VariablesToExport = @()
