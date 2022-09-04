@@ -1,3 +1,37 @@
+function Get-OpenSSLRandom {
+  [CmdletBinding(DefaultParameterSetName = 'Bytes')]
+  param (
+    [Parameter(ParameterSetName = "Base64", Position = 0, Mandatory = $true)]
+    [Parameter(ParameterSetName = "Bytes", Position = 0, Mandatory = $true)]
+    [Parameter(ParameterSetName = "Hex", Position = 0, Mandatory = $true)]
+    [Int32] $NumberofBytes,
+    [Parameter(ParameterSetName = "Hex")]
+    [switch] $Hex,
+    [Parameter(ParameterSetName = "Base64")]
+    [switch] $Base64
+  )
+
+  switch ($PSCmdlet.ParameterSetName) {
+    "Base64" { return $(Invoke-OpenSSL "rand -base64 $NumberOfBytes") }
+    "Bytes" { return $(Invoke-OpenSSL "rand $NumberOfBytes") }
+    "Hex" { return $(Invoke-OpenSSL "rand -hex $NumberOfBytes") }
+  }
+}
+
+function Get-OpenSSLVersion {
+  param (
+    [switch] $All
+  )
+
+  $param = "version"
+
+  if ($All) {
+    $param += " -a"
+  }
+
+  Invoke-OpenSSL $param
+}
+
 function Find-OpenSSL {
   $InPath = Get-Command "openssl.exe" -ErrorAction SilentlyContinue
 

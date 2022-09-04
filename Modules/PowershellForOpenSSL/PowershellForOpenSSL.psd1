@@ -13,6 +13,8 @@
   FormatsToProcess = @()
   NestedModules = @()
   FunctionsToExport = @(
+    "Get-OpenSSLRandom"
+    "Get-OpenSSLVersion"
     "Find-OpenSSL"
     "Invoke-OpenSSL"
     "Invoke-OpenSSLContainer"
