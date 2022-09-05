@@ -198,3 +198,47 @@ function Invoke-OpenSSLContainer {
 
 Set-Alias -Name opensslc -Value Invoke-OpenSSLContainer
 Set-Alias -Name openssl-container -Value Invoke-OpenSSLContainer
+
+function New-OpenSSLDhParameters {
+  param (
+    [Int32] $NumberOfBits = 2048,
+    [string] $Path,
+    [ValidateSet("PEM", "DER")]
+    [string] $Format = "PEM"
+  )
+
+  $param = "dhparam"
+
+  if ($Path) {
+    $param += " -out $Path"
+  }
+
+  switch ($Format) {
+    "PEM" { $param += " -outform PEM"}
+    "DER" { $param += " -outform DER"}
+  }
+
+  Invoke-OpenSsl "$param $NumberOfBits"
+}
+
+function New-OpenSSLDsaParameters {
+  param (
+    [Int32] $NumberOfBits = 2048,
+    [string] $Path,
+    [ValidateSet("PEM", "DER")]
+    [string] $Format = "PEM"
+  )
+
+  $param = "dsaparam"
+
+  if ($Path) {
+    $param += " -out $Path"
+  }
+
+  switch ($Format) {
+    "PEM" { $param += " -outform PEM"}
+    "DER" { $param += " -outform DER"}
+  }
+
+  Invoke-OpenSsl "$param $NumberOfBits"
+}

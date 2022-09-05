@@ -27,6 +27,8 @@
     "Find-OpenSsl"
     "Invoke-OpenSsl"
     "Invoke-OpenSslContainer"
+    "New-OpenSSLDhParameters"
+    "New-OpenSSLDsaParameters"
     "New-OpenSslRsaPublicPrivateKeypair"
   )
   CmdletsToExport = @()
