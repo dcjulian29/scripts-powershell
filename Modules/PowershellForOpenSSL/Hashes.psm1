@@ -1,3 +1,3 @@
-function Get-AvailableOpenSSLDigestAlgorithms {
-  Invoke-OpenSSL "list -digest-algorithms"
+function Get-AvailableOpenSslDigestAlgorithms {
+  Invoke-OpenSsl "list -digest-algorithms"
 }

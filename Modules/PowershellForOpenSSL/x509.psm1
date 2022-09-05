@@ -1,21 +1,21 @@
-function Get-AvailableOpenSSLCiphers {
-  Invoke-OpenSSL "enc -list"
+function Get-AvailableOpenSslCiphers {
+  Invoke-OpenSsl "enc -list"
 }
 
-function Get-AvailableOpenSSLEllipticCurves {
-  Invoke-OpenSSL "ecparam -list_curves"
+function Get-AvailableOpenSslEllipticCurves {
+  Invoke-OpenSsl "ecparam -list_curves"
 }
 
-function Get-OpenSSLRsaPrivateKey {
+function Get-OpenSslRsaPrivateKey {
   [CmdletBinding()]
   param (
     [string] $Path
   )
 
-  Invoke-OpenSSL "rsa -text -in $Path -noout"
+  Invoke-OpenSsl "rsa -text -in $Path -noout"
 }
 
-function New-OpenSSLRsaPrivateKey {
+function New-OpenSslRsaPublicPrivateKeypair {
   [CmdletBinding()]
   param (
     [string] $Path,

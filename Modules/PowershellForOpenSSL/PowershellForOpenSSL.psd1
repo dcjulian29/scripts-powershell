@@ -16,18 +16,18 @@
     "x509.psm1"
   )
   FunctionsToExport = @(
-    "Get-AvailableOpenSSLCiphers"
-    "Get-AvailableOpenSSLDigestAlgorithms"
-    "Get-AvailableOpenSSLEllipticCurves"
+    "Get-AvailableOpenSslCiphers"
+    "Get-AvailableOpenSslDigestAlgorithms"
+    "Get-AvailableOpenSslEllipticCurves"
     "ConvertFrom-Base64"
     "ConvertTo-Base64"
-    "Get-OpenSSLRsaPrivateKey"
-    "Get-OpenSSLRandom"
-    "Get-OpenSSLVersion"
-    "Find-OpenSSL"
-    "Invoke-OpenSSL"
-    "Invoke-OpenSSLContainer"
     "New-OpenSSLRsaPrivateKey"
+    "Get-OpenSslRsaPrivateKey"
+    "Get-OpenSslRandom"
+    "Get-OpenSslVersion"
+    "Find-OpenSsl"
+    "Invoke-OpenSsl"
+    "Invoke-OpenSslContainer"
   )
   CmdletsToExport = @()
   VariablesToExport = @()
@@ -50,5 +50,5 @@
       ExternalModuleDependencies = @()
     }
   }
-  HelpInfoURI = 'https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/PowershellForOpenSSL'
+  HelpInfoURI = 'https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/PowershellForOpenSsl'
 }
