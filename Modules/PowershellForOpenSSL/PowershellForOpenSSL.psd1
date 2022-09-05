@@ -21,13 +21,13 @@
     "Get-AvailableOpenSslEllipticCurves"
     "ConvertFrom-Base64"
     "ConvertTo-Base64"
-    "New-OpenSSLRsaPrivateKey"
     "Get-OpenSslRsaPrivateKey"
     "Get-OpenSslRandom"
     "Get-OpenSslVersion"
     "Find-OpenSsl"
     "Invoke-OpenSsl"
     "Invoke-OpenSslContainer"
+    "New-OpenSslRsaPublicPrivateKeypair"
   )
   CmdletsToExport = @()
   VariablesToExport = @()
