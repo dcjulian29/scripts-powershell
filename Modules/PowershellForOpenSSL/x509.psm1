@@ -28,11 +28,16 @@ function New-OpenSslRsaKeypair {
   if ($Password) {
     $cred = New-Object System.Management.Automation.PSCredential `
       -ArgumentList "NotImportant", $Password
-    $param += " -pass pass:$($cred.GetNetworkCredential().Password)"
+    $param += " -aes256 -passout `"pass:$($cred.GetNetworkCredential().Password)`""
   }
 
 
   Invoke-OpenSsl "$param $BitSize"
 
-  Invoke-OpenSsl "rsa -in $Path -pubout -out $Path.pub"
+  if ($Password) {
+    Invoke-OpenSsl `
+      "rsa -in $Path -passin `"pass:$($cred.GetNetworkCredential().Password)`" -pubout -out $Path.pub"
+  } else {
+    Invoke-OpenSsl "rsa -in $Path -pubout -out $Path.pub"
+  }
 }
