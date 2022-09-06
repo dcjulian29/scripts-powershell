@@ -112,3 +112,28 @@ function New-OpenSslRsaKeypair {
     Invoke-OpenSsl "rsa -in $Path -pubout -out $Path.pub"
   }
 }
+
+function Test-DeployedCertificate {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [Alias("FQDN", "FullyQualifiedDomainName", "DomainName")]
+    [string] $Domain,
+    [Parameter(Position = 1)]
+    [Int32] $Port = 443,
+    [switch] $Strict,
+    [switch] $IncludeCrlChecks
+  )
+
+  $param = "s_client -connect ${Domain}:$Port"
+
+  if ($Strict) {
+    $param += " -strict -x509_strict"
+  }
+
+  if ($IncludeCrlChecks) {
+    $param += " -extended_crl -crl_check_all"
+  }
+
+  Invoke-OpenSsl $param
+}
