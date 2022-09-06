@@ -16,11 +16,11 @@
     "x509.psm1"
   )
   FunctionsToExport = @(
+    "ConvertFrom-Base64"
+    "ConvertTo-Base64"
     "Get-AvailableOpenSslCiphers"
     "Get-AvailableOpenSslDigestAlgorithms"
     "Get-AvailableOpenSslEllipticCurves"
-    "ConvertFrom-Base64"
-    "ConvertTo-Base64"
     "Get-OpenSslRsaPrivateKey"
     "Get-OpenSslRandom"
     "Get-OpenSslVersion"
