@@ -21,6 +21,8 @@
     "Get-AvailableOpenSslCiphers"
     "Get-AvailableOpenSslDigestAlgorithms"
     "Get-AvailableOpenSslEllipticCurves"
+    "Get-OpenSslEdwardsCurveKeypair"
+    "Get-OpenSslElipticCurveKeypair"
     "Get-OpenSslRsaPrivateKey"
     "Get-OpenSslRandom"
     "Get-OpenSslVersion"
@@ -29,6 +31,8 @@
     "Invoke-OpenSslContainer"
     "New-OpenSSLDhParameters"
     "New-OpenSSLDsaParameters"
+    "New-OpenSslEdwardsCurveKeypair"
+    "New-OpenSslElipticCurveKeypair"
     "New-OpenSslRsaKeypair"
   )
   CmdletsToExport = @()
