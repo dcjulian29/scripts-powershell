@@ -34,6 +34,9 @@
   CmdletsToExport = @()
   VariablesToExport = @()
   AliasesToExport = @(
+    "Get-OpenSslCiphers"
+    "Get-OpenSslDigestAlgorithms"
+    "Get-OpenSslEllipticCurves"
     "openssl"
     "opensslc"
     "openssl-container"

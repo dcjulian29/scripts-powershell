@@ -2,9 +2,13 @@ function Get-AvailableOpenSslCiphers {
   Invoke-OpenSsl "enc -list"
 }
 
+Set-Alias -Name "Get-OpenSslCiphers" -Value Get-AvailableOpenSslCiphers
+
 function Get-AvailableOpenSslEllipticCurves {
   Invoke-OpenSsl "ecparam -list_curves"
 }
+
+Set-Alias -Name "Get-OpenSslEllipticCurves" -Value Get-AvailableOpenSslEllipticCurves
 
 function Get-OpenSslRsaPrivateKey {
   [CmdletBinding()]
