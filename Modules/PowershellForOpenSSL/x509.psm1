@@ -15,7 +15,7 @@ function Get-OpenSslRsaPrivateKey {
   Invoke-OpenSsl "rsa -text -in $Path -noout"
 }
 
-function New-OpenSslRsaPublicPrivateKeypair {
+function New-OpenSslRsaKeypair {
   [CmdletBinding()]
   param (
     [string] $Path = "id_rsa",

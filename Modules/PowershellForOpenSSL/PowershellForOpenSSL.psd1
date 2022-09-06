@@ -29,7 +29,7 @@
     "Invoke-OpenSslContainer"
     "New-OpenSSLDhParameters"
     "New-OpenSSLDsaParameters"
-    "New-OpenSslRsaPublicPrivateKeypair"
+    "New-OpenSslRsaKeypair"
   )
   CmdletsToExport = @()
   VariablesToExport = @()
