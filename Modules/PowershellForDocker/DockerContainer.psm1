@@ -294,13 +294,17 @@ function New-DockerContainer {
     [string]$Command,
     [string]$AdditionalArgs,
     [switch]$Interactive,
+    [switch]$NoTty,
     [switch]$Keep
   )
 
   $param = "run"
 
   if ($Interactive) {
-    $param += " --interactive --tty"
+    $param += " --interactive"
+    if (-not ($NoTty)) {
+      $param += " --tty"
+    }
   } else {
     $param += " --detach"
   }
@@ -322,8 +326,8 @@ function New-DockerContainer {
   } else {
     if ($EntryScript.Length -gt 0) {
       $filename = Split-Path $EntryScript -Leaf
-      $Volume += "$(Get-DockerMountPoint $EntryScript):/$filename"
-      $param += " --entrypoint `"/$filename`""
+      $Volume += "$(Get-DockerMountPoint $EntryScript):/bin/$filename"
+      $param += " --entrypoint `"/bin/$filename`""
     }
   }
 
@@ -350,7 +354,7 @@ function New-DockerContainer {
   $param += " ${Image}:$Tag"
 
   if ($Command) {
-    $param += " `"$Command`""
+    $param += " $Command"
   }
 
   $param += " $AdditionalArgs"
