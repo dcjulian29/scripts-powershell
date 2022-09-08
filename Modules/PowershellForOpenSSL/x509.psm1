@@ -10,6 +10,50 @@ function Get-AvailableOpenSslEllipticCurves {
 
 Set-Alias -Name "Get-OpenSslEllipticCurves" -Value Get-AvailableOpenSslEllipticCurves
 
+function Get-DeployedCertificate {
+  [CmdletBinding(DefaultParameterSetName = 'Text')]
+  param (
+    [Parameter(ParameterSetName = "Text", Position = 0, Mandatory = $true)]
+    [Parameter(ParameterSetName = "Save", Position = 0, Mandatory = $true)]
+    [Alias("FQDN", "FullyQualifiedDomainName", "DomainName")]
+    [string] $Domain,
+    [Parameter(ParameterSetName = "Text", Position = 1)]
+    [Parameter(ParameterSetName = "Save", Position = 1)]
+    [Int32] $Port = 443,
+    [Parameter(ParameterSetName = "Save", Position = 2)]
+    [string] $Save
+  )
+
+  $cmd = Find-OpenSsl
+
+  if ($Save) {
+    $param = "x509 -in <(openssl s_client -servername $Domain -connect ${Domain}:$Port -prexit 2>/dev/null)"
+  } else {
+    $param = "x509 -text -noout -in <(openssl s_client -servername $Domain -connect ${Domain}:$Port -prexit 2>/dev/null)"
+  }
+
+  Write-Verbose "param: $param"
+
+  if ($cmd -notlike "*docker*") {
+    if ($Save) {
+      cmd.exe /c "echo | $cmd $param > $Save"
+    } else {
+      cmd.exe /c "echo | $cmd $param"
+    }
+  } else {
+    $cmd = "echo | openssl $param"
+
+    Write-Verbose "cmd: $cmd"
+
+    $cert = Invoke-OpenSslContainer -EntryPoint "/bin/bash" -Command "-c '$cmd'" -Direct
+
+    if ($Save) {
+      Set-Content -Path $Save -Value $cert
+    } else {
+      return $cert
+    }
+  }
+}
 function Get-OpenSslEdwardsCurveKeypair  {
   [CmdletBinding()]
   param (

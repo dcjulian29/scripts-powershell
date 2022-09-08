@@ -21,6 +21,7 @@
     "Get-AvailableOpenSslCiphers"
     "Get-AvailableOpenSslDigestAlgorithms"
     "Get-AvailableOpenSslEllipticCurves"
+    "Get-DeployedCertificate"
     "Get-OpenSslEdwardsCurveKeypair"
     "Get-OpenSslElipticCurveKeypair"
     "Get-OpenSslRsaPrivateKey"
