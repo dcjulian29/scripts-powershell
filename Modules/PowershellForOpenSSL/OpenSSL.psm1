@@ -149,7 +149,8 @@ function Invoke-OpenSSLContainer {
     [string]$Command,
     [Alias("env")]
     [hashtable]$EnvironmentVariables,
-    [string]$EntryScript
+    [string]$EntryScript,
+    [switch]$Direct
   )
 
   if (-not (Get-Command "docker.exe" -ErrorAction SilentlyContinue)) {
@@ -172,21 +173,29 @@ function Invoke-OpenSSLContainer {
       Environment = $EnvironmentVariables
     }
 
-    if ($EntryPoint) {
-      $params.Add("EntryPoint", $EntryPoint)
+    if ($Direct) {
+      $docker = Find-Docker
+      $cmd = "run -it --rm --name $($params.Name) --entrypoint $EntryPoint " `
+        + "--volume $($params.Volume[0]) `"$($params.Image):$($params.Tag)`" $Command"
+
+      Invoke-Expression "& '$docker' $cmd"
+    } else {
+      if ($EntryPoint) {
+        $params.Add("EntryPoint", $EntryPoint)
+      }
+
+      if ($EntryScript) {
+        $params.Add("EntryScript", $EntryScript)
+      }
+
+      if ($Command) {
+        $params.Add("Command", "$Command")
+      }
+
+      $params.GetEnumerator().ForEach({ Write-Verbose "$($_.Name)=$($_.Value)" })
+
+      New-DockerContainer @params -verbose
     }
-
-    if ($EntryScript) {
-      $params.Add("EntryScript", $EntryScript)
-    }
-
-    if ($Command) {
-      $params.Add("Command", "`"$Command`"")
-    }
-
-    $params.GetEnumerator().ForEach({ Write-Verbose "$($_.Name)=$($_.Value)" })
-
-    New-DockerContainer @params
   } else {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
       -Message "OpenSSL container requires the Linux Docker Engine." `
