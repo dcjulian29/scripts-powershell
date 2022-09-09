@@ -1,6 +1,6 @@
 @{
   RootModule = 'OpenSSL.psm1'
-  ModuleVersion = '2209.6.1'
+  ModuleVersion = '2209.8.1'
   Description = "A collection of commands to interact with OpenSSL."
   GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
   Author = 'Julian Easterling'
@@ -22,6 +22,7 @@
     "Get-AvailableOpenSslDigestAlgorithms"
     "Get-AvailableOpenSslEllipticCurves"
     "Get-DeployedCertificate"
+    "Get-DeployedCertificateExpiration"
     "Get-OpenSslEdwardsCurveKeypair"
     "Get-OpenSslElipticCurveKeypair"
     "Get-OpenSslRsaPrivateKey"
@@ -36,6 +37,7 @@
     "New-OpenSslElipticCurveKeypair"
     "New-OpenSslRsaKeypair"
     "Test-DeployedCertificate"
+    "Test-DeployedCertificateExpired"
   )
   CmdletsToExport = @()
   VariablesToExport = @()

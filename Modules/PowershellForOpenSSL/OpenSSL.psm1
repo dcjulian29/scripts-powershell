@@ -194,7 +194,7 @@ function Invoke-OpenSSLContainer {
 
       $params.GetEnumerator().ForEach({ Write-Verbose "$($_.Name)=$($_.Value)" })
 
-      New-DockerContainer @params -verbose
+      New-DockerContainer @params
     }
   } else {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `

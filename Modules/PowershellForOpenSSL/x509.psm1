@@ -54,6 +54,73 @@ function Get-DeployedCertificate {
     }
   }
 }
+
+function Get-DeployedCertificateExpiration {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [Alias("FQDN", "FullyQualifiedDomainName", "DomainName")]
+    [string] $Domain,
+    [Parameter(Position = 1)]
+    [Int32] $Port = 443,
+    [switch] $DaysUntilExpiration
+  )
+
+  $cmd = Find-OpenSsl
+  $param = "x509 -enddate -noout -in <(openssl s_client -servername $Domain -connect ${Domain}:$Port -prexit 2>/dev/null)"
+
+  Write-Verbose "param: $param"
+
+  $response = ""
+
+  if ($cmd -notlike "*docker*") {
+    $response = cmd.exe /c "echo | $cmd $param"
+  } else {
+    $cmd = "echo | openssl $param"
+
+    Write-Verbose "cmd: $cmd"
+
+    $response = Invoke-OpenSslContainer -EntryPoint "/bin/bash" -Command "-c '$cmd'" -Direct
+  }
+
+  Write-Verbose "response: $response"
+
+  if ($response -like "*Unable to load certificate") {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "Unable to load certificate." `
+      -ExceptionType "System.InvalidOperationException" `
+      -ErrorId "System.InvalidOperation" `
+      -ErrorCategory "InvalidOperation"))
+  }
+
+  if ($response -match 'notAfter\s*=\s*(.+)$') {
+    Write-Verbose "notAfter Regex matched. (notAfter) is:  $($Matches[1].Trim())"
+
+    $origialErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Stop"
+
+    try {
+      $NotAfter = [DateTime]::ParseExact(
+        [regex]::Replace(
+            ($Matches[1] -replace '\s*GMT\s*$' -replace '(.+)\s+([\d:]+)\s+(\d{4})', '$1 $3 $2'), '(\w+)\s+(\d?\d)\s+(.+)', {
+                $args[0].Groups[1].Value + " " + ("{0:D2}" -f [int] $args[0].Groups[2].Value) + " " + $args[0].Groups[3].Value
+            }
+        ), 'MMM dd yyyy HH:mm:ss', [CultureInfo]::InvariantCulture)
+    }
+    catch {
+        $NotAfter = "Parse error"
+    }
+
+    $ErrorActionPreference = $origialErrorActionPreference
+  }
+
+  if ($DaysUntilExpiration) {
+    return (New-TimeSpan -Start $(Get-Date) -End $NotAfter)
+  } else {
+    return $NotAfter
+  }
+}
+
 function Get-OpenSslEdwardsCurveKeypair  {
   [CmdletBinding()]
   param (
@@ -158,6 +225,20 @@ function New-OpenSslRsaKeypair {
 }
 
 function Test-DeployedCertificate {
+function Test-DeployedCertificateExpired {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [Alias("FQDN", "FullyQualifiedDomainName", "DomainName")]
+    [string] $Domain,
+    [Parameter(Position = 1)]
+    [Int32] $Port = 443
+  )
+
+  $NotAfter = Get-DeployedCertificateExpiration -Domain $Domain -Port $port
+
+  return ([Math]::Round(($NotAfter - (Get-Date)).TotalDays, 0) -le 0)
+}
   [CmdletBinding()]
   param (
     [Parameter(Position = 0, Mandatory = $true)]
