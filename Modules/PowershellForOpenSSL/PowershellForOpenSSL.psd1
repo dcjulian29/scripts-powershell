@@ -23,6 +23,7 @@
     "Get-AvailableOpenSslEllipticCurves"
     "Get-DeployedCertificate"
     "Get-DeployedCertificateExpiration"
+    "Get-DeployedCertificateValidity"
     "Get-OpenSslEdwardsCurveKeypair"
     "Get-OpenSslElipticCurveKeypair"
     "Get-OpenSslRsaPrivateKey"
@@ -36,7 +37,6 @@
     "New-OpenSslEdwardsCurveKeypair"
     "New-OpenSslElipticCurveKeypair"
     "New-OpenSslRsaKeypair"
-    "Test-DeployedCertificate"
     "Test-DeployedCertificateExpired"
   )
   CmdletsToExport = @()

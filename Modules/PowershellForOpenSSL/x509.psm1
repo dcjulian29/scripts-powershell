@@ -121,6 +121,55 @@ function Get-DeployedCertificateExpiration {
   }
 }
 
+function Get-DeployedCertificateValidity {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [Alias("FQDN", "FullyQualifiedDomainName", "DomainName")]
+    [string] $Domain,
+    [Parameter(Position = 1)]
+    [Int32] $Port = 443,
+    [Parameter(Position = 2)]
+    [ValidateSet("SSL2", "SSL3", "TLS1", "TLS1.1", "TLS1.2", "TLS1.3")]
+    [string] $Protocol,
+    [switch] $Strict,
+    [switch] $IncludeCrlChecks
+  )
+
+  $cmd = Find-OpenSsl
+  $param = "s_client -servername $Domain -connect ${Domain}:$Port -brief"
+
+  if ($Strict) {
+    $param += " -strict -x509_strict"
+  }
+
+  if ($IncludeCrlChecks) {
+    $param += " -extended_crl -crl_check_all"
+  }
+
+  switch ($Protocol) {
+    "SSL2"   { $param += " -no_ssl3 -no_tls1 -no_tls1_1 -no_tls1_2 -no_tls1_3" }
+    "SSL3"   { $param += " -no_tls1 -no_tls1_1 -no_tls1_2 -no_tls1_3" }
+    "TLS1"   { $param += " -tls1" }
+    "TLS1.1" { $param += " -tls1_1" }
+    "TLS1.2" { $param += " -tls1_2" }
+    "TLS1.3" { $param += " -tls1_3" }
+    Default {}
+  }
+
+  Write-Verbose "param: $param"
+
+  if ($cmd -notlike "*docker*") {
+    cmd.exe /c "echo | $cmd $param"
+  } else {
+    $cmd = "echo | openssl $param"
+
+    Write-Verbose "cmd: $cmd"
+
+    Invoke-OpenSslContainer -EntryPoint "/bin/bash" -Command "-c '$cmd'" -Direct
+  }
+}
+
 function Get-OpenSslEdwardsCurveKeypair  {
   [CmdletBinding()]
   param (
@@ -224,7 +273,6 @@ function New-OpenSslRsaKeypair {
   }
 }
 
-function Test-DeployedCertificate {
 function Test-DeployedCertificateExpired {
   [CmdletBinding()]
   param (
@@ -239,26 +287,5 @@ function Test-DeployedCertificateExpired {
 
   return ([Math]::Round(($NotAfter - (Get-Date)).TotalDays, 0) -le 0)
 }
-  [CmdletBinding()]
-  param (
-    [Parameter(Position = 0, Mandatory = $true)]
-    [Alias("FQDN", "FullyQualifiedDomainName", "DomainName")]
-    [string] $Domain,
-    [Parameter(Position = 1)]
-    [Int32] $Port = 443,
-    [switch] $Strict,
-    [switch] $IncludeCrlChecks
-  )
 
-  $param = "s_client -connect ${Domain}:$Port"
 
-  if ($Strict) {
-    $param += " -strict -x509_strict"
-  }
-
-  if ($IncludeCrlChecks) {
-    $param += " -extended_crl -crl_check_all"
-  }
-
-  Invoke-OpenSsl $param
-}
