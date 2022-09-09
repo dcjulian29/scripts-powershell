@@ -38,6 +38,7 @@
     "New-OpenSslElipticCurveKeypair"
     "New-OpenSslRsaKeypair"
     "Test-DeployedCertificateExpired"
+    "Test-DeployedCertificateValidity"
   )
   CmdletsToExport = @()
   VariablesToExport = @()

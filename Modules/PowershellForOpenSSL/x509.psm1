@@ -132,6 +132,9 @@ function Get-DeployedCertificateValidity {
     [Parameter(Position = 2)]
     [ValidateSet("SSL2", "SSL3", "TLS1", "TLS1.1", "TLS1.2", "TLS1.3")]
     [string] $Protocol,
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [Alias("CA", "CAFile", "CABundle")]
+    [string] $CAPath,
     [switch] $Strict,
     [switch] $IncludeCrlChecks
   )
@@ -157,6 +160,18 @@ function Get-DeployedCertificateValidity {
     Default {}
   }
 
+  $ca = "./.openssl.$((New-Guid).Guid).cacert.pem"
+
+  if ($CAPath) {
+    Copy-Item -Path $CAPath -Destination $ca
+  } else {
+    Invoke-WebRequest "https://curl.se/ca/cacert.pem" -OutFile $ca
+  }
+
+  if (Test-Path $ca) {
+    $param += " -CAfile $ca"
+  }
+
   Write-Verbose "param: $param"
 
   if ($cmd -notlike "*docker*") {
@@ -167,6 +182,10 @@ function Get-DeployedCertificateValidity {
     Write-Verbose "cmd: $cmd"
 
     Invoke-OpenSslContainer -EntryPoint "/bin/bash" -Command "-c '$cmd'" -Direct
+  }
+
+  if (Test-Path $ca) {
+    Remove-Item $ca -Force
   }
 }
 
@@ -288,4 +307,20 @@ function Test-DeployedCertificateExpired {
   return ([Math]::Round(($NotAfter - (Get-Date)).TotalDays, 0) -le 0)
 }
 
+function Test-DeployedCertificateValidity {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [Alias("FQDN", "FullyQualifiedDomainName", "DomainName")]
+    [string] $Domain,
+    [Parameter(Position = 1)]
+    [Int32] $Port = 443,
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [Alias("CA", "CAFile", "CABundle")]
+    [string] $CAPath
+  )
 
+  $result = Get-DeployedCertificateValidity @PsBoundParameters
+
+  return $result.Contains("Verification: OK")
+}
