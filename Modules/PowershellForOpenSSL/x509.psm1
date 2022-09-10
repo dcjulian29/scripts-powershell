@@ -168,6 +168,32 @@ function Get-CertificateRequest {
 
 Set-Alias -Name "show-csr" -Value Get-CertificateRequest
 
+function Get-CertificateRevocation {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path
+  )
+
+  Invoke-OpenSsl "crl -in $Path -noout -text"
+}
+
+Set-Alias -Name "show-crl" -Value Get-CertificateRevocation
+
+function Get-CertificateRevocationHash {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path
+  )
+
+  Invoke-OpenSsl "crl -in $Path -noout -hash"
+}
+
+Set-Alias -Name "show-crl-hash" -Value Get-CertificateRevocationHash
+
 function Get-DeployedCertificate {
   [CmdletBinding(DefaultParameterSetName = 'Text')]
   param (
