@@ -155,6 +155,40 @@ function Get-CertificateHash {
 
 Set-Alias -Name "show-certificate-hash" -Value Get-CertificateHash
 
+function Get-CertificateOcsp {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path,
+    [Parameter(Position = 1, Mandatory = $true)]
+    [string] $Url,
+    [Parameter(Position = 2, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $CAPath,
+    [Parameter(Position = 3)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $IssueCertPath
+  )
+
+  $cmd = "ocsp -cert $Path -url $Url -CAFile $CAPath"
+
+  if ($IssueCertPath) {
+    $cmd += " -issuer $IssueCertPath"
+  } else {
+    $cmd =+ " issuer $CAPath"
+  }
+
+  $cmd += " -no_nonce"
+
+  $header = $Url -replace "https://", "" -replace "http://", ""
+  $cmd = " -header Host $header"
+
+  Write-Verbose "cmd: $cmd"
+
+  Invoke-OpenSsl $cmd
+}
+
 function Get-CertificateRequest {
   [CmdletBinding()]
   param (
@@ -508,6 +542,27 @@ function Test-CertificateRevocation {
   $crl = Get-CertificateRevocation crl.pem
 
   return ($crl | Out-String).Contains($(Get-CertificateSerialNumber -Path $Path))
+}
+
+function Test-CertificateOcsp {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path,
+    [Parameter(Position = 1, Mandatory = $true)]
+    [string] $Url,
+    [Parameter(Position = 2, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $CAPath,
+    [Parameter(Position = 3)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $IssueCertPath
+  )
+
+  $result = Get-CertificateOcsp @PsBoundParameters
+
+  return $result.Contains("Response verify OK")
 }
 
 function Test-CertificateRevocationList {
