@@ -7,7 +7,7 @@ function ConvertFrom-Base64 {
   begin {
     $inputValue = ""
     $output = ""
-    $fileName = "$(Get-OpenSSLRandom 25 -Hex).dat"
+    $fileName = "$(Get-OpenSslRandom 25 -Hex).dat"
   }
 
   process {
@@ -20,7 +20,7 @@ function ConvertFrom-Base64 {
   end {
     Push-Location $env:TEMP
     $inputValue | Set-Content -Path $fileName
-    $output = (Invoke-OpenSSL base64 -d -in $fileName)
+    $output = (Invoke-OpenSsl base64 -d -in $fileName)
     Remove-Item -Path $fileName -Force
     Pop-Location
 
@@ -37,8 +37,8 @@ function ConvertTo-Base64 {
   begin {
     $inputValue = ""
     $output = ""
-    $fileName = "$(Get-OpenSSLRandom 25 -Hex).dat"
-    $outputFileName = "$(Get-OpenSSLRandom 25 -Hex).dat"
+    $fileName = "$(Get-OpenSslRandom 25 -Hex).dat"
+    $outputFileName = "$(Get-OpenSslRandom 25 -Hex).dat"
   }
 
   process {
@@ -52,7 +52,7 @@ function ConvertTo-Base64 {
     Push-Location $env:TEMP
 
     $inputValue | Set-Content -Path $fileName
-    Invoke-OpenSSL base64 -in $fileName -out $outputFileName
+    Invoke-OpenSsl base64 -in $fileName -out $outputFileName
     $output = Get-Content $outputFileName
     Remove-Item -Path $fileName -Force
     Remove-Item -Path $outputFileName -Force
@@ -63,7 +63,7 @@ function ConvertTo-Base64 {
   }
 }
 
-function Get-OpenSSLRandom {
+function Get-OpenSslRandom {
   [CmdletBinding(DefaultParameterSetName = 'Bytes')]
   param (
     [Parameter(ParameterSetName = "Base64", Position = 0, Mandatory = $true)]
@@ -77,13 +77,13 @@ function Get-OpenSSLRandom {
   )
 
   switch ($PSCmdlet.ParameterSetName) {
-    "Base64" { return $(Invoke-OpenSSL "rand -base64 $NumberOfBytes") }
-    "Bytes" { return $(Invoke-OpenSSL "rand $NumberOfBytes") }
-    "Hex" { return $(Invoke-OpenSSL "rand -hex $NumberOfBytes") }
+    "Base64" { return $(Invoke-OpenSsl "rand -base64 $NumberOfBytes") }
+    "Bytes" { return $(Invoke-OpenSsl "rand $NumberOfBytes") }
+    "Hex" { return $(Invoke-OpenSsl "rand -hex $NumberOfBytes") }
   }
 }
 
-function Get-OpenSSLVersion {
+function Get-OpenSslVersion {
   param (
     [switch] $All
   )
@@ -94,10 +94,10 @@ function Get-OpenSSLVersion {
     $param += " -a"
   }
 
-  Invoke-OpenSSL $param
+  Invoke-OpenSsl $param
 }
 
-function Find-OpenSSL {
+function Find-OpenSsl {
   $InPath = Get-Command "openssl.exe" -ErrorAction SilentlyContinue
 
   if ($InPath) {
@@ -119,8 +119,8 @@ function Find-OpenSSL {
   return $local
 }
 
-function Invoke-OpenSSL {
-  $cmd = Find-OpenSSL
+function Invoke-OpenSsl {
+  $cmd = Find-OpenSsl
 
   if ($null -eq $cmd) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
@@ -135,14 +135,14 @@ function Invoke-OpenSSL {
   if ($cmd -notlike "*docker*") {
     cmd.exe /c "$cmd $param"
   } else {
-    Invoke-OpenSSLContainer -Command $param
+    Invoke-OpenSslContainer -Command $param
   }
 
 }
 
-Set-Alias -Name openssl -Value Invoke-OpenSSL
+Set-Alias -Name openssl -Value Invoke-OpenSsl
 
-function Invoke-OpenSSLContainer {
+function Invoke-OpenSslContainer {
   [CmdletBinding()]
   param (
     [string]$EntryPoint,
@@ -205,10 +205,10 @@ function Invoke-OpenSSLContainer {
   }
 }
 
-Set-Alias -Name opensslc -Value Invoke-OpenSSLContainer
-Set-Alias -Name openssl-container -Value Invoke-OpenSSLContainer
+Set-Alias -Name opensslc -Value Invoke-OpenSslContainer
+Set-Alias -Name openssl-container -Value Invoke-OpenSslContainer
 
-function New-OpenSSLDhParameters {
+function New-OpenSslDhParameters {
   param (
     [Int32] $NumberOfBits = 2048,
     [string] $Path,
@@ -230,7 +230,7 @@ function New-OpenSSLDhParameters {
   Invoke-OpenSsl "$param $NumberOfBits"
 }
 
-function New-OpenSSLDsaParameters {
+function New-OpenSslDsaParameters {
   param (
     [Int32] $NumberOfBits = 2048,
     [string] $Path,
