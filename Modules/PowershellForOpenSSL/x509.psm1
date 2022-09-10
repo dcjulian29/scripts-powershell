@@ -1,3 +1,76 @@
+function ConvertFrom-PemCertificate {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [Alias("Path", "Cert", "Certificate")]
+    [string] $CertPath,
+    [Parameter(Position = 1, Mandatory = $true)]
+    [string] $Destination,
+    [ValidateSet("DER", "P12", "PFX")]
+    [Parameter(Position = 3, Mandatory = $true)]
+    [string] $To,
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [Alias("Key")]
+    [string] $KeyPath
+  )
+
+  switch ($To) {
+    "DER" {
+      $cmd = "x509 -outform der -in $CertPath -out $Destination"
+    }
+
+    "P12" {
+      $cmd = "pkcs12 -export -out $Destination -in $CertPath"
+
+      if ($KeyPath) {
+        $cmd += " -inkey $KeyPath"
+      }
+    }
+
+    "PFX" {
+      $cmd = "pkcs12 -export -out $Destination -in $CertPath"
+
+      if ($KeyPath) {
+        $cmd += " -inkey $KeyPath"
+      }
+    }
+  }
+
+  Invoke-OpenSsl $cmd
+}
+
+function ConvertTo-PemCertificate {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [Alias("Path", "Cert", "Certificate")]
+    [string] $CertPath,
+    [Parameter(Position = 1, Mandatory = $true)]
+    [string] $Destination,
+    [ValidateSet("DER", "P12", "PFX")]
+    [Parameter(Position = 2, Mandatory = $true)]
+    [string] $From
+  )
+
+  switch ($From) {
+    "DER" {
+      $cmd = "x509 -inform der -in $CertPath -out $Destination"
+    }
+
+    "P12" {
+      $cmd = "pkcs12 -in $CertPath -out $Destination -nodes"
+    }
+
+    "PFX" {
+      $cmd = "pkcs12 -in $CertPath -out $Destination -nodes"
+    }
+  }
+
+  Invoke-OpenSsl $cmd
+}
+
 function Get-AvailableOpenSslCiphers {
   Invoke-OpenSsl "enc -list"
 }

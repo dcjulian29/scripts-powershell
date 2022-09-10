@@ -17,7 +17,9 @@
   )
   FunctionsToExport = @(
     "ConvertFrom-Base64"
+    "ConvertFrom-PemCertificate"
     "ConvertTo-Base64"
+    "ConvertTo-PemCertificate"
     "Get-AvailableOpenSslCiphers"
     "Get-AvailableOpenSslDigestAlgorithms"
     "Get-AvailableOpenSslEllipticCurves"
