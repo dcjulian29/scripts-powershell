@@ -1,6 +1,6 @@
 @{
   RootModule = 'OpenSSL.psm1'
-  ModuleVersion = '2209.8.1'
+  ModuleVersion = '2209.9.1'
   Description = "A collection of commands to interact with OpenSSL."
   GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
   Author = 'Julian Easterling'
@@ -23,6 +23,10 @@
     "Get-AvailableOpenSslCiphers"
     "Get-AvailableOpenSslDigestAlgorithms"
     "Get-AvailableOpenSslEllipticCurves"
+    "Get-Certificate"
+    "Get-CertificateExpiration"
+    "Get-CertificateHash"
+    "Get-CertificateRequest"
     "Get-DeployedCertificate"
     "Get-DeployedCertificateExpiration"
     "Get-DeployedCertificateValidity"
@@ -51,6 +55,10 @@
     "openssl"
     "opensslc"
     "openssl-container"
+    "show-certificate"
+    "show-certificate-expiration"
+    "show-certificate-hash"
+    "show-csr"
   )
   PrivateData = @{
     PSData = @{

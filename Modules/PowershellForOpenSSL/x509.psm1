@@ -83,6 +83,91 @@ function Get-AvailableOpenSslEllipticCurves {
 
 Set-Alias -Name "Get-OpenSslEllipticCurves" -Value Get-AvailableOpenSslEllipticCurves
 
+function Get-Certificate {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path
+  )
+
+  Invoke-OpenSsl "x509 -noout -in $Path -text"
+}
+
+Set-Alias "show-certificate" -Value Get-Certificate
+
+function Get-CertificateExpiration {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path
+  )
+
+  $response = Invoke-OpenSsl "x509 -enddate -noout -in $Path"
+
+  Write-Verbose "response: $response"
+
+  if ($response -like "*Unable to load certificate") {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "Unable to load certificate." `
+      -ExceptionType "System.InvalidOperationException" `
+      -ErrorId "System.InvalidOperation" `
+      -ErrorCategory "InvalidOperation"))
+  }
+
+  if ($response -match 'notAfter\s*=\s*(.+)$') {
+    Write-Verbose "notAfter Regex matched. (notAfter) is:  $($Matches[1].Trim())"
+
+    $origialErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Stop"
+
+    try {
+      $NotAfter = [DateTime]::ParseExact(
+        [regex]::Replace(
+            ($Matches[1] -replace '\s*GMT\s*$' -replace '(.+)\s+([\d:]+)\s+(\d{4})', '$1 $3 $2'), '(\w+)\s+(\d?\d)\s+(.+)', {
+                $args[0].Groups[1].Value + " " + ("{0:D2}" -f [int] $args[0].Groups[2].Value) + " " + $args[0].Groups[3].Value
+            }
+        ), 'MMM dd yyyy HH:mm:ss', [CultureInfo]::InvariantCulture)
+    }
+    catch {
+        $NotAfter = "Parse error"
+    }
+
+    $ErrorActionPreference = $origialErrorActionPreference
+  }
+
+  return $NotAfter
+}
+
+Set-Alias -Name "show-certificate-expiration" -Value Get-CertificateExpiration
+
+function Get-CertificateHash {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path
+  )
+
+  Invoke-OpenSsl "x509 -noout -in $Path -hash"
+}
+
+Set-Alias -Name "show-certificate-hash" -Value Get-CertificateHash
+
+function Get-CertificateRequest {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path
+  )
+
+  Invoke-OpenSsl "req -text -noout -verify -in $Path"
+}
+
+Set-Alias -Name "show-csr" -Value Get-CertificateRequest
+
 function Get-DeployedCertificate {
   [CmdletBinding(DefaultParameterSetName = 'Text')]
   param (
