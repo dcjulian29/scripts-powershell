@@ -487,6 +487,29 @@ function New-OpenSslRsaKeypair {
   }
 }
 
+function Test-CertificateRevocation {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path
+  )
+
+  $crl = (Invoke-OpenSsl "x509 -in cert.pem -noout -text" | Select-String CRL `
+    | Select-String URI | Out-String).Trim().Replace("URI:", "")
+
+  if (-not $crl) {
+    Write-Warning "The Certificate didn't provide a CRL."
+    return $false
+  }
+
+  Invoke-WebRequest $crl -OutFile crl.pem
+
+  $crl = Get-CertificateRevocation crl.pem
+
+  return ($crl | Out-String).Contains($(Get-CertificateSerialNumber -Path $Path))
+}
+
 function Test-CertificateRevocationList {
   [CmdletBinding()]
   param (
@@ -516,6 +539,27 @@ function Test-DeployedCertificateExpired {
   $NotAfter = Get-DeployedCertificateExpiration -Domain $Domain -Port $port
 
   return ([Math]::Round(($NotAfter - (Get-Date)).TotalDays, 0) -le 0)
+}
+
+function Test-DeployedCertificateRevocation {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [Alias("FQDN", "FullyQualifiedDomainName", "DomainName")]
+    [string] $Domain,
+    [Parameter(Position = 1)]
+    [Int32] $Port = 443
+  )
+
+  $cert = "$((New-Guid).Guid).pem"
+
+  Get-DeployedCertificate $Domain $Port $cert
+
+  $revoked = Test-CertificateRevocation $cert
+
+  Remove-Item $cert -Force
+
+  return $revoked
 }
 
 function Test-DeployedCertificateValidity {

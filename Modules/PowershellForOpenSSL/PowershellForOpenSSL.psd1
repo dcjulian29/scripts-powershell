@@ -46,8 +46,10 @@
     "New-OpenSslEdwardsCurveKeypair"
     "New-OpenSslElipticCurveKeypair"
     "New-OpenSslRsaKeypair"
+    "Test-CertificateRevocation"
     "Test-CertificateRevocationList"
     "Test-DeployedCertificateExpired"
+    "Test-DeployedCertificateRevocation"
     "Test-DeployedCertificateValidity"
   )
   CmdletsToExport = @()
