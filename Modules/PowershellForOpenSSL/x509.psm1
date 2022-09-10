@@ -487,6 +487,22 @@ function New-OpenSslRsaKeypair {
   }
 }
 
+function Test-CertificateRevocationList {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path,
+    [Parameter(Position = 1, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $CAPath
+  )
+
+  $result = Invoke-OpenSsl "crl -in $Path -CAfile CAPath -noout"
+
+  return $result.Contains("verify OK")
+}
+
 function Test-DeployedCertificateExpired {
   [CmdletBinding()]
   param (

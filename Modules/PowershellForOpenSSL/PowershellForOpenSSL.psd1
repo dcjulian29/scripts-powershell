@@ -46,6 +46,7 @@
     "New-OpenSslEdwardsCurveKeypair"
     "New-OpenSslElipticCurveKeypair"
     "New-OpenSslRsaKeypair"
+    "Test-CertificateRevocationList"
     "Test-DeployedCertificateExpired"
     "Test-DeployedCertificateValidity"
   )
