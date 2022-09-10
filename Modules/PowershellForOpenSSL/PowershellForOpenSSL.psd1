@@ -29,6 +29,7 @@
     "Get-CertificateRequest"
     "Get-CertificateRevocation"
     "Get-CertificateRevocationHash"
+    "Get-CertificateSerialNumber"
     "Get-DeployedCertificate"
     "Get-DeployedCertificateExpiration"
     "Get-DeployedCertificateValidity"

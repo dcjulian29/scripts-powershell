@@ -194,6 +194,17 @@ function Get-CertificateRevocationHash {
 
 Set-Alias -Name "show-crl-hash" -Value Get-CertificateRevocationHash
 
+function Get-CertificateSerialNumber {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path
+  )
+
+  return (Invoke-OpenSsl "x509 -noout -in $Path -serial") -replace 'serial=', ''
+}
+
 function Get-DeployedCertificate {
   [CmdletBinding(DefaultParameterSetName = 'Text')]
   param (
