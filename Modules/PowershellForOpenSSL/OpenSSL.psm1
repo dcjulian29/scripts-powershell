@@ -69,7 +69,7 @@ function Get-OpenSslRandom {
     [Parameter(ParameterSetName = "Base64", Position = 0, Mandatory = $true)]
     [Parameter(ParameterSetName = "Bytes", Position = 0, Mandatory = $true)]
     [Parameter(ParameterSetName = "Hex", Position = 0, Mandatory = $true)]
-    [Int32] $NumberofBytes,
+    [Int32] $NumberOfBytes,
     [Parameter(ParameterSetName = "Hex")]
     [switch] $Hex,
     [Parameter(ParameterSetName = "Base64")]
