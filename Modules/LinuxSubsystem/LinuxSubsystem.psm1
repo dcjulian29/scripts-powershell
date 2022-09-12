@@ -14,7 +14,17 @@ function Enable-LinuxSubsystem {
 
 function Restart-LinuxSubsystem {
   if (Test-LinuxSubsystem) {
-    Get-Service LxssManager | Restart-Service
+    Get-Service LxssManager | Stop-Service
+
+    $id = tasklist /svc /fi "imagename eq svchost.exe" `
+      | Select-String ".*\s(\d+)\sLxssManager" `
+      | ForEach-Object { "$($_.Matches.Groups[1])" }
+
+    if ($id) {
+      Get-Process -Id $id | Stop-Process -Force
+    }
+
+    Get-Service LxssManager | Start-Service
   }
 }
 
@@ -34,4 +44,3 @@ Set-Alias ubuntu Start-UbuntuLinux
 function Test-LinuxSubsystem {
   return (Get-WindowsOptionalFeature -online | Where-Object { $_.FeatureName -eq 'Microsoft-Windows-Subsystem-Linux' }).State
 }
-
