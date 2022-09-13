@@ -3,15 +3,21 @@
 }
 
 function Find-Git {
-    "$(Find-ProgramFiles "Git")\bin\git.exe"
+  First-Path `
+    ((Get-Command git -ErrorAction SilentlyContinue).Source) `
+    ("${env:ProgramFiles}\Git\bin\git.exe")
 }
 
 function Find-GraphicalGit {
-    "$(Find-ProgramFiles "Git")\cmd\git-gui.exe"
+  First-Path `
+    ((Get-Command git-gui -ErrorAction SilentlyContinue).Source) `
+    ("${env:ProgramFiles}\Git\cmd\git-gui.exe")
 }
 
 function Find-GraphicalGitHistory {
-    "$(Find-ProgramFiles "Git")\cmd\gitk.exe"
+  First-Path `
+    ((Get-Command gitk -ErrorAction SilentlyContinue).Source) `
+    ("${env:ProgramFiles}\Git\cmd\gitk.exe")
 }
 
 function Get-GitRootDirectory {
