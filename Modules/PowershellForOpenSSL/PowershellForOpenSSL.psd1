@@ -44,6 +44,7 @@
     "Invoke-OpenSsl"
     "Invoke-OpenSslContainer"
     "New-OpenSsl"
+    "New-OpenSslCertificateAuthority"
     "New-OpenSslDhParameters"
     "New-OpenSslDsaParameters"
     "New-OpenSslEdwardsCurveKeypair"
