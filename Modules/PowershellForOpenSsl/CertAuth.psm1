@@ -1,3 +1,44 @@
+function Get-OpenSslCertificateAuthoritySetting {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true, Position = 0)]
+    [string] $Name
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority $PWD.Path)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  if ($Name -eq '*') {
+    $content = Get-Content "$($PWD.Path)/.openssl_ca"
+    $results = @()
+
+    foreach ($line in $content) {
+      $result = $line | Select-String "\.(.*)=(.*)$"
+
+      if ($result.Matches.Count -eq 1) {
+        $results += [PSCustomObject]@{
+          Name = ($result.Matches[0].Groups[1].Value | Out-String).Trim()
+          Value = ($result.Matches[0].Groups[2].Value | Out-String).Trim()
+        }
+      }
+    }
+
+    return $results
+  }
+
+  $result = (Get-Content "$($PWD.Path)/.openssl_ca" | Select-String "\.$Name=(.*)$")
+
+  if ($result.Matches.Count -gt 0) {
+    return ($result.Matches[0].Groups[1].Value | Out-String).Trim()
+  }
+
+  return $null
+}
+
 function New-OpenSslCertificateAuthority {
   [CmdletBinding()]
   param (
@@ -203,6 +244,38 @@ commonName              = $CommonName OCSP Responder
   Write-Output "A root certificate authority should only have subordinate authorities"
   Write-Output "so create at least one subordinate certificate authority to sign"
   Write-Output "certificates within this authority...`n"
+}
+
+function Set-OpenSslCertificateAuthoritySetting {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true, Position = 0)]
+    [string] $Name,
+    [Parameter(Mandatory = $true, Position = 1)]
+    [string] $Value
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority $PWD.Path)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  $config = "$($PWD.Path)/.openssl_ca"
+
+  if ($null -ne (Get-OpenSslCertificateAuthoritySetting $Name)) {
+    $old = (Get-Content $config | Select-String "\.$Name=(.*)$" | Out-String).Trim()
+  }
+
+  $new = ".$Name=$Value".Trim()
+
+  if ($old) {
+    $content = Get-Content $config | Where-Object { $_ -notlike $old }
+    Set-Content -Path $config -Value $content -Force
+  }
+
+  Add-Content -Path $config -Value $new
 }
 
 function Test-OpenSslCertificateAuthority {
