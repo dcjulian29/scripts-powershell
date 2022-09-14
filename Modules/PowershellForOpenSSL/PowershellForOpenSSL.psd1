@@ -1,6 +1,6 @@
 @{
   RootModule = 'OpenSSL.psm1'
-  ModuleVersion = '2209.10.1'
+  ModuleVersion = '2209.13.1'
   Description = "A collection of commands to interact with OpenSSL."
   GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
   Author = 'Julian Easterling'
@@ -12,6 +12,7 @@
   TypesToProcess = @()
   FormatsToProcess = @()
   NestedModules = @(
+    "CertAuth.psm1"
     "Hashes.psm1"
     "x509.psm1"
   )
@@ -54,6 +55,7 @@
     "Test-DeployedCertificateExpired"
     "Test-DeployedCertificateRevocation"
     "Test-DeployedCertificateValidity"
+    "Test-OpenSslCertificateAuthority"
   )
   CmdletsToExport = @()
   VariablesToExport = @()
