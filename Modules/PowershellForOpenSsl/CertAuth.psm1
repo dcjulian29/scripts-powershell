@@ -303,3 +303,54 @@ function Test-OpenSslCertificateAuthority {
   return $result
 }
 
+function Update-CerticateAuthorityRevocationList {
+  param (
+    [Parameter(Position = 0)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path = ($PWD.Path)
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  Push-Location $Path
+
+  $Name = Get-OpenSslCertificateAuthoritySetting Name
+  Invoke-OpenSsl "ca -config openssl.cnf -gencrl -out $Name.crl"
+
+  if (Test-Path "$Name.crl") {
+    Invoke-OpenSsl "crl -in $Name.crl -noout -text"
+  }
+
+  Pop-Location
+}
+
+Set-Alias -Name update-crl -Value Update-CerticateAuthorityRevocationList
+
+function Update-OcspCerticate {
+  param (
+    [Parameter(Position = 0)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path = ($PWD.Path)
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  Push-Location $Path
+
+  Invoke-OpenSsl `
+    "ca -batch -config openssl.cnf -out ocsp.crt -extensions ocsp_ext -days 30 -infiles ocsp.csr"
+
+  Pop-Location
+}
+
+Set-Alias -Name update-ocsp -Value Update-OcspCerticate

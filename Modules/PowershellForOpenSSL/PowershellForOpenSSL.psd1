@@ -59,6 +59,8 @@
     "Test-DeployedCertificateRevocation"
     "Test-DeployedCertificateValidity"
     "Test-OpenSslCertificateAuthority"
+    "Update-CerticateAuthorityRevocationList"
+    "Update-OcspCerticate"
   )
   CmdletsToExport = @()
   VariablesToExport = @()
