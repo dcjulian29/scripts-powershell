@@ -163,7 +163,6 @@ function Get-CertificateOcsp {
     [string] $Path,
     [Parameter(Position = 1, Mandatory = $true)]
     [string] $Url,
-    [Parameter(Position = 2, Mandatory = $true)]
     [ValidateScript({ Test-Path $(Resolve-Path $_) })]
     [string] $CAPath,
     [Parameter(Position = 3)]
@@ -171,7 +170,19 @@ function Get-CertificateOcsp {
     [string] $IssueCertPath
   )
 
-  $cmd = "ocsp -CAfile $CAPath"
+  $cmd = "ocsp"
+
+  $ca     = "./.openssl.$((New-Guid).Guid).cacert"
+
+  if ($CAPath) {
+    Copy-Item -Path $CAPath -Destination $ca
+  } else {
+    Invoke-WebRequest "https://curl.se/ca/cacert.pem" -OutFile $ca
+  }
+
+  if (Test-Path $ca) {
+    $param += " -CAfile $ca"
+  }
 
   if ($IssueCertPath) {
     $cmd += " -issuer $IssueCertPath"
