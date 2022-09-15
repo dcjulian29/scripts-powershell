@@ -171,18 +171,15 @@ function Get-CertificateOcsp {
     [string] $IssueCertPath
   )
 
-  $cmd = "ocsp -cert $Path -url $Url -CAFile $CAPath"
+  $cmd = "ocsp -CAfile $CAPath"
 
   if ($IssueCertPath) {
     $cmd += " -issuer $IssueCertPath"
   } else {
-    $cmd =+ " issuer $CAPath"
+    $cmd =+ " -issuer $CAPath"
   }
 
-  $cmd += " -no_nonce"
-
-  $header = $Url -replace "https://", "" -replace "http://", ""
-  $cmd = " -header Host $header"
+  $cmd += " -cert $Path -url $Url -no_nonce"
 
   Write-Verbose "cmd: $cmd"
 

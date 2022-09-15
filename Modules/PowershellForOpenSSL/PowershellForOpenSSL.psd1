@@ -1,6 +1,6 @@
 @{
   RootModule = 'OpenSSL.psm1'
-  ModuleVersion = '2209.13.1'
+  ModuleVersion = '2209.14.1'
   Description = "A collection of commands to interact with OpenSSL."
   GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
   Author = 'Julian Easterling'
@@ -52,6 +52,8 @@
     "New-OpenSslElipticCurveKeypair"
     "New-OpenSslRsaKeypair"
     "Set-OpenSslCertificateAuthoritySetting"
+    "Start-OpenSslOcspServer"
+    "Stop-OpenSslOcspServer"
     "Test-CertificateOcsp"
     "Test-CertificateRevocation"
     "Test-CertificateRevocationList"
@@ -77,6 +79,8 @@
     "show-crl"
     "show-crl-hash"
     "show-csr"
+    "update-crl"
+    "update-ocsp"
   )
   PrivateData = @{
     PSData = @{

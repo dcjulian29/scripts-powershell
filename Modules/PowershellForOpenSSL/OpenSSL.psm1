@@ -137,7 +137,6 @@ function Invoke-OpenSsl {
   } else {
     Invoke-OpenSslContainer -Command $param
   }
-
 }
 
 Set-Alias -Name openssl -Value Invoke-OpenSsl
@@ -150,6 +149,9 @@ function Invoke-OpenSslContainer {
     [Alias("env")]
     [hashtable]$EnvironmentVariables,
     [string]$EntryScript,
+    [string]$Name = "openssl_shell",
+    [string[]]$Ports,
+    [bool]$Interactive = $true,
     [switch]$Direct
   )
 
@@ -162,11 +164,9 @@ function Invoke-OpenSslContainer {
   }
 
   if (Test-DockerLinuxEngine) {
-    $params = @{
-      Image = "dcjulian29/openssl"
-      Tag = "latest"
-      Interactive = $true
-      Name = "openssl_shell"
+    $params = $(Get-OpenSslContainerImage) + @{
+      Interactive = $Interactive
+      Name = $Name
       Volume = @(
         "$(Get-DockerMountPoint $PWD):/data"
       )
@@ -190,6 +190,10 @@ function Invoke-OpenSslContainer {
 
       if ($Command) {
         $params.Add("Command", $Command)
+      }
+
+      if ($Ports.Count -gt 0) {
+        $params.Add("Port", $Ports)
       }
 
       $params.GetEnumerator().ForEach({ Write-Verbose "$($_.Name)=$($_.Value)" })
