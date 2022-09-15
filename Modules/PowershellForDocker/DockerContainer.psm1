@@ -287,6 +287,7 @@ function New-DockerContainer {
     [string[]]$Volume,
     [Alias("env")]
     [hashtable]$EnvironmentVariables,
+    [string[]]$Port,
     [switch]$ReadOnly,
     [string]$EntryPoint,
     [ValidateScript({ Test-Path $(Resolve-Path $_) })]
@@ -342,12 +343,17 @@ function New-DockerContainer {
   }
 
   # Future Enhancements:
-  # "--expose list   (port mapping)"
   # "--network list"
 
   if (($Volume) -and ($Volume.Count -gt 0)) {
     for ($i = 0; $i -lt $Volume.Count; $i++) {
       $param += " --volume $($Volume[$i])"
+    }
+  }
+
+  if (($Port) -and ($Port.Count -gt 0)) {
+    for ($i = 0; $i -lt $Port.Count; $i++) {
+      $param += " -p $($Port[$i])"
     }
   }
 
