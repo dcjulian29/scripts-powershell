@@ -1,11 +1,13 @@
 function Get-OpenSslCertificateAuthoritySetting {
   [CmdletBinding()]
   param (
-    [Parameter(Mandatory = $true, Position = 0)]
-    [string] $Name
+    [Parameter(Position = 0)]
+    [string] $Name = "*",
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path = ($PWD.Path)
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $PWD.Path)) {
+  if (-not (Test-OpenSslCertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -13,7 +15,7 @@ function Get-OpenSslCertificateAuthoritySetting {
   }
 
   if ($Name -eq '*') {
-    $content = Get-Content "$($PWD.Path)/.openssl_ca"
+    $content = Get-Content "$($Path)/.openssl_ca"
     $results = @()
 
     foreach ($line in $content) {
@@ -30,13 +32,18 @@ function Get-OpenSslCertificateAuthoritySetting {
     return $results
   }
 
-  $result = (Get-Content "$($PWD.Path)/.openssl_ca" | Select-String "\.$Name=(.*)$")
+  $result = (Get-Content "$($Path)/.openssl_ca" | Select-String "\.$Name=(.*)$" -AllMatches)
+  $results = @()
 
   if ($result.Matches.Count -gt 0) {
-    return ($result.Matches[0].Groups[1].Value | Out-String).Trim()
-  }
+    for ($i = 0; $i -lt $result.Matches.Count; $i++) {
+      $results += ($result.Matches[$i].Groups[1].Value | Out-String).Trim()
+    }
 
-  return $null
+    return $results
+  } else {
+    return $null
+  }
 }
 
 function New-OpenSslCertificateAuthority {
@@ -314,35 +321,55 @@ function Stop-OpenSslOcspServer {
 }
 
 function Set-OpenSslCertificateAuthoritySetting {
-  [CmdletBinding()]
+  [CmdletBinding(DefaultParameterSetName = "add")]
   param (
-    [Parameter(Mandatory = $true, Position = 0)]
+    [Parameter(ParameterSetName = "add", Mandatory = $true, Position = 0)]
+    [Parameter(ParameterSetName = "remove", Mandatory = $true, Position = 0)]
     [string] $Name,
-    [Parameter(Mandatory = $true, Position = 1)]
-    [string] $Value
+    [Parameter(ParameterSetName = "add", Mandatory = $true, Position = 1)]
+    [string] $Value,
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path = ($PWD.Path),
+    [Parameter(ParameterSetName = "add")]
+    [switch] $Append,
+    [Parameter(ParameterSetName = "remove", Mandatory = $true)]
+    [switch] $Remove
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $PWD.Path)) {
+  if (-not (Test-OpenSslCertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
-  $config = "$($PWD.Path)/.openssl_ca"
+  $config = "$($Path)/.openssl_ca"
 
   if ($null -ne (Get-OpenSslCertificateAuthoritySetting $Name)) {
     $old = (Get-Content $config | Select-String "\.$Name=(.*)$" | Out-String).Trim()
   }
 
-  $new = ".$Name=$Value".Trim()
+  switch ($PsCmdlet.ParameterSetName) {
+    "remove" {
+      if ($old) {
+        $content = Get-Content $config | Where-Object { $_ -notlike "*$Name*" }
+        Set-Content -Path $config -Value  $content -Force
+      }
+    }
 
-  if ($old) {
-    $content = Get-Content $config | Where-Object { $_ -notlike $old }
-    Set-Content -Path $config -Value $content -Force
+    "add" {
+      $new = ".$Name=$Value".Trim()
+
+      if ($old) {
+        if (-not $Append) {
+          $content = Get-Content $config | Where-Object { $_ -notlike $old }
+          Set-Content -Path $config -Value  $content -Force
+        }
+      }
+
+      Add-Content -Path $config -Value $new
+    }
   }
-
-  Add-Content -Path $config -Value $new
 }
 
 function Test-OpenSslCertificateAuthority {
