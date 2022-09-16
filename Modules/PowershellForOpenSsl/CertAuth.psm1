@@ -252,6 +252,274 @@ commonName              = $CommonName OCSP Responder
   Write-Output "certificates within this authority...`n"
 }
 
+function New-OpenSslSubordinateAuthority {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0)]
+    [string] $Name = "intermediate",
+    [string] $Domain,
+    [Parameter(Mandatory = $true)]
+    [securestring] $KeyPassword,
+    [ValidateSet("Edwards", "Eliptic", "RSA")]
+    [string] $KeyEncryption = "RSA",
+    [string] $Country,
+    [string] $Organization,
+    [string] $CommonName = "SubCA",
+    [switch] $Public,
+    [switch] $Force
+  )
+
+  $Path = $PWD.Path
+
+  if (-not (Test-OpenSslCertificateAuthority $Path -Root)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "'$Path' is not a root OpenSSL Certificate Authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  $origialErrorActionPreference = $ErrorActionPreference
+  $ErrorActionPreference = "Stop"
+
+  # if ((Get-OpenSslCertificateAuthoritySetting SubCA) -contains $Name) {
+  #   if (-not $Force) {
+  #   <# Settings say subca is issued and not revoke. must removed before it can be overwritten anf force wasn't provided. #>
+  #   } else {
+  #     Remove-OpenSslSubordinateAuthority $Name
+  #   }
+  # }
+
+  if ((Test-Path "$Path/$Name") -and (-not $Force)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "'$Name' folder exists and the Force parameter was not specified. Aborting creation." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  } else {
+    Remove-Item -Path "$Path/$Name" -Recurse -Force
+  }
+
+  Write-Output "`nCreating subordinate authority directories..."
+
+  Push-Location $Path
+
+  if ($Domain.Length -eq 0) {
+    $Domain = Get-OpenSslCertificateAuthoritySetting Domain
+  }
+
+  if ($Country.Length -eq 0) {
+    $Country = Get-OpenSslCertificateAuthoritySetting c
+  }
+
+  if ($Organization.Length -eq 0) {
+    $Organization = Get-OpenSslCertificateAuthoritySetting org
+  }
+
+  if (-not (Test-Path "$Path/$Name")) {
+    New-Item -Path "$Path/$Name" -ItemType Directory | Out-Null
+  }
+
+  Push-Location "$Path/$Name"
+
+  @("certs", "db", "private") | ForEach-Object {
+    New-Item -Path $_ -ItemType Directory | Out-Null
+  }
+
+  Write-Output "Initalizing subordinate authority..."
+
+  New-Item -Path "db/index" -ItemType File | Out-Null
+  New-Item -Path "db/serial" -ItemType File `
+    -Value $(Get-OpenSslRandom 15 -Hex)  | Out-Null
+  New-Item -Path "db/crlnumber" -Value "1001" | Out-Null
+
+  $policy = @"
+policy                  = policy_c_o_match
+
+[policy_c_o_match]
+countryName             = match
+stateOrProvinceName     = optional
+organizationName        = match
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+"@
+
+  Set-Content -Path "openssl.cnf" -Value @"
+[default]
+name                    = $Name
+domain_suffix           = $Domain
+aia_url                 = http://`$name.`$domain_suffix/`$name.crt
+crl_url                 = http://`$name.`$domain_suffix/`$name.crl
+ocsp_url                = http://ocsp-`$name.`$domain_suffix
+default_ca              = ca_default
+name_opt                = utf8,esc_ctrl,multiline,lname,align
+
+[ca_dn]
+countryName             = "$Country"
+organizationName        = "$Organization"
+commonName              = "$CommonName"
+
+[ca_default]
+home                    = .
+database                = `$home/db/index
+serial                  = `$home/db/serial
+crlnumber               = `$home/db/crlnumber
+certificate             = `$home/`$name.crt
+private_key             = `$home/private/`$name.key
+RANDFILE                = `$home/private/random
+new_certs_dir           = `$home/certs
+unique_subject          = no
+copy_extensions         = none
+default_days            = 365
+default_crl_days        = 30
+default_md              = sha256
+copy_extensions         = copy
+$(if (-not ($Public)) { $policy})
+
+[req]
+encrypt_key             = yes
+default_md              = sha256
+utf8                    = yes
+string_mask             = utf8only
+prompt                  = no
+distinguished_name      = ca_dn
+req_extensions          = ca_ext
+
+[ca_ext]
+basicConstraints        = critical,CA:true
+keyUsage                = critical,keyCertSign,cRLSign
+subjectKeyIdentifier    = hash
+
+[crl_info]
+URI.0                   = `$crl_url
+
+[issuer_info]
+caIssuers;URI.0         = `$aia_url
+OCSP;URI.0              = `$ocsp_url
+
+$(if (-not ($Public)) { @"
+[name_constraints]
+permitted;DNS.0=`$domain_suffix
+excluded;IP.0=0.0.0.0/0.0.0.0
+excluded;IP.1=0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
+"@})
+
+[ocsp_ext]
+authorityKeyIdentifier  = keyid:always
+basicConstraints        = critical,CA:false
+extendedKeyUsage        = OCSPSigning
+keyUsage                = critical,digitalSignature
+subjectKeyIdentifier    = hash
+
+[server_ext]
+authorityInfoAccess     = @issuer_info
+authorityKeyIdentifier  = keyid:always
+basicConstraints        = critical,CA:false
+crlDistributionPoints   = @crl_info
+extendedKeyUsage        = clientAuth,serverAuth
+keyUsage                = critical,digitalSignature,keyEncipherment
+subjectKeyIdentifier    = hash
+$(if (-not ($Public)) { "nameConstraints         = @name_constraints`n" })
+[client_ext]
+authorityInfoAccess     = @issuer_info
+authorityKeyIdentifier  = keyid:always
+basicConstraints        = critical,CA:false
+crlDistributionPoints   = @crl_info
+extendedKeyUsage        = clientAuth
+keyUsage                = critical,digitalSignature
+subjectKeyIdentifier    = hash
+$(if (-not ($Public)) { "nameConstraints         = @name_constraints`n" })
+"@
+
+  Set-Content -Path "ocsp.cnf" -Value @"
+[req]
+default_bits            = 2048
+encrypt_key             = no
+default_md              = sha256
+utf8                    = yes
+string_mask             = utf8only
+prompt                  = no
+distinguished_name      = req_subj
+
+[req_subj]
+countryName             = $Country
+organizationName        = $Organization
+commonName              = $CommonName OCSP Responder
+"@
+
+  $cred = New-Object System.Management.Automation.PSCredential `
+  -ArgumentList "NotImportant", $KeyPassword
+  $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
+
+  Write-Output "`nGenerating the subordinate certificate private key..."
+
+  switch ($KeyEncryption) {
+    "Edwards" {
+      New-OpenSslEdwardsCurveKeypair -Path "./private/$Name.key" -Password $KeyPassword
+    }
+    "Eliptic" {
+      New-OpenSslElipticCurveKeypair -Path "./private/$Name.key" -Password $KeyPassword
+    }
+    "RSA" {
+      New-OpenSslRsaKeypair -Path "./private/$Name.key" -Password $KeyPassword
+    }
+  }
+
+  Remove-Item -Path "private/$Name.key.pub"
+
+  Write-Output "`nGenerating the subordinate certificate request..."
+
+  Invoke-OpenSsl "req -new -config openssl.cnf -out $Name.csr -key private/$Name.key $passin"
+
+  Write-Output "Using Root CA to sign the certificate for this authority..."
+
+  Pop-Location
+
+  Invoke-OpenSsl "ca -config openssl.cnf -in $Name/$Name.csr -out $Name/$Name.crt -extensions sub_ca_ext"
+
+  Push-Location -Path $Name
+
+  Write-Output "`n`nGenerating the OCSP private key for this authority...`n"
+
+  New-OpenSslRsaKeypair -Path "private/ocsp.key" -BitSize 2048
+
+  Remove-Item -Path "private/ocsp.key.pub"
+
+  Write-Output "`nGenerating the OCSP certificate request..."
+
+  Invoke-OpenSsl "req -new -config ocsp.cnf -out ocsp.csr -key private/ocsp.key"
+
+  Write-Output "`nGenerating the OCSP Certificate for this authority..."
+
+  Invoke-OpenSsl `
+    "ca -batch -config openssl.cnf -out ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles ocsp.csr"
+
+  Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
+.type=subordinate
+.public=$Public
+.name=$Name
+.domain=$Domain
+.c=$Country
+.org=$Organization
+.cn=$CommonName
+"@
+
+  Write-Output "`n`nCreation of a subordinate authority complete...`n"
+
+  Get-Certificate -Path "$Name.crt"
+
+  Pop-Location
+
+  ".subca=$Name" | Out-File -FilePath ".openssl_ca" -Encoding UTF8 -Append
+
+  Pop-Location
+
+  $ErrorActionPreference = $origialErrorActionPreference
+
+  Write-Output "`n~~~~~~`n"
+  Write-Output "This subordinate certificate authority can only be used to sign"
+  Write-Output "certificates within this authority...`n"
+}
+
 function Start-OpenSslOcspServer {
   param (
     [Parameter(Position = 0)]

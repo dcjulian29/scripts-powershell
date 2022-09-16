@@ -1,6 +1,6 @@
 @{
   RootModule = 'OpenSSL.psm1'
-  ModuleVersion = '2209.15.1'
+  ModuleVersion = '2209.16.1'
   Description = "A collection of commands to interact with OpenSSL."
   GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
   Author = 'Julian Easterling'
@@ -51,6 +51,7 @@
     "New-OpenSslEdwardsCurveKeypair"
     "New-OpenSslElipticCurveKeypair"
     "New-OpenSslRsaKeypair"
+    "New-OpenSslSubordinateAuthority"
     "Set-OpenSslCertificateAuthoritySetting"
     "Start-OpenSslOcspServer"
     "Stop-OpenSslOcspServer"
