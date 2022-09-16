@@ -164,12 +164,12 @@ function Invoke-OpenSslContainer {
   }
 
   if (Test-DockerLinuxEngine) {
-    $params = $(Get-OpenSslContainerImage) + @{
+    $params = @{
+      Image       = "dcjulian29/openssl"
+      Tag         = "latest"
       Interactive = $Interactive
-      Name = $Name
-      Volume = @(
-        "$(Get-DockerMountPoint $PWD):/data"
-      )
+      Name        = $Name
+      Volume      = @("$(Get-DockerMountPoint $PWD):/data")
       Environment = $EnvironmentVariables
     }
 

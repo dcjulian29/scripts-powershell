@@ -45,14 +45,13 @@ function New-OpenSslCertificateAuthority {
     [Parameter(Position = 0)]
     [ValidateScript({ Test-Path $(Resolve-Path $_) })]
     [string] $Path = ($PWD.Path),
-    [string] $Name = "rootca",
-    [string] $Domain = "contoso.local",
+    [string] $Name = "root",
+    [string] $Domain = "pki.contoso.local",
     [Parameter(Mandatory = $true)]
-    [securestring] $RootKeyPassword,
+    [securestring] $KeyPassword,
     [string] $Country = "US",
     [string] $Organization = "OpenSSL Root Certificate Authority",
-    [string] $CommonName = "Root CA",
-    [string] $SubordinateName = "intermediate",
+    [string] $CommonName = "RootCA",
     [switch] $Public
   )
 
@@ -103,7 +102,7 @@ name                    = $Name
 domain_suffix           = $Domain
 aia_url                 = http://`$name.`$domain_suffix/`$name.crt
 crl_url                 = http://`$name.`$domain_suffix/`$name.crl
-ocsp_url                = http://ocsp.`$name.`$domain_suffix:9080
+ocsp_url                = http://ocsp-$name.`$domain_suffix
 default_ca              = ca_default
 name_opt                = utf8,esc_ctrl,multiline,lname,align
 
@@ -123,13 +122,12 @@ RANDFILE                = `$home/private/random
 new_certs_dir           = `$home/certs
 unique_subject          = no
 copy_extensions         = none
-default_days            = 3650
+default_days            = 1825
 default_crl_days        = 365
 default_md              = sha256
 $(if (-not ($Public)) { $policy})
 
 [req]
-default_bits            = 4096
 encrypt_key             = yes
 default_md              = sha256
 utf8                    = yes
@@ -150,9 +148,8 @@ basicConstraints        = critical,CA:true,pathlen:0
 crlDistributionPoints   = @crl_info
 extendedKeyUsage        = clientAuth,serverAuth
 keyUsage                = critical,keyCertSign,cRLSign
-nameConstraints         = @name_constraints
 subjectKeyIdentifier    = hash
-
+$(if (-not ($Public)) { "nameConstraints         = @name_constraints`n" })
 [crl_info]
 URI.0                   = `$crl_url
 
@@ -160,10 +157,12 @@ URI.0                   = `$crl_url
 caIssuers;URI.0         = `$aia_url
 OCSP;URI.0              = `$ocsp_url
 
+$(if (-not ($Public)) { @"
 [name_constraints]
 permitted;DNS.0=`$domain_suffix
 excluded;IP.0=0.0.0.0/0.0.0.0
 excluded;IP.1=0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
+"@})
 
 [ocsp_ext]
 authorityKeyIdentifier  = keyid:always
@@ -190,12 +189,12 @@ commonName              = $CommonName OCSP Responder
 "@
 
   $cred = New-Object System.Management.Automation.PSCredential `
-    -ArgumentList "NotImportant", $RootKeyPassword
+    -ArgumentList "NotImportant", $KeyPassword
   $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
 
   Write-Output "`nGenerating the root certificate private key..."
 
-  New-OpenSslEdwardsCurveKeypair -Path "./private/$Name.key" -Password $RootKeyPassword
+  New-OpenSslEdwardsCurveKeypair -Path "./private/$Name.key" -Password $KeyPassword
 
   Remove-Item -Path "private/$Name.key.pub"
 
@@ -222,7 +221,7 @@ commonName              = $CommonName OCSP Responder
   Invoke-OpenSsl `
     "ca -batch -config openssl.cnf -out ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles ocsp.csr"
 
-  Set-Content -Path ".openssl_ca" -Value @"
+  Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
 .type=root
 .public=$Public
 .name=$Name
