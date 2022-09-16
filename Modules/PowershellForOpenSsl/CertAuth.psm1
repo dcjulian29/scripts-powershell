@@ -595,7 +595,10 @@ function Set-OpenSslCertificateAuthoritySetting {
     [Parameter(ParameterSetName = "remove", Mandatory = $true, Position = 0)]
     [string] $Name,
     [Parameter(ParameterSetName = "add", Mandatory = $true, Position = 1)]
+    [Parameter(ParameterSetName = "remove", Position = 1)]
     [string] $Value,
+    [Parameter(ParameterSetName = "add")]
+    [Parameter(ParameterSetName = "remove")]
     [ValidateScript({ Test-Path $(Resolve-Path $_) })]
     [string] $Path = ($PWD.Path),
     [Parameter(ParameterSetName = "add")]
@@ -614,29 +617,25 @@ function Set-OpenSslCertificateAuthoritySetting {
   $config = "$($Path)/.openssl_ca"
 
   if ($null -ne (Get-OpenSslCertificateAuthoritySetting $Name)) {
-    $old = (Get-Content $config | Select-String "\.$Name=(.*)$" | Out-String).Trim()
+    if ($Value.Length -gt 0) {
+      $old = (Get-Content $config | Select-String "\.$Name=($Value)$" | Out-String).Trim()
+    } else {
+      $old = (Get-Content $config | Select-String "\.$Name=(.*)$" | Out-String).Trim()
+    }
   }
 
-  switch ($PsCmdlet.ParameterSetName) {
-    "remove" {
-      if ($old) {
-        $content = Get-Content $config | Where-Object { $_ -notlike "*$Name*" }
-        Set-Content -Path $config -Value  $content -Force
-      }
+  if (-not $Append) {
+    if ($Value.Length -gt 0) {
+      $content = Get-Content $config | Where-Object { $_ -notlike ".$Name=$Value" }
+    } else {
+      $content = Get-Content $config | Where-Object { $_ -notlike "*$Name*" }
     }
 
-    "add" {
-      $new = ".$Name=$Value".Trim()
+    Set-Content -Path $config -Value  $content -Force
+  }
 
-      if ($old) {
-        if (-not $Append) {
-          $content = Get-Content $config | Where-Object { $_ -notlike $old }
-          Set-Content -Path $config -Value  $content -Force
-        }
-      }
-
-      Add-Content -Path $config -Value $new
-    }
+  if ($PsCmdlet.ParameterSetName -eq "add") {
+    Add-Content -Path $config -Value ".$Name=$Value".Trim()
   }
 }
 
