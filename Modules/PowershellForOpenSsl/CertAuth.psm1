@@ -537,6 +537,67 @@ function Remove-OpenSslSubordinateAuthority {
   param (
     [ValidateScript({ Test-Path $(Resolve-Path $_) })]
     [string] $Path = ($PWD.Path),
+    [string] $Name = $(Split-Path -Path $Path -Leaf)
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  if (Test-OpenSslCertificateAuthority $Path -Subordinate) {
+    Push-Location -Path "$((Get-Item -Path $Path).Parent.FullName)"
+  } else {
+    Push-Location $Path
+  }
+
+  if (-not (Test-OpenSslCertificateAuthority -Root)) {
+    Pop-Location
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "'$Path' is not part of a certificate authority that includes the root authority." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  $subca = (Get-OpenSslCertificateAuthoritySetting subca | Where-Object { $_ -like $Name })
+
+  if ($subca.Length -gt 0) {
+    $sn = Get-OpenSslCertificateAuthoritySetting "subca_$Name"
+
+    if ($sn -eq "~REVOKED~") {
+      Set-OpenSslCertificateAuthoritySetting -Name "subca" -Value $Name -Remove
+      Set-OpenSslCertificateAuthoritySetting -Name "subca_$Name" -Remove
+
+      if (Test-Path "$Name/") {
+        Remove-Item -Path $Name -Recurse -Force
+      }
+    } else {
+      Pop-Location
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "'$Name' authority must be revoked before it can be removed." `
+        -ExceptionType "System.InvalidOperationException" `
+        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+    }
+  } else {
+    Pop-Location
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "'$Name' authority is not currently managed by this root authority." `
+      -ExceptionType "System.InvalidOperationException" `
+      -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  Pop-Location
+}
+
+Set-Alias -Name "remove-subca" -Value Remove-OpenSslSubordinateAuthority
+
+function Revoke-OpenSslSubordinateAuthority {
+  [CmdletBinding()]
+  param (
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path = ($PWD.Path),
     [string] $Name = $(Split-Path -Path $Path -Leaf),
     [ValidateSet("unspecified", "keyCompromise", "CACompromise", "affiliationChanged", "superseded", "cessationOfOperation", "certificateHold", "removeFromCRL")]
     [string] $Reason = "unspecified"
@@ -568,25 +629,37 @@ function Remove-OpenSslSubordinateAuthority {
   if ($subca.Length -gt 0) {
     $sn = Get-OpenSslCertificateAuthoritySetting "subca_$Name"
 
+    if ($sn -eq "~REVOKED~") {
+      Pop-Location
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "'$Name' authority has already been revoked." `
+        -ExceptionType "System.InvalidOperationException" `
+        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+    }
+
     if ($sn.Length -gt 0) {
       Invoke-OpenSsl "ca -config openssl.cnf -revoke certs/$sn.pem -crl_reason $Reason"
 
-      Set-OpenSslCertificateAuthoritySetting -Name "subca" -Value $Name -Remove
-      Set-OpenSslCertificateAuthoritySetting -Name "subca_$Name" -Remove
+      Move-Item -Path "certs/$sn.pem" "certs/$sn.pem.revoked"
+
+      Set-OpenSslCertificateAuthoritySetting -Name "subca_$Name" -Value "~REVOKED~"
 
       if (Test-Path "$Name/") {
         ###TODO: If subordinate authority is mounted (directly below root), cycle through each issued certificate and revoke them as well
       }
     }
+  } else {
+    Pop-Location
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "'$Name' authority is not currently managed by this root authority." `
+      -ExceptionType "System.InvalidOperationException" `
+      -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
   Pop-Location
 }
 
-Set-Alias -Name "Revoke-OpenSslSubordinateAuthority" `
-  -Value Remove-OpenSslSubordinateAuthority
-
-Set-Alias -Name "revoke-subca" -Value Remove-OpenSslSubordinateAuthority
+Set-Alias -Name "revoke-subca" -Value Revoke-OpenSslSubordinateAuthority
 
 function Start-OpenSslOcspServer {
   param (
