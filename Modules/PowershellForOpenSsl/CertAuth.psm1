@@ -509,9 +509,19 @@ commonName              = $CommonName OCSP Responder
 
   Get-Certificate -Path "$Name.crt"
 
+  $sn = Get-CertificateSerialNumber -Path "$Name.crt"
+
   Pop-Location
 
-  ".subca=$Name" | Out-File -FilePath ".openssl_ca" -Encoding UTF8 -Append
+  $subca = (Get-OpenSslCertificateAuthoritySetting subca | Where-Object { $_ -like $Name })
+
+  if ($subca.Count -gt 0) {
+    Set-OpenSslCertificateAuthoritySetting -Name "subca" -Value $Name -Remove
+    Set-OpenSslCertificateAuthoritySetting -Name "subca_$Name" -Remove
+  }
+
+  Set-OpenSslCertificateAuthoritySetting -Name "subca" -Value "$Name"
+  Set-OpenSslCertificateAuthoritySetting -Name "subca_$Name" -Value $sn
 
   Pop-Location
 
