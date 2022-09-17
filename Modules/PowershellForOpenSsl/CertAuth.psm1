@@ -289,13 +289,15 @@ function New-OpenSslSubordinateAuthority {
   #   }
   # }
 
-  if ((Test-Path "$Path/$Name") -and (-not $Force)) {
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "'$Name' folder exists and the Force parameter was not specified. Aborting creation." `
-       -ExceptionType "System.InvalidOperationException" `
-       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  } else {
-    Remove-Item -Path "$Path/$Name" -Recurse -Force
+  if ((Test-Path "$Path/$Name")) {
+    if ($Force) {
+      Remove-Item -Path "$Path/$Name" -Recurse -Force
+    } else {
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "'$Name' folder exists and the Force parameter was not specified. Aborting creation." `
+        -ExceptionType "System.InvalidOperationException" `
+        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+    }
   }
 
   Write-Output "`nCreating subordinate authority directories..."
