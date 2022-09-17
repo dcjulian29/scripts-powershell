@@ -629,21 +629,15 @@ function Set-OpenSslCertificateAuthoritySetting {
   $config = "$($Path)/.openssl_ca"
 
   if ($null -ne (Get-OpenSslCertificateAuthoritySetting $Name)) {
-    if ($Value.Length -gt 0) {
-      $old = (Get-Content $config | Select-String "\.$Name=($Value)$" | Out-String).Trim()
-    } else {
-      $old = (Get-Content $config | Select-String "\.$Name=(.*)$" | Out-String).Trim()
-    }
-  }
+    if (-not $Append) {
+      if ($Value.Length -gt 0) {
+        $content = Get-Content $config | Where-Object { $_ -notlike ".$Name=$Value" }
+      } else {
+        $content = Get-Content $config | Where-Object { $_ -notlike "*$Name*" }
+      }
 
-  if (-not $Append) {
-    if ($Value.Length -gt 0) {
-      $content = Get-Content $config | Where-Object { $_ -notlike ".$Name=$Value" }
-    } else {
-      $content = Get-Content $config | Where-Object { $_ -notlike "*$Name*" }
+      Set-Content -Path $config -Value  $content -Force
     }
-
-    Set-Content -Path $config -Value  $content -Force
   }
 
   if ($PsCmdlet.ParameterSetName -eq "add") {
