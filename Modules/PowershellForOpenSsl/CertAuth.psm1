@@ -1,3 +1,87 @@
+function Get-IssuedCertificate {
+  [CmdletBinding(DefaultParameterSetName = "name")]
+  [Alias("Get-RevokedIssuedCertificate")]
+  param (
+    [Parameter(ParameterSetName = "name", ValueFromPipeline = $true, Position = 0)]
+    [string] $Name,
+    [Parameter(ParameterSetName = "revoked")]
+    [switch] $Revoked
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  if ($Name.Length -gt 0) {
+    if ($MyInvocation.InvocationName -eq "Get-RevokedIssuedCertificate") {
+      if (Test-Path "certs/$Name.pem") {
+        return Get-Certificate -Path "certs/$Name.pem.revoked"
+      } else {
+        $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+          -Message "A revoked certificate with the name '$Name' does not exists in this authority." `
+          -ExceptionType "System.Management.Automation.ItemNotFoundException" `
+          -ErrorId "ItemNotFoundException" -ErrorCategory ObjectNotFound))
+      }
+    } else {
+      if (Test-Path "certs/$Name.pem") {
+        return Get-Certificate -Path "certs/$Name.pem"
+      } else {
+        $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+          -Message "A certificate with the name '$Name' does not exists in this authority." `
+          -ExceptionType "System.Management.Automation.ItemNotFoundException" `
+          -ErrorId "ItemNotFoundException" -ErrorCategory ObjectNotFound))
+      }
+    }
+  }
+
+  $certs = @()
+
+  $content = Get-Content "db/index"
+  $regex = "(\w)\s+(\w+)(\s+\w+,\w+\s+|\s+)(\w+)\s+(\w+)\s(.+)"
+
+  foreach ($line in $content) {
+    $result = Select-String -InputObject $line -Pattern $regex
+
+    $cert = [PSCustomObject]@{
+      SerialNumber      = ($result.Matches[0].Groups[4].Value | Out-String).Trim()
+      DistinguishedName = ($result.Matches[0].Groups[6].Value | Out-String).Trim()
+      Filename          = ($result.Matches[0].Groups[5].Value | Out-String).Trim()
+      Status            = switch (($result.Matches[0].Groups[1].Value | Out-String).Trim()) {
+        "V" { "Valid" }
+        "E" { "Expired" }
+        "R" { "Revoked" }
+        Default { "Unknown" }
+      }
+      ExpirationDate    = `
+        [datetime]::ParseExact(($result.Matches[0].Groups[2].Value `
+          | Out-String).Trim(), "yyMMddHHmmssZ", $null)
+      RevocationDate    = ($result.Matches[0].Groups[3].Value | Out-String).Trim()
+      RevocationReason  = $null
+    }
+
+    if ($cert.RevocationDate.Length -gt 0) {
+      $cert.RevocationReason = ($cert.RevocationDate -split ',')[1]
+      $cert.RevocationDate = `
+        [datetime]::ParseExact(($cert.RevocationDate -split ',')[0], "yyMMddHHmmssZ", $null)
+    }
+
+    $certs += $cert
+    $result = $null
+  }
+
+  if (($PsCmdlet.ParameterSetName -eq "revoked") -or ($MyInvocation.InvocationName -eq "Get-RevokedIssuedCertificate")) {
+    $certs =  $certs | Where-Object { $_.Status -eq "Revoked" }
+  }
+
+  return $certs
+}
+
+Set-Alias -Name "list-issued-certificates" -Value Get-IssuedCertificate
+Set-Alias -Name "list-revoked-certificates" -Value Get-RevokedIssuedCertificate
+
 function Get-OpenSslCertificateAuthoritySetting {
   [CmdletBinding()]
   param (

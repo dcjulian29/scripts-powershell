@@ -1,6 +1,6 @@
 @{
   RootModule = 'OpenSSL.psm1'
-  ModuleVersion = '2209.16.2'
+  ModuleVersion = '2209.17.1'
   Description = "A collection of commands to interact with OpenSSL."
   GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
   Author = 'Julian Easterling'
@@ -35,12 +35,14 @@
     "Get-DeployedCertificate"
     "Get-DeployedCertificateExpiration"
     "Get-DeployedCertificateValidity"
+    "Get-IssuedCertificate"
     "Get-OpenSslCertificateAuthoritySetting"
     "Get-OpenSslEdwardsCurveKeypair"
     "Get-OpenSslElipticCurveKeypair"
     "Get-OpenSslRsaPrivateKey"
     "Get-OpenSslRandom"
     "Get-OpenSslVersion"
+    "Get-RevokedIssuedCertificate"
     "Find-OpenSsl"
     "Invoke-OpenSsl"
     "Invoke-OpenSslContainer"
@@ -76,6 +78,8 @@
     "openssl"
     "opensslc"
     "openssl-container"
+    "list-issued-certificates"
+    "list-revoked-certificates"
     "remove-subca"
     "revoke-subca"
     "show-certificate"
