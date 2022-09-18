@@ -16,8 +16,8 @@ function Get-IssuedCertificate {
   }
 
   if ($Name.Length -gt 0) {
-    if ($MyInvocation.InvocationName -eq "Get-RevokedIssuedCertificate") {
-      if (Test-Path "certs/$Name.pem") {
+    if ($MyInvocation.InvocationName -like "*revoked*") {
+      if (Test-Path "certs/$Name.pem.revoked") {
         return Get-Certificate -Path "certs/$Name.pem.revoked"
       } else {
         $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
@@ -72,7 +72,7 @@ function Get-IssuedCertificate {
     $result = $null
   }
 
-  if (($PsCmdlet.ParameterSetName -eq "revoked") -or ($MyInvocation.InvocationName -eq "Get-RevokedIssuedCertificate")) {
+  if (($PsCmdlet.ParameterSetName -eq "revoked") -or ($MyInvocation.InvocationName -like "*revoked*")) {
     $certs =  $certs | Where-Object { $_.Status -eq "Revoked" }
   }
 
@@ -81,6 +81,58 @@ function Get-IssuedCertificate {
 
 Set-Alias -Name "list-issued-certificates" -Value Get-IssuedCertificate
 Set-Alias -Name "list-revoked-certificates" -Value Get-RevokedIssuedCertificate
+
+function Get-IssuedCertificateValidity {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true)]
+    [Alias("Certificate", "Cert")]
+    [string] $Name,
+    [Parameter(Position = 1)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [Alias("CA", "CAFile", "CABundle")]
+    [string] $CAPath
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  if (Test-Path "certs/$Name.pem") {
+    $param = "verify"
+    $ca = "./.openssl.$((New-Guid).Guid).cacert.pem"
+
+    if ($CAPath) {
+      Copy-Item -Path $CAPath -Destination $ca
+    } else {
+      $authority = Get-OpenSslCertificateAuthoritySetting Name
+
+      if (Test-Path "./$authority.crt") {
+        $ca = "$authority.crt"
+      } else {
+        Invoke-WebRequest "https://curl.se/ca/cacert.pem" -OutFile $ca
+      }
+    }
+
+    if (Test-Path $ca) {
+      $param += " -CAfile $ca"
+    }
+
+    $param += " certs/$Name.pem"
+
+    Write-Verbose "param: $param"
+
+    Invoke-OpenSsl $param
+  } else {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "A certificate with the name '$Name' does not exists in this authority." `
+      -ExceptionType "System.Management.Automation.ItemNotFoundException" `
+      -ErrorId "ItemNotFoundException" -ErrorCategory ObjectNotFound ))
+  }
+}
 
 function Get-OpenSslCertificateAuthoritySetting {
   [CmdletBinding()]
