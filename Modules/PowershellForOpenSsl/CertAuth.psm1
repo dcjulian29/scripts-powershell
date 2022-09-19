@@ -35,6 +35,11 @@ excluded;IP.0=0.0.0.0/0.0.0.0
 excluded;IP.1=0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
 "@
 $script:cnf_ocsp = "ocsp.cnf"
+$script:cnf_ocsp_info = @"
+[ocsp_info]
+caIssuers;URI.0         = $aia_url
+OCSP;URI.0              = $ocsp_url
+"@
 $script:cnf_timestamp = "timestamp.cnf"
 
 #--------------------------------------------------------------------------------------------------
@@ -74,23 +79,25 @@ function ext_client($Public) {
   return @"
 [client_ext]
 authorityInfoAccess     = @issuer_info
+#authorityInfoAccess     = @ocsp_info
 authorityKeyIdentifier  = keyid:always
 basicConstraints        = critical,CA:false
 crlDistributionPoints   = @crl_info
 extendedKeyUsage        = emailProtection,clientAuth
 keyUsage                = critical,digitalSignature
+$(if (-not ($Public)) { "nameConstraints         = @name_constraints" })
 subjectAltName          = email:move
 subjectKeyIdentifier    = hash
-$(if (-not ($Public)) { "nameConstraints         = @name_constraints" })
 "@
 }
 
 function ext_ocsp {
   return @"
 [ocsp_ext]
+authorityInfoAccess     = @issuer_info
 authorityKeyIdentifier  = keyid:always
 basicConstraints        = critical,CA:false
-extendedKeyUsage        = OCSPSigning
+extendedKeyUsage        = critical,OCSPSigning
 keyUsage                = critical,digitalSignature
 subjectKeyIdentifier    = hash
 "@
@@ -100,13 +107,14 @@ function ext_server($Public) {
   return @"
 [server_ext]
 authorityInfoAccess     = @issuer_info
+#authorityInfoAccess     = @ocsp_info
 authorityKeyIdentifier  = keyid:always
 basicConstraints        = critical,CA:false
 crlDistributionPoints   = @crl_info
 extendedKeyUsage        = clientAuth,serverAuth
 keyUsage                = critical,digitalSignature,keyEncipherment
-subjectKeyIdentifier    = hash
 $(if (-not ($Public)) { "nameConstraints         = @name_constraints" })
+subjectKeyIdentifier    = hash
 "@
 }
 
