@@ -560,6 +560,7 @@ $(ext_subca($Public))
 "@
 
   generateRequestConfig $script:cnf_ocsp, $Country, $Organization, "$CommonName OCSP Responder"
+  generateRequestConfig $script:cnf_timestamp, $Country, $Organization, "$CommonName Timestamp"
 
   $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $KeyPassword
   $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
@@ -740,9 +741,9 @@ $(ext_client $Public)
 "@
 
   generateRequestConfig $script:cnf_ocsp, $Country, $Organization, "$CommonName OCSP Responder"
+  generateRequestConfig $script:cnf_timestamp, $Country, $Organization, "$CommonName Timestamp"
 
-  $cred = New-Object System.Management.Automation.PSCredential `
-  -ArgumentList "NotImportant", $KeyPassword
+  $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $KeyPassword
   $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
 
   Write-Output "`nGenerating the subordinate certificate private key..."
