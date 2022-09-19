@@ -1,12 +1,13 @@
 @{
     RootModule = 'FileSystem.psm1'
-    ModuleVersion = '2205.1.3'
+    ModuleVersion = '2209.19.1'
     GUID = 'aaad40aa-30a0-495c-8377-53e89ea1ec11'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
+        "Assert-FolderExists"
         "Copy-File"
         "Get-FullFilePath"
         "Get-FullDirectoryPath"

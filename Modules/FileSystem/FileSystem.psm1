@@ -1,3 +1,12 @@
+function Assert-FolderExists {
+  process {
+    if (-not (Test-Path -Path $_ -PathType Container)) {
+      Write-Warning "$_ did not exist. Folder created."
+      New-Folder -Path $_
+    }
+  }
+}
+
 function Copy-File {
     [CmdletBinding()]
     param (
