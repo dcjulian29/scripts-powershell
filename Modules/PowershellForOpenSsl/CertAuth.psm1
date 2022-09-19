@@ -144,6 +144,24 @@ subjectKeyIdentifier    = hash
 "@
 }
 
+function generateRequestConfig($Path,$Country,$Organization,$CommonName) {
+  Set-Content -Path $Path -Value @"
+[req]
+default_bits            = 2048
+encrypt_key             = no
+default_md              = sha256
+utf8                    = yes
+string_mask             = utf8only
+prompt                  = no
+distinguished_name      = req_subj
+
+[req_subj]
+countryName             = $Country
+organizationName        = $Organization
+commonName              = $CommonName
+"@
+}
+
 function signCertificate($Path, $Name, $KeyPassword, $Extention, $Days) {
   if (-not (Test-OpenSslCertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
@@ -156,8 +174,7 @@ function signCertificate($Path, $Name, $KeyPassword, $Extention, $Days) {
     $Name = Import-CertificateRequest $Path
   }
 
-  $cred = New-Object System.Management.Automation.PSCredential `
-    -ArgumentList "NotImportant", $KeyPassword
+  $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $KeyPassword
   $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
 
   $cmd = "ca -batch -config $($script:cnf_ca) -noout -notext" `
@@ -542,24 +559,9 @@ $(ext_ocsp)
 $(ext_subca($Public))
 "@
 
-  Set-Content -Path "ocsp.cnf" -Value @"
-[req]
-default_bits            = 2048
-encrypt_key             = no
-default_md              = sha256
-utf8                    = yes
-string_mask             = utf8only
-prompt                  = no
-distinguished_name      = req_subj
+  generateRequestConfig $script:cnf_ocsp, $Country, $Organization, "$CommonName OCSP Responder"
 
-[req_subj]
-countryName             = $Country
-organizationName        = $Organization
-commonName              = $CommonName OCSP Responder
-"@
-
-  $cred = New-Object System.Management.Automation.PSCredential `
-    -ArgumentList "NotImportant", $KeyPassword
+  $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $KeyPassword
   $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
 
   Write-Output "`nGenerating the root certificate private key..."
@@ -737,21 +739,7 @@ $(ext_server $Public)
 $(ext_client $Public)
 "@
 
-  Set-Content -Path "ocsp.cnf" -Value @"
-[req]
-default_bits            = 2048
-encrypt_key             = no
-default_md              = sha256
-utf8                    = yes
-string_mask             = utf8only
-prompt                  = no
-distinguished_name      = req_subj
-
-[req_subj]
-countryName             = $Country
-organizationName        = $Organization
-commonName              = $CommonName OCSP Responder
-"@
+  generateRequestConfig $script:cnf_ocsp, $Country, $Organization, "$CommonName OCSP Responder"
 
   $cred = New-Object System.Management.Automation.PSCredential `
   -ArgumentList "NotImportant", $KeyPassword
