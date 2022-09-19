@@ -878,6 +878,41 @@ function Remove-OpenSslSubordinateAuthority {
 
 Set-Alias -Name "remove-subca" -Value Remove-OpenSslSubordinateAuthority
 
+function Revoke-Certificate {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true)]
+    [Alias("Certificate", "Cert")]
+    [string] $Name,
+    [ValidateSet("unspecified", "keyCompromise", "CACompromise", "affiliationChanged", "superseded", "cessationOfOperation", "certificateHold", "removeFromCRL")]
+    [string] $Reason = "unspecified"
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  if (Test-Path "certs/$Name.pem") {
+    $param = "revoke -config $($script:cnf_ca) -revoke certs/$Name.pem -crl_reason $Reason"
+
+    Write-Verbose "param: $param"
+
+    Invoke-OpenSsl $param
+    Move-Item -Path "certs/$Name.pem" "certs/$Name.pem.revoked"
+  } else {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "A certificate with the name '$Name' does not exists in this authority." `
+      -ExceptionType "System.Management.Automation.ItemNotFoundException" `
+      -ErrorId "ItemNotFoundException" -ErrorCategory ObjectNotFound ))
+  }
+}
+
+Set-Alias -Name "revoke-certificate" -Value Revoke-Certificate
+Set-Alias -Name "revoke-issued-certificate" -Value Revoke-Certificate
+
 function Revoke-OpenSslSubordinateAuthority {
   [CmdletBinding()]
   param (
