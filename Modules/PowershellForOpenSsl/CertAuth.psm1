@@ -1,4 +1,11 @@
 $script:cnf_ca = "ca.cnf"
+$script:cnf_default = @"
+aia_url                 = http://`$name.`$domain_suffix/`$name.crt
+crl_url                 = http://`$name.`$domain_suffix/`$name.crl
+ocsp_url                = http://ocsp-`$name.`$domain_suffix
+default_ca              = ca_default
+name_opt                = utf8,esc_ctrl,multiline,lname,align
+"@
 $script:cnf_policy = @"
 policy                  = policy_c_o_match
 
@@ -246,11 +253,7 @@ function New-OpenSslCertificateAuthority {
 [default]
 name                    = $Name
 domain_suffix           = $Domain
-aia_url                 = http://`$name.`$domain_suffix/`$name.crt
-crl_url                 = http://`$name.`$domain_suffix/`$name.crl
-ocsp_url                = http://ocsp-$name.`$domain_suffix
-default_ca              = ca_default
-name_opt                = utf8,esc_ctrl,multiline,lname,align
+$($script:cnf_default)
 
 [ca_dn]
 countryName             = "$Country"
@@ -476,11 +479,7 @@ function New-OpenSslSubordinateAuthority {
 [default]
 name                    = $Name
 domain_suffix           = $Domain
-aia_url                 = http://`$name.`$domain_suffix/`$name.crt
-crl_url                 = http://`$name.`$domain_suffix/`$name.crl
-ocsp_url                = http://ocsp-`$name.`$domain_suffix
-default_ca              = ca_default
-name_opt                = utf8,esc_ctrl,multiline,lname,align
+$($script:cnf_default)
 
 [ca_dn]
 countryName             = "$Country"
