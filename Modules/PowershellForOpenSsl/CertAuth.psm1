@@ -1,3 +1,4 @@
+$script:cnf_ca = "ca.cnf"
 function Get-IssuedCertificate {
   [CmdletBinding(DefaultParameterSetName = "name")]
   [Alias("Get-RevokedIssuedCertificate")]
@@ -239,7 +240,7 @@ commonName              = supplied
 emailAddress            = optional
 "@
 
-  Set-Content -Path "openssl.cnf" -Value @"
+  Set-Content -Path "$($script:cnf_ca)" -Value @"
 [default]
 name                    = $Name
 domain_suffix           = $Domain
@@ -343,11 +344,11 @@ commonName              = $CommonName OCSP Responder
 
   Write-Output "Generating the root certificate request..."
 
-  Invoke-OpenSsl "req -new -config openssl.cnf -out $Name.csr -key private/$Name.key $passin"
+  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out $Name.csr -key private/$Name.key $passin"
 
   Write-Output "`n`nGenerating the root certificate for this authority..."
 
-  Invoke-OpenSsl "ca -selfsign -config openssl.cnf -in $Name.csr -out $Name.crt -extensions ca_ext $passin"
+  Invoke-OpenSsl "ca -selfsign -config $($script:cnf_ca) -in $Name.csr -out $Name.crt -extensions ca_ext $passin"
 
   Write-Output "`n`nGenerating the OCSP private key for this authority...`n"
 
@@ -362,7 +363,7 @@ commonName              = $CommonName OCSP Responder
   Write-Output "`nGenerating the OCSP Certificate for this authority..."
 
   Invoke-OpenSsl `
-    "ca -batch -config openssl.cnf -out ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles ocsp.csr"
+    "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles ocsp.csr"
 
   Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
 .type=root
@@ -481,7 +482,7 @@ commonName              = supplied
 emailAddress            = optional
 "@
 
-  Set-Content -Path "openssl.cnf" -Value @"
+  Set-Content -Path "$($script:cnf_ca)" -Value @"
 [default]
 name                    = $Name
 domain_suffix           = $Domain
@@ -606,13 +607,13 @@ commonName              = $CommonName OCSP Responder
 
   Write-Output "`nGenerating the subordinate certificate request..."
 
-  Invoke-OpenSsl "req -new -config openssl.cnf -out $Name.csr -key private/$Name.key $passin"
+  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out $Name.csr -key private/$Name.key $passin"
 
   Write-Output "Using Root CA to sign the certificate for this authority..."
 
   Pop-Location
 
-  Invoke-OpenSsl "ca -config openssl.cnf -in $Name/$Name.csr -out $Name/$Name.crt -extensions sub_ca_ext"
+  Invoke-OpenSsl "ca -config $($script:cnf_ca) -in $Name/$Name.csr -out $Name/$Name.crt -extensions sub_ca_ext"
 
   Push-Location -Path $Name
 
@@ -629,7 +630,7 @@ commonName              = $CommonName OCSP Responder
   Write-Output "`nGenerating the OCSP Certificate for this authority..."
 
   Invoke-OpenSsl `
-    "ca -batch -config openssl.cnf -out ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles ocsp.csr"
+    "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles ocsp.csr"
 
   Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
 .type=subordinate
@@ -774,7 +775,7 @@ function Revoke-OpenSslSubordinateAuthority {
     }
 
     if ($sn.Length -gt 0) {
-      Invoke-OpenSsl "ca -config openssl.cnf -revoke certs/$sn.pem -crl_reason $Reason"
+      Invoke-OpenSsl "ca -config $($script:cnf_ca) -revoke certs/$sn.pem -crl_reason $Reason"
 
       Move-Item -Path "certs/$sn.pem" "certs/$sn.pem.revoked"
 
@@ -952,7 +953,7 @@ function Update-CerticateAuthorityRevocationList {
   Push-Location $Path
 
   $Name = Get-OpenSslCertificateAuthoritySetting Name
-  Invoke-OpenSsl "ca -config openssl.cnf -gencrl -out $Name.crl"
+  Invoke-OpenSsl "ca -config $($script:cnf_ca) -gencrl -out $Name.crl"
 
   if (Test-Path "$Name.crl") {
     Invoke-OpenSsl "crl -in $Name.crl -noout -text"
@@ -980,7 +981,7 @@ function Update-OcspCerticate {
   Push-Location $Path
 
   Invoke-OpenSsl `
-    "ca -batch -config openssl.cnf -out ocsp.crt -extensions ocsp_ext -days 30 -infiles ocsp.csr"
+    "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 -infiles ocsp.csr"
 
   Pop-Location
 }
