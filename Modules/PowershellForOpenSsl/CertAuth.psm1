@@ -1136,6 +1136,29 @@ function Test-OpenSslCertificateAuthority {
   return $result
 }
 
+function Update-CerticateAuthorityDatabase {
+  param (
+    [Parameter(Position = 0)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path = ($PWD.Path)
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  Push-Location $Path
+
+  Invoke-OpenSsl "ca -config $($script:cnf_ca) -gencrl -out $Name.crl"
+
+  Pop-Location
+}
+
+Set-Alias -Name update-ca -Value Update-CerticateAuthorityDatabase
+
 function Update-CerticateAuthorityRevocationList {
   param (
     [Parameter(Position = 0)]

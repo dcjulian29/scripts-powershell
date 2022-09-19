@@ -72,6 +72,7 @@
     "Test-DeployedCertificateRevocation"
     "Test-DeployedCertificateValidity"
     "Test-OpenSslCertificateAuthority"
+    "Update-CerticateAuthorityDatabase"
     "Update-CerticateAuthorityRevocationList"
     "Update-OcspCerticate"
   )
@@ -102,6 +103,7 @@
     "show-crl"
     "show-crl-hash"
     "show-csr"
+    "update-ca"
     "update-crl"
     "update-ocsp"
   )
