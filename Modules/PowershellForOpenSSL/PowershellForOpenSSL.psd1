@@ -1,6 +1,6 @@
 @{
   RootModule = 'OpenSSL.psm1'
-  ModuleVersion = '2209.17.1'
+  ModuleVersion = '2209.19.1'
   Description = "A collection of commands to interact with OpenSSL."
   GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
   Author = 'Julian Easterling'
@@ -44,6 +44,7 @@
     "Get-OpenSslRandom"
     "Get-OpenSslVersion"
     "Find-OpenSsl"
+    "Import-CertificateRequest"
     "Invoke-OpenSsl"
     "Invoke-OpenSslContainer"
     "New-OpenSsl"
@@ -76,6 +77,7 @@
     "Get-OpenSslDigestAlgorithms"
     "Get-OpenSslEllipticCurves"
     "Get-RevokedIssuedCertificate"
+    "import-csr"
     "openssl"
     "opensslc"
     "openssl-container"

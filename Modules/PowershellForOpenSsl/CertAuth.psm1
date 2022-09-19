@@ -310,6 +310,34 @@ function Get-OpenSslCertificateAuthoritySetting {
   }
 }
 
+function Import-CertificateRequest {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true, Position = 0)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  if (-not (Test-Path csr)) {
+    New-Item -Path csr -ItemType Directory | Out-Null
+  }
+
+  $id = Get-OpenSslRandom 16 -Hex
+
+  Copy-Item -Path $Path -Destination "csr/$id.csr"
+
+  return $id
+}
+
+Set-Alias -Name "import-csr" -Value Import-CertificateRequest
+
 function New-OpenSslCertificateAuthority {
   [CmdletBinding()]
   param (
