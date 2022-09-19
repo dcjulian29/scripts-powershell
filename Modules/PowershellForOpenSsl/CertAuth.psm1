@@ -34,8 +34,14 @@ permitted;DNS.0=`$domain_suffix
 excluded;IP.0=0.0.0.0/0.0.0.0
 excluded;IP.1=0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
 "@
-$script:cnf_policy = @"
-policy                  = policy_c_o_match
+$script:cnf_ocsp = "ocsp.cnf"
+$script:cnf_timestamp = "timestamp.cnf"
+
+#--------------------------------------------------------------------------------------------------
+
+function cnf_policy($policy="policy_c_o_match") {
+  return @"
+policy                  = $policy
 
 [policy_c_o_match]
 countryName             = match
@@ -44,9 +50,16 @@ organizationName        = match
 organizationalUnitName  = optional
 commonName              = supplied
 emailAddress            = optional
-"@
 
-#--------------------------------------------------------------------------------------------------
+[policy_o_match]
+countryName             = optional
+stateOrProvinceName     = optional
+organizationName        = match
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+"@
+}
 
 function ext_ca {
   return @"
@@ -357,7 +370,7 @@ $($script:cnf_default_ca)
 copy_extensions         = none
 default_days            = 1825
 default_crl_days        = 365
-$(if (-not ($Public)) { $script:cnf_policy})
+$(if (-not ($Public)) { cnf_policy })
 
 $($script:cnf_crl_info)
 
@@ -550,7 +563,7 @@ $($script:cnf_default_ca)
 copy_extensions         = copy
 default_days            = 365
 default_crl_days        = 30
-$(if (-not ($Public)) { $script:cnf_policy})
+$(if (-not ($Public)) { cnf_policy })
 
 $($script:cnf_crl_info)
 
