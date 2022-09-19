@@ -132,6 +132,18 @@ $(if (-not ($Public)) { "nameConstraints         = @name_constraints" })
 "@
 }
 
+function ext_timestamp {
+  return @"
+authorityInfoAccess     = @issuer_info
+authorityKeyIdentifier  = keyid:always
+basicConstraints        = CA:false
+crlDistributionPoints   = @crl_info
+extendedKeyUsage        = critical,timeStamping
+keyUsage                = critical,digitalSignature
+subjectKeyIdentifier    = hash
+"@
+}
+
 function signCertificate($Path, $Name, $KeyPassword, $Extention, $Days) {
   if (-not (Test-OpenSslCertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
