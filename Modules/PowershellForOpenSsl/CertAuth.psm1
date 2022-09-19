@@ -1,4 +1,18 @@
 $script:cnf_ca = "ca.cnf"
+$script:cnf_policy = @"
+policy                  = policy_c_o_match
+
+[policy_c_o_match]
+countryName             = match
+stateOrProvinceName     = optional
+organizationName        = match
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+"@
+
+#--------------------------------------------------------------------------------------------------
+
 function Get-IssuedCertificate {
   [CmdletBinding(DefaultParameterSetName = "name")]
   [Alias("Get-RevokedIssuedCertificate")]
@@ -228,18 +242,6 @@ function New-OpenSslCertificateAuthority {
     -Value $(Get-OpenSslRandom 15 -Hex)  | Out-Null
   New-Item -Path "db/crlnumber" -Value "1001" | Out-Null
 
-  $policy = @"
-policy                  = policy_c_o_match
-
-[policy_c_o_match]
-countryName             = match
-stateOrProvinceName     = optional
-organizationName        = match
-organizationalUnitName  = optional
-commonName              = supplied
-emailAddress            = optional
-"@
-
   Set-Content -Path "$($script:cnf_ca)" -Value @"
 [default]
 name                    = $Name
@@ -269,7 +271,7 @@ copy_extensions         = none
 default_days            = 1825
 default_crl_days        = 365
 default_md              = sha256
-$(if (-not ($Public)) { $policy})
+$(if (-not ($Public)) { $script:cnf_policy})
 
 [req]
 encrypt_key             = yes
@@ -470,18 +472,6 @@ function New-OpenSslSubordinateAuthority {
     -Value $(Get-OpenSslRandom 15 -Hex)  | Out-Null
   New-Item -Path "db/crlnumber" -Value "1001" | Out-Null
 
-  $policy = @"
-policy                  = policy_c_o_match
-
-[policy_c_o_match]
-countryName             = match
-stateOrProvinceName     = optional
-organizationName        = match
-organizationalUnitName  = optional
-commonName              = supplied
-emailAddress            = optional
-"@
-
   Set-Content -Path "$($script:cnf_ca)" -Value @"
 [default]
 name                    = $Name
@@ -512,7 +502,7 @@ default_days            = 365
 default_crl_days        = 30
 default_md              = sha256
 copy_extensions         = copy
-$(if (-not ($Public)) { $policy})
+$(if (-not ($Public)) { $script:cnf_policy})
 
 [req]
 encrypt_key             = yes
