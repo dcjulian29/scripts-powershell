@@ -17,6 +17,9 @@
     "x509.psm1"
   )
   FunctionsToExport = @(
+    "Approve-ServerCertificate"
+    "Approve-SubordinateAuthority"
+    "Approve-UserCertificate"
     "ConvertFrom-Base64"
     "ConvertFrom-PemCertificate"
     "ConvertTo-Base64"
@@ -85,6 +88,10 @@
     "list-revoked-certificates"
     "remove-subca"
     "revoke-subca"
+    "sign-server-certificate"
+    "sign-subordinate-authority"
+    "sign-subca"
+    "sign-user-certificate"
     "show-certificate"
     "show-certificate-expiration"
     "show-certificate-hash"

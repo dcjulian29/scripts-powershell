@@ -124,7 +124,107 @@ $(if (-not ($Public)) { "nameConstraints         = @name_constraints" })
 "@
 }
 
+function signCertificate($Path, $Name, $KeyPassword, $Extention, $Days) {
+  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  if ($PsCmdlet.ParameterSetName -eq "path") {
+    $Name = Import-CertificateRequest $Path
+  }
+
+  $cred = New-Object System.Management.Automation.PSCredential `
+    -ArgumentList "NotImportant", $KeyPassword
+  $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
+
+  $cmd = "ca -batch -config $($script:cnf_ca) -noout -notext" `
+    + " -extensions $Extension -days $Days $passin -infiles csr/$Name.csr"
+
+  Invoke-OpenSsl $cmd
+
+  return $Name
+}
+
 #--------------------------------------------------------------------------------------------------
+
+function Approve-ServerCertificate {
+  [CmdletBinding(DefaultParameterSetName = "path")]
+  param (
+    [Parameter(ParameterSetName = "path", Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path,
+    [Parameter(ParameterSetName = "name", Mandatory = $true)]
+    [string] $Name,
+    [Parameter(ParameterSetName = "path", Mandatory = $true)]
+    [Parameter(ParameterSetName = "name", Mandatory = $true)]
+    [securestring] $KeyPassword
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority $Path -Subordinate)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "Certificates can only be signed by a subordinate authority that this module can manage." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  return signCertificate $Path $Name $KeyPassword "server_ext" 375
+}
+
+Set-Alias -Name "sign-server-certificate" -Value Approve-ServerCertificate
+
+function Approve-SubordinateAuthority {
+  [CmdletBinding(DefaultParameterSetName = "path")]
+  param (
+    [Parameter(ParameterSetName = "path", Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path,
+    [Parameter(ParameterSetName = "name", Mandatory = $true)]
+    [string] $Name,
+    [Parameter(ParameterSetName = "path", Mandatory = $true)]
+    [Parameter(ParameterSetName = "name", Mandatory = $true)]
+    [securestring] $KeyPassword
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority $Path -Root)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "Subordinate authorities can only be approved by a root authority." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  return signCertificate $Path $Name $KeyPassword "subca_ext" 1825
+}
+
+Set-Alias -Name "sign-subordinate-authority" -Value Approve-SubordinateAuthority
+Set-Alias -Name "sign-subca" -Value Approve-SubordinateAuthority
+
+function Approve-UserCertificate {
+  [CmdletBinding(DefaultParameterSetName = "path")]
+  param (
+    [Parameter(ParameterSetName = "path", Mandatory = $true)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path,
+    [Parameter(ParameterSetName = "name", Mandatory = $true)]
+    [string] $Name,
+    [Parameter(ParameterSetName = "path", Mandatory = $true)]
+    [Parameter(ParameterSetName = "name", Mandatory = $true)]
+    [securestring] $KeyPassword
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority $Path -Subordinate)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "Certificates can only be signed by a subordinate authority that this module can manage." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  return signCertificate $Path $Name $KeyPassword "client_ext" 375
+}
+
+Set-Alias -Name "sign-user-certificate" -Value Approve-ServerCertificate
 
 function Get-IssuedCertificate {
   [CmdletBinding(DefaultParameterSetName = "name")]
