@@ -612,6 +612,36 @@ function Show-UrlReservation {
     netUrlAcl -Operation "show" -Url $url -User $User
 }
 
+function Test-IpAddress {
+  [CmdletBinding(DefaultParameterSetName = "any")]
+  param (
+    [parameter(ParameterSetName = "any", Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
+    [parameter(ParameterSetName = "v4", Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
+    [parameter(ParameterSetName = "v6", Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
+    [string] $Address,
+    [parameter(ParameterSetName = "v4")]
+    [switch] $IPv4,
+    [parameter(ParameterSetName = "v6")]
+    [switch] $IPv6
+  )
+
+  $regex = ""
+  $v4 = "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])"
+  $v6 = "([0-9A-Fa-f]{0,4}:){2,7}([0-9A-Fa-f]{1,4}$|((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4})"
+
+  switch ($PSCmdlet.ParameterSetName) {
+    "v4" { $regex = $v4 }
+    "v6" { $regex = $v6  }
+    Default { $regex = "$v4|$v6" }
+  }
+
+  if ($Address -Match $regex) {
+    return $true
+  } else {
+    return $false
+  }
+}
+
 function Test-PrivateIPv4 {
   [CmdletBinding()]
   param(
