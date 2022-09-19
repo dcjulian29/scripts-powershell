@@ -48,6 +48,71 @@ emailAddress            = optional
 
 #--------------------------------------------------------------------------------------------------
 
+function ext_ca {
+  return @"
+[ca_ext]
+basicConstraints        = critical,CA:true
+keyUsage                = critical,keyCertSign,cRLSign
+subjectKeyIdentifier    = hash
+"@
+}
+
+function ext_client($Public) {
+  return @"
+[client_ext]
+authorityInfoAccess     = @issuer_info
+authorityKeyIdentifier  = keyid:always
+basicConstraints        = critical,CA:false
+crlDistributionPoints   = @crl_info
+extendedKeyUsage        = emailProtection,clientAuth
+keyUsage                = critical,digitalSignature
+subjectAltName          = email:move
+subjectKeyIdentifier    = hash
+$(if (-not ($Public)) { "nameConstraints         = @name_constraints" })
+"@
+}
+
+function ext_ocsp {
+  return @"
+[ocsp_ext]
+authorityKeyIdentifier  = keyid:always
+basicConstraints        = critical,CA:false
+extendedKeyUsage        = OCSPSigning
+keyUsage                = critical,digitalSignature
+subjectKeyIdentifier    = hash
+"@
+}
+
+function ext_server($Public) {
+  return @"
+[server_ext]
+authorityInfoAccess     = @issuer_info
+authorityKeyIdentifier  = keyid:always
+basicConstraints        = critical,CA:false
+crlDistributionPoints   = @crl_info
+extendedKeyUsage        = clientAuth,serverAuth
+keyUsage                = critical,digitalSignature,keyEncipherment
+subjectKeyIdentifier    = hash
+$(if (-not ($Public)) { "nameConstraints         = @name_constraints" })
+"@
+}
+
+function ext_subca($Public) {
+ return @"
+[sub_ca_ext]
+authorityInfoAccess     = @issuer_info
+authorityKeyIdentifier  = keyid:always
+basicConstraints        = critical,CA:true,pathlen:0
+crlDistributionPoints   = @crl_info
+extendedKeyUsage        = clientAuth,serverAuth
+keyUsage                = critical,keyCertSign,cRLSign
+subjectKeyIdentifier    = hash
+$(if (-not ($Public)) { "nameConstraints         = @name_constraints" })
+"@
+}
+
+#--------------------------------------------------------------------------------------------------
+
 function Get-IssuedCertificate {
   [CmdletBinding(DefaultParameterSetName = "name")]
   [Alias("Get-RevokedIssuedCertificate")]
@@ -309,27 +374,11 @@ prompt                  = no
 distinguished_name      = ca_dn
 req_extensions          = ca_ext
 
-[ca_ext]
-basicConstraints        = critical,CA:true
-keyUsage                = critical,keyCertSign,cRLSign
-subjectKeyIdentifier    = hash
+$(ext_ca)
 
-[sub_ca_ext]
-authorityInfoAccess     = @issuer_info
-authorityKeyIdentifier  = keyid:always
-basicConstraints        = critical,CA:true,pathlen:0
-crlDistributionPoints   = @crl_info
-extendedKeyUsage        = clientAuth,serverAuth
-keyUsage                = critical,keyCertSign,cRLSign
-subjectKeyIdentifier    = hash
-$(if (-not ($Public)) { "nameConstraints         = @name_constraints`n" })
+$(ext_ocsp)
 
-[ocsp_ext]
-authorityKeyIdentifier  = keyid:always
-basicConstraints        = critical,CA:false
-extendedKeyUsage        = OCSPSigning
-keyUsage                = critical,digitalSignature
-subjectKeyIdentifier    = hash
+$(ext_subca($Public))
 "@
 
   Set-Content -Path "ocsp.cnf" -Value @"
@@ -518,36 +567,13 @@ prompt                  = no
 distinguished_name      = ca_dn
 req_extensions          = ca_ext
 
-[ca_ext]
-basicConstraints        = critical,CA:true
-keyUsage                = critical,keyCertSign,cRLSign
-subjectKeyIdentifier    = hash
+$(ext_ca)
 
-[ocsp_ext]
-authorityKeyIdentifier  = keyid:always
-basicConstraints        = critical,CA:false
-extendedKeyUsage        = OCSPSigning
-keyUsage                = critical,digitalSignature
-subjectKeyIdentifier    = hash
+$(ext_ocsp)
 
-[server_ext]
-authorityInfoAccess     = @issuer_info
-authorityKeyIdentifier  = keyid:always
-basicConstraints        = critical,CA:false
-crlDistributionPoints   = @crl_info
-extendedKeyUsage        = clientAuth,serverAuth
-keyUsage                = critical,digitalSignature,keyEncipherment
-subjectKeyIdentifier    = hash
-$(if (-not ($Public)) { "nameConstraints         = @name_constraints`n" })
-[client_ext]
-authorityInfoAccess     = @issuer_info
-authorityKeyIdentifier  = keyid:always
-basicConstraints        = critical,CA:false
-crlDistributionPoints   = @crl_info
-extendedKeyUsage        = clientAuth
-keyUsage                = critical,digitalSignature
-subjectKeyIdentifier    = hash
-$(if (-not ($Public)) { "nameConstraints         = @name_constraints`n" })
+$(ext_server $Public)
+
+$(ext_client $Public)
 "@
 
   Set-Content -Path "ocsp.cnf" -Value @"
