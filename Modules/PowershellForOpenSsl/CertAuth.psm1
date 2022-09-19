@@ -6,6 +6,19 @@ ocsp_url                = http://ocsp-`$name.`$domain_suffix
 default_ca              = ca_default
 name_opt                = utf8,esc_ctrl,multiline,lname,align
 "@
+$script:cnf_default_ca = @"
+[ca_default]
+home                    = .
+database                = `$home/db/index
+serial                  = `$home/db/serial
+crlnumber               = `$home/db/crlnumber
+certificate             = `$home/`$name.crt
+private_key             = `$home/private/`$name.key
+RANDFILE                = `$home/private/random
+new_certs_dir           = `$home/certs
+unique_subject          = no
+default_md              = sha256
+"@
 $script:cnf_policy = @"
 policy                  = policy_c_o_match
 
@@ -260,20 +273,10 @@ countryName             = "$Country"
 organizationName        = "$Organization"
 commonName              = "$CommonName"
 
-[ca_default]
-home                    = .
-database                = `$home/db/index
-serial                  = `$home/db/serial
-crlnumber               = `$home/db/crlnumber
-certificate             = `$home/`$name.crt
-private_key             = `$home/private/`$name.key
-RANDFILE                = `$home/private/random
-new_certs_dir           = `$home/certs
-unique_subject          = no
+$($script:cnf_default_ca)
 copy_extensions         = none
 default_days            = 1825
 default_crl_days        = 365
-default_md              = sha256
 $(if (-not ($Public)) { $script:cnf_policy})
 
 [req]
@@ -486,21 +489,10 @@ countryName             = "$Country"
 organizationName        = "$Organization"
 commonName              = "$CommonName"
 
-[ca_default]
-home                    = .
-database                = `$home/db/index
-serial                  = `$home/db/serial
-crlnumber               = `$home/db/crlnumber
-certificate             = `$home/`$name.crt
-private_key             = `$home/private/`$name.key
-RANDFILE                = `$home/private/random
-new_certs_dir           = `$home/certs
-unique_subject          = no
-copy_extensions         = none
+$($script:cnf_default_ca)
+copy_extensions         = copy
 default_days            = 365
 default_crl_days        = 30
-default_md              = sha256
-copy_extensions         = copy
 $(if (-not ($Public)) { $script:cnf_policy})
 
 [req]
