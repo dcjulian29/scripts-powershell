@@ -1,4 +1,8 @@
 $script:cnf_ca = "ca.cnf"
+$script:cnf_crl_info = @"
+[crl_info]
+URI.0                   = `$crl_url
+"@
 $script:cnf_default = @"
 aia_url                 = http://`$name.`$domain_suffix/`$name.crt
 crl_url                 = http://`$name.`$domain_suffix/`$name.crl
@@ -18,6 +22,17 @@ RANDFILE                = `$home/private/random
 new_certs_dir           = `$home/certs
 unique_subject          = no
 default_md              = sha256
+"@
+$script:cnf_issuer_info = @"
+[issuer_info]
+caIssuers;URI.0         = `$aia_url
+OCSP;URI.0              = `$ocsp_url
+"@
+$script:cnf_name_constraints = @"
+[name_constraints]
+permitted;DNS.0=`$domain_suffix
+excluded;IP.0=0.0.0.0/0.0.0.0
+excluded;IP.1=0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
 "@
 $script:cnf_policy = @"
 policy                  = policy_c_o_match
@@ -279,6 +294,12 @@ default_days            = 1825
 default_crl_days        = 365
 $(if (-not ($Public)) { $script:cnf_policy})
 
+$($script:cnf_crl_info)
+
+$($script:cnf_issuer_info)
+
+$(if (-not ($Public)) { $script:cnf_name_constraints })
+
 [req]
 encrypt_key             = yes
 default_md              = sha256
@@ -302,19 +323,6 @@ extendedKeyUsage        = clientAuth,serverAuth
 keyUsage                = critical,keyCertSign,cRLSign
 subjectKeyIdentifier    = hash
 $(if (-not ($Public)) { "nameConstraints         = @name_constraints`n" })
-[crl_info]
-URI.0                   = `$crl_url
-
-[issuer_info]
-caIssuers;URI.0         = `$aia_url
-OCSP;URI.0              = `$ocsp_url
-
-$(if (-not ($Public)) { @"
-[name_constraints]
-permitted;DNS.0=`$domain_suffix
-excluded;IP.0=0.0.0.0/0.0.0.0
-excluded;IP.1=0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
-"@})
 
 [ocsp_ext]
 authorityKeyIdentifier  = keyid:always
@@ -495,6 +503,12 @@ default_days            = 365
 default_crl_days        = 30
 $(if (-not ($Public)) { $script:cnf_policy})
 
+$($script:cnf_crl_info)
+
+$($script:cnf_issuer_info)
+
+$(if (-not ($Public)) { $script:cnf_name_constraints })
+
 [req]
 encrypt_key             = yes
 default_md              = sha256
@@ -508,20 +522,6 @@ req_extensions          = ca_ext
 basicConstraints        = critical,CA:true
 keyUsage                = critical,keyCertSign,cRLSign
 subjectKeyIdentifier    = hash
-
-[crl_info]
-URI.0                   = `$crl_url
-
-[issuer_info]
-caIssuers;URI.0         = `$aia_url
-OCSP;URI.0              = `$ocsp_url
-
-$(if (-not ($Public)) { @"
-[name_constraints]
-permitted;DNS.0=`$domain_suffix
-excluded;IP.0=0.0.0.0/0.0.0.0
-excluded;IP.1=0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
-"@})
 
 [ocsp_ext]
 authorityKeyIdentifier  = keyid:always
