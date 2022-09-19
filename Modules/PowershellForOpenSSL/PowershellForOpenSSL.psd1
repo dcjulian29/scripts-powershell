@@ -66,6 +66,7 @@
     "Test-CertificateOcsp"
     "Test-CertificateRevocation"
     "Test-CertificateRevocationList"
+    "Test-CertificateValidity"
     "Test-DeployedCertificateExpired"
     "Test-DeployedCertificateRevocation"
     "Test-DeployedCertificateValidity"

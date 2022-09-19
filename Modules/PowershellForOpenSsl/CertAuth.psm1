@@ -1059,6 +1059,23 @@ function Set-OpenSslCertificateAuthoritySetting {
   }
 }
 
+function Test-IssuedCertificateValidity {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true)]
+    [Alias("Certificate", "Cert")]
+    [string] $Name,
+    [Parameter(Position = 1)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [Alias("CA", "CAFile", "CABundle")]
+    [string] $CAPath
+  )
+
+  $result = Get-IssuedCertificateValidity @PsBoundParameters
+
+  return $result.Contains("Verification: OK")
+}
+
 function Test-OpenSslCertificateAuthority {
   [CmdletBinding()]
   param (
