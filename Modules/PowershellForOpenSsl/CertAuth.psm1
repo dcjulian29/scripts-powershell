@@ -80,10 +80,10 @@ function ext_client($Public) {
 [client_ext]
 authorityInfoAccess     = @issuer_info
 #authorityInfoAccess     = @ocsp_info
-authorityKeyIdentifier  = keyid:always
+authorityKeyIdentifier  = keyid:always, issuer:always
 basicConstraints        = critical,CA:false
 crlDistributionPoints   = @crl_info
-extendedKeyUsage        = emailProtection,clientAuth
+extendedKeyUsage        = clientAuth,codeSigning,emailProtection
 keyUsage                = critical,digitalSignature
 $(if (-not ($Public)) { "nameConstraints         = @name_constraints" })
 subjectAltName          = email:move
@@ -108,7 +108,7 @@ function ext_server($Public) {
 [server_ext]
 authorityInfoAccess     = @issuer_info
 #authorityInfoAccess     = @ocsp_info
-authorityKeyIdentifier  = keyid:always
+authorityKeyIdentifier  = keyid:always, issuer:always
 basicConstraints        = critical,CA:false
 crlDistributionPoints   = @crl_info
 extendedKeyUsage        = clientAuth,serverAuth
@@ -162,8 +162,8 @@ commonName              = $CommonName
 "@
 }
 
-function signCertificate($Path, $Name, $KeyPassword, $Extention, $Days) {
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+function signCertificate($path, $name, $pword, $extention, $days) {
+  if (-not (Test-OpenSslCertificateAuthority $path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -171,14 +171,14 @@ function signCertificate($Path, $Name, $KeyPassword, $Extention, $Days) {
   }
 
   if ($PsCmdlet.ParameterSetName -eq "path") {
-    $Name = Import-CertificateRequest $Path
+    $name = Import-CertificateRequest $path
   }
 
-  $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $KeyPassword
+  $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $pword
   $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
 
   $cmd = "ca -batch -config $($script:cnf_ca) -noout -notext" `
-    + " -extensions $Extension -days $Days $passin -infiles csr/$Name.csr"
+    + " -extensions $extension -days $days $passin -infiles csr/$name.csr"
 
   Invoke-OpenSsl $cmd
 
