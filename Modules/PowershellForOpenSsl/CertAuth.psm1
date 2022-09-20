@@ -573,11 +573,11 @@ $(ext_subca($Public))
 
   Write-Output "Generating the root certificate request..."
 
-  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out $Name.csr -key private/$Name.key $passin"
+  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out csr/$Name.csr -key private/$Name.key $passin"
 
   Write-Output "`n`nGenerating the root certificate for this authority..."
 
-  Invoke-OpenSsl "ca -selfsign -config $($script:cnf_ca) -in $Name.csr -out $Name.crt -extensions ca_ext $passin"
+  Invoke-OpenSsl "ca -selfsign -config $($script:cnf_ca) -in csr/$Name.csr -out $Name.crt -extensions ca_ext $passin"
 
   Write-Output "`n`nGenerating the OCSP private key for this authority...`n"
 
@@ -587,12 +587,12 @@ $(ext_subca($Public))
 
   Write-Output "`nGenerating the OCSP certificate request..."
 
-  Invoke-OpenSsl "req -new -config ocsp.cnf -out ocsp.csr -key private/ocsp.key"
+  Invoke-OpenSsl "req -new -config ocsp.cnf -out csr/ocsp.csr -key private/ocsp.key"
 
   Write-Output "`nGenerating the OCSP Certificate for this authority..."
 
   Invoke-OpenSsl `
-    "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles ocsp.csr"
+    "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles csr/ocsp.csr"
 
   Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
 .type=root
@@ -764,13 +764,13 @@ $(ext_client $Public)
 
   Write-Output "`nGenerating the subordinate certificate request..."
 
-  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out $Name.csr -key private/$Name.key $passin"
+  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out csr/$Name.csr -key private/$Name.key $passin"
 
   Write-Output "Using Root CA to sign the certificate for this authority..."
 
   Pop-Location
 
-  Invoke-OpenSsl "ca -config $($script:cnf_ca) -in $Name/$Name.csr -out $Name/$Name.crt -extensions sub_ca_ext"
+  Invoke-OpenSsl "ca -config $($script:cnf_ca) -in csr/$Name.csr -out $Name/$Name.crt -extensions sub_ca_ext"
 
   Push-Location -Path $Name
 
@@ -782,12 +782,12 @@ $(ext_client $Public)
 
   Write-Output "`nGenerating the OCSP certificate request..."
 
-  Invoke-OpenSsl "req -new -config ocsp.cnf -out ocsp.csr -key private/ocsp.key"
+  Invoke-OpenSsl "req -new -config ocsp.cnf -out csr/ocsp.csr -key private/ocsp.key"
 
   Write-Output "`nGenerating the OCSP Certificate for this authority..."
 
   Invoke-OpenSsl `
-    "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles ocsp.csr"
+    "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles csr/ocsp.csr"
 
   Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
 .type=subordinate
@@ -1213,7 +1213,7 @@ function Update-OcspCerticate {
   Push-Location $Path
 
   Invoke-OpenSsl `
-    "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 -infiles ocsp.csr"
+    "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 -infiles csr/ocsp.csr"
 
   Pop-Location
 }
