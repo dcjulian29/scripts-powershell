@@ -509,7 +509,7 @@ function New-OpenSslCertificateAuthority {
 
   Push-Location $Path
 
-  @("certs", "db", "private") | ForEach-Object {
+  @("certs", "csr", "db", "private") | ForEach-Object {
     New-Item -Path $_ -ItemType Directory | Out-Null
   }
 
@@ -688,7 +688,7 @@ function New-OpenSslSubordinateAuthority {
 
   Push-Location "$Path/$Name"
 
-  @("certs", "db", "private") | ForEach-Object {
+  @("certs", "csr", "db", "private") | ForEach-Object {
     New-Item -Path $_ -ItemType Directory | Out-Null
   }
 
