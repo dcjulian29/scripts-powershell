@@ -639,11 +639,11 @@ $(ext_subca($Public))
 
   Write-Output "Generating the root certificate request..."
 
-  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out csr/$Name.csr -key private/$Name.key $passin"
+  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out csr/ca.csr -key private/$Name.key $passin"
 
   Write-Output "`n`nGenerating the root certificate for this authority..."
 
-  Invoke-OpenSsl "ca -selfsign -config $($script:cnf_ca) -in csr/$Name.csr -out $Name.crt -extensions ca_ext $passin"
+  Invoke-OpenSsl "ca -selfsign -config $($script:cnf_ca) -in csr/ca.csr -out $Name.crt -extensions ca_ext $passin"
 
   Write-Output "`n`nGenerating the OCSP private key for this authority...`n"
 
@@ -830,13 +830,13 @@ $(ext_client $Public)
 
   Write-Output "`nGenerating the subordinate certificate request..."
 
-  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out csr/$Name.csr -key private/$Name.key $passin"
+  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out csr/ca.csr -key private/$Name.key $passin"
 
   Write-Output "Using Root CA to sign the certificate for this authority..."
 
   Pop-Location
 
-  Invoke-OpenSsl "ca -config $($script:cnf_ca) -in csr/$Name.csr -out $Name/$Name.crt -extensions sub_ca_ext"
+  Invoke-OpenSsl "ca -config $($script:cnf_ca) -in csr/ca.csr -out $Name/$Name.crt -extensions sub_ca_ext"
 
   Push-Location -Path $Name
 
