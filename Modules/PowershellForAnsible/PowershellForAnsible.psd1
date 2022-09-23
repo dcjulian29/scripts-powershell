@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2207.25.1'
+    ModuleVersion = '2209.23.1'
     Description = "A collection of commands to interact with a docker container running the control node instance. Allows a very similar workflow as on a Linux system."
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
@@ -11,7 +11,7 @@
         GUID = "2cd0c771-ed8b-48bc-b6bc-be8540c915e4"
        }
     )
-    RootModule = 'PowershellForAnsible.psm1'
+    RootModule = 'Ansible.psm1'
     NestedModules = @(
       "AnsibleDevOps.psm1"
       "AnsibleInventory.psm1"
