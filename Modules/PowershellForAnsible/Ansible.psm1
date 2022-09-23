@@ -58,7 +58,7 @@ function Invoke-AnsibleContainer {
     }
 
     if ($Command) {
-      $params.Add("Command", "`"$Command`"")
+      $params.Add("Command", "$Command")
     }
 
     $params.GetEnumerator().ForEach({ Write-Verbose "$($_.Name)=$($_.Value)" })
