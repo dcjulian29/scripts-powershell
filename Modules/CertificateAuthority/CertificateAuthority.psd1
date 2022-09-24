@@ -1,6 +1,6 @@
 @{
   RootModule = 'CertificateAuthority.psm1'
-  ModuleVersion = '2209.24.1'
+  ModuleVersion = '2209.24.3'
   Description = "A collection of commands to manage and operate a certificte authority using OpenSSL."
   GUID = '8c0c42a2-05e2-4e17-b9d4-77e77bf91b30'
   Author = 'Julian Easterling'
@@ -17,10 +17,10 @@
   ScriptsToProcess = @()
   TypesToProcess = @()
   FormatsToProcess = @()
-  NestedModules = @()
-  #   "ca_create.psm1"
-  #   "ca_operations.psm1"
-  # )
+  NestedModules = @(
+    "Authority.psm1"
+    "Operations.psm1"
+  )
   FunctionsToExport = @(
     "Approve-ServerCertificate"
     "Approve-SubordinateAuthority"
@@ -48,6 +48,11 @@
   CmdletsToExport = @()
   VariablesToExport = @()
   AliasesToExport = @(
+    "ca-get"
+    "ca-set"
+    "ca-test"
+    "ca-update"
+    "crl-update"
     "Get-RevokedIssuedCertificate"
     "import-csr"
     "list-imported-requests"
@@ -55,6 +60,9 @@
     "list-revoked-certificates"
     "new-server-certificate"
     "new-user-certificate"
+    "ocsp-start"
+    "ocsp-stop"
+    "ocsp-update"
     "remove-subca"
     "revoke-certificate"
     "revoke-issued-certificate"
