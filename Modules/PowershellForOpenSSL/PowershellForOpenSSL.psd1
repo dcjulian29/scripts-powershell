@@ -1,6 +1,6 @@
 @{
   RootModule = 'OpenSSL.psm1'
-  ModuleVersion = '2209.20.1'
+  ModuleVersion = '2209.24.1'
   Description = "A collection of commands to interact with OpenSSL."
   GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
   Author = 'Julian Easterling'
@@ -12,14 +12,10 @@
   TypesToProcess = @()
   FormatsToProcess = @()
   NestedModules = @(
-    "CertAuth.psm1"
     "Hashes.psm1"
     "x509.psm1"
   )
   FunctionsToExport = @(
-    "Approve-ServerCertificate"
-    "Approve-SubordinateAuthority"
-    "Approve-UserCertificate"
     "ConvertFrom-Base64"
     "ConvertFrom-PemCertificate"
     "ConvertTo-Base64"
@@ -38,9 +34,6 @@
     "Get-DeployedCertificate"
     "Get-DeployedCertificateExpiration"
     "Get-DeployedCertificateValidity"
-    "Get-ImportedCertificateRequest"
-    "Get-IssuedCertificate"
-    "Get-IssuedCertificateValidity"
     "Get-OpenSslCertificateAuthoritySetting"
     "Get-OpenSslEdwardsCurveKeypair"
     "Get-OpenSslElipticCurveKeypair"
@@ -48,23 +41,13 @@
     "Get-OpenSslRandom"
     "Get-OpenSslVersion"
     "Find-OpenSsl"
-    "Import-CertificateRequest"
     "Invoke-OpenSsl"
     "Invoke-OpenSslContainer"
-    "New-OpenSsl"
-    "New-OpenSslCertificateAuthority"
     "New-OpenSslDhParameters"
     "New-OpenSslDsaParameters"
     "New-OpenSslEdwardsCurveKeypair"
     "New-OpenSslElipticCurveKeypair"
     "New-OpenSslRsaKeypair"
-    "New-OpenSslSubordinateAuthority"
-    "Rovoke-Certificate"
-    "Remove-OpenSslSubordinateAuthority"
-    "Revoke-OpenSslSubordinateAuthority"
-    "Set-OpenSslCertificateAuthoritySetting"
-    "Start-OpenSslOcspServer"
-    "Stop-OpenSslOcspServer"
     "Test-CertificateOcsp"
     "Test-CertificateRevocation"
     "Test-CertificateRevocationList"
@@ -72,10 +55,6 @@
     "Test-DeployedCertificateExpired"
     "Test-DeployedCertificateRevocation"
     "Test-DeployedCertificateValidity"
-    "Test-OpenSslCertificateAuthority"
-    "Update-CerticateAuthorityDatabase"
-    "Update-CerticateAuthorityRevocationList"
-    "Update-OcspCerticate"
   )
   CmdletsToExport = @()
   VariablesToExport = @()
@@ -83,31 +62,15 @@
     "Get-OpenSslCiphers"
     "Get-OpenSslDigestAlgorithms"
     "Get-OpenSslEllipticCurves"
-    "Get-RevokedIssuedCertificate"
-    "import-csr"
     "openssl"
     "opensslc"
     "openssl-container"
-    "list-imported-requests"
-    "list-issued-certificates"
-    "list-revoked-certificates"
-    "remove-subca"
-    "revoke-certificate"
-    "revoke-issued-certificate"
-    "revoke-subca"
-    "sign-server-certificate"
-    "sign-subordinate-authority"
-    "sign-subca"
-    "sign-user-certificate"
     "show-certificate"
     "show-certificate-expiration"
     "show-certificate-hash"
     "show-crl"
     "show-crl-hash"
     "show-csr"
-    "update-ca"
-    "update-crl"
-    "update-ocsp"
   )
   PrivateData = @{
     PSData = @{
