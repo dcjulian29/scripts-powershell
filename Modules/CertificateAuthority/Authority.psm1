@@ -42,6 +42,8 @@ OCSP;URI.0              = $ocsp_url
 "@
 $script:cnf_timestamp = "timestamp.cnf"
 
+#--------------------------------------------------------------------------------------------------
+
 function cnf_policy($policy="policy_c_o_match") {
   return @"
 policy                  = $policy
@@ -64,6 +66,52 @@ emailAddress            = optional
 "@
 }
 
+function cnf_san($cn, $names) {
+
+  $URI = @()
+  $DNS = @()
+  $IP = @()
+  $EMail = @()
+
+  if ($names -notcontains $cn) {
+    $DNS += $cn
+  }
+
+  foreach ($name in $names) {
+    if ($name -like "*://*") {
+      $URI += $name
+      continue
+    }
+
+    if ($name -like "*@*") {
+      $EMail += $name
+      continue
+    }
+
+    if (Test-IPAddress $name) {
+      $IP += $name
+      continue
+    }
+
+    $DNS += $name
+  }
+
+  $cnf = ".openssl.san.$((New-Guid).Guid).cnf"
+  $text = ".include $($script:cnf_ca)`n`n[san_list]`n`n"
+  $items = @()
+
+  for ($i = 0; $i -lt $URI.Count; $i++)   { $items += "URI.$i = $($URI[$i])" }
+  for ($i = 0; $i -lt $DNS.Count; $i++)   { $items += "DNS.$i = $($DNS[$i])" }
+  for ($i = 0; $i -lt $IP.Count; $i++)    { $items += "IP.$i = $($IP[$i])" }
+  for ($i = 0; $i -lt $EMail.Count; $i++) { $items += "email.$i = $($EMail[$i])" }
+
+  foreach ($item in $Items) { $text += "$item`n" }
+
+  Set-Content -Path $cnf -Value "$text"
+
+  return $cnf
+}
+
 function ext_ca {
   return @"
 [ca_ext]
@@ -73,17 +121,17 @@ subjectKeyIdentifier    = hash
 "@
 }
 
-function ext_client($Public) {
+function ext_client($public,$ocsp=$false) {
   return @"
 [client_ext]
-authorityInfoAccess     = @issuer_info
-#authorityInfoAccess     = @ocsp_info
+$(if (-not $ocsp) { "authorityInfoAccess     = @issuer_info" })
+$(if ($ocsp) { "authorityInfoAccess     = @ocsp_info" })
 authorityKeyIdentifier  = keyid:always, issuer:always
 basicConstraints        = critical,CA:false
 crlDistributionPoints   = @crl_info
 extendedKeyUsage        = clientAuth,codeSigning,emailProtection
 keyUsage                = critical,digitalSignature
-$(if (-not ($Public)) { "nameConstraints         = @name_constraints" })
+$(if (-not ($public)) { "nameConstraints         = @name_constraints" })
 subjectAltName          = email:move
 subjectKeyIdentifier    = hash
 "@
@@ -101,22 +149,23 @@ subjectKeyIdentifier    = hash
 "@
 }
 
-function ext_server($Public) {
+function ext_server($public, $ocsp=$false) {
   return @"
 [server_ext]
-authorityInfoAccess     = @issuer_info
-#authorityInfoAccess     = @ocsp_info
+$(if (-not $ocsp) { "authorityInfoAccess     = @issuer_info" })
+$(if ($ocsp) { "authorityInfoAccess     = @ocsp_info" })
 authorityKeyIdentifier  = keyid:always, issuer:always
 basicConstraints        = critical,CA:false
 crlDistributionPoints   = @crl_info
 extendedKeyUsage        = clientAuth,serverAuth
 keyUsage                = critical,digitalSignature,keyEncipherment
-$(if (-not ($Public)) { "nameConstraints         = @name_constraints" })
+$(if (-not ($public)) { "nameConstraints         = @name_constraints" })
+subjectAltName          = @san_list
 subjectKeyIdentifier    = hash
 "@
 }
 
-function ext_subca($Public) {
+function ext_subca($public) {
  return @"
 [sub_ca_ext]
 authorityInfoAccess     = @issuer_info
@@ -126,7 +175,7 @@ crlDistributionPoints   = @crl_info
 extendedKeyUsage        = clientAuth,serverAuth
 keyUsage                = critical,keyCertSign,cRLSign
 subjectKeyIdentifier    = hash
-$(if (-not ($Public)) { "nameConstraints         = @name_constraints" })
+$(if (-not ($public)) { "nameConstraints         = @name_constraints" })
 "@
 }
 
@@ -142,8 +191,8 @@ subjectKeyIdentifier    = hash
 "@
 }
 
-function generateRequestConfig($Path,$Country,$Organization,$CommonName) {
-  Set-Content -Path $Path -Value @"
+function generateRequestConfig($path, $country, $org, $cn) {
+  Set-Content -Path $path -Value @"
 [req]
 default_bits            = 2048
 encrypt_key             = no
@@ -154,9 +203,9 @@ prompt                  = no
 distinguished_name      = req_subj
 
 [req_subj]
-countryName             = $Country
-organizationName        = $Organization
-commonName              = $CommonName
+countryName             = $country
+organizationName        = $org
+commonName              = $cn
 "@
 }
 

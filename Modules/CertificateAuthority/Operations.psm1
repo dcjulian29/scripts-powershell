@@ -164,7 +164,6 @@ function Get-ImportedCertificateRequest {
 function Get-IssuedCertificate {
   [CmdletBinding(DefaultParameterSetName = "name")]
   [Alias("Get-RevokedIssuedCertificate", "list-issued-certificates", "list-revoked-certificates")]
-
   param (
     [Parameter(ParameterSetName = "name", ValueFromPipeline = $true, Position = 0)]
     [string] $Name,
