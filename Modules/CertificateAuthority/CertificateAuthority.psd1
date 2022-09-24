@@ -7,6 +7,11 @@
   Copyright = '(c) Julian Easterling. Some rights reserved.'
   PowerShellVersion = '5.1'
   RequiredModules = @(
+    @{
+      ModuleName = "Filesystem"
+      ModuleVersion = "2209.19.1"
+      GUID = "aaad40aa-30a0-495c-8377-53e89ea1ec11"
+     }
      @{
       ModuleName = "PowershellForOpenSSL"
       ModuleVersion = "2209.24.1"

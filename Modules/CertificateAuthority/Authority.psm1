@@ -240,13 +240,13 @@ function New-OpenSslCertificateAuthority {
   Write-Output "`nCreating certificate authority directories..."
 
   if (-not (Test-Path $Path)) {
-    New-Item -Path $Path -ItemType Directory | Out-Null
+    New-Folder -Folder $Path
   }
 
   Push-Location $Path
 
   @("certs", "csr", "db", "private") | ForEach-Object {
-    New-Item -Path $_ -ItemType Directory | Out-Null
+    New-Folder -Folder $_
   }
 
   Write-Output "Initalizing certificate authority..."
@@ -415,13 +415,13 @@ function New-OpenSslSubordinateAuthority {
   }
 
   if (-not (Test-Path $Name)) {
-    New-Item -Path $Name -ItemType Directory | Out-Null
+    New-Folder -Folder $Name
   }
 
   Push-Location $Name
 
   @("certs", "csr", "db", "private") | ForEach-Object {
-    New-Item -Path $_ -ItemType Directory | Out-Null
+    New-Folder -Folder $_
   }
 
   Write-Output "Initalizing subordinate authority..."
