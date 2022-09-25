@@ -303,9 +303,7 @@ $(ext_subca($Public))
 
   Write-Output "`nGenerating the root certificate private key..."
 
-  New-OpenSslEdwardsCurveKeypair -Path "./private/$Name.key" -Password $KeyPassword
-
-  Remove-Item -Path "private/$Name.key.pub"
+  New-OpenSslEdwardsCurveKeypair -Path "./private/$Name.key" -Password $KeyPassword -NoPublicFile
 
   Write-Output "Generating the root certificate request..."
 
@@ -317,9 +315,7 @@ $(ext_subca($Public))
 
   Write-Output "`n`nGenerating the OCSP private key for this authority...`n"
 
-  New-OpenSslRsaKeypair -Path "private/ocsp.key" -BitSize 2048
-
-  Remove-Item -Path "private/ocsp.key.pub"
+  New-OpenSslRsaKeypair -Path "private/ocsp.key" -BitSize 2048 -NoPublicFile
 
   Write-Output "`nGenerating the OCSP certificate request..."
 
@@ -482,17 +478,15 @@ $(ext_client $Public)
 
   switch ($KeyEncryption) {
     "Edwards" {
-      New-OpenSslEdwardsCurveKeypair -Path "./private/$Name.key" -Password $KeyPassword
+      New-OpenSslEdwardsCurveKeypair -Path "./private/$Name.key" -Password $KeyPassword -NoPublicFile
     }
     "Eliptic" {
-      New-OpenSslElipticCurveKeypair -Path "./private/$Name.key" -Password $KeyPassword
+      New-OpenSslElipticCurveKeypair -Path "./private/$Name.key" -Password $KeyPassword -NoPublicFile
     }
     "RSA" {
-      New-OpenSslRsaKeypair -Path "./private/$Name.key" -Password $KeyPassword
+      New-OpenSslRsaKeypair -Path "./private/$Name.key" -Password $KeyPassword -NoPublicFile
     }
   }
-
-  Remove-Item -Path "private/$Name.key.pub"
 
   Write-Output "`nGenerating the subordinate certificate request..."
 
@@ -508,9 +502,7 @@ $(ext_client $Public)
 
   Write-Output "`n`nGenerating the OCSP private key for this authority...`n"
 
-  New-OpenSslRsaKeypair -Path "private/ocsp.key" -BitSize 2048
-
-  Remove-Item -Path "private/ocsp.key.pub"
+  New-OpenSslRsaKeypair -Path "private/ocsp.key" -BitSize 2048 -NoPublicFile
 
   Write-Output "`nGenerating the OCSP certificate request..."
 

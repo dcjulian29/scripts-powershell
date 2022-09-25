@@ -457,7 +457,8 @@ function New-OpenSslEdwardsCurveKeypair {
   [CmdletBinding()]
   param (
     [string] $Path = "id_ed25519",
-    [securestring] $Password
+    [securestring] $Password,
+    [switch] $NoPublicFile
   )
 
   $param = "genpkey -algorithm ed25519 -out $Path"
@@ -469,6 +470,8 @@ function New-OpenSslEdwardsCurveKeypair {
   }
 
   Invoke-OpenSsl $param
+
+  if ($NoPublicFile) { return }
 
   if ($Password) {
     Invoke-OpenSsl `
@@ -483,11 +486,15 @@ function New-OpenSslElipticCurveKeypair {
   param (
     [string] $Path = "id_ecdsa",
     [securestring] $Password,
-    [string] $Algorithm = "secp521r1"
+    [string] $Algorithm = "secp521r1",
+    [switch] $NoPublicFile
   )
 
   Invoke-OpenSsl "ecparam -name $Algorithm -genkey -noout -out $Path"
-  Invoke-OpenSsl "ec -in $Path -pubout -out $Path.pub"
+
+  if (-not $NoPublicFile) {
+    Invoke-OpenSsl "ec -in $Path -pubout -out $Path.pub"
+  }
 
   if ($Password) {
     $cred = New-Object System.Management.Automation.PSCredential `
@@ -508,7 +515,8 @@ function New-OpenSslRsaKeypair {
   param (
     [string] $Path = "id_rsa",
     [securestring] $Password,
-    [int32] $BitSize = 2048
+    [int32] $BitSize = 2048,
+    [switch] $NoPublicFile
   )
 
   $param = "genrsa -out $Path -verbose"
@@ -520,6 +528,8 @@ function New-OpenSslRsaKeypair {
   }
 
   Invoke-OpenSsl "$param $BitSize"
+
+  if ($NoPublicFile) { return }
 
   if ($Password) {
     Invoke-OpenSsl `
