@@ -171,6 +171,7 @@ function Invoke-OpenSslContainer {
       Name        = $Name
       Volume      = @("$(Get-DockerMountPoint $PWD):/data")
       Environment = $EnvironmentVariables
+      User        = $env:USERNAME
     }
 
     if ($Direct) {

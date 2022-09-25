@@ -288,6 +288,7 @@ function New-DockerContainer {
     [Alias("env")]
     [hashtable]$EnvironmentVariables,
     [string[]]$Port,
+    [string] $User,
     [switch]$ReadOnly,
     [string]$EntryPoint,
     [ValidateScript({ Test-Path $(Resolve-Path $_) })]
@@ -334,6 +335,10 @@ function New-DockerContainer {
 
   if ($ReadOnly) {
     $param += " --read-only"
+  }
+
+  if ($User) {
+    $param += " --user='$User'"
   }
 
   if (($EnvironmentVariables) -and ($EnvironmentVariables.Count -gt 0)) {
