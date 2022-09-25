@@ -12,13 +12,23 @@ function Enable-LinuxSubsystem {
   }
 }
 
+function Get-LinuxSubsystemParentProcess {
+    $id = tasklist /svc /fi "imagename eq svchost.exe" `
+      | Select-String ".*\s(\d+)\sLxssManager" `
+      | ForEach-Object { "$($_.Matches.Groups[1])" }
+
+    if ($id) {
+      return $id
+    } else {
+      return $null
+    }
+}
+
 function Restart-LinuxSubsystem {
   if (Test-LinuxSubsystem) {
     Get-Service LxssManager | Stop-Service
 
-    $id = tasklist /svc /fi "imagename eq svchost.exe" `
-      | Select-String ".*\s(\d+)\sLxssManager" `
-      | ForEach-Object { "$($_.Matches.Groups[1])" }
+    $id = Get-LinuxSubsystemParentProcess
 
     if ($id) {
       Get-Process -Id $id | Stop-Process -Force
