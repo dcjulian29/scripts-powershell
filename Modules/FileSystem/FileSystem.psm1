@@ -574,15 +574,15 @@ function New-FileLink {
 function New-Folder {
   [CmdletBinding()]
   param (
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $true, Position = 0)]
     [ValidateNotNullOrEmpty()]
-    [string] $Folder
+    [string] $Path
   )
 
-  if (-not (Test-Path $Folder)) {
+  if (-not (Test-Path $Path)) {
     do {
-      $parent = Split-Path -Parent $Folder
-      do {
+      $parent = Split-Path -Parent $Path
+      while ("" -ne $parent) {
         if (Test-Path $parent) {
           if (($Folder.LastIndexOf("\") -eq $parent.Length)) {
             break
@@ -596,10 +596,10 @@ function New-Folder {
           $last = $parent
           $parent = Split-Path -Parent $parent
         }
-      } until ("" -eq $parent)
-    } until ($parent -eq (Split-Path -Parent $Folder))
+      }
+    } until ($parent -eq (Split-Path -Parent $Path))
 
-    New-Item -ItemType Directory -Path $Folder  | Out-Null
+    New-Item -ItemType Directory -Path $Path  | Out-Null
   }
 }
 
