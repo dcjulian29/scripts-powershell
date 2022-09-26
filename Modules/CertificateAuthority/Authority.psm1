@@ -66,52 +66,6 @@ emailAddress            = optional
 "@
 }
 
-function cnf_san($cn, $names) {
-
-  $URI = @()
-  $DNS = @()
-  $IP = @()
-  $EMail = @()
-
-  if ($names -notcontains $cn) {
-    $DNS += $cn
-  }
-
-  foreach ($name in $names) {
-    if ($name -like "*://*") {
-      $URI += $name
-      continue
-    }
-
-    if ($name -like "*@*") {
-      $EMail += $name
-      continue
-    }
-
-    if (Test-IPAddress $name) {
-      $IP += $name
-      continue
-    }
-
-    $DNS += $name
-  }
-
-  $cnf = ".openssl.san.$((New-Guid).Guid).cnf"
-  $text = ".include $($script:cnf_ca)`n`n[san_list]`n`n"
-  $items = @()
-
-  for ($i = 0; $i -lt $URI.Count; $i++)   { $items += "URI.$i = $($URI[$i])" }
-  for ($i = 0; $i -lt $DNS.Count; $i++)   { $items += "DNS.$i = $($DNS[$i])" }
-  for ($i = 0; $i -lt $IP.Count; $i++)    { $items += "IP.$i = $($IP[$i])" }
-  for ($i = 0; $i -lt $EMail.Count; $i++) { $items += "email.$i = $($EMail[$i])" }
-
-  foreach ($item in $Items) { $text += "$item`n" }
-
-  Set-Content -Path $cnf -Value "$text"
-
-  return $cnf
-}
-
 function ext_ca {
   return @"
 [ca_ext]
