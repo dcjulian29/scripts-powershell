@@ -1,8 +1,14 @@
 $script:cnf_ca = "ca.cnf"
+$script:cnf_req = @"
+[req]
+default_md = sha256
+utf8 = yes
+string_mask = utf8only
+prompt = no
+distinguished_name = req_subj
+"@
 
-#--------------------------------------------------------------------------------------------------
-
-function cnf_san($id, $cn, $names) {
+function cnf_san($cn, $names) {
   $URI = @()
   $DNS = @()
   $IP = @()
@@ -31,8 +37,12 @@ function cnf_san($id, $cn, $names) {
     $DNS += $name
   }
 
-  $cnf = ".san.$id.cnf"
-  $text = ".include $($script:cnf_ca)`n`n[san_list]`n`n"
+  $text = @"
+[server_req]
+subjectAltName = @san_list
+
+[san_list]`n
+"@
   $items = @()
 
   for ($i = 0; $i -lt $URI.Count; $i++)   { $items += "URI.$i = $($URI[$i])" }
@@ -42,21 +52,28 @@ function cnf_san($id, $cn, $names) {
 
   foreach ($item in $Items) { $text += "$item`n" }
 
-  Set-Content -Path $cnf -Value "$text"
+  return $text
+}
 
-  return $cnf
+function getConfigFileName($Id) {
+  return ".san.$Id.cnf"
+}
+
+function req_subj($Country,$State,$Locality,$Organization,$OrganizationUnit,$Name) {
+  return (@"
+[req_subj]
+countryName = $Country
+$(if ($State.Length -gt 0) { "stateOrProvinceName = $State" })
+$(if ($Locality.Length -gt 0) { "localityName = $Locality" })
+organizationName = $Organization
+$(if ($OrganizationUnit.Length -gt 0) { "organizationUnitName = $OrganizationUnit" })
+commonName = $Name
+"@) -replace '(?m)^\s*?\n'
 }
 
 #--------------------------------------------------------------------------------------------------
 
-function signCertificate($path, $name, $pword, $extention, $days) {
-  if (-not (Test-OpenSslCertificateAuthority $path)) {
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "This is not a certificate authority that can be managed by this module." `
-       -ExceptionType "System.InvalidOperationException" `
-       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  }
-
+function signCertificate($path, $name, $pword, $extension, $days) {
   if ($PsCmdlet.ParameterSetName -eq "path") {
     $name = Import-CertificateRequest $path
   }
@@ -64,7 +81,7 @@ function signCertificate($path, $name, $pword, $extention, $days) {
   $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $pword
   $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
 
-  $cmd = "ca -batch -config $($script:cnf_ca) -noout -notext" `
+  $cmd = "ca -batch -config $($script:cnf_ca) -notext" `
     + " -extensions $extension -days $days $passin -infiles csr/$name.csr"
 
   Invoke-OpenSsl $cmd
@@ -88,7 +105,7 @@ function Approve-ServerCertificate {
     [securestring] $KeyPassword
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path -Subordinate)) {
+  if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "Certificates can only be signed by a subordinate authority that this module can manage." `
        -ExceptionType "System.InvalidOperationException" `
@@ -370,6 +387,106 @@ function Import-CertificateRequest {
   Copy-Item -Path $Path -Destination "csr/$id.csr"
 
   return $id
+}
+
+function New-ServerCertificateRequest {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+    [string] $Name,
+    [ValidateSet("Edwards", "Eliptic", "RSA")]
+    [string] $KeyEncryption = "RSA",
+    [securestring] $KeyPassword,
+    [string] $Country,
+    [Alias("Province", "Region")]
+    [string] $State,
+    [Alias("City")]
+    [string] $Locality,
+    [Alias("Company")]
+    [string] $Organization,
+    [Alias("Section")]
+    [string] $OrganizationUnit,
+    [string[]] $AdditionalNames,
+    [switch] $KeepCnf
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "Certificates can only be requested in a subordinate authority that this module can manage." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  if ($Domain.Length -eq 0) {
+    $Domain = Get-OpenSslCertificateAuthoritySetting Domain
+  }
+
+  if ($Country.Length -eq 0) {
+    $Country = Get-OpenSslCertificateAuthoritySetting c
+  }
+
+  if ($Organization.Length -eq 0) {
+    $Organization = Get-OpenSslCertificateAuthoritySetting org
+  }
+
+  if (($Name.Length -eq 0) -and ($AdditionalNames.Count -gt 0)) {
+    $Name = $AdditionalNames[0]
+  }
+
+  if ($KeyPassword) {
+    $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $KeyPassword
+    $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
+  } else {
+    $passin = ""
+  }
+
+  Write-Verbose "Generating the server certificate private key..."
+
+  $id = Get-OpenSslRandom 8 -Hex
+  $KeyName = "private/$id.key"
+  $CsrName = "csr/$id.csr"
+
+  switch ($KeyEncryption) {
+    "Edwards" {
+      New-OpenSslEdwardsCurveKeypair -Path $KeyName -Password $KeyPassword -NoPublicFile | Write-Verbose
+    }
+    "Eliptic" {
+      New-OpenSslElipticCurveKeypair -Path $KeyName -Password $KeyPassword -NoPublicFile | Write-Verbose
+    }
+    "RSA" {
+      New-OpenSslRsaKeypair -Path $KeyName -Password $KeyPassword -NoPublicFile | Write-Verbose
+    }
+  }
+
+  Write-Verbose "Generating the server certificate request..."
+
+  $cnf = getConfigFileName $id
+  Set-Content -Path $cnf -Value @"
+$($script:cnf_req)
+req_extensions = server_req
+
+$(req_subj $Country $State $Locality $Organization $OrganizationUnit $Name)
+
+$(cnf_san $Name $AdditionalNames)
+"@
+
+  $param = "req -config $cnf -new -key $KeyName -out $CsrName $passin"
+
+  Write-Verbose "param: $param"
+
+  Invoke-OpenSslContainer -Command $param -Verbose
+
+  if ($KeepCnf) {
+    Write-Verbose "Not deleting '$cnf' file."
+  } else {
+    Remove-Item -Path $cnf -Force
+  }
+
+  if (Test-Path -Path "csr/$id.csr") {
+    return $id
+  } else {
+    return $null
+  }
 }
 
 function Revoke-Certificate {
