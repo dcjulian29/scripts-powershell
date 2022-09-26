@@ -389,6 +389,41 @@ function Import-CertificateRequest {
   return $id
 }
 
+function New-ServerCertificate {
+  [CmdletBinding()]
+  [Alias("new-server-certificate")]
+  param (
+    [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+    [string] $Name,
+    [ValidateSet("Edwards", "Eliptic", "RSA")]
+    [string] $KeyEncryption = "RSA",
+    [securestring] $KeyPassword,
+    [string] $Country,
+    [Alias("Province", "Region")]
+    [string] $State,
+    [Alias("City")]
+    [string] $Locality,
+    [Alias("Company")]
+    [string] $Organization,
+    [Alias("Section")]
+    [string] $OrganizationUnit,
+    [string[]] $AdditionalNames,
+    [Parameter(Mandatory = $true)]
+    [securestring] $AuthorityPassword
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "'$Path' is not a root OpenSSL Certificate Authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  $id = New-ServerCertificateRequest ($PSBoundParameters | Where-Object { $_.Key -ne "AuthorityPassword" })
+
+  Approve-ServerCertificate -Name $id -KeyPassword $AuthorityPassword
+}
+
 function New-ServerCertificateRequest {
   [CmdletBinding()]
   param (
