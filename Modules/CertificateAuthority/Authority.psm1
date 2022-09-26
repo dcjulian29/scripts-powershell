@@ -4,8 +4,8 @@ $script:cnf_crl_info = @"
 URI.0                   = `$crl_url
 "@
 $script:cnf_default = @"
-aia_url                 = http://`$name.`$domain_suffix/`$name.crt
-crl_url                 = http://`$name.`$domain_suffix/`$name.crl
+aia_url                 = http://pki.`$domain_suffix/`$name.crt
+crl_url                 = http://pki.`$domain_suffix/`$name.crl
 ocsp_url                = http://ocsp-`$name.`$domain_suffix
 default_ca              = ca_default
 name_opt                = utf8,esc_ctrl,multiline,lname,align
