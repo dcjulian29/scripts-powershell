@@ -16,8 +16,8 @@ home                    = .
 database                = `$home/db/index
 serial                  = `$home/db/serial
 crlnumber               = `$home/db/crlnumber
-certificate             = `$home/`$name.crt
-private_key             = `$home/private/`$name.key
+certificate             = `$home/certs/ca.pem
+private_key             = `$home/private/ca.key
 RANDFILE                = `$home/private/random
 new_certs_dir           = `$home/certs
 unique_subject          = no
@@ -115,9 +115,6 @@ extendedKeyUsage        = clientAuth,serverAuth
 keyUsage                = critical,digitalSignature,keyEncipherment
 $(if (-not ($public)) { "nameConstraints         = @name_constraints" })
 subjectKeyIdentifier    = hash
-
-[server_req]
-subjectAltName          = @san_list
 "@
 }
 
@@ -174,7 +171,7 @@ function New-OpenSslCertificateAuthority {
     [ValidateScript({ Test-Path $(Resolve-Path $_) })]
     [string] $Path = ($PWD.Path),
     [string] $Name = "root",
-    [string] $Domain = "pki.contoso.local",
+    [string] $Domain = "contoso.local",
     [Parameter(Mandatory = $true)]
     [securestring] $KeyPassword,
     [string] $Country = "US",
@@ -259,15 +256,15 @@ $(ext_subca($Public))
 
   Write-Output "`nGenerating the root certificate private key..."
 
-  New-OpenSslEdwardsCurveKeypair -Path "./private/$Name.key" -Password $KeyPassword -NoPublicFile
+  New-OpenSslEdwardsCurveKeypair -Path "./private/ca.key" -Password $KeyPassword -NoPublicFile
 
   Write-Output "Generating the root certificate request..."
 
-  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out csr/ca.csr -key private/$Name.key $passin"
+  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out csr/ca.csr -key private/ca.key $passin"
 
   Write-Output "`n`nGenerating the root certificate for this authority..."
 
-  Invoke-OpenSsl "ca -selfsign -config $($script:cnf_ca) -in csr/ca.csr -out $Name.crt -extensions ca_ext $passin"
+  Invoke-OpenSsl "ca -selfsign -config $($script:cnf_ca) -in csr/ca.csr -out certs/ca.pem -extensions ca_ext $passin"
 
   Write-Output "`n`nGenerating the OCSP private key for this authority...`n"
 
@@ -280,7 +277,7 @@ $(ext_subca($Public))
   Write-Output "`nGenerating the OCSP Certificate for this authority..."
 
   Invoke-OpenSsl `
-    "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles csr/ocsp.csr"
+    "ca -batch -config $($script:cnf_ca) -out certs/ocsp.pem -extensions ocsp_ext -days 30 $passin -infiles csr/ocsp.csr"
 
   Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
 .type=root
@@ -294,7 +291,7 @@ $(ext_subca($Public))
 
   Write-Output "`n`nCreation of a root certificate authority complete...`n"
 
-  Get-Certificate -Path "$Name.crt"
+  Get-Certificate -Path "certs\ca.pem"
 
   Pop-Location
 
@@ -434,25 +431,25 @@ $(ext_client $Public)
 
   switch ($KeyEncryption) {
     "Edwards" {
-      New-OpenSslEdwardsCurveKeypair -Path "./private/$Name.key" -Password $KeyPassword -NoPublicFile
+      New-OpenSslEdwardsCurveKeypair -Path "./private/ca.key" -Password $KeyPassword -NoPublicFile
     }
     "Eliptic" {
-      New-OpenSslElipticCurveKeypair -Path "./private/$Name.key" -Password $KeyPassword -NoPublicFile
+      New-OpenSslElipticCurveKeypair -Path "./private/ca.key" -Password $KeyPassword -NoPublicFile
     }
     "RSA" {
-      New-OpenSslRsaKeypair -Path "./private/$Name.key" -Password $KeyPassword -NoPublicFile
+      New-OpenSslRsaKeypair -Path "./private/ca.key" -Password $KeyPassword -NoPublicFile
     }
   }
 
   Write-Output "`nGenerating the subordinate certificate request..."
 
-  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out csr/ca.csr -key private/$Name.key $passin"
+  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out csr/ca.csr -key private/ca.key $passin"
 
   Write-Output "Using Root CA to sign the certificate for this authority..."
 
   Pop-Location
 
-  Invoke-OpenSsl "ca -config $($script:cnf_ca) -in $Name/csr/ca.csr -out $Name/$Name.crt -extensions sub_ca_ext"
+  Invoke-OpenSsl "ca -config $($script:cnf_ca) -in $Name/csr/ca.csr -out $Name/certs/ca.pem -extensions sub_ca_ext"
 
   Push-Location $Name
 
@@ -467,7 +464,7 @@ $(ext_client $Public)
   Write-Output "`nGenerating the OCSP Certificate for this authority..."
 
   Invoke-OpenSsl `
-    "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles csr/ocsp.csr"
+    "ca -batch -config $($script:cnf_ca) -out certs/ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles csr/ocsp.csr"
 
   Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
 .type=subordinate
@@ -481,9 +478,9 @@ $(ext_client $Public)
 
   Write-Output "`n`nCreation of a subordinate authority complete...`n"
 
-  Get-Certificate -Path "$Name.crt"
+  Get-Certificate -Path "cert/ca.pem"
 
-  $sn = Get-CertificateSerialNumber -Path "$Name.crt"
+  $sn = Get-CertificateSerialNumber -Path "cert/ca.pem"
 
   Pop-Location
 
