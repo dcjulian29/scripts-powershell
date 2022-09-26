@@ -10,6 +10,13 @@ My PowerShell Profile Scripts and various modules I maintain and use.
 
 | Module                                                                                              | Version                                                                          |
 | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [CertificateAuthority](https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/CertificateAuthority) | ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/CertificateAuthority) |
+| [DateTime](https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/DateTime) | ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/DateTime) |
+| [FileSystem](https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/FileSystem) | ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/FileSystem) |
+| [PowershellForAnsible](https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/PowershellForAnsible) | ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/PowershellForAnsible) |
+| [PowershellForDocker](https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/PowershellForDocker) | ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/PowershellForDocker) |
+| [PowershellForGit](https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/PowershellForGit) | ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/PowershellForGit) |
+| [PowershellForOpenSSL](https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/PowershellForOpenSSL) | ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/PowershellForOpenSSL) |
 | [VirtualBaseDisk](https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/WebCredential) | ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/VirtualBaseDisk) |
 | [WebCredential](https://github.com/dcjulian29/scripts-powershell/tree/main/Modules/WebCredential)   | ![Version](https://img.shields.io/myget/dcjulian29-powershell/v/WebCredential)   |
 
