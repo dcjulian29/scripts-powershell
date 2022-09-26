@@ -114,8 +114,10 @@ crlDistributionPoints   = @crl_info
 extendedKeyUsage        = clientAuth,serverAuth
 keyUsage                = critical,digitalSignature,keyEncipherment
 $(if (-not ($public)) { "nameConstraints         = @name_constraints" })
-subjectAltName          = @san_list
 subjectKeyIdentifier    = hash
+
+[server_req]
+subjectAltName          = @san_list
 "@
 }
 
