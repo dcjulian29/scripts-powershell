@@ -503,6 +503,112 @@ $(ext_client $Public)
   Write-Output "certificates within this authority...`n"
 }
 
+function Publish-CertificateAuthority {
+  [CmdletBinding()]
+  [Alias("ca-publish")]
+  param (
+    [ValidateScript({ Assert-FolderExists; Test-Path })]
+    [Parameter(Position = 0, ValueFromPipeline = $true)]
+    [string] $Path = "$($PWD.Path)/.publish",
+    [switch] $Force
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  if (-not (Test-OpenSslCertificateAuthority -Root)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "Certificate Authorities can only be published by the root authority." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  Write-Verbose "Path: $Path"
+  $Destination = "$((Resolve-Path -Relative -Path $Path) -replace '\\', '/')"
+  Write-Verbose "Destination: $Destination"
+
+  if ((Get-ChildItem $Destination).Count -gt 0) {
+    if ($Force) {
+      Remove-Item -Path "$Destination/*" -Recurse -Force
+    } else {
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "Files present in publish path and -Force was not supplied." `
+        -ExceptionType "System.InvalidOperationException" `
+        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+    }
+  }
+
+  Set-Content -Path "$Destination/mime.types" -Value @"
+application/pkcs7-mime              .p7c
+application/pkcs8                   .p8  .key
+application/pkcs10                  .p10 .csr
+application/pkix-cert               .cer
+application/pkix-crl                .crl
+application/x-pem-file              .pem
+application/x-pkcs7-certificates    .p7b .spc
+application/x-pkcs7-certreqresp     .p7r
+application/x-pkcs7-crl             .crl
+application/x-pkcs12                .p12 .pfx
+application/x-x509-ca-cert          .crt .der
+application/x-x509-user-cert        .crt
+"@
+
+  $root = Get-OpenSslCertificateAuthoritySetting name
+  $authorities = @($root, $(Get-OpenSslCertificateAuthoritySetting subca))
+
+  Write-Verbose "root: $root"
+  Write-Verbose "authorities: $authorities"
+
+  $subdir = ""
+
+  foreach ($authority in $authorities) {
+    if (($authority -eq $root) -or (Test-OpenSslSubordinateAuthorityMounted -Name $authority)) {
+      Write-Verbose "Authority is mounted. Proceeding to publish..."
+      if (-not ($authority -eq $root)) {
+        $subdir = "$authority/"
+      }
+
+      Push-Location $subdir
+
+      if ( "imported" -ne (Get-OpenSslCertificateAuthoritySetting type)) {
+        $cn = Get-OpenSslCertificateAuthoritySetting cn
+
+        Write-Output ">>>---------------- '$cn' Certificate Authority`n"
+
+        $pass = Read-Host "Enter password for '$cn' private key" -AsSecureString
+
+        Write-Output "Updating the certificate authority database..."
+        Update-CerticateAuthorityDatabase -AuthorityPassword $pass
+
+        Write-Output "Updating the certificate revocation list..."
+        Update-CerticateAuthorityRevocationList -AuthorityPassword $pass
+
+        $name = Get-OpenSslCertificateAuthoritySetting name
+      } else {
+        Write-Output ">>>---------------- '$cn' Certificate Authority"
+        Write-Output "                     This is an imported authority.`n"
+      }
+
+      Pop-Location
+
+      if (Test-Path "$($subdir)certs/ca.pem" ) {
+        ConvertFrom-PemCertificate -CertPath "$($subdir)certs/ca.pem" `
+        -Destination "$Destination/$name.crt" -To DER
+      }
+
+      if (Test-Path "$subdir$name.crl") {
+        Invoke-OpenSsl "crl -in $subdir$name.crl -out $Destination/$name.crl -outform der"
+      }
+
+      $subdir = ""
+    }
+  }
+}
+
 function Remove-OpenSslSubordinateAuthority {
   [CmdletBinding()]
   [Alias("remove-subca")]
