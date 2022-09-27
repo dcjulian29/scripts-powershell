@@ -35,11 +35,6 @@ excluded;IP.0=0.0.0.0/0.0.0.0
 excluded;IP.1=0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
 "@
 $script:cnf_ocsp = "ocsp.cnf"
-$script:cnf_ocsp_info = @"
-[ocsp_info]
-caIssuers;URI.0         = $aia_url
-OCSP;URI.0              = $ocsp_url
-"@
 $script:cnf_timestamp = "timestamp.cnf"
 
 #--------------------------------------------------------------------------------------------------
