@@ -584,7 +584,7 @@ function New-Folder {
       $parent = Split-Path -Parent $Path
       while ("" -ne $parent) {
         if (Test-Path $parent) {
-          if (($Folder.LastIndexOf("\") -eq $parent.Length)) {
+          if (($Path.LastIndexOf("\") -eq $parent.Length)) {
             break
           } else {
             New-Item -ItemType Directory -Path $last  | Out-Null
