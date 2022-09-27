@@ -26,6 +26,10 @@ default_md              = sha256
 $script:cnf_issuer_info = @"
 [issuer_info]
 caIssuers;URI.0         = `$aia_url
+"@
+$script:cnf_ocsp_info = @"
+[issuer_info]
+caIssuers;URI.0         = `$aia_url
 OCSP;URI.0              = `$ocsp_url
 "@
 $script:cnf_name_constraints = @"
@@ -150,7 +154,8 @@ function New-OpenSslCertificateAuthority {
     [string] $Country = "US",
     [string] $Organization = "OpenSSL Root Certificate Authority",
     [string] $CommonName = "RootCA",
-    [switch] $Public
+    [switch] $Public,
+    [switch] $UseOcsp
   )
 
   if (Test-OpenSslCertificateAuthority $Path) {
@@ -201,7 +206,7 @@ $(if (-not ($Public)) { cnf_policy })
 
 $($script:cnf_crl_info)
 
-$($script:cnf_issuer_info)
+$(if ($UseOcsp) { $script:cnf_ocsp_info } else { $script:cnf_issuer_info })
 
 $(if (-not ($Public)) { $script:cnf_name_constraints })
 
@@ -216,7 +221,7 @@ req_extensions          = ca_ext
 
 $(ext_ca)
 
-$(ext_ocsp)
+$(if ($UseOcsp) { ext_ocsp })
 
 $(ext_subca($Public))
 "@
@@ -244,7 +249,12 @@ $(ext_subca($Public))
 .c=$Country
 .org=$Organization
 .cn=$CommonName
+.ocsp=$UseOcsp
 "@
+
+  if ($UseOcsp) {
+    Update-OcspCerticate -Reset
+  }
 
   Write-Output "`n`nCreation of a root certificate authority complete...`n"
 
@@ -274,7 +284,8 @@ function New-OpenSslSubordinateAuthority {
     [string] $Organization,
     [string] $CommonName = "SubCA",
     [switch] $Public,
-    [switch] $Force
+    [switch] $Force,
+    [switch] $UseOcsp,
   )
 
   if (-not (Test-OpenSslCertificateAuthority -Root)) {
@@ -356,7 +367,7 @@ $(if (-not ($Public)) { cnf_policy })
 
 $($script:cnf_crl_info)
 
-$($script:cnf_issuer_info)
+$(if ($UseOcsp) { $script:cnf_ocsp_info } else { $script:cnf_issuer_info })
 
 $(if (-not ($Public)) { $script:cnf_name_constraints })
 
@@ -371,7 +382,7 @@ req_extensions          = ca_ext
 
 $(ext_ca)
 
-$(ext_ocsp)
+$(if ($UseOcsp) { ext_ocsp })
 
 $(ext_server $Public)
 
@@ -411,7 +422,12 @@ $(ext_client $Public)
 .c=$Country
 .org=$Organization
 .cn=$CommonName
+.ocsp=$UseOcsp
 "@
+
+  if ($UseOcsp) {
+    Update-OcspCerticate -Reset
+  }
 
   Write-Output "`n`nCreation of a subordinate authority complete...`n"
 

@@ -808,7 +808,11 @@ function Update-OcspCerticate {
   param (
     [Parameter(Position = 0)]
     [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-    [string] $Path = ($PWD.Path)
+    [string] $Path = ($PWD.Path),
+    [Parameter(Mandatory = $true)]
+    [securestring] $AuthorityPassword,
+    [int] $Days = 30,
+    [switch] $Reset
   )
 
   if (-not (Test-OpenSslCertificateAuthority $Path)) {
@@ -819,6 +823,34 @@ function Update-OcspCerticate {
   }
 
   Push-Location $Path
+
+  if ("True" -ne $(Get-OpenSslCertificateAuthoritySetting ocsp)) {
+    return
+  }
+
+  if ($Reset) {
+    Write-Output "`n~~~~~`nGenerating the OCSP private key for this authority...`n"
+
+    generateRequestConfig "ocsp.cnf" $Country $Organization "$CommonName OCSP Responder"
+
+    New-OpenSslRsaKeypair -Path "private/ocsp.key" -BitSize 2048 -NoPublicFile
+
+    Write-Output "`nGenerating the OCSP certificate request..."
+
+    Invoke-OpenSsl "req -new -config ocsp.cnf -out csr/ocsp.csr -key private/ocsp.key"
+
+    Write-Output "`nGenerating the OCSP Certificate for this authority..."
+  }
+
+  $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $AuthorityPassword
+  $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
+  $ext = "-extensions ocsp_ext"
+
+  Invoke-OpenSsl `
+    "ca -batch -config $($script:cnf_ca) -out certs/ocsp.pem $ext -days $Days $passin -infiles csr/ocsp.csr"
+
+  Pop-Location
+}
 
   Invoke-OpenSsl `
     "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 -infiles csr/ocsp.csr"
