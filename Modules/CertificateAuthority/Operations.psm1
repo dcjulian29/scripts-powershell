@@ -71,6 +71,24 @@ commonName = $Name
 "@) -replace '(?m)^\s*?\n'
 }
 
+function generateRequestConfig($path, $country, $org, $cn) {
+  Set-Content -Path $path -Value @"
+[req]
+default_bits            = 2048
+encrypt_key             = no
+default_md              = sha256
+utf8                    = yes
+string_mask             = utf8only
+prompt                  = no
+distinguished_name      = req_subj
+
+[req_subj]
+countryName             = $country
+organizationName        = $org
+commonName              = $cn
+"@
+}
+
 #--------------------------------------------------------------------------------------------------
 
 function signCertificate($path, $name, $pword, $extension, $days) {

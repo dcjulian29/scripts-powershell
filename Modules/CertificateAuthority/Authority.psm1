@@ -34,8 +34,6 @@ permitted;DNS.0=`$domain_suffix
 excluded;IP.0=0.0.0.0/0.0.0.0
 excluded;IP.1=0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
 "@
-$script:cnf_ocsp = "ocsp.cnf"
-$script:cnf_timestamp = "timestamp.cnf"
 
 #--------------------------------------------------------------------------------------------------
 
@@ -137,24 +135,6 @@ subjectKeyIdentifier    = hash
 "@
 }
 
-function generateRequestConfig($path, $country, $org, $cn) {
-  Set-Content -Path $path -Value @"
-[req]
-default_bits            = 2048
-encrypt_key             = no
-default_md              = sha256
-utf8                    = yes
-string_mask             = utf8only
-prompt                  = no
-distinguished_name      = req_subj
-
-[req_subj]
-countryName             = $country
-organizationName        = $org
-commonName              = $cn
-"@
-}
-
 #--------------------------------------------------------------------------------------------------
 
 function New-OpenSslCertificateAuthority {
@@ -241,9 +221,6 @@ $(ext_ocsp)
 $(ext_subca($Public))
 "@
 
-  generateRequestConfig $script:cnf_ocsp $Country $Organization "$CommonName OCSP Responder"
-  generateRequestConfig $script:cnf_timestamp $Country $Organization "$CommonName Timestamp"
-
   $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $KeyPassword
   $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
 
@@ -258,19 +235,6 @@ $(ext_subca($Public))
   Write-Output "`n`nGenerating the root certificate for this authority..."
 
   Invoke-OpenSsl "ca -selfsign -config $($script:cnf_ca) -in csr/ca.csr -out certs/ca.pem -extensions ca_ext $passin"
-
-  Write-Output "`n`nGenerating the OCSP private key for this authority...`n"
-
-  New-OpenSslRsaKeypair -Path "private/ocsp.key" -BitSize 2048 -NoPublicFile
-
-  Write-Output "`nGenerating the OCSP certificate request..."
-
-  Invoke-OpenSsl "req -new -config ocsp.cnf -out csr/ocsp.csr -key private/ocsp.key"
-
-  Write-Output "`nGenerating the OCSP Certificate for this authority..."
-
-  Invoke-OpenSsl `
-    "ca -batch -config $($script:cnf_ca) -out certs/ocsp.pem -extensions ocsp_ext -days 30 $passin -infiles csr/ocsp.csr"
 
   Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
 .type=root
@@ -414,9 +378,6 @@ $(ext_server $Public)
 $(ext_client $Public)
 "@
 
-  generateRequestConfig $script:cnf_ocsp $Country $Organization "$CommonName OCSP Responder"
-  generateRequestConfig $script:cnf_timestamp $Country $Organization "$CommonName Timestamp"
-
   $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $KeyPassword
   $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
 
@@ -441,23 +402,6 @@ $(ext_client $Public)
   Write-Output "Using Root CA to sign the certificate for this authority..."
 
   Pop-Location
-
-  Invoke-OpenSsl "ca -config $($script:cnf_ca) -in $Name/csr/ca.csr -out $Name/certs/ca.pem -extensions sub_ca_ext"
-
-  Push-Location $Name
-
-  Write-Output "`n`nGenerating the OCSP private key for this authority...`n"
-
-  New-OpenSslRsaKeypair -Path "private/ocsp.key" -BitSize 2048 -NoPublicFile
-
-  Write-Output "`nGenerating the OCSP certificate request..."
-
-  Invoke-OpenSsl "req -new -config ocsp.cnf -out csr/ocsp.csr -key private/ocsp.key"
-
-  Write-Output "`nGenerating the OCSP Certificate for this authority..."
-
-  Invoke-OpenSsl `
-    "ca -batch -config $($script:cnf_ca) -out certs/ocsp.crt -extensions ocsp_ext -days 30 $passin -infiles csr/ocsp.csr"
 
   Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
 .type=subordinate
