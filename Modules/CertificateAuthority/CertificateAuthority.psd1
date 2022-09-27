@@ -39,6 +39,7 @@
     "New-OpenSslSubordinateAuthority"
     "New-ServerCertificate"
     "New-ServerCertificateRequest"
+    "New-UserCertificateRequest"
     "Revoke-Certificate"
     "Remove-OpenSslSubordinateAuthority"
     "Revoke-OpenSslSubordinateAuthority"

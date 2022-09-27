@@ -509,7 +509,110 @@ $(cnf_san $Name $AdditionalNames)
 
   Write-Verbose "param: $param"
 
-  Invoke-OpenSslContainer -Command $param -Verbose
+  Invoke-OpenSsl $param
+
+  if ($KeepCnf) {
+    Write-Verbose "Not deleting '$cnf' file."
+  } else {
+    Remove-Item -Path $cnf -Force
+  }
+
+  if (Test-Path -Path "csr/$id.csr") {
+    return $id
+  } else {
+    return $null
+  }
+}
+
+function New-UserCertificateRequest {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+    [string] $Name,
+    [string] $Domain,
+    [ValidateSet("Edwards", "Eliptic", "RSA")]
+    [string] $KeyEncryption = "RSA",
+    [securestring] $KeyPassword,
+    [string] $Country,
+    [Alias("Province", "Region")]
+    [string] $State,
+    [Alias("City")]
+    [string] $Locality,
+    [Alias("Company")]
+    [string] $Organization,
+    [Alias("Section")]
+    [string] $OrganizationUnit,
+    [switch] $KeepCnf
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "Certificates can only be requested in a subordinate authority that this module can manage." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  if ($Name -like "*@*") {
+    $Domain = ($Name -split '@')[1]
+    $Name   = ($Name -split '@')[0]
+  }
+
+  if ($Domain.Length -eq 0) {
+    $Domain = Get-OpenSslCertificateAuthoritySetting Domain
+  }
+
+  if ($Country.Length -eq 0) {
+    $Country = Get-OpenSslCertificateAuthoritySetting c
+  }
+
+  if ($Organization.Length -eq 0) {
+    $Organization = Get-OpenSslCertificateAuthoritySetting org
+  }
+
+  if ($KeyPassword) {
+    $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $KeyPassword
+    $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
+  } else {
+    $passin = ""
+  }
+
+  Write-Verbose "Generating the client certificate private key..."
+
+  $id = Get-OpenSslRandom 8 -Hex
+  $KeyName = "./private/$id.key"
+  $CsrName = "./csr/$id.csr"
+
+  switch ($KeyEncryption) {
+    "Edwards" {
+      New-OpenSslEdwardsCurveKeypair -Path $KeyName -Password $KeyPassword -NoPublicFile | Write-Verbose
+    }
+    "Eliptic" {
+      New-OpenSslElipticCurveKeypair -Path $KeyName -Password $KeyPassword -NoPublicFile | Write-Verbose
+    }
+    "RSA" {
+      New-OpenSslRsaKeypair -Path $KeyName -Password $KeyPassword -NoPublicFile | Write-Verbose
+    }
+  }
+
+  Write-Verbose "Generating the client certificate request..."
+
+  $cnf = getConfigFileName $id
+  Set-Content -Path $cnf -Value @"
+$($script:cnf_req)
+req_extensions = client_req
+
+[ client_req ]
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = email:$Name@$Domain
+
+$(req_subj $Country $State $Locality $Organization $OrganizationUnit "$Name@$Domain")
+"@
+
+  $param = "req -config $cnf -new -key $KeyName -out $CsrName $passin"
+
+  Write-Output "param: $param"
+
+  Invoke-OpenSsl $param
 
   if ($KeepCnf) {
     Write-Verbose "Not deleting '$cnf' file."
