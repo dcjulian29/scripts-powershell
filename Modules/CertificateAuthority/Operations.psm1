@@ -852,8 +852,51 @@ function Update-OcspCerticate {
   Pop-Location
 }
 
+function Update-TimestampCerticate {
+  [Alias("update-timestamp")]
+  param (
+    [Parameter(Position = 0)]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path = ($PWD.Path),
+    [Parameter(Mandatory = $true)]
+    [securestring] $AuthorityPassword,
+    [int] $Days = 30,
+    [switch] $Reset
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  Push-Location $Path
+
+  if ("True" -ne $(Get-OpenSslCertificateAuthoritySetting timestamp)) {
+    return
+  }
+
+  if ($Reset) {
+    Write-Output "`n~~~~~`nGenerating the timestamp private key for this authority...`n"
+
+    generateRequestConfig "timestamp.cnf" $Country $Organization "$CommonName Timestamp"
+
+    New-OpenSslRsaKeypair -Path "private/timestamp.key" -BitSize 2048 -NoPublicFile
+
+    Write-Output "`nGenerating the Timestamp certificate request..."
+
+    Invoke-OpenSsl "req -new -config timestamp.cnf -out csr/timestamp.csr -key private/timestamp.key"
+
+    Write-Output "`nGenerating the Timestamp certificate for this authority..."
+  }
+
+  $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $AuthorityPassword
+  $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
+  $ext = "-extensions timestamp_ext"
+
   Invoke-OpenSsl `
-    "ca -batch -config $($script:cnf_ca) -out ocsp.crt -extensions ocsp_ext -days 30 -infiles csr/ocsp.csr"
+    "ca -batch -config $($script:cnf_ca) -out certs/timestamp.pem $ext -days $Days $passin -infiles csr/timestamp.csr"
 
   Pop-Location
 }

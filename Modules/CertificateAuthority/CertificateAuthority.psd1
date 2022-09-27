@@ -1,6 +1,6 @@
 @{
   RootModule = 'CertificateAuthority.psm1'
-  ModuleVersion = '2209.27.1'
+  ModuleVersion = '2209.27.2'
   Description = "A collection of commands to manage and operate a certificte authority using OpenSSL."
   GUID = '8c0c42a2-05e2-4e17-b9d4-77e77bf91b30'
   Author = 'Julian Easterling'
@@ -52,7 +52,8 @@
     "Test-OpenSslSubordinateAuthorityMounted"
     "Update-CerticateAuthorityDatabase"
     "Update-CerticateAuthorityRevocationList"
-    "Update-OcspCerticate"
+    "Update-OcspCertificate"
+    "Update-TimestampCertificate"
   )
   CmdletsToExport = @()
   VariablesToExport = @()
@@ -84,6 +85,7 @@
     "update-ca"
     "update-crl"
     "update-ocsp"
+    "update-timestamp"
   )
   PrivateData = @{
     PSData = @{

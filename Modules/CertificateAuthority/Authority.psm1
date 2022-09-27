@@ -250,6 +250,7 @@ $(ext_subca($Public))
 .org=$Organization
 .cn=$CommonName
 .ocsp=$UseOcsp
+.timestamp=False
 "@
 
   if ($UseOcsp) {
@@ -286,6 +287,7 @@ function New-OpenSslSubordinateAuthority {
     [switch] $Public,
     [switch] $Force,
     [switch] $UseOcsp,
+    [switch] $UseTimestamp
   )
 
   if (-not (Test-OpenSslCertificateAuthority -Root)) {
@@ -384,6 +386,8 @@ $(ext_ca)
 
 $(if ($UseOcsp) { ext_ocsp })
 
+$(if ($UseTimestamp) { ext_timestamp })
+
 $(ext_server $Public)
 
 $(ext_client $Public)
@@ -423,10 +427,15 @@ $(ext_client $Public)
 .org=$Organization
 .cn=$CommonName
 .ocsp=$UseOcsp
+.timestamp=$UseTimestamp
 "@
 
   if ($UseOcsp) {
     Update-OcspCerticate -Reset
+  }
+
+  if ($UseTimestamp) {
+    Update-TimestampCerticate -Reset
   }
 
   Write-Output "`n`nCreation of a subordinate authority complete...`n"
