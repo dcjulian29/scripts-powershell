@@ -48,6 +48,7 @@
     "Start-OpenSslOcspServer"
     "Stop-OpenSslOcspServer"
     "Test-OpenSslCertificateAuthority"
+    "Test-OpenSslSubordinateAuthorityMounted"
     "Update-CerticateAuthorityDatabase"
     "Update-CerticateAuthorityRevocationList"
     "Update-OcspCerticate"

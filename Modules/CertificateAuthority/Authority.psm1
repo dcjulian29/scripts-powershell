@@ -656,3 +656,37 @@ function Test-OpenSslCertificateAuthority {
   return $result
 }
 
+function Test-OpenSslSubordinateAuthorityMounted {
+  [CmdletBinding()]
+  param (
+    [ValidateScript({ Test-Path })]
+    [string] $Path = ($PWD.Path),
+    [string] $Name = $(Split-Path -Path $Path -Leaf)
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  if (Test-OpenSslCertificateAuthority $Path -Subordinate) {
+    Push-Location -Path "$((Get-Item -Path $Path).Parent.FullName)"
+  } else {
+    Push-Location $Path
+  }
+
+
+  if ($Path -like "*$Name") {
+    $testfile = "$Path/.openssl_ca"
+  } else {
+    $testfile = "$Path/$Name/.openssl_ca"
+  }
+
+  if (Test-Path $testfile ) {
+    return $true
+  } else {
+    return $false
+  }
+}
