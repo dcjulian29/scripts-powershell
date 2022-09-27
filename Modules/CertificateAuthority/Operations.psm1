@@ -723,8 +723,9 @@ function Update-CerticateAuthorityDatabase {
   [Alias("update-ca", "ca-update")]
   param (
     [Parameter(Position = 0)]
-    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-    [string] $Path = ($PWD.Path)
+    [ValidateScript({ Test-Path })]
+    [string] $Path = ($PWD.Path),
+    [securestring] $AuthorityPassword
   )
 
   if (-not (Test-OpenSslCertificateAuthority $Path)) {
@@ -736,7 +737,14 @@ function Update-CerticateAuthorityDatabase {
 
   Push-Location $Path
 
-  Invoke-OpenSsl "ca -config $($script:cnf_ca) -gencrl -out $Name.crl"
+  if ($AuthorityPassword) {
+    $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $AuthorityPassword
+    $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
+  } else {
+    $passin = ""
+  }
+
+  Invoke-OpenSsl "ca -config $($script:cnf_ca) -updatedb $passin"
 
   Pop-Location
 }
@@ -745,8 +753,9 @@ function Update-CerticateAuthorityRevocationList {
   [Alias("update-crl", "crl-update")]
   param (
     [Parameter(Position = 0)]
-    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-    [string] $Path = ($PWD.Path)
+    [ValidateScript({ Test-Path })]
+    [string] $Path = ($PWD.Path),
+    [securestring] $AuthorityPassword
   )
 
   if (-not (Test-OpenSslCertificateAuthority $Path)) {
@@ -759,7 +768,15 @@ function Update-CerticateAuthorityRevocationList {
   Push-Location $Path
 
   $Name = Get-OpenSslCertificateAuthoritySetting Name
-  Invoke-OpenSsl "ca -config $($script:cnf_ca) -gencrl -out $Name.crl"
+
+  if ($AuthorityPassword) {
+    $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $AuthorityPassword
+    $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
+  } else {
+    $passin = ""
+  }
+
+  Invoke-OpenSsl "ca -config $($script:cnf_ca) -gencrl -out $Name.crl $passin"
 
   if (Test-Path "$Name.crl") {
     Invoke-OpenSsl "crl -in $Name.crl -noout -text"
