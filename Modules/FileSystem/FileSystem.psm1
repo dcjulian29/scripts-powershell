@@ -584,10 +584,15 @@ function New-Folder {
       $parent = Split-Path -Parent $Path
       while ("" -ne $parent) {
         if (Test-Path $parent) {
-          if (($Path.LastIndexOf("\") -eq $parent.Length)) {
+          if (($Path.LastIndexOf("\") -eq $parent.Length) -or ($last -eq $parent)) {
             break
           } else {
-            New-Item -ItemType Directory -Path $last  | Out-Null
+            if ($null -eq $last) {
+              $parent = Split-Path -Parent $Path
+              break
+            }
+
+            New-Item -ItemType Directory -Path $last  | Write-Verbose
             $parent = ""
           }
         }
@@ -599,7 +604,7 @@ function New-Folder {
       }
     } until ($parent -eq (Split-Path -Parent $Path))
 
-    New-Item -ItemType Directory -Path $Path  | Out-Null
+    New-Item -ItemType Directory -Path $Path  | Write-Verbose
   }
 }
 
