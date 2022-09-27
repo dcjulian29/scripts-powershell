@@ -129,7 +129,7 @@ function Approve-SubordinateAuthority {
     [securestring] $KeyPassword
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path -Root)) {
+  if (-not (Test-OpenSslCertificateAuthority -Root)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "Subordinate authorities can only be approved by a root authority." `
        -ExceptionType "System.InvalidOperationException" `
@@ -153,7 +153,7 @@ function Approve-UserCertificate {
     [securestring] $KeyPassword
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path -Subordinate)) {
+  if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "Certificates can only be signed by a subordinate authority that this module can manage." `
        -ExceptionType "System.InvalidOperationException" `
@@ -610,7 +610,7 @@ $(req_subj $Country $State $Locality $Organization $OrganizationUnit "$Name@$Dom
 
   $param = "req -config $cnf -new -key $KeyName -out $CsrName $passin"
 
-  Write-Output "param: $param"
+  Write-Verbose "param: $param"
 
   Invoke-OpenSsl $param
 
