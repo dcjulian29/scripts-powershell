@@ -414,7 +414,7 @@ function New-ServerCertificate {
 
   if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "'$Path' is not a root OpenSSL Certificate Authority that can be managed by this module." `
+       -Message "Certificates can only be requested in a subordinate authority that this module can manage." `
        -ExceptionType "System.InvalidOperationException" `
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
@@ -522,6 +522,48 @@ $(cnf_san $Name $AdditionalNames)
   } else {
     return $null
   }
+}
+
+function New-UserCertificate {
+  [CmdletBinding()]
+  [Alias("new-user-certificate")]
+  param (
+    [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+    [string] $Name,
+    [string] $Domain,
+    [ValidateSet("Edwards", "Eliptic", "RSA")]
+    [string] $KeyEncryption = "RSA",
+    [securestring] $KeyPassword,
+    [string] $Country,
+    [Alias("Province", "Region")]
+    [string] $State,
+    [Alias("City")]
+    [string] $Locality,
+    [Alias("Company")]
+    [string] $Organization,
+    [Alias("Section")]
+    [string] $OrganizationUnit,
+    [Parameter(Mandatory = $true)]
+    [securestring] $AuthorityPassword
+  )
+
+  if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "Certificates can only be requested in a subordinate authority that this module can manage." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  $param = @{}
+  $PSBoundParameters.GetEnumerator() | ForEach-Object {
+    if ($_.Key -ne "AuthorityPassword") {
+      $param.Add($_.Key, $_.Value)
+    }
+  }
+
+  $id = New-UserCertificateRequest @param
+
+  Approve-UserCertificate -Name $id -KeyPassword $AuthorityPassword
 }
 
 function New-UserCertificateRequest {
