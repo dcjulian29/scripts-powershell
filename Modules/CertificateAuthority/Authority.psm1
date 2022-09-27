@@ -70,11 +70,10 @@ subjectKeyIdentifier    = hash
 "@
 }
 
-function ext_client($public,$ocsp=$false) {
+function ext_client($public) {
   return @"
 [client_ext]
-$(if (-not $ocsp) { "authorityInfoAccess     = @issuer_info" })
-$(if ($ocsp) { "authorityInfoAccess     = @ocsp_info" })
+authorityInfoAccess     = @issuer_info
 authorityKeyIdentifier  = keyid:always, issuer:always
 basicConstraints        = critical,CA:false
 crlDistributionPoints   = @crl_info
@@ -98,11 +97,10 @@ subjectKeyIdentifier    = hash
 "@
 }
 
-function ext_server($public, $ocsp=$false) {
+function ext_server($public) {
   return @"
 [server_ext]
-$(if (-not $ocsp) { "authorityInfoAccess     = @issuer_info" })
-$(if ($ocsp) { "authorityInfoAccess     = @ocsp_info" })
+authorityInfoAccess     = @issuer_info
 authorityKeyIdentifier  = keyid:always, issuer:always
 basicConstraints        = critical,CA:false
 crlDistributionPoints   = @crl_info
