@@ -34,6 +34,15 @@ excluded;IP.1=0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
 
 #--------------------------------------------------------------------------------------------------
 
+function assertAuthority($path=$PWD.Path) {
+  if (-not (Test-CertificateAuthority -Path $path)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "This is not a certificate authority that can be managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+}
+
 function cnf_default($ocsp=$false) {
   return @"
 aia_url                 = http://pki.`$domain_suffix/`$name.crt
@@ -143,6 +152,33 @@ subjectKeyIdentifier    = hash
 }
 
 #--------------------------------------------------------------------------------------------------
+
+function Get-SubordinateAuthority {
+  if (-not (Test-CertificateAuthority -Root)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+       -Message "Subordinate authorities are typically created within a root authority managed by this module." `
+       -ExceptionType "System.InvalidOperationException" `
+       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
+  }
+
+  $sub = @()
+  $subca = Get-CertificateAuthoritySetting subca
+
+  foreach ($name in $subca) {
+    $sn = Get-CertificateAuthoritySetting "subca_$name"
+    $cert = Get-IssuedCertificate | Where-Object {$_.SerialNumber -eq $sn}
+    $sub += [PSCustomObject]@{
+      Name              = $name
+      Mounted           = $(Test-SubordinateAuthorityMounted -Name $name)
+      Status            = $cert.Status
+      SerialNumber      = $sn
+      DistinguishedName = $cert.DistinguishedName
+      NotValidAfter     = $(if ($cert.RevocationDate) { $cert.RevocationDate } else { $cert.ExpirationDate })
+    }
+  }
+
+  return $sub
+}
 
 function New-CertificateAuthority {
   [CmdletBinding()]
@@ -260,6 +296,39 @@ $(ext_subca($Public))
     Update-OcspCertificate -AuthorityPassword $KeyPassword -Reset
   }
 
+  Set-Content -Path ".\.gitignore" -Value @"
+/**/private/*.key
+/**/*.old
+.publish/
+"@
+
+  Set-Content -Path ".\.gitattributes" -Value @"
+*       text eol=lf
+*.cer   binary
+*.csr   text
+*.crl   text
+*.crt   binary
+*.der   binary
+*.pem   text
+*.p12   binary
+*.pfx   binary
+*.key   text
+"@
+
+  Set-Content -Path ".\.editorconfig" -Value @"
+root = true
+
+[*]
+end_of_line = lf
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[{*.pem,*.crl,*.csr,*.key}]
+insert_final_newline = false
+"@
+
   Write-Output "`n`nCreation of a root certificate authority complete...`n"
 
   Pop-Location
@@ -302,7 +371,6 @@ function New-SubordinateAuthority {
 
   $origialErrorActionPreference = $ErrorActionPreference
   $ErrorActionPreference = "Stop"
-  $subdir = $false
 
   # if ((Get-CertificateAuthoritySetting SubCA) -contains $Name) {
   #   if (-not $Force) {
@@ -342,7 +410,6 @@ function New-SubordinateAuthority {
   }
 
   Push-Location $Name
-  $subdir = $true
 
   @("certs", "csr", "db", "private") | ForEach-Object {
     New-Folder $_
@@ -434,12 +501,15 @@ $(ext_client $Public)
   Write-Output "Using Root CA to sign the certificate for this authority..."
 
   Pop-Location
-  $subdir = $false
 
   Approve-SubordinateAuthority -Name $Name -KeyPassword $AuthorityPassword
 
+  Set-Content -Path "./$Name/certs/ca-chain.pem" -Value @"
+$(foreach ($line in (Get-Content -Path "./certs/ca.pem")) { "$line`n" })
+$(foreach ($line in (Get-Content -Path "./$Name/certs/ca.pem")) { "$line`n" })
+"@
+
   Push-Location $Name
-  $subdir = $true
 
   if ($UseOcsp) {
     Update-OcspCertificate -AuthorityPassword $KeyPassword -Reset
@@ -454,7 +524,6 @@ $(ext_client $Public)
   $sn = Get-CertificateSerialNumber -Path "./certs/ca.pem"
 
   Pop-Location
-  $subdir = $false
 
   $subca = (Get-CertificateAuthoritySetting subca | Where-Object { $_ -like $Name })
 
@@ -483,12 +552,7 @@ function Publish-CertificateAuthority {
     [switch] $Force
   )
 
-  if (-not (Test-CertificateAuthority)) {
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "This is not a certificate authority that can be managed by this module." `
-       -ExceptionType "System.InvalidOperationException" `
-       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  }
+  assertAuthority
 
   if (-not (Test-CertificateAuthority -Root)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
@@ -499,7 +563,6 @@ function Publish-CertificateAuthority {
 
   $origialErrorActionPreference = $ErrorActionPreference
   $ErrorActionPreference = "Stop"
-  $subdir = ""
 
   Write-Verbose "Path: $Path"
   if (-not (Test-Path $Path)) {
@@ -617,12 +680,7 @@ function Remove-SubordinateAuthority {
     [string] $Name = $(Split-Path -Path $Path -Leaf)
   )
 
-  if (-not (Test-CertificateAuthority $Path)) {
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "This is not a certificate authority that can be managed by this module." `
-       -ExceptionType "System.InvalidOperationException" `
-       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  }
+  assertAuthority $Path
 
   if (Test-CertificateAuthority $Path -Subordinate) {
     Push-Location -Path "$((Get-Item -Path $Path).Parent.FullName)"
@@ -679,12 +737,7 @@ function Revoke-SubordinateAuthority {
     [string] $Reason = "unspecified"
   )
 
-  if (-not (Test-CertificateAuthority $Path)) {
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "This is not a certificate authority that can be managed by this module." `
-       -ExceptionType "System.InvalidOperationException" `
-       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  }
+  assertAuthority $Path
 
   if (Test-CertificateAuthority $Path -Subordinate) {
     Push-Location -Path "$((Get-Item -Path $Path).Parent.FullName)"
@@ -769,12 +822,7 @@ function Test-SubordinateAuthorityMounted {
     [string] $Name = $(Split-Path -Path $Path -Leaf)
   )
 
-  if (-not (Test-CertificateAuthority $Path)) {
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "This is not a certificate authority that can be managed by this module." `
-       -ExceptionType "System.InvalidOperationException" `
-       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  }
+  assertAuthority $Path
 
   if (Test-CertificateAuthority $Path -Subordinate) {
     Push-Location -Path "$((Get-Item -Path $Path).Parent.FullName)"
