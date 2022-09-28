@@ -50,8 +50,8 @@
     "Stop-OcspServer"
     "Test-CertificateAuthority"
     "Test-SubordinateAuthorityMounted"
-    "Update-CerticateAuthorityDatabase"
-    "Update-CerticateAuthorityRevocationList"
+    "Update-CertificateAuthorityDatabase"
+    "Update-CertificateAuthorityRevocationList"
     "Update-OcspCertificate"
     "Update-TimestampCertificate"
   )
@@ -75,7 +75,6 @@
     "ocsp-stop"
     "ocsp-update"
     "remove-subca"
-    "revoke-certificate"
     "revoke-issued-certificate"
     "revoke-subca"
     "sign-server-certificate"

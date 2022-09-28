@@ -701,11 +701,12 @@ $(req_subj $Country $State $Locality $Organization $OrganizationUnit "$Name@$Dom
 
 function Revoke-Certificate {
   [CmdletBinding()]
-  [Alias("revoke-certificate","revoke-issued-certificate")]
+  [Alias("revoke-issued-certificate")]
   param (
     [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true)]
     [Alias("Certificate", "Cert")]
     [string] $Name,
+    [securestring] $AuthorityPassword,
     [ValidateSet("unspecified", "keyCompromise", "CACompromise", "affiliationChanged", "superseded", "cessationOfOperation", "certificateHold", "removeFromCRL")]
     [string] $Reason = "unspecified"
   )
@@ -718,12 +719,22 @@ function Revoke-Certificate {
   }
 
   if (Test-Path "certs/$Name.pem") {
-    $param = "revoke -config $($script:cnf_ca) -revoke certs/$Name.pem -crl_reason $Reason"
+    if ($AuthorityPassword) {
+      $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $AuthorityPassword
+      $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
+    } else {
+      $passin = ""
+    }
+
+    $param = "ca -config $($script:cnf_ca) -revoke certs/$Name.pem -crl_reason $Reason $passin"
 
     Write-Verbose "param: $param"
 
     Invoke-OpenSsl $param
-    Move-Item -Path "certs/$Name.pem" "certs/$Name.pem.revoked"
+
+    if ((Get-IssuedCertificate | Where-Object { $_.SerialNumber -eq $name }).Status -eq 'Revoked') {
+      Move-Item -Path "certs/$Name.pem" "certs/$Name.pem.revoked"
+    }
   } else {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
       -Message "A certificate with the name '$Name' does not exists in this authority." `
@@ -840,6 +851,9 @@ function Update-OcspCertificate {
     return
   }
 
+  $old = Get-IssuedCertificate | `
+    Where-Object { $_.DistinguishedName -like "*$(Get-CertificateAuthoritySetting cn) OCSP Responder" }
+
   if ($Reset) {
     Write-Output "`n~~~~~`nGenerating the OCSP private key for this authority...`n"
 
@@ -863,6 +877,13 @@ function Update-OcspCertificate {
 
   Invoke-OpenSsl `
     "ca -batch -config $($script:cnf_ca) -out certs/ocsp.pem $ext -days $Days $passin -infiles csr/ocsp.csr"
+
+  foreach ($cert in $old) {
+    if ($cert.Status -eq 'Valid') {
+      Write-Verbose "Revoking superceded OCSP certificate: $($cert.SerialNumber)"
+      Revoke-Certificate -Name $cert.SerialNumber -AuthorityPassword $AuthorityPassword -Reason superseded
+    }
+  }
 
   Pop-Location
 }
@@ -892,6 +913,9 @@ function Update-TimestampCertificate {
     return
   }
 
+  $old = Get-IssuedCertificate | `
+    Where-Object { $_.DistinguishedName -like "*$(Get-CertificateAuthoritySetting cn) Timestamp Authority" }
+
   if ($Reset) {
     Write-Output "`n~~~~~`nGenerating the timestamp private key for this authority...`n"
 
@@ -916,5 +940,12 @@ function Update-TimestampCertificate {
   Invoke-OpenSsl `
     "ca -batch -config $($script:cnf_ca) -out certs/timestamp.pem $ext -days $Days $passin -infiles csr/timestamp.csr"
 
-  Pop-Location
+    foreach ($cert in $old) {
+      if ($cert.Status -eq 'Valid') {
+        Write-Verbose "Revoking superceded Timestamp certificate: $($cert.SerialNumber)"
+        Revoke-Certificate -Name $cert.SerialNumber -AuthorityPassword $AuthorityPassword -Reason superseded
+      }
+    }
+
+    Pop-Location
 }

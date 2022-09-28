@@ -560,18 +560,18 @@ application/x-x509-user-cert        .crt
         $pass = Read-Host "Enter password for '$cn' private key" -AsSecureString
 
         Write-Output "Updating the certificate authority database..."
-        Update-CerticateAuthorityDatabase -AuthorityPassword $pass
-
-        Write-Output "Updating the certificate revocation list..."
-        Update-CertificateAuthorityRevocationList -AuthorityPassword $pass
+        Update-CertificateAuthorityDatabase -AuthorityPassword $pass
 
         if (Get-CertificateAuthoritySetting ocsp) {
-          Update-OcspCerticate -AuthorityPassword $pass
+          Update-OcspCertificate -AuthorityPassword $pass
         }
 
         if (Get-CertificateAuthoritySetting timestamp) {
-          Update-TimestampCerticate -AuthorityPassword $pass
+          Update-TimestampCertificate -AuthorityPassword $pass
         }
+
+        Write-Output "Updating the certificate revocation list..."
+        Update-CertificateAuthorityRevocationList -AuthorityPassword $pass
 
         $name = Get-CertificateAuthoritySetting name
       } else {
