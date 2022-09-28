@@ -133,7 +133,7 @@ function Approve-ServerCertificate {
     [int] $Days = 365 # 1 year
   )
 
-  if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
+  if (-not (Test-CertificateAuthority -Subordinate)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "Certificates can only be signed by a subordinate authority that this module can manage." `
        -ExceptionType "System.InvalidOperationException" `
@@ -158,7 +158,7 @@ function Approve-SubordinateAuthority {
     [int] $Days = 1825 # 5 years
   )
 
-  if (-not (Test-OpenSslCertificateAuthority -Root)) {
+  if (-not (Test-CertificateAuthority -Root)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "Subordinate authorities can only be approved by a root authority." `
        -ExceptionType "System.InvalidOperationException" `
@@ -183,7 +183,7 @@ function Approve-UserCertificate {
     [int] $Days = 365 # 1 year
   )
 
-  if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
+  if (-not (Test-CertificateAuthority -Subordinate)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "Certificates can only be signed by a subordinate authority that this module can manage." `
        -ExceptionType "System.InvalidOperationException" `
@@ -201,7 +201,7 @@ function Get-ImportedCertificateRequest {
     [string] $Name
   )
 
-  if (-not (Test-OpenSslCertificateAuthority)) {
+  if (-not (Test-CertificateAuthority)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -269,7 +269,7 @@ function Get-IssuedCertificate {
     [switch] $Revoked
   )
 
-  if (-not (Test-OpenSslCertificateAuthority)) {
+  if (-not (Test-CertificateAuthority)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -352,7 +352,7 @@ function Get-IssuedCertificateValidity {
     [string] $CAPath
   )
 
-  if (-not (Test-OpenSslCertificateAuthority)) {
+  if (-not (Test-CertificateAuthority)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -366,7 +366,7 @@ function Get-IssuedCertificateValidity {
     if ($CAPath) {
       Copy-Item -Path $CAPath -Destination $ca
     } else {
-      $authority = Get-OpenSslCertificateAuthoritySetting Name
+      $authority = Get-CertificateAuthoritySetting Name
 
       if (Test-Path "./$authority.crt") {
         $ca = "$authority.crt"
@@ -401,7 +401,7 @@ function Import-CertificateRequest {
     [string] $Path
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+  if (-not (Test-CertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -442,7 +442,7 @@ function New-ServerCertificate {
     [securestring] $AuthorityPassword
   )
 
-  if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
+  if (-not (Test-CertificateAuthority -Subordinate)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "Certificates can only be requested in a subordinate authority that this module can manage." `
        -ExceptionType "System.InvalidOperationException" `
@@ -475,7 +475,7 @@ function New-ServerCertificateRequest {
     [switch] $KeepCnf
   )
 
-  if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
+  if (-not (Test-CertificateAuthority -Subordinate)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "Certificates can only be requested in a subordinate authority that this module can manage." `
        -ExceptionType "System.InvalidOperationException" `
@@ -483,15 +483,15 @@ function New-ServerCertificateRequest {
   }
 
   if ($Domain.Length -eq 0) {
-    $Domain = Get-OpenSslCertificateAuthoritySetting Domain
+    $Domain = Get-CertificateAuthoritySetting Domain
   }
 
   if ($Country.Length -eq 0) {
-    $Country = Get-OpenSslCertificateAuthoritySetting c
+    $Country = Get-CertificateAuthoritySetting c
   }
 
   if ($Organization.Length -eq 0) {
-    $Organization = Get-OpenSslCertificateAuthoritySetting org
+    $Organization = Get-CertificateAuthoritySetting org
   }
 
   if (($Name.Length -eq 0) -and ($AdditionalNames.Count -gt 0)) {
@@ -577,7 +577,7 @@ function New-UserCertificate {
     [securestring] $AuthorityPassword
   )
 
-  if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
+  if (-not (Test-CertificateAuthority -Subordinate)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "Certificates can only be requested in a subordinate authority that this module can manage." `
        -ExceptionType "System.InvalidOperationException" `
@@ -617,7 +617,7 @@ function New-UserCertificateRequest {
     [switch] $KeepCnf
   )
 
-  if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
+  if (-not (Test-CertificateAuthority -Subordinate)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "Certificates can only be requested in a subordinate authority that this module can manage." `
        -ExceptionType "System.InvalidOperationException" `
@@ -630,15 +630,15 @@ function New-UserCertificateRequest {
   }
 
   if ($Domain.Length -eq 0) {
-    $Domain = Get-OpenSslCertificateAuthoritySetting Domain
+    $Domain = Get-CertificateAuthoritySetting Domain
   }
 
   if ($Country.Length -eq 0) {
-    $Country = Get-OpenSslCertificateAuthoritySetting c
+    $Country = Get-CertificateAuthoritySetting c
   }
 
   if ($Organization.Length -eq 0) {
-    $Organization = Get-OpenSslCertificateAuthoritySetting org
+    $Organization = Get-CertificateAuthoritySetting org
   }
 
   if ($KeyPassword) {
@@ -710,7 +710,7 @@ function Revoke-Certificate {
     [string] $Reason = "unspecified"
   )
 
-  if (-not (Test-OpenSslCertificateAuthority)) {
+  if (-not (Test-CertificateAuthority)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -749,7 +749,7 @@ function Test-IssuedCertificateValidity {
   return $result.Contains("Verification: OK")
 }
 
-function Update-CerticateAuthorityDatabase {
+function Update-CertificateAuthorityDatabase {
   [Alias("update-ca", "ca-update")]
   param (
     [Parameter(Position = 0)]
@@ -758,7 +758,7 @@ function Update-CerticateAuthorityDatabase {
     [securestring] $AuthorityPassword
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+  if (-not (Test-CertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -779,7 +779,7 @@ function Update-CerticateAuthorityDatabase {
   Pop-Location
 }
 
-function Update-CerticateAuthorityRevocationList {
+function Update-CertificateAuthorityRevocationList {
   [Alias("update-crl", "crl-update")]
   param (
     [Parameter(Position = 0)]
@@ -788,7 +788,7 @@ function Update-CerticateAuthorityRevocationList {
     [securestring] $AuthorityPassword
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+  if (-not (Test-CertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -797,7 +797,7 @@ function Update-CerticateAuthorityRevocationList {
 
   Push-Location $Path
 
-  $Name = Get-OpenSslCertificateAuthoritySetting Name
+  $Name = Get-CertificateAuthoritySetting Name
 
   if ($AuthorityPassword) {
     $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $AuthorityPassword
@@ -815,7 +815,7 @@ function Update-CerticateAuthorityRevocationList {
   Pop-Location
 }
 
-function Update-OcspCerticate {
+function Update-OcspCertificate {
   [Alias("update-ocsp", "ocsp-update")]
   param (
     [Parameter(Position = 0)]
@@ -827,7 +827,7 @@ function Update-OcspCerticate {
     [switch] $Reset
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+  if (-not (Test-CertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -836,7 +836,7 @@ function Update-OcspCerticate {
 
   Push-Location $Path
 
-  if ("True" -ne $(Get-OpenSslCertificateAuthoritySetting ocsp)) {
+  if ("True" -ne $(Get-CertificateAuthoritySetting ocsp)) {
     return
   }
 
@@ -867,7 +867,7 @@ function Update-OcspCerticate {
   Pop-Location
 }
 
-function Update-TimestampCerticate {
+function Update-TimestampCertificate {
   [Alias("update-timestamp")]
   param (
     [Parameter(Position = 0)]
@@ -879,7 +879,7 @@ function Update-TimestampCerticate {
     [switch] $Reset
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+  if (-not (Test-CertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -888,7 +888,7 @@ function Update-TimestampCerticate {
 
   Push-Location $Path
 
-  if ("True" -ne $(Get-OpenSslCertificateAuthoritySetting timestamp)) {
+  if ("True" -ne $(Get-CertificateAuthoritySetting timestamp)) {
     return
   }
 

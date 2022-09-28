@@ -1,6 +1,6 @@
 @{
   RootModule = 'CertificateAuthority.psm1'
-  ModuleVersion = '2209.27.2'
+  ModuleVersion = '2209.28.1'
   Description = "A collection of commands to manage and operate a certificte authority using OpenSSL."
   GUID = '8c0c42a2-05e2-4e17-b9d4-77e77bf91b30'
   Author = 'Julian Easterling'
@@ -33,23 +33,23 @@
     "Get-ImportedCertificateRequest"
     "Get-IssuedCertificate"
     "Get-IssuedCertificateValidity"
-    "Get-OpenSslCertificateAuthoritySetting"
+    "Get-CertificateAuthoritySetting"
     "Import-CertificateRequest"
-    "New-OpenSslCertificateAuthority"
-    "New-OpenSslSubordinateAuthority"
+    "New-CertificateAuthority"
+    "New-SubordinateAuthority"
     "New-ServerCertificate"
     "New-ServerCertificateRequest"
     "New-UserCertificate"
     "New-UserCertificateRequest"
     "Publish-CertificateAuthority"
     "Revoke-Certificate"
-    "Remove-OpenSslSubordinateAuthority"
-    "Revoke-OpenSslSubordinateAuthority"
-    "Set-OpenSslCertificateAuthoritySetting"
-    "Start-OpenSslOcspServer"
-    "Stop-OpenSslOcspServer"
-    "Test-OpenSslCertificateAuthority"
-    "Test-OpenSslSubordinateAuthorityMounted"
+    "Remove-SubordinateAuthority"
+    "Revoke-SubordinateAuthority"
+    "Set-CertificateAuthoritySetting"
+    "Start-OcspServer"
+    "Stop-OcspServer"
+    "Test-CertificateAuthority"
+    "Test-SubordinateAuthorityMounted"
     "Update-CerticateAuthorityDatabase"
     "Update-CerticateAuthorityRevocationList"
     "Update-OcspCertificate"

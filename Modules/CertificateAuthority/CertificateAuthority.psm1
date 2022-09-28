@@ -1,4 +1,4 @@
-function Get-OpenSslCertificateAuthoritySetting {
+function Get-CertificateAuthoritySetting {
   [CmdletBinding()]
   [Alias("ca-get")]
   param (
@@ -8,7 +8,7 @@ function Get-OpenSslCertificateAuthoritySetting {
     [string] $Path = ($PWD.Path)
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+  if (-not (Test-CertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -47,7 +47,7 @@ function Get-OpenSslCertificateAuthoritySetting {
   }
 }
 
-function Set-OpenSslCertificateAuthoritySetting {
+function Set-CertificateAuthoritySetting {
   [CmdletBinding(DefaultParameterSetName = "add")]
   [Alias("ca-set")]
   param (
@@ -67,7 +67,7 @@ function Set-OpenSslCertificateAuthoritySetting {
     [switch] $Remove
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+  if (-not (Test-CertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -76,7 +76,7 @@ function Set-OpenSslCertificateAuthoritySetting {
 
   $config = "$($Path)/.openssl_ca"
 
-  if ($null -ne (Get-OpenSslCertificateAuthoritySetting $Name)) {
+  if ($null -ne (Get-CertificateAuthoritySetting $Name)) {
     if (-not $Append) {
       if ($Value.Length -gt 0) {
         $content = Get-Content $config | Where-Object { $_ -notlike ".$Name=$Value" }
@@ -93,7 +93,7 @@ function Set-OpenSslCertificateAuthoritySetting {
   }
 }
 
-function Start-OpenSslOcspServer {
+function Start-OcspServer {
   [Alias("ocsp-start")]
   param (
     [Parameter(Position = 0)]
@@ -102,7 +102,7 @@ function Start-OpenSslOcspServer {
     [String] $Port = 8080
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+  if (-not (Test-CertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -111,7 +111,7 @@ function Start-OpenSslOcspServer {
 
   Push-Location $Path
 
-  $Name = Get-OpenSslCertificateAuthoritySetting Name
+  $Name = Get-CertificateAuthoritySetting Name
 
   $params = @{
     Command = "ocsp -port $Port -index db/index -rsigner ocsp.crt -rkey private/ocsp.key -CA $Name.crt -text"
@@ -134,7 +134,7 @@ function Start-OpenSslOcspServer {
   }
 }
 
-function Stop-OpenSslOcspServer {
+function Stop-OcspServer {
   [Alias("ocsp-stop")]
   param (
     [Parameter(Position = 0)]
@@ -142,7 +142,7 @@ function Stop-OpenSslOcspServer {
     [string] $Path = ($PWD.Path)
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+  if (-not (Test-CertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
@@ -150,7 +150,7 @@ function Stop-OpenSslOcspServer {
   }
 
   Push-Location $Path
-  $name = "ocsp_$(Get-OpenSslCertificateAuthoritySetting Name)"
+  $name = "ocsp_$(Get-CertificateAuthoritySetting Name)"
   Pop-Location
 
   if (Get-DockerContainerNames -Running | Where-Object { $_.Name -eq $name }) {

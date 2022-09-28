@@ -144,26 +144,26 @@ subjectKeyIdentifier    = hash
 
 #--------------------------------------------------------------------------------------------------
 
-function New-OpenSslCertificateAuthority {
+function New-CertificateAuthority {
   [CmdletBinding()]
   param (
     [Parameter(Position = 0)]
-    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [ValidateScript({ Test-Path })]
     [string] $Path = ($PWD.Path),
     [string] $Name = "root",
     [string] $Domain = "contoso.local",
     [Parameter(Mandatory = $true)]
     [securestring] $KeyPassword,
     [string] $Country = "US",
-    [string] $Organization = "OpenSSL Root Certificate Authority",
+    [string] $Organization = "Contoso",
     [string] $CommonName = "RootCA",
     [switch] $Public,
     [switch] $UseOcsp
   )
 
-  if (Test-OpenSslCertificateAuthority $Path) {
+  if (Test-CertificateAuthority $Path) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "'$Path' is already an OpenSSL Certificate Authority." `
+       -Message "'$Path' is already an Certificate Authority." `
        -ExceptionType "System.InvalidOperationException" `
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
@@ -242,7 +242,7 @@ $(ext_subca($Public))
 
   Write-Output "`n`nGenerating the root certificate for this authority..."
 
-  Invoke-OpenSsl "ca -selfsign -config $($script:cnf_ca) -in csr/ca.csr -out certs/ca.pem -extensions ca_ext $passin"
+  Invoke-OpenSsl "ca -selfsign -config $($script:cnf_ca) -in csr/ca.csr -out certs/ca.pem -extensions ca_ext -notext $passin"
 
   Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
 .type=root
@@ -257,7 +257,7 @@ $(ext_subca($Public))
 "@
 
   if ($UseOcsp) {
-    Update-OcspCerticate -Reset
+    Update-OcspCertificate -AuthorityPassword $KeyPassword -Reset
   }
 
   Write-Output "`n`nCreation of a root certificate authority complete...`n"
@@ -272,7 +272,7 @@ $(ext_subca($Public))
   Write-Output "certificates within this authority...`n"
 }
 
-function New-OpenSslSubordinateAuthority {
+function New-SubordinateAuthority {
   [CmdletBinding()]
   param (
     [Parameter(Position = 0)]
@@ -285,27 +285,30 @@ function New-OpenSslSubordinateAuthority {
     [string] $Country,
     [string] $Organization,
     [string] $CommonName = "SubCA",
+    [Parameter(Mandatory = $true)]
+    [securestring] $AuthorityPassword,
     [switch] $Public,
     [switch] $Force,
     [switch] $UseOcsp,
     [switch] $UseTimestamp
   )
 
-  if (-not (Test-OpenSslCertificateAuthority -Root)) {
+  if (-not (Test-CertificateAuthority -Root)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "'$Path' is not a root OpenSSL Certificate Authority that can be managed by this module." `
+       -Message "Subordinate authorities must be created within a root authority managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
   $origialErrorActionPreference = $ErrorActionPreference
   $ErrorActionPreference = "Stop"
+  $subdir = $false
 
-  # if ((Get-OpenSslCertificateAuthoritySetting SubCA) -contains $Name) {
+  # if ((Get-CertificateAuthoritySetting SubCA) -contains $Name) {
   #   if (-not $Force) {
   #   <# Settings say subca is issued and not revoke. must removed before it can be overwritten anf force wasn't provided. #>
   #   } else {
-  #     Remove-OpenSslSubordinateAuthority $Name
+  #     Remove-SubordinateAuthority $Name
   #   }
   # }
 
@@ -323,15 +326,15 @@ function New-OpenSslSubordinateAuthority {
   Write-Output "`nCreating subordinate authority directories..."
 
   if ($Domain.Length -eq 0) {
-    $Domain = Get-OpenSslCertificateAuthoritySetting Domain
+    $Domain = Get-CertificateAuthoritySetting Domain
   }
 
   if ($Country.Length -eq 0) {
-    $Country = Get-OpenSslCertificateAuthoritySetting c
+    $Country = Get-CertificateAuthoritySetting c
   }
 
   if ($Organization.Length -eq 0) {
-    $Organization = Get-OpenSslCertificateAuthoritySetting org
+    $Organization = Get-CertificateAuthoritySetting org
   }
 
   if (-not (Test-Path $Name)) {
@@ -339,6 +342,7 @@ function New-OpenSslSubordinateAuthority {
   }
 
   Push-Location $Name
+  $subdir = $true
 
   @("certs", "csr", "db", "private") | ForEach-Object {
     New-Folder $_
@@ -430,17 +434,19 @@ $(ext_client $Public)
   Write-Output "Using Root CA to sign the certificate for this authority..."
 
   Pop-Location
+  $subdir = $false
 
   Approve-SubordinateAuthority -Name $Name -KeyPassword $AuthorityPassword
 
   Push-Location $Name
+  $subdir = $true
 
   if ($UseOcsp) {
-    Update-OcspCerticate -Reset
+    Update-OcspCertificate -AuthorityPassword $KeyPassword -Reset
   }
 
   if ($UseTimestamp) {
-    Update-TimestampCerticate -Reset
+    Update-TimestampCertificate -AuthorityPassword $KeyPassword -Reset
   }
 
   Write-Output "`n`nCreation of a subordinate authority complete...`n"
@@ -448,21 +454,22 @@ $(ext_client $Public)
   $sn = Get-CertificateSerialNumber -Path "./certs/ca.pem"
 
   Pop-Location
+  $subdir = $false
 
-  $subca = (Get-OpenSslCertificateAuthoritySetting subca | Where-Object { $_ -like $Name })
+  $subca = (Get-CertificateAuthoritySetting subca | Where-Object { $_ -like $Name })
 
   if ($subca.Count -gt 0) {
-    Set-OpenSslCertificateAuthoritySetting -Name "subca" -Value $Name -Remove
-    Set-OpenSslCertificateAuthoritySetting -Name "subca_$Name" -Remove
+    Set-CertificateAuthoritySetting -Name "subca" -Value $Name -Remove
+    Set-CertificateAuthoritySetting -Name "subca_$Name" -Remove
   }
 
-  Set-OpenSslCertificateAuthoritySetting -Name "subca" -Value "$Name"
-  Set-OpenSslCertificateAuthoritySetting -Name "subca_$Name" -Value $sn
+  Set-CertificateAuthoritySetting -Name "subca" -Value "$Name"
+  Set-CertificateAuthoritySetting -Name "subca_$Name" -Value $sn
 
   $ErrorActionPreference = $origialErrorActionPreference
 
   Write-Output "`n~~~~~~`n"
-  Write-Output "This subordinate certificate authority can only be used to sign"
+  Write-Output "The '$Name' subordinate certificate authority can only be used to sign"
   Write-Output "certificates within this authority...`n"
 }
 
@@ -476,14 +483,14 @@ function Publish-CertificateAuthority {
     [switch] $Force
   )
 
-  if (-not (Test-OpenSslCertificateAuthority)) {
+  if (-not (Test-CertificateAuthority)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
-  if (-not (Test-OpenSslCertificateAuthority -Root)) {
+  if (-not (Test-CertificateAuthority -Root)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "Certificate Authorities can only be published by the root authority." `
        -ExceptionType "System.InvalidOperationException" `
@@ -528,16 +535,14 @@ application/x-x509-ca-cert          .crt .der
 application/x-x509-user-cert        .crt
 "@
 
-  $root = Get-OpenSslCertificateAuthoritySetting name
-  $authorities = @($root, $(Get-OpenSslCertificateAuthoritySetting subca))
+  $root = Get-CertificateAuthoritySetting name
+  $authorities = @($root, $(Get-CertificateAuthoritySetting subca))
 
   Write-Verbose "root: $root"
   Write-Verbose "authorities: $authorities"
 
-  $subdir = ""
-
   foreach ($authority in $authorities) {
-    if (($authority -eq $root) -or (Test-OpenSslSubordinateAuthorityMounted -Name $authority)) {
+    if (($authority -eq $root) -or (Test-SubordinateAuthorityMounted -Name $authority)) {
       Write-Verbose "Authority is mounted. Proceeding to publish..."
       if ($authority -eq $root) {
         $subdir = "./"
@@ -547,8 +552,8 @@ application/x-x509-user-cert        .crt
 
       Push-Location $subdir
 
-      if ( "imported" -ne (Get-OpenSslCertificateAuthoritySetting type)) {
-        $cn = Get-OpenSslCertificateAuthoritySetting cn
+      if ( "imported" -ne (Get-CertificateAuthoritySetting type)) {
+        $cn = Get-CertificateAuthoritySetting cn
 
         Write-Output ">>>---------------- '$cn' Certificate Authority`n"
 
@@ -558,9 +563,17 @@ application/x-x509-user-cert        .crt
         Update-CerticateAuthorityDatabase -AuthorityPassword $pass
 
         Write-Output "Updating the certificate revocation list..."
-        Update-CerticateAuthorityRevocationList -AuthorityPassword $pass
+        Update-CertificateAuthorityRevocationList -AuthorityPassword $pass
 
-        $name = Get-OpenSslCertificateAuthoritySetting name
+        if (Get-CertificateAuthoritySetting ocsp) {
+          Update-OcspCerticate -AuthorityPassword $pass
+        }
+
+        if (Get-CertificateAuthoritySetting timestamp) {
+          Update-TimestampCerticate -AuthorityPassword $pass
+        }
+
+        $name = Get-CertificateAuthoritySetting name
       } else {
         Write-Output ">>>---------------- '$cn' Certificate Authority"
         Write-Output "                     This is an imported authority.`n"
@@ -595,7 +608,7 @@ application/x-x509-user-cert        .crt
   Write-Output "This certificate authority has been published to '$Destination'"
 }
 
-function Remove-OpenSslSubordinateAuthority {
+function Remove-SubordinateAuthority {
   [CmdletBinding()]
   [Alias("remove-subca")]
   param (
@@ -604,20 +617,20 @@ function Remove-OpenSslSubordinateAuthority {
     [string] $Name = $(Split-Path -Path $Path -Leaf)
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+  if (-not (Test-CertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
-  if (Test-OpenSslCertificateAuthority $Path -Subordinate) {
+  if (Test-CertificateAuthority $Path -Subordinate) {
     Push-Location -Path "$((Get-Item -Path $Path).Parent.FullName)"
   } else {
     Push-Location $Path
   }
 
-  if (-not (Test-OpenSslCertificateAuthority -Root)) {
+  if (-not (Test-CertificateAuthority -Root)) {
     Pop-Location
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "'$Path' is not part of a certificate authority that includes the root authority." `
@@ -625,14 +638,14 @@ function Remove-OpenSslSubordinateAuthority {
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
-  $subca = (Get-OpenSslCertificateAuthoritySetting subca | Where-Object { $_ -like $Name })
+  $subca = (Get-CertificateAuthoritySetting subca | Where-Object { $_ -like $Name })
 
   if ($subca.Length -gt 0) {
-    $sn = Get-OpenSslCertificateAuthoritySetting "subca_$Name"
+    $sn = Get-CertificateAuthoritySetting "subca_$Name"
 
     if ($sn -eq "~REVOKED~") {
-      Set-OpenSslCertificateAuthoritySetting -Name "subca" -Value $Name -Remove
-      Set-OpenSslCertificateAuthoritySetting -Name "subca_$Name" -Remove
+      Set-CertificateAuthoritySetting -Name "subca" -Value $Name -Remove
+      Set-CertificateAuthoritySetting -Name "subca_$Name" -Remove
 
       if (Test-Path "$Name/") {
         Remove-Item -Path $Name -Recurse -Force
@@ -655,7 +668,7 @@ function Remove-OpenSslSubordinateAuthority {
   Pop-Location
 }
 
-function Revoke-OpenSslSubordinateAuthority {
+function Revoke-SubordinateAuthority {
   [CmdletBinding()]
   [Alias("revoke-subca")]
   param (
@@ -666,20 +679,20 @@ function Revoke-OpenSslSubordinateAuthority {
     [string] $Reason = "unspecified"
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+  if (-not (Test-CertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
-  if (Test-OpenSslCertificateAuthority $Path -Subordinate) {
+  if (Test-CertificateAuthority $Path -Subordinate) {
     Push-Location -Path "$((Get-Item -Path $Path).Parent.FullName)"
   } else {
     Push-Location $Path
   }
 
-  if (-not (Test-OpenSslCertificateAuthority -Root)) {
+  if (-not (Test-CertificateAuthority -Root)) {
     Pop-Location
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "'$Path' is not part of a certificate authority that includes the root authority." `
@@ -687,10 +700,10 @@ function Revoke-OpenSslSubordinateAuthority {
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
-  $subca = (Get-OpenSslCertificateAuthoritySetting subca | Where-Object { $_ -like $Name })
+  $subca = (Get-CertificateAuthoritySetting subca | Where-Object { $_ -like $Name })
 
   if ($subca.Length -gt 0) {
-    $sn = Get-OpenSslCertificateAuthoritySetting "subca_$Name"
+    $sn = Get-CertificateAuthoritySetting "subca_$Name"
 
     if ($sn -eq "~REVOKED~") {
       Pop-Location
@@ -705,7 +718,7 @@ function Revoke-OpenSslSubordinateAuthority {
 
       Move-Item -Path "certs/$sn.pem" "certs/$sn.pem.revoked"
 
-      Set-OpenSslCertificateAuthoritySetting -Name "subca_$Name" -Value "~REVOKED~"
+      Set-CertificateAuthoritySetting -Name "subca_$Name" -Value "~REVOKED~"
 
       if (Test-Path "$Name/") {
         ###TODO: If subordinate authority is mounted (directly below root), cycle through each issued certificate and revoke them as well
@@ -722,7 +735,7 @@ function Revoke-OpenSslSubordinateAuthority {
   Pop-Location
 }
 
-function Test-OpenSslCertificateAuthority {
+function Test-CertificateAuthority {
   [CmdletBinding()]
   [Alias("ca-test")]
   param (
@@ -748,7 +761,7 @@ function Test-OpenSslCertificateAuthority {
   return $result
 }
 
-function Test-OpenSslSubordinateAuthorityMounted {
+function Test-SubordinateAuthorityMounted {
   [CmdletBinding()]
   param (
     [ValidateScript({ Test-Path })]
@@ -756,14 +769,14 @@ function Test-OpenSslSubordinateAuthorityMounted {
     [string] $Name = $(Split-Path -Path $Path -Leaf)
   )
 
-  if (-not (Test-OpenSslCertificateAuthority $Path)) {
+  if (-not (Test-CertificateAuthority $Path)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
        -Message "This is not a certificate authority that can be managed by this module." `
        -ExceptionType "System.InvalidOperationException" `
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
-  if (Test-OpenSslCertificateAuthority $Path -Subordinate) {
+  if (Test-CertificateAuthority $Path -Subordinate) {
     Push-Location -Path "$((Get-Item -Path $Path).Parent.FullName)"
   } else {
     Push-Location $Path
