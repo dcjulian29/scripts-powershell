@@ -3,13 +3,6 @@ $script:cnf_crl_info = @"
 [crl_info]
 URI.0                   = `$crl_url
 "@
-$script:cnf_default = @"
-aia_url                 = http://pki.`$domain_suffix/`$name.crt
-crl_url                 = http://pki.`$domain_suffix/`$name.crl
-ocsp_url                = http://ocsp-`$name.`$domain_suffix
-default_ca              = ca_default
-name_opt                = utf8,esc_ctrl,multiline,lname,align
-"@
 $script:cnf_default_ca = @"
 [ca_default]
 home                    = .
@@ -41,6 +34,15 @@ excluded;IP.1=0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
 
 #--------------------------------------------------------------------------------------------------
 
+function cnf_default($ocsp=$false) {
+  return @"
+aia_url                 = http://pki.`$domain_suffix/`$name.crt
+crl_url                 = http://pki.`$domain_suffix/`$name.crl
+$(if ($ocsp) { "ocsp_url                = http://ocsp-`$name.`$domain_suffix" })
+default_ca              = ca_default
+name_opt                = utf8,esc_ctrl,multiline,lname,align
+"@
+}
 function cnf_policy($policy="policy_c_o_match") {
   return @"
 policy                  = $policy
@@ -115,7 +117,7 @@ subjectKeyIdentifier    = hash
 
 function ext_subca($public) {
  return @"
-[sub_ca_ext]
+[subca_ext]
 authorityInfoAccess     = @issuer_info
 authorityKeyIdentifier  = keyid:always
 basicConstraints        = critical,CA:true,pathlen:0
@@ -129,6 +131,7 @@ $(if (-not ($public)) { "nameConstraints         = @name_constraints" })
 
 function ext_timestamp {
   return @"
+[timestamp_ext]
 authorityInfoAccess     = @issuer_info
 authorityKeyIdentifier  = keyid:always
 basicConstraints        = CA:false
@@ -191,7 +194,7 @@ function New-OpenSslCertificateAuthority {
 [default]
 name                    = $Name
 domain_suffix           = $Domain
-$($script:cnf_default)
+$(cnf_default $UseOcsp)
 
 [ca_dn]
 countryName             = "$Country"
@@ -200,7 +203,7 @@ commonName              = "$CommonName"
 
 $($script:cnf_default_ca)
 copy_extensions         = none
-default_days            = 1825
+default_days            = 7300
 default_crl_days        = 365
 $(if (-not ($Public)) { cnf_policy })
 
@@ -259,8 +262,6 @@ $(ext_subca($Public))
 
   Write-Output "`n`nCreation of a root certificate authority complete...`n"
 
-  Get-Certificate -Path "certs\ca.pem"
-
   Pop-Location
 
   $ErrorActionPreference = $origialErrorActionPreference
@@ -275,7 +276,7 @@ function New-OpenSslSubordinateAuthority {
   [CmdletBinding()]
   param (
     [Parameter(Position = 0)]
-    [string] $Name = "intermediate",
+    [string] $Name = "subca1",
     [string] $Domain,
     [Parameter(Mandatory = $true)]
     [securestring] $KeyPassword,
@@ -354,7 +355,7 @@ function New-OpenSslSubordinateAuthority {
 [default]
 name                    = $Name
 domain_suffix           = $Domain
-$($script:cnf_default)
+$(cnf_default $UseOcsp)
 
 [ca_dn]
 countryName             = "$Country"
@@ -414,10 +415,6 @@ $(ext_client $Public)
 
   Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out csr/ca.csr -key private/ca.key $passin"
 
-  Write-Output "Using Root CA to sign the certificate for this authority..."
-
-  Pop-Location
-
   Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
 .type=subordinate
 .public=$Public
@@ -430,6 +427,14 @@ $(ext_client $Public)
 .timestamp=$UseTimestamp
 "@
 
+  Write-Output "Using Root CA to sign the certificate for this authority..."
+
+  Pop-Location
+
+  Approve-SubordinateAuthority -Name $Name -KeyPassword $AuthorityPassword
+
+  Push-Location $Name
+
   if ($UseOcsp) {
     Update-OcspCerticate -Reset
   }
@@ -440,9 +445,7 @@ $(ext_client $Public)
 
   Write-Output "`n`nCreation of a subordinate authority complete...`n"
 
-  Get-Certificate -Path "cert/ca.pem"
-
-  $sn = Get-CertificateSerialNumber -Path "cert/ca.pem"
+  $sn = Get-CertificateSerialNumber -Path "./certs/ca.pem"
 
   Pop-Location
 
@@ -456,8 +459,6 @@ $(ext_client $Public)
   Set-OpenSslCertificateAuthoritySetting -Name "subca" -Value "$Name"
   Set-OpenSslCertificateAuthoritySetting -Name "subca_$Name" -Value $sn
 
-  Pop-Location
-
   $ErrorActionPreference = $origialErrorActionPreference
 
   Write-Output "`n~~~~~~`n"
@@ -469,8 +470,8 @@ function Publish-CertificateAuthority {
   [CmdletBinding()]
   [Alias("ca-publish")]
   param (
-    [ValidateScript({ Assert-FolderExists; Test-Path })]
     [Parameter(Position = 0, ValueFromPipeline = $true)]
+    [ValidateNotNullOrEmpty()]
     [string] $Path = "$($PWD.Path)/.publish",
     [switch] $Force
   )
@@ -489,7 +490,15 @@ function Publish-CertificateAuthority {
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
+  $origialErrorActionPreference = $ErrorActionPreference
+  $ErrorActionPreference = "Stop"
+  $subdir = ""
+
   Write-Verbose "Path: $Path"
+  if (-not (Test-Path $Path)) {
+    New-Folder $Path
+  }
+
   $Destination = "$((Resolve-Path -Relative -Path $Path) -replace '\\', '/')"
   Write-Verbose "Destination: $Destination"
 
@@ -530,7 +539,9 @@ application/x-x509-user-cert        .crt
   foreach ($authority in $authorities) {
     if (($authority -eq $root) -or (Test-OpenSslSubordinateAuthorityMounted -Name $authority)) {
       Write-Verbose "Authority is mounted. Proceeding to publish..."
-      if (-not ($authority -eq $root)) {
+      if ($authority -eq $root) {
+        $subdir = "./"
+      } else {
         $subdir = "$authority/"
       }
 
@@ -566,9 +577,22 @@ application/x-x509-user-cert        .crt
         Invoke-OpenSsl "crl -in $subdir$name.crl -out $Destination/$name.crl -outform der"
       }
 
+      if (Test-Path "$($subdir)certs/ocsp.pem" ) {
+        Copy-Item -Path "$($subdir)certs/ocsp.pem" -Destination "$Destination/$name-ocsp.pem"
+      }
+
+      if (Test-Path "$($subdir)certs/timestamp.pem" ) {
+        Copy-Item -Path "$($subdir)certs/timestamp.pem" -Destination "$Destination/$name-timestamp.pem"
+      }
+
       $subdir = ""
     }
   }
+
+  $ErrorActionPreference = $origialErrorActionPreference
+
+  Write-Output "`n~~~~~~`n"
+  Write-Output "This certificate authority has been published to '$Destination'"
 }
 
 function Remove-OpenSslSubordinateAuthority {

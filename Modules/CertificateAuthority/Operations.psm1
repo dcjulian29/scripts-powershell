@@ -89,9 +89,7 @@ commonName              = $cn
 "@
 }
 
-#--------------------------------------------------------------------------------------------------
-
-function signCertificate($path, $name, $pword, $extension, $days) {
+function signCertificate($path, $name, $pword, $extension, $days,$subca=$false) {
   if ($PsCmdlet.ParameterSetName -eq "path") {
     $name = Import-CertificateRequest $path
   }
@@ -99,8 +97,19 @@ function signCertificate($path, $name, $pword, $extension, $days) {
   $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $pword
   $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
 
-  $cmd = "ca -batch -config $($script:cnf_ca) -notext" `
-    + " -extensions $extension -days $days $passin -infiles csr/$name.csr"
+  $cmd = "ca"
+
+  if (-not $subca) {
+    $cmd = $cmd + " -batch"
+  }
+
+  $cmd = $cmd + " -config $($script:cnf_ca) -notext -extensions $extension -days $days"
+
+  if ($subca) {
+    $cmd = $cmd + " $passin -out $name/certs/ca.pem -in $name/csr/ca.csr"
+  } else {
+    $cmd = $cmd + " $passin -infiles csr/$name.csr"
+  }
 
   Invoke-OpenSsl $cmd
 
@@ -120,7 +129,8 @@ function Approve-ServerCertificate {
     [string] $Name,
     [Parameter(ParameterSetName = "path", Mandatory = $true)]
     [Parameter(ParameterSetName = "name", Mandatory = $true)]
-    [securestring] $KeyPassword
+    [securestring] $KeyPassword,
+    [int] $Days = 365 # 1 year
   )
 
   if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
@@ -130,7 +140,7 @@ function Approve-ServerCertificate {
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
-  return signCertificate $Path $Name $KeyPassword "server_ext" 375
+  return signCertificate $Path $Name $KeyPassword "server_ext" $Days
 }
 
 function Approve-SubordinateAuthority {
@@ -144,7 +154,8 @@ function Approve-SubordinateAuthority {
     [string] $Name,
     [Parameter(ParameterSetName = "path", Mandatory = $true)]
     [Parameter(ParameterSetName = "name", Mandatory = $true)]
-    [securestring] $KeyPassword
+    [securestring] $KeyPassword,
+    [int] $Days = 1825 # 5 years
   )
 
   if (-not (Test-OpenSslCertificateAuthority -Root)) {
@@ -154,7 +165,7 @@ function Approve-SubordinateAuthority {
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
-  return signCertificate $Path $Name $KeyPassword "subca_ext" 1825
+  return signCertificate $Path $Name $KeyPassword "subca_ext" $Days $true
 }
 
 function Approve-UserCertificate {
@@ -168,7 +179,8 @@ function Approve-UserCertificate {
     [string] $Name,
     [Parameter(ParameterSetName = "path", Mandatory = $true)]
     [Parameter(ParameterSetName = "name", Mandatory = $true)]
-    [securestring] $KeyPassword
+    [securestring] $KeyPassword,
+    [int] $Days = 365 # 1 year
   )
 
   if (-not (Test-OpenSslCertificateAuthority -Subordinate)) {
@@ -178,7 +190,7 @@ function Approve-UserCertificate {
        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
   }
 
-  return signCertificate $Path $Name $KeyPassword "client_ext" 375
+  return signCertificate $Path $Name $KeyPassword "client_ext" $Days
 }
 
 function Get-ImportedCertificateRequest {
@@ -831,7 +843,10 @@ function Update-OcspCerticate {
   if ($Reset) {
     Write-Output "`n~~~~~`nGenerating the OCSP private key for this authority...`n"
 
-    generateRequestConfig "ocsp.cnf" $Country $Organization "$CommonName OCSP Responder"
+    generateRequestConfig "ocsp.cnf" `
+    $(Get-CertificateAuthoritySetting c) `
+    $(Get-CertificateAuthoritySetting org) `
+    "$(Get-CertificateAuthoritySetting cn) OCSP Responder"
 
     New-OpenSslRsaKeypair -Path "private/ocsp.key" -BitSize 2048 -NoPublicFile
 
@@ -839,7 +854,7 @@ function Update-OcspCerticate {
 
     Invoke-OpenSsl "req -new -config ocsp.cnf -out csr/ocsp.csr -key private/ocsp.key"
 
-    Write-Output "`nGenerating the OCSP Certificate for this authority..."
+    Write-Output "`nGenerating the OCSP certificate for this authority..."
   }
 
   $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $AuthorityPassword
@@ -880,7 +895,10 @@ function Update-TimestampCerticate {
   if ($Reset) {
     Write-Output "`n~~~~~`nGenerating the timestamp private key for this authority...`n"
 
-    generateRequestConfig "timestamp.cnf" $Country $Organization "$CommonName Timestamp"
+    generateRequestConfig "timestamp.cnf" `
+      $(Get-CertificateAuthoritySetting c) `
+      $(Get-CertificateAuthoritySetting org) `
+      "$(Get-CertificateAuthoritySetting cn) Timestamp Authority"
 
     New-OpenSslRsaKeypair -Path "private/timestamp.key" -BitSize 2048 -NoPublicFile
 
