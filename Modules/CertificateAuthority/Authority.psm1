@@ -297,7 +297,8 @@ $(ext_subca($Public))
   }
 
   Set-Content -Path ".\.gitignore" -Value @"
-/**/private/*.key
+/**/private/*
+/**/secrets/*
 /**/*.old
 .publish/
 "@
