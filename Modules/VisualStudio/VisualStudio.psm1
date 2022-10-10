@@ -173,89 +173,115 @@ function Install-VsixByName {
 }
 
 function Install-VsixPackage {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [string]$Path,
-        [string]$Package = $((Resolve-Path $Path | Get-Item).BaseName)
-    )
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string]$Path,
+    [Alias("PackageName", "Package")]
+    [string] $Name = $((Resolve-Path $Path | Get-Item).BaseName)
+  )
 
-    $vsix = Find-VSIX
-    $invalidChars = [IO.Path]::GetInvalidFileNameChars() -join ''
-    $re = "[{0} ]" -f [RegEx]::Escape($invalidChars)
-    $date = Get-Date -Format "yyyyMMdd_HHmmss"
+  $vsix = Find-VSIX
 
-    $tempLog = "{1}-vsix-{0}.log" -f ($Package -replace $re), $date
-    $logFile = "$(Get-LogFolder)\{1}-vsix-{0}.log" -f ($Package -replace $re), $date
-    $vsixFile = (Resolve-Path $Path | Get-Item).FullName
+  if (-not ($vsix)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "The VSIX installer was not found." `
+      -ExceptionType "System.InvalidOperationException" `
+      -ErrorId "System.InvalidOperation" `
+      -ErrorCategory "InvalidOperation"))
+  }
 
-    Write-Output "- VSIX File: $vsixFile"
-    Write-Output "-  Log File: $logFile"
+  $invalidChars = [IO.Path]::GetInvalidFileNameChars() -join ''
+  $re = "[{0} ]" -f [RegEx]::Escape($invalidChars)
+  $date = Get-Date -Format "yyyyMMdd_HHmmss"
 
-    try {
-        $arguments = @(
-            "/quiet"
-            "/logFile:$tempLog"
-            "$vsixFile"
-        )
+  $tempLog = "{1}-vsix-{0}.log" -f ($Name -replace $re), $date
+  $logFile = "$(Get-LogFolder)\{1}-vsix-{0}.log" -f ($Name -replace $re), $date
+  $vsixFile = (Resolve-Path $Path | Get-Item).FullName
 
-        $run = Start-Process -FilePath $vsix -ArgumentList $arguments -PassThru -Wait -NoNewWindow
-        $exitCode = [Int32]$run.ExitCode
+  Write-Output "- VSIX File: $vsixFile"
+  Write-Output "-  Log File: $logFile"
 
-        Move-Item -Path "${env:TEMP}\$tempLog" -Destination $logFile
+  try {
+    $arguments = @(
+      "/quiet"
+      "/logFile:$tempLog"
+      "$vsixFile")
 
-        switch ($exitCode) {
-          1001 {
-            Write-Output "INFORMATION: The '$Package' Extension is already installed."
-          }
+    $run = Start-Process -FilePath $vsix -ArgumentList $arguments -PassThru -Wait -NoNewWindow
+    $exitCode = [Int32]$run.ExitCode
 
-          #1002 extensionmanager.notinstalledexception
-          #1003 extensionmanager.notpendingdeletionexception
-          #1005 extensionmanager.identifierconflictexception
-          #1006 extensionmanager.missingtargetframeworkexception
-          #1007 extensionmanager.missingreferencesexception
-          #1008 extensionmanager.breaksexistingextensionsexception
-          #1009 extensionmanager.installbymsiexception
-          #1010 extensionmanager.systemcomponentexception
-          #1011 extensionmanager.missingpackagepartexception
-          #1012 extensionmanager.invalidextensionmanifestexception
-          #1013 extensionmanager.invalidextensionpackageexception
-          #1014 extensionmanager.nestedextensioninstallexception
-          #1015 extensionmanager.requiresadminrightsexception
-          #1016 extensionmanager.proxycredentialsrequiredexception
-          #1017 extensionmanager.invalidpermachineoperationexception
-          #1018 extensionmanager.referenceconstraintexception
-          #1019 extensionmanager.dependencyexception
-          #1020 extensionmanager.inconsistentnestedreferenceidexception
-          #1021 extensionmanager.unsupportedproductexception
-          #1022 extensionmanager.directoryexistsexception
-          #1023 extensionmanager.filesinuseexception
-          #1024 extensionmanager.cannotuninstallorphanedcomponentsexception
-          #2001 vsixinstaller.invalidcommandlineexception
-          #2002 vsixinstaller.invalidlicenseexception
+    Move-Item -Path "${env:TEMP}\$tempLog" -Destination $logFile
 
-          2003 {
-            Write-Output "Warning: The '$Package' Extension isn't compatible with installed SKUs."
-          }
+    switch ($exitCode) {
+      1001 {
+        Write-Warning "The '$Name' Extension is already installed."
+      }
 
-          #2004 vsixinstaller.blockingprocessesexception
-          #3001 means other exception.
-          Default { if ($exitCode -gt 0) { throw } }
+      #1002 extensionmanager.notinstalledexception
+      #1003 extensionmanager.notpendingdeletionexception
+      #1005 extensionmanager.identifierconflictexception
+      #1006 extensionmanager.missingtargetframeworkexception
+      #1007 extensionmanager.missingreferencesexception
+      #1008 extensionmanager.breaksexistingextensionsexception
+      #1009 extensionmanager.installbymsiexception
+      #1010 extensionmanager.systemcomponentexception
+      #1011 extensionmanager.missingpackagepartexception
+      #1012 extensionmanager.invalidextensionmanifestexception
+      #1013 extensionmanager.invalidextensionpackageexception
+      #1014 extensionmanager.nestedextensioninstallexception
+      #1015 extensionmanager.requiresadminrightsexception
+      #1016 extensionmanager.proxycredentialsrequiredexception
+      #1017 extensionmanager.invalidpermachineoperationexception
+      #1018 extensionmanager.referenceconstraintexception
+      #1019 extensionmanager.dependencyexception
+      #1020 extensionmanager.inconsistentnestedreferenceidexception
+      #1021 extensionmanager.unsupportedproductexception
+      #1022 extensionmanager.directoryexistsexception
+      #1023 extensionmanager.filesinuseexception
+      #1024 extensionmanager.cannotuninstallorphanedcomponentsexception
+      #2001 vsixinstaller.invalidcommandlineexception
+      #2002 vsixinstaller.invalidlicenseexception
+
+      2003 {
+        Write-Warning "The '$Name' Extension isn't compatible with any installed SKUs."
+      }
+
+      #2004 vsixinstaller.blockingprocessesexception
+      #3001 means other exception.
+
+      default {
+        if ($exitCode -gt 0) {
+          $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+          -Message "An error occurred during installation of '$Name' ($exitCode)" `
+          -ExceptionType "System.InvalidOperationException" `
+          -ErrorId "System.InvalidOperation" `
+          -ErrorCategory "InvalidOperation"))
         }
-    } catch {
-        $errorMessage = $_.Exception.Message
-        Write-Output " "
-        Write-Output "An error occurred during installation of the $($Package.BaseName) Extension..."
-        Write-Output "Error: $errorMessage ($exitCode)"
-        if (Test-Path $logFile) {
-          Write-Output "Review the log file: $logFile"
-          Get-Content -Path $logFile
+
+        $t = "Install to Visual Studio \w+\s\d+\scompleted successfully"
+
+        if (-not (Get-Content $tempLog | Select-String -Pattern $t)) {
+          Write-Output "An error occurred during installation of the $Name Extension..."
         }
+      }
+    }
+  } catch {
+    Write-Output "`n`n~~~~`nAn error occurred during installation of the $Name Extension..."
+
+    if (Test-Path $logFile) {
+      Get-Content -Path $logFile
     }
 
-    }
-
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "Error: $($_.Exception.Message) ($exitCode)" `
+      -ExceptionType "System.InvalidOperationException" `
+      -ErrorId "System.InvalidOperation" `
+      -ErrorCategory "InvalidOperation"))
+  }
+}
 
 function Show-VisualStudioInstalledVersions {
   $installed = @()

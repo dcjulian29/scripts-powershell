@@ -1,6 +1,6 @@
 @{
     RootModule = 'VisualStudio.psm1'
-    ModuleVersion = '2112.1.1'
+    ModuleVersion = '2210.9.1'
     GUID = '1f375f95-3e56-426c-831b-3ff97ed8f0a2'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
