@@ -77,7 +77,7 @@ function Get-VsixUrl {
 
   try {
     $html = Invoke-WebRequest -Uri $url -UseBasicParsing `
-      -SessionVariable session -ErrorAction SilentlyContinue | Out-Null
+      -SessionVariable session -ErrorAction SilentlyContinue
     $statusCode = $html.StatusCode
 
     if ($statusCode -ne 200) {
