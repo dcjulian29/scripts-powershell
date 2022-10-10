@@ -248,7 +248,7 @@ function Install-VsixPackage {
 
         $t = "Install to Visual Studio \w+\s\d+\scompleted successfully"
 
-        if (-not (Get-Content $tempLog | Select-String -Pattern $t)) {
+        if (-not (Get-Content $logFile | Select-String -Pattern $t)) {
           Write-Output "An error occurred during installation of the $Name Extension..."
         }
       }
