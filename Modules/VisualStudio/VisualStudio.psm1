@@ -75,22 +75,41 @@ function Get-VsixUrl {
   $url = "$baseProtocol//$baseHostName/items?itemName=$Name"
   Write-Verbose "uri: $url"
 
-  $html = Invoke-WebRequest -Uri $url -UseBasicParsing -SessionVariable session
-  $anchor = $html.Links |
-    Where-Object { $_.class -eq 'install-button-container' } |
-    Select-Object -ExpandProperty href
+  try {
+    $html = Invoke-WebRequest -Uri $url -UseBasicParsing `
+      -SessionVariable session -ErrorAction SilentlyContinue | Out-Null
+    $statusCode = $html.StatusCode
 
-  if (-not $anchor) {
+    if ($statusCode -ne 200) {
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "An error occurred determining download URL (StatusCode: $statusCode)." `
+        -ExceptionType "System.InvalidOperationException" `
+        -ErrorId "System.InvalidOperation" `
+        -ErrorCategory "InvalidOperation"))
+    }
+
+    $anchor = $html.Links |
+      Where-Object { $_.class -eq 'install-button-container' } |
+      Select-Object -ExpandProperty href
+
+    if (-not $anchor) {
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "Could not determine download URL on the Visual Studio Extensions page." `
+        -ExceptionType "System.InvalidOperationException" `
+        -ErrorId "System.InvalidOperation" `
+        -ErrorCategory "InvalidOperation"))
+    }
+
+    $href = "$($baseProtocol)//$($baseHostName)$($anchor)"
+
+    return $href
+  } catch {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-      -Message "Could not determine download URL on the Visual Studio Extensions page." `
+      -Message $_.Exception.Message `
       -ExceptionType "System.InvalidOperationException" `
       -ErrorId "System.InvalidOperation" `
       -ErrorCategory "InvalidOperation"))
   }
-
-  $href = "$($baseProtocol)//$($baseHostName)$($anchor)"
-
-  return $href
 }
 
 function Get-VSVars {
