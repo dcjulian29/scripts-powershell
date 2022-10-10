@@ -11,6 +11,7 @@
         "Find-VisualStudioSolutions"
         "Find-VSIX"
         "Find-VSVars"
+        "Get-VsixUrl"
         "Get-VSVars"
         "Install-VsixByName"
         "Install-VsixPackage"

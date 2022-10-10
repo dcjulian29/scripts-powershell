@@ -75,31 +75,39 @@ function Find-VSVars {
 
 Set-Alias Find-VisualStudioVariables Find-VSVars
 
-
-function Install-VsixByName {
+function Get-VsixUrl {
+  [CmdletBinding()]
   param (
-      [Parameter(Mandatory=$true)]
-      [ValidateNotNullOrEmpty()]
-      [string]$PackageName
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [Alias("PackageName")]
+    [string] $Name
   )
 
   $baseProtocol = "https:"
   $baseHostName = "marketplace.visualstudio.com"
 
-  $uri = "$baseProtocol//$baseHostName/items?itemName=$PackageName"
-  $file = "${env:TEMP}\$([Guid]::NewGuid()).vsix"
-  $html = Invoke-WebRequest -Uri $uri -UseBasicParsing -SessionVariable session
+  $url = "$baseProtocol//$baseHostName/items?itemName=$Name"
+  Write-Verbose "uri: $url"
+
+  $html = Invoke-WebRequest -Uri $url -UseBasicParsing -SessionVariable session
   $anchor = $html.Links |
     Where-Object { $_.class -eq 'install-button-container' } |
     Select-Object -ExpandProperty href
 
   if (-not $anchor) {
-    throw "Could not determine download URL on the Visual Studio Extensions page."
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "Could not determine download URL on the Visual Studio Extensions page." `
+      -ExceptionType "System.InvalidOperationException" `
+      -ErrorId "System.InvalidOperation" `
+      -ErrorCategory "InvalidOperation"))
   }
 
   $href = "$($baseProtocol)//$($baseHostName)$($anchor)"
 
-  Write-Output "-  VSIX Url: $href"
+  return $href
+}
+
 function Get-VSVars {
   if ($global:VSVariables) {
     return $global:VSVariables
@@ -126,10 +134,28 @@ function Get-VSVars {
   return $global:VSVariables
 }
 
+function Install-VsixByName {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [Alias("PackageName")]
+    [string] $Name
+  )
+
+  $file = "${env:TEMP}\$([Guid]::NewGuid()).vsix"
+  $href = Get-VsixUrl $Name
+
   Invoke-WebRequest $href -OutFile $file -WebSession $session
 
   if (Test-Path $file) {
-    Install-VsixPackage -Package $PackageName -Path $file
+    Install-VsixPackage -Name $Name -Path $file
+  } else {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "The VSIX file could not be downloaded." `
+      -ExceptionType "System.InvalidOperationException" `
+      -ErrorId "System.InvalidOperation" `
+      -ErrorCategory "InvalidOperation"))
   }
 }
 
