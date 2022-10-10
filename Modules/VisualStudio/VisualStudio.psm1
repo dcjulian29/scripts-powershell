@@ -75,31 +75,6 @@ function Find-VSVars {
 
 Set-Alias Find-VisualStudioVariables Find-VSVars
 
-function Get-VSVars {
-    if ($global:VSVariables) {
-        return $global:VSVariables
-    }
-
-    $vsvar = Find-VSVars
-    $environment = @{}
-
-    if ($vsvar) {
-        $cmd = "`"$vsvar`" >nul & set"
-
-        cmd /c $cmd | ForEach-Object {
-            $p, $v = $_.Split('=')
-            if (-not ($p.StartsWith('_'))) {
-                if (-not (Test-Path "env:$p")) {
-                    $environment.$p = $v
-                }
-            }
-        }
-    }
-
-    $global:VSVariables = $environment
-
-    return $global:VSVariables
-}
 
 function Install-VsixByName {
   param (
@@ -125,6 +100,31 @@ function Install-VsixByName {
   $href = "$($baseProtocol)//$($baseHostName)$($anchor)"
 
   Write-Output "-  VSIX Url: $href"
+function Get-VSVars {
+  if ($global:VSVariables) {
+    return $global:VSVariables
+  }
+
+  $vsvar = Find-VSVars
+  $environment = @{}
+
+  if ($vsvar) {
+    $cmd = "`"$vsvar`" >nul & set"
+
+    cmd /c $cmd | ForEach-Object {
+      $p, $v = $_.Split('=')
+      if (-not ($p.StartsWith('_'))) {
+        if (-not (Test-Path "env:$p")) {
+          $environment.$p = $v
+        }
+      }
+    }
+  }
+
+  $global:VSVariables = $environment
+
+  return $global:VSVariables
+}
 
   Invoke-WebRequest $href -OutFile $file -WebSession $session
 
