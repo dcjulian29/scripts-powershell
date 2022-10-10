@@ -440,13 +440,3 @@ function Test-VisualStudioInstalledVersion {
     return $installed.Contains($Version)
   }
 }
-
-function Update-CodeSnippets {
-  $snippets = First-Path `
-    "$env:USERPROFILE\Documents\Visual Studio 2019\Code Snippets" `
-    "$env:USERPROFILE\Documents\Visual Studio 2017\Code Snippets"
-
-  if (Test-Path $snippets) {
-    Copy-Item -Path $snippets -Destination "$env:SystemDrive\etc\visualstudio" -Recurse -Force
-  }
-}
