@@ -1,78 +1,76 @@
-﻿function Find-VisualStudio {
-    First-Path `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Professional\Common7\IDE\devenv.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\IDE\devenv.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\IDE\devenv.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\devenv.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\devenv.exe')
+function Find-VisualStudio {
+  First-Path `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2022\Professional\Common7\IDE\devenv.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\IDE\devenv.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\IDE\devenv.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\devenv.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\devenv.exe')
 }
 
 function Find-VisualStudioSolutions {
-    param(
-        [string]
-        $LookingFor
-    )
+  [Alias("vs-solutions")]
+  param(
+    [string] $LookingFor
+  )
 
-    $files = Get-ChildItem -Filter "*.sln" | ForEach-Object { $_.Name }
+  $files = Get-ChildItem -Filter "*.sln" | ForEach-Object { $_.Name }
 
-    $number = 0
-    if ($LookingFor) {
-        foreach ($file in $files) {
-            $number++
+  $number = 0
+  if ($LookingFor) {
+    foreach ($file in $files) {
+      $number++
 
-            if ($number -eq $LookingFor) {
-                Write-Output $file
-            }
-        }
-    } else {
-        foreach ($file in $files) {
-            $number++
-
-            Write-Output $("{0,2}: $($file)" -f $number)
-        }
+      if ($number -eq $LookingFor) {
+        Write-Output $file
+      }
     }
+  } else {
+    foreach ($file in $files) {
+      $number++
 
-    if ($number -eq 0) {
-        Write-Error "No Visual Studio solution files found."
+      Write-Output $("{0,2}: $($file)" -f $number)
     }
+  }
+
+  if ($number -eq 0) {
+    Write-Error "No Visual Studio solution files found."
+  }
 }
 
-Set-Alias vs-solutions Find-VisualStudioSolutions
-
 function Find-VSIX {
-    First-Path `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Enterprise\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Professional\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Community\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\VSIXInstaller.exe') `
-        (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\VSIXInstaller.exe')
+  First-Path `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2022\Enterprise\Common7\IDE\VSIXInstaller.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2022\Professional\Common7\IDE\VSIXInstaller.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2022\Community\Common7\IDE\VSIXInstaller.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\IDE\VSIXInstaller.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\IDE\VSIXInstaller.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\IDE\VSIXInstaller.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VSIXInstaller.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\IDE\VSIXInstaller.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\IDE\VSIXInstaller.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio 15.0\Common7\IDE\VSIXInstaller.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio 14.0\Common7\IDE\VSIXInstaller.exe') `
+    (Find-ProgramFiles 'Microsoft Visual Studio 12.0\Common7\IDE\VSIXInstaller.exe')
 }
 
 function Find-VSVars {
-    First-Path `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Professional\Common7\Tools\VsDevCmd.bat') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\Tools\VsDevCmd.bat') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\Tools\VsDevCmd.bat') `
-        (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat')
+  First-Path `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2022\Professional\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Professional\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Professional\Common7\Tools\VsDevCmd.bat') `
+    (Find-ProgramFiles 'Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat')
 }
 
 Set-Alias Find-VisualStudioVariables Find-VSVars
