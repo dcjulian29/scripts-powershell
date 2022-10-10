@@ -267,9 +267,11 @@ function Install-VsixPackage {
 
         $t = "Install to Visual Studio \w+\s\d+\scompleted successfully"
 
-        if (-not (Get-Content $logFile | Select-String -Pattern $t)) {
+        if ((Test-Path $logFile) -and (-not (Get-Content $logFile | Select-String -Pattern $t))) {
+          Get-Content -Path $logFile
+
           $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-            -Message "An error occurred during installation of the $Name Extension ($exitCode)." `
+            -Message "An error occurred during installation of the $Name Extension." `
             -ExceptionType "System.InvalidOperationException" `
             -ErrorId "System.InvalidOperation" `
             -ErrorCategory "InvalidOperation"))
