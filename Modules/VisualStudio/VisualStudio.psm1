@@ -134,6 +134,19 @@ function Get-VSVars {
   return $global:VSVariables
 }
 
+function Import-VSVars {
+  $vs = Get-VSVars
+
+  $vs.Keys | ForEach-Object {
+    Set-Item -Path "env:$_" -Value $vs[$_]
+  }
+}
+
+Set-Alias Register-VisualStudioVariables Import-VsVars
+Set-Alias Register-VSVariables Import-VsVars
+Set-Alias vsvars32 Import-VsVars
+Set-Alias VSVariables Import-VsVars
+
 function Install-VsixByName {
   [CmdletBinding()]
   param (
@@ -240,20 +253,9 @@ function Install-VsixPackage {
           Get-Content -Path $logFile
         }
     }
-}
 
-function Set-VSVars {
-    $enviornment = Get-VSVars
-
-    $enviornment.Keys | ForEach-Object {
-        Set-Item -Path "env:$_" -Value $enviornment[$_]
     }
-}
 
-Set-Alias Register-VisualStudioVariables Set-VsVars
-Set-Alias Register-VSVariables Set-VsVars
-Set-Alias vsvars32 Set-VsVars
-Set-Alias VSVariables Set-VsVars
 
 function Show-VisualStudioInstalledVersions {
   $installed = @()
