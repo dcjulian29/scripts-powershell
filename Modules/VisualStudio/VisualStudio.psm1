@@ -346,14 +346,42 @@ function Show-VsixExtensions {
 
     $xml = [xml](Get-Content $item)
 
-    $extension = [PSCustomObject]@{
-      Id = $xml.PackageManifest.Metadata.Identity.Id
-      Version = $xml.PackageManifest.Metadata.Identity.Version
-      File = $item
+    if ($xml.Vsix) {
+      $id            = $xml.Vsix.Identifier.Id
+      $name          = $xml.Vsix.Identifier.Name
+      $version       = $xml.Vsix.Identifier.Version
+      $publisher     = $xml.Vsix.Identifier.Author
+      $description   = $xml.Vsix.Identifier.Description
+      if ($description.GetType().Name -eq "XmlElement") {
+        $description = $xml.Vsix.Identifier.Description.'#text'
+      }
+      $extensionType = "VSIX"
     }
 
-    if (($extension.Id).Length -eq 0) {
-      $extension.Id = (Resolve-Path $item | Get-Item).BaseName
+    if ($xml.PackageManifest) {
+      $id            = $xml.PackageManifest.Metadata.Identity.Id
+      $name          = $xml.PackageManifest.Metadata.DisplayName
+      if ($name.GetType().Name -eq "XmlElement") {
+        $name = $xml.PackageManifest.Metadata.DisplayName.'#text'
+      }
+      $version       = $xml.PackageManifest.Metadata.Identity.Version
+      $publisher     = $xml.PackageManifest.MetaData.Identity.Publisher
+      $description   = $xml.PackageManifest.MetaData.Description
+      if ($description.GetType().Name -eq "XmlElement") {
+        $description = $xml.PackageManifest.MetaData.Description.'#text'
+      }
+      $extensionType = "Package"
+    }
+
+    $extension = [PSCustomObject]@{
+        Id            = $id
+        Name          = $name
+        Version       = $version
+        Publisher     = $publisher
+        Description   = $description
+        Path          = $item
+        InstalledOn   = (Get-Item -Path $item).CreationTime
+        ExtensionType = $extensionType
     }
 
     if ($extension.Id.Length -gt 0) {
