@@ -303,88 +303,87 @@ function Show-VsixExtensions {
 }
 
 function Start-VisualStudio {
-    param (
-        [string]$Project,
-        [int]$Version,
-        [bool]$AsAdmin
-    )
+  param (
+    [string]$Project,
+    [int]$Version,
+    [bool]$AsAdmin
+  )
 
-    if (-not $Version) {
-        $vs = Find-VisualStudio
-    } else {
-        switch ($Version) {
-            2022 { $vsv = "2022" }
-            2019 { $vsv = "2019" }
-            2017 { $vsv = "2017" }
-        }
-
-        $vs = First-Path `
-            (Find-ProgramFiles "Microsoft Visual Studio\$vsv\Enterprise\Common7\IDE\devenv.exe") `
-            (Find-ProgramFiles "Microsoft Visual Studio\$vsv\Professional\Common7\IDE\devenv.exe") `
-            (Find-ProgramFiles "Microsoft Visual Studio\$vsv\Community\Common7\IDE\devenv.exe") `
-            (Find-ProgramFiles "Microsoft Visual Studio $vsv\Common7\IDE\devenv.exe")
+  if (-not $Version) {
+    $vs = Find-VisualStudio
+  } else {
+    switch ($Version) {
+      2022 { $vsv = "2022" }
+      2019 { $vsv = "2019" }
+      2017 { $vsv = "2017" }
     }
 
-    if (Test-Path $vs) {
-        if ($Project -match "\d+") {
-            $solution = $(Find-VisualStudioSolutions $Project)
-        } else {
-            if ($Project -match "^.+\.sln$") {
-                $solution = $Project
-            } else {
-                $solution = "$project.sln"
-            }
-        }
+    $vs = First-Path `
+      (Find-ProgramFiles "Microsoft Visual Studio\$vsv\Enterprise\Common7\IDE\devenv.exe") `
+      (Find-ProgramFiles "Microsoft Visual Studio\$vsv\Professional\Common7\IDE\devenv.exe") `
+      (Find-ProgramFiles "Microsoft Visual Studio\$vsv\Community\Common7\IDE\devenv.exe") `
+      (Find-ProgramFiles "Microsoft Visual Studio $vsv\Common7\IDE\devenv.exe")
+  }
 
-        if ($solution) {
-            if (Test-Path $solution) {
-                if ($AsAdmin) {
-                    Start-Process -FilePath $vs -ArgumentList $solution -Verb RunAs
-                } else {
-                    Start-Process -FilePath $vs -ArgumentList $solution
-                }
-            } else {
-                Write-Error "$solution does not exists!"
-            }
-        } else {
-            Write-Error "The solution does not exists!"
-        }
+  if (Test-Path $vs) {
+    if ($Project -match "\d+") {
+      $solution = $(Find-VisualStudioSolutions $Project)
     } else {
-        Write-Error "Visual Studio $Version is not installed on this computer"
+      if ($Project -match "^.+\.sln$") {
+        $solution = $Project
+      } else {
+        $solution = "$project.sln"
+      }
     }
+
+    if ($solution) {
+      if (Test-Path $solution) {
+        if ($AsAdmin) {
+          Start-Process -FilePath $vs -ArgumentList $solution -Verb RunAs
+        } else {
+          Start-Process -FilePath $vs -ArgumentList $solution
+        }
+      } else {
+        Write-Error "$solution does not exists!"
+      }
+    } else {
+      Write-Error "The solution does not exists!"
+    }
+  } else {
+    Write-Error "Visual Studio $Version is not installed on this computer"
+  }
 }
 
-
 function Start-VisualStudio2019 {
-    param (
-        [string]$Project,
-        [switch]$AsAdmin
-    )
+  param (
+    [string]$Project,
+    [switch]$AsAdmin
+  )
 
-    Start-VisualStudio $Project 2019 -AsAdmin $AsAdmin.IsPresent
+  Start-VisualStudio $Project 2019 -AsAdmin $AsAdmin.IsPresent
 }
 
 Set-Alias vs2019 Start-VisualStudio2019
 
 function Start-VisualStudio2022 {
-    param (
-        [string]$Project,
-        [switch]$AsAdmin
-    )
+  param (
+    [string]$Project,
+    [switch]$AsAdmin
+  )
 
-    Start-VisualStudio $Project 2022 -AsAdmin $AsAdmin.IsPresent
+  Start-VisualStudio $Project 2022 -AsAdmin $AsAdmin.IsPresent
 }
 
 Set-Alias vs2022 Start-VisualStudio2022
 
 function Start-VisualStudioCode {
-    $code = (Find-ProgramFiles "Microsoft VS Code\Code.exe")
+  $code = (Find-ProgramFiles "Microsoft VS Code\Code.exe")
 
-    if ([String]::IsNullOrWhiteSpace($args)) {
-        Start-Process -FilePath $code -RedirectStandardOutput "NUL"
-    } else {
-        Start-Process -FilePath $code -ArgumentList $args -RedirectStandardOutput "NUL"
-    }
+  if ([String]::IsNullOrWhiteSpace($args)) {
+    Start-Process -FilePath $code -RedirectStandardOutput "NUL"
+  } else {
+    Start-Process -FilePath $code -ArgumentList $args -RedirectStandardOutput "NUL"
+  }
 }
 
 Set-Alias code Start-VisualStudioCode
@@ -406,11 +405,11 @@ function Test-VisualStudioInstalledVersion {
 }
 
 function Update-CodeSnippets {
-    $snippets = First-Path `
+  $snippets = First-Path `
     "$env:USERPROFILE\Documents\Visual Studio 2019\Code Snippets" `
     "$env:USERPROFILE\Documents\Visual Studio 2017\Code Snippets"
 
-    if (Test-Path $snippets) {
-        Copy-Item -Path $snippets -Destination "$env:SystemDrive\etc\visualstudio" -Recurse -Force
-    }
+  if (Test-Path $snippets) {
+    Copy-Item -Path $snippets -Destination "$env:SystemDrive\etc\visualstudio" -Recurse -Force
+  }
 }
