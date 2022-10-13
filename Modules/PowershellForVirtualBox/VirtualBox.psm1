@@ -150,6 +150,49 @@ function Invoke-VirtualBox {
     & (Find-VirtualBox) $args
 }
 
+function Save-VirtualBoxMachine {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter a virtual machine name",
+               ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    [ValidateNotNullorEmpty()]
+    [Alias("Id")]
+    [string[]]$Name
+  )
+
+  foreach ($item in $Name) {
+    $machine = findMachine($item)
+    $permittedStates = @(
+      stateAsNumber "Running"
+      stateAsNumber "Paused"
+    )
+
+    if ($machine) {
+      Write-Verbose "Suspending $($machine.Name)..."
+      if ($machine.State -in $permittedStates) {
+        $session = getSession
+        $machine.LockMachine($session, 1)
+        $progress = $session.Machine.SaveState()
+
+        while ($progress.Completed -eq 0) {
+          Start-Sleep -Seconds 1
+        }
+      } else {
+        $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+          -Message "Cannot save the execution state of '$($machine.Name)', current state: '$(stateAsText $machine.State)'" `
+          -ExceptionType "System.InvalidOperationException" `
+          -ErrorId "System.InvalidOperation" `
+          -ErrorCategory "InvalidOperation"))
+      }
+    } else {
+      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+        -Message "Failed to find virtual machine named '$Name'. Names are case sensitive." `
+        -ExceptionType "System.InvalidOperationException" `
+        -ErrorId "System.InvalidOperation" `
+        -ErrorCategory "InvalidOperation"))
+    }
+  }
+}
 
 function Start-VirtualBoxMachine {
   [CmdletBinding(SupportsShouldProcess = $True)]
@@ -229,55 +272,10 @@ function Stop-VirtualBoxMachine {
           $session = getSession
           $machine.LockMachine($session, 1)
           $session.Console.PowerButton()
+          $session.UnLockMachine()
         } else {
           $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
             -Message "Cannot stop '$($machine.Name)', current state: '$(stateAsText $machine.State)'" `
-            -ExceptionType "System.InvalidOperationException" `
-            -ErrorId "System.InvalidOperation" `
-            -ErrorCategory "InvalidOperation"))
-        }
-      }
-    } else {
-      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-        -Message "Failed to find virtual machine named '$Name'. Names are case sensitive." `
-        -ExceptionType "System.InvalidOperationException" `
-        -ErrorId "System.InvalidOperation" `
-        -ErrorCategory "InvalidOperation"))
-    }
-  }
-}
-
-function Suspend-VirtualBoxMachine {
-  [CmdletBinding(SupportsShouldProcess = $True)]
-  [Alias("Suspend-VBoxMachine", "Pause-VirtualBoxMachine", "Pause-VBoxMachine")]
-  param (
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter a virtual machine name",
-               ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-    [ValidateNotNullorEmpty()]
-    [Alias("Id")]
-    [string[]]$Name
-  )
-
-  foreach ($item in $Name) {
-    $machine = findMachine($item)
-    $permittedStates = @(
-      stateAsNumber "Runing"
-    )
-
-    if ($machine) {
-      Write-Verbose "Suspending $($machine.Name)..."
-      if ($PScmdlet.ShouldProcess($machine.Name)) {
-        if ($machine.State -in $permittedStates) {
-          $session = getSession
-          $machine.LockMachine($session, 1)
-          $progress = $session.Machine.Pause()
-
-          while ($progress.Completed -eq 0) {
-            Start-Sleep -Seconds 1
-          }
-        } else {
-          $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-            -Message "Cannot save the execution state of '$($machine.Name)', current state: '$(stateAsText $machine.State)'" `
             -ExceptionType "System.InvalidOperationException" `
             -ErrorId "System.InvalidOperation" `
             -ErrorCategory "InvalidOperation"))
