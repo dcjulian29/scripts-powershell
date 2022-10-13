@@ -195,7 +195,7 @@ function Save-VirtualBoxMachine {
 }
 
 function Start-VirtualBoxMachine {
-  [CmdletBinding(SupportsShouldProcess = $True)]
+  [CmdletBinding()]
   [Alias("Start-VBoxMachine", "Resume-VirtualBoxMachine", "Resume-VBoxMachine")]
   param (
     [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter a virtual machine name",
@@ -217,24 +217,22 @@ function Start-VirtualBoxMachine {
 
     if ($machine) {
       Write-Verbose "Starting $($machine.Name)..."
-      if ($PScmdlet.ShouldProcess($machine.Name)) {
-        if ($machine.State -in $permittedStates) {
-          if ($Headless) {
-            $progress = $machine.LaunchVMProcess($(getSession), "headless", [string[]]@())
-          } else {
-            $progress = $machine.LaunchVMProcess($(getSession), "gui", [string[]]@())
-          }
-
-          while ($progress.Completed -eq 0) {
-            Start-Sleep -Seconds 1
-          }
+      if ($machine.State -in $permittedStates) {
+        if ($Headless) {
+          $progress = $machine.LaunchVMProcess($(getSession), "headless", [string[]]@())
         } else {
-          $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-            -Message "Cannot start '$($machine.Name)', current state: '$(stateAsText $machine.State)'" `
-            -ExceptionType "System.InvalidOperationException" `
-            -ErrorId "System.InvalidOperation" `
-            -ErrorCategory "InvalidOperation"))
+          $progress = $machine.LaunchVMProcess($(getSession), "gui", [string[]]@())
         }
+
+        while ($progress.Completed -eq 0) {
+          Start-Sleep -Seconds 1
+        }
+      } else {
+        $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+          -Message "Cannot start '$($machine.Name)', current state: '$(stateAsText $machine.State)'" `
+          -ExceptionType "System.InvalidOperationException" `
+          -ErrorId "System.InvalidOperation" `
+          -ErrorCategory "InvalidOperation"))
       }
     } else {
       $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
@@ -247,7 +245,7 @@ function Start-VirtualBoxMachine {
 }
 
 function Stop-VirtualBoxMachine {
-  [CmdletBinding(SupportsShouldProcess = $True)]
+  [CmdletBinding()]
   [Alias("Stop-VBoxMachine")]
   param (
     [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter a virtual machine name",
@@ -267,19 +265,17 @@ function Stop-VirtualBoxMachine {
 
     if ($machine) {
       Write-Verbose "Stopping $($machine.Name)..."
-      if ($PScmdlet.ShouldProcess($machine.Name)) {
-        if ($machine.State -in $permittedStates) {
-          $session = getSession
-          $machine.LockMachine($session, 1)
-          $session.Console.PowerButton()
-          $session.UnLockMachine()
-        } else {
-          $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-            -Message "Cannot stop '$($machine.Name)', current state: '$(stateAsText $machine.State)'" `
-            -ExceptionType "System.InvalidOperationException" `
-            -ErrorId "System.InvalidOperation" `
-            -ErrorCategory "InvalidOperation"))
-        }
+      if ($machine.State -in $permittedStates) {
+        $session = getSession
+        $machine.LockMachine($session, 1)
+        $session.Console.PowerButton()
+        $session.UnLockMachine()
+      } else {
+        $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+          -Message "Cannot stop '$($machine.Name)', current state: '$(stateAsText $machine.State)'" `
+          -ExceptionType "System.InvalidOperationException" `
+          -ErrorId "System.InvalidOperation" `
+          -ErrorCategory "InvalidOperation"))
       }
     } else {
       $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `

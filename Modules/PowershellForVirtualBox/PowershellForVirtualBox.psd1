@@ -1,6 +1,6 @@
 @{
     RootModule = "VirtualBox.psm1"
-    ModuleVersion = "2110.12.3"
+    ModuleVersion = "2110.12.4"
     GUID = "c66d09da-ef6d-411b-8708-9526b68533fa"
     Author = "Julian Easterling"
     PowerShellVersion = "3.0"
