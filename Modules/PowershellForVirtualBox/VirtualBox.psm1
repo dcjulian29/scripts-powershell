@@ -136,10 +136,13 @@ function Find-VirtualBox {
 }
 
 function Invoke-VirtualBox {
+  [CmdletBinding()]
+  [Alias("vbox")]
+  param ()
+
     & (Find-VirtualBox) $args
 }
 
-Set-Alias -Name "vbox" -Value Invoke-VirtualBox
 
 function Start-VirtualBoxMachine {
   [CmdletBinding(SupportsShouldProcess = $True)]
@@ -155,11 +158,17 @@ function Start-VirtualBoxMachine {
 
   foreach ($item in $Name) {
     $machine = findMachine($item)
+    $permittedStates = @(
+      stateAsNumber "PoweredOff"
+      stateAsNumber "AbortedSaved"
+      stateAsNumber "Saved"
+      stateAsNumber "Paused"
+    )
 
     if ($machine) {
       Write-Verbose "Starting $($machine.Name)..."
       if ($PScmdlet.ShouldProcess($machine.Name)) {
-        if ($machine.State -in @(1, 2, 6)) {
+        if ($machine.State -in $permittedStates) {
           if ($Headless) {
             $progress = $machine.LaunchVMProcess($(getSession), "headless", [string[]]@())
           } else {
@@ -200,11 +209,16 @@ function Stop-VirtualBoxMachine {
 
   foreach ($item in $Name) {
     $machine = findMachine($item)
+    $permittedStates = @(
+      stateAsNumber "Running"
+      stateAsNumber "Paused"
+      stateAsNumber "Stuck"
+    )
 
     if ($machine) {
       Write-Verbose "Stopping $($machine.Name)..."
       if ($PScmdlet.ShouldProcess($machine.Name)) {
-        if ($machine.State -eq 6) {
+        if ($machine.State -in $permittedStates) {
           $session = getSession
           $machine.LockMachine($session, 1)
           $session.Console.PowerButton()
@@ -239,14 +253,17 @@ function Suspend-VirtualBoxMachine {
 
   foreach ($item in $Name) {
     $machine = findMachine($item)
+    $permittedStates = @(
+      stateAsNumber "Runing"
+    )
 
     if ($machine) {
       Write-Verbose "Suspending $($machine.Name)..."
       if ($PScmdlet.ShouldProcess($machine.Name)) {
-        if (($machine.State -eq 4) -or ($machine.State -eq 5)) {
-          $session = New-Object -ComObject "VirtualBox.Session"
+        if ($machine.State -in $permittedStates) {
+          $session = getSession
           $machine.LockMachine($session, 1)
-          $progress = $session.Machine.SaveState()
+          $progress = $session.Machine.Pause()
 
           while ($progress.Completed -eq 0) {
             Start-Sleep -Seconds 1
