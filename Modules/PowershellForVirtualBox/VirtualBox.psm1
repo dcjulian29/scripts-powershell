@@ -124,6 +124,13 @@ function Get-VirtualBoxMachine {
   return $virtuals
 }
 
+function Get-VirtualBoxProcess {
+  [CmdletBinding()]
+  param ()
+
+  Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.path -match "oracle\\virt" }
+}
+
 function Find-VirtualBox {
     $vb = (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
         -Name "VBOX_MSI_INSTALL_PATH").VBOX_MSI_INSTALL_PATH + "VBoxManage.exe"
