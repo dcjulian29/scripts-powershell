@@ -8,22 +8,19 @@ function checkReset([string[]]$pingHosts) {
     switch ($ping)
     {
       5 {
-        & vagrant up ubuntu2004
+        & vagrant up ubuntu
       }
       6 {
-        & vagrant up rocky8
+        & vagrant up rocky
       }
       7 {
-        & vagrant up alma8
+        & vagrant up alma
       }
       8 {
-        & vagrant up ubuntu1804
+        & vagrant up fedora
       }
       9 {
-        & vagrant up debian11
-      }
-      10 {
-        & vagrant up fedora35
+        & vagrant up debian
       }
       default {
         $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
