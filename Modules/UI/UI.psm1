@@ -45,6 +45,14 @@ function Get-BingWallpaper {
     }
 }
 
+function Get-Weather {
+  [CmdletBinding()]
+  [Alias("wtr")]
+  param ()
+
+    (Invoke-WebRequest -Uri "https://wttr.in" -UseBasicParsing).Content
+}
+
 function Read-MultiLineInput {
     param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
