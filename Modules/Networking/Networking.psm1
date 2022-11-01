@@ -419,13 +419,30 @@ function Invoke-Http {
 
     [System.Net.WebResponse] $resp = $webRequest.GetResponse();
 
-    if ($resp -ne $null) {
+    if ($null -ne $resp) {
         $rs = $resp.GetResponseStream();
         [System.IO.StreamReader] $sr = New-Object System.IO.StreamReader -argumentList $rs;
         [string] $results = $sr.ReadToEnd();
 
         return $results
     }
+}
+
+function Invoke-SpeedTest {
+  [CmdletBinding()]
+  [Alias("speedtest", "st")]
+  param()
+
+  Push-Location $env:TEMP
+
+  $file = "$(([Guid]::NewGuid()).Guid).py"
+
+  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py" `
+    -UseBasicParsing -OutFile $file
+
+  python $file
+
+  Pop-Location
 }
 
 function New-FirewallRule {
@@ -453,10 +470,8 @@ function New-FirewallRule {
 function New-UrlReservation {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Protocol = "http",
-        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Hostname = "*",
         [Parameter(Mandatory = $true)]
@@ -512,10 +527,8 @@ function Remove-FirewallRule {
 function Remove-UrlReservation {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Protocol = "http",
-        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Hostname = "*",
         [Parameter(Mandatory = $true)]
