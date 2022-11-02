@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2204.19.1'
+    ModuleVersion = '2211.2.1'
     GUID = 'd4e9a80b-2239-4d7a-a552-b46e17a47863'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -14,6 +14,7 @@
       "Invoke-ElevatedCommandAs"
       "Invoke-ElevatedScript"
       "Invoke-ElevatedExpression"
+      "Start-ProcessNonElevated"
       "Start-RemoteProcess"
     )
     AliasesToExport = @(
