@@ -1,6 +1,6 @@
 @{
   RootModule = 'PSModules.psm1'
-  ModuleVersion = '2204.20.1'
+  ModuleVersion = '2211.3.1'
   Description = "A collection of utilities, commands, and functions specific to Powershell modules."
   GUID = 'c4d33743-f3f8-4dde-a8ff-78c7934497af'
   Author = 'Julian Easterling'
@@ -14,6 +14,7 @@
   NestedModules = @()
   FunctionsToExport = @(
     "Get-InstalledModuleReport"
+    "Optimize-InstalledModules"
     "Reset-Module"
     "Restart-Module"
     "Update-InstalledModules"

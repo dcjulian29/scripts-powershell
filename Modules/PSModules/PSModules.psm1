@@ -5,6 +5,17 @@ function Get-InstalledModuleReport {
   | Format-Table | Out-String)
 }
 
+function Optimize-InstalledModules {
+  $latest = Get-InstalledModule
+  foreach ($module in $latest) {
+    Write-Verbose -Message "Looking for old versions of $($module.Name) $($module.Version)" `
+      -Verbose
+    Get-InstalledModule -Name $module.Name -AllVersions `
+      | Where-Object {$_.Version -ne $module.Version} `
+      | Uninstall-Module -Verbose
+  }
+}
+
 function Reset-Module {
   param (
     [Parameter(Mandatory = $true)]
