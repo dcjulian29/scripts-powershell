@@ -1,3 +1,5 @@
+$script:downloadSession = $null
+
 function Find-VisualStudio {
   First-Path `
     (Find-ProgramFiles 'Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe') `
@@ -77,10 +79,9 @@ function Get-VsixUrl {
 
   try {
     $html = Invoke-WebRequest -Uri $url -UseBasicParsing `
-      -SessionVariable session -ErrorAction SilentlyContinue
-    $statusCode = $html.StatusCode
+      -SessionVariable 'Session' -ErrorAction SilentlyContinue
 
-    if ($statusCode -ne 200) {
+    if ($html.StatusCode -ne 200) {
       $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
         -Message "An error occurred determining download URL (StatusCode: $statusCode)." `
         -ExceptionType "System.InvalidOperationException" `
@@ -100,9 +101,9 @@ function Get-VsixUrl {
         -ErrorCategory "InvalidOperation"))
     }
 
-    $href = "$($baseProtocol)//$($baseHostName)$($anchor)"
+    $script:downloadSession = $Session
 
-    return $href
+    return "$($baseProtocol)//$($baseHostName)$($anchor)"
   } catch {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
       -Message $_.Exception.Message `
@@ -163,7 +164,7 @@ function Install-VsixByName {
   $file = "${env:TEMP}\$([Guid]::NewGuid()).vsix"
   $href = Get-VsixUrl $Name
 
-  Invoke-WebRequest $href -OutFile $file -WebSession $session
+  Invoke-WebRequest $href -OutFile $file -WebSession $script:downloadSession
 
   if (Test-Path $file) {
     Install-VsixPackage -Name $Name -Path $file
