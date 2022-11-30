@@ -53,8 +53,6 @@ function Invoke-GitLog {
   & "$(Find-Git)" log $("$args")
 }
 
-Set-Alias -Name "gl" -Value "Invoke-GitLog"
-
 function Invoke-GraphicalGit {
     param (
         [ValidateNotNullorEmpty()]

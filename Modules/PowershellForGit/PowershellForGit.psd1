@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2209.13.1'
+    ModuleVersion = '2211.30.1'
     GUID = '099256ed-ac18-4e56-8017-bb9d9077fb74'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -76,7 +76,6 @@
         "gitk"
         "git-gc-all"
         "git-info"
-        "gl"
         "gpull"
         "gpush"
         "gpushall"
