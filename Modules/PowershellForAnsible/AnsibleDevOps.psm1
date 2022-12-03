@@ -148,10 +148,18 @@ function Edit-AnsibleVault {
 Set-Alias -Name ansible-vault-edit -Value Edit-AnsibleVault
 
 function Export-AnsibleFacts {
+  [Alias("ansible-save-facts", "ansible-facts-save")]
   param (
     [string] $ComputerName = "all",
-    [string] $InventoryFile = "./inventories/vagrant.ini"
+    [string] $InventoryFile = "./inventories/vagrant.ini",
+    [switch] $IncludeVars
   )
+
+  if ($IncludeVars) {
+    $facts = "vars"
+  } else {
+    $facts = "setupvar.ansible_facts"
+  }
 
   $play  = "---`n"
   $play += "- hosts: $ComputerName`n"
@@ -159,8 +167,8 @@ function Export-AnsibleFacts {
   $play += "    - setup:`n"
   $play += "      register: setupvar`n"
   $play += "    - copy:`n"
-  $play += "        content: `"{{ setupvar.ansible_facts | to_nice_json }}`"`n"
-  $play += "        dest: `".facts/{{ ansible_host }}.json`"`n"
+  $play += "        content: `"{{ $facts | to_nice_json }}`"`n"
+  $play += "        dest: `"{{ ansible_host }}.json`"`n"
   $play += "      delegate_to: localhost`n"
 
   Set-Content -Path ".tmp/play.yml" -Value $play -Force -NoNewline
@@ -170,9 +178,6 @@ function Export-AnsibleFacts {
 
   Invoke-AnsiblePlaybook $param
 }
-
-Set-Alias -Name ansible-save-facts -Value Export-AnsibleFacts
-Set-Alias -Name ansible-facts-save -Value Export-AnsibleFacts
 
 function Get-AnsibleFacts {
   param (
@@ -237,6 +242,22 @@ function Get-AnsibleVariables {
 }
 
 Set-Alias -Name ansible-show-vars -Value Get-AnsibleVariables
+
+function Import-AnsibleFacts {
+  [Alias("ansible-load-facts", "ansible-facts-load")]
+  param (
+    [string] $ComputerName = "all",
+    [string] $InventoryFile = "./inventories/vagrant.ini",
+    [switch] $IncludeVars
+  )
+
+  Remove-Item -Path .tmp/*.json -Force
+
+  Export-AnsibleFacts -ComputerName $ComputerName -InventoryFile $InventoryFile -IncludeVars:$IncludeVars `
+    | Out-Null
+
+  return (Get-Content -Raw -Path .tmp/*.json | ConvertFrom-Json)
+}
 
 function Invoke-AnsibleHostCommand {
   [CmdletBinding()]

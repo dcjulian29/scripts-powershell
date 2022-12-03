@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2210.19.1'
+    ModuleVersion = '2212.2.1'
     Description = "A collection of commands to interact with a docker container running the control node instance. Allows a very similar workflow as on a Linux system."
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
@@ -40,6 +40,7 @@
       "Get-AnsiblePlaybookTags"
       "Get-AnsiblePlaybookTasks"
       "Get-AnsibleVariables"
+      "Import-AnsibleFacts"
       "Invoke-Ansible"
       "Invoke-AnsibleConfig"
       "Invoke-AnsibleContainer"
@@ -83,6 +84,7 @@
       "ansible-doc"
       "ansible-encrypt"
       "ansible-facts"
+      "ansible-facts-load"
       "ansible-facts-save"
       "ansible-facts-show"
       "ansible-galaxy"
@@ -93,6 +95,7 @@
       "ansible-lint"
       "ansible-lint-playbook"
       "ansible-lint-role"
+      "ansible-load-facts"
       "ansible-new-role"
       "ansible-playbook"
       "ansible-playbook-hosts"
