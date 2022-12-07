@@ -103,10 +103,11 @@ function Invoke-AnsiblePlaybook {
 Set-Alias -Name ansible-playbook -Value Invoke-AnsiblePlaybook
 
 function Invoke-AnsibleVault {
-    Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-vault" -Command "$args"
-}
+  [Alias("ansible-vault")]
+  param ()
 
-Set-Alias -Name ansible-vault -Value Invoke-AnsibleVault
+  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-vault" -Command "$args"
+}
 
 function Show-AnsibleFacts {
     param(
@@ -162,18 +163,3 @@ function Show-AnsibleVariables {
 
 Set-Alias -Name ansible-variables -Value Show-AnsibleVariables
 Set-Alias -Name ansible-vars -Value Show-AnsibleVariables
-
-function Protect-AnsibleVariable {
-    param(
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $Value,
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $VariableName
-    )
-
-    Invoke-AnsibleVault encrypt_string `"$Value`" --name $VariableName
-}
-
-Set-Alias -Name ansible-encrypt -Value Protect-AnsibleVariable

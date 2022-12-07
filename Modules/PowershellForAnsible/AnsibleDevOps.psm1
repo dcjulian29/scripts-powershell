@@ -128,25 +128,6 @@ function Assert-AnsibleProvision {
 
 Set-Alias -Name ansible-provision-check -Value Assert-AnsibleProvision
 
-function Edit-AnsibleVault {
-  [CmdletBinding()]
-  param (
-    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-    [string] $Vault
-  )
-  ensureAnsibleRoot
-
-  if ($Vault.Length -eq 0) {
-    $Vault = "./secrets.yml"
-  }
-
-  Invoke-AnsibleVault edit ./secrets.yml
-
-  returnAnsibleRoot
-}
-
-Set-Alias -Name ansible-vault-edit -Value Edit-AnsibleVault
-
 function Export-AnsibleFacts {
   [Alias("ansible-save-facts", "ansible-facts-save")]
   param (
@@ -749,25 +730,6 @@ function Set-AnsibleVaultPassword {
 
   returnAnsibleRoot
 }
-
-function Show-AnsibleVault {
-  [CmdletBinding()]
-  param (
-    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-    [string] $Vault
-  )
-  ensureAnsibleRoot
-
-  if ($Vault.Length -eq 0) {
-    $Vault = "./secrets.yml"
-  }
-
-  Invoke-AnsibleVault view ./secrets.yml
-
-  returnAnsibleRoot
-}
-
-Set-Alias -Name ansible-vault-view -Value Show-AnsibleVault
 
 function Test-AnsibleProvision {
   [CmdletBinding()]
