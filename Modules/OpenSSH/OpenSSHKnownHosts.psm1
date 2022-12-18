@@ -76,7 +76,7 @@ function New-OpenSSHKey {
   )
 
   & C:\Windows\System32\OpenSSH\ssh-keygen.exe -t ecdsa -b 521 -m PEM `
-    -C `"$User@$ComputerName`" -N `"`" -f "`"$env:SystemDrive\etc\ssh\$ComputerName.key`""
+    -C "$User@$ComputerName" -N "" -f "${env:SystemDrive}/etc/ssh/$ComputerName.key"
 }
 
 function Remove-OpenSSHKnownHost {
