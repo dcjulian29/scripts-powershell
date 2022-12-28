@@ -1,6 +1,8 @@
 function executeCommand($command, $parameters) {
-  Write-Verbose "$command $parameters"
-  if (Get-Command $command -ErrorAction SilentlyContinue) {
+  Write-Verbose "~~> $command $parameters"
+  $InPath = Get-Command $command -ErrorAction SilentlyContinue
+
+  if ($InPath && ($InPath.CommandType -eq "Application")) {
     Start-Process -FilePath $command -ArgumentList $parameters -NoNewWindow -Wait
   } else {
     Invoke-AnsibleContainer -Command "$command $parameters"
