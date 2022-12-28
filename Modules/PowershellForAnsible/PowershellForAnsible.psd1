@@ -1,6 +1,6 @@
 @{
-    ModuleVersion = '2212.28.1'
-    Description = "A collection of commands to interact with a docker container running the control node instance. Allows a very similar workflow as on a Linux system."
+    ModuleVersion = '2212.29.1'
+    Description = "A collection of commands to interact with ansible (via a docker container if needed) running the control node instance. Allows a very similar workflow regardless of operating system."
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -13,6 +13,7 @@
     )
     RootModule = 'Ansible.psm1'
     NestedModules = @(
+      "AnsibleBinaries.psm1"
       "AnsibleDevOps.psm1"
       "AnsibleInventory.psm1"
       "AnsibleLint.psm1"
@@ -43,7 +44,10 @@
       "Get-AnsibleVariables"
       "Import-AnsibleFacts"
       "Invoke-Ansible"
+      "Invoke-AnsibleCommunity"
       "Invoke-AnsibleConfig"
+      "Invoke-AnsibleConnection"
+      "Invoke-AnsibleConsole"
       "Invoke-AnsibleContainer"
       "Invoke-AnsibleDoc"
       "Invoke-AnsibleGalaxy"
@@ -58,7 +62,10 @@
       "Invoke-AnsiblePlayRaspi"
       "Invoke-AnsiblePlayTest"
       "Invoke-AnsibleProvision"
+      "Invoke-AnsiblePull"
+      "Invoke-AnsibleTest"
       "Invoke-AnsibleVault"
+      "Invoke-YamlLint"
       "New-AnsibleRole"
       "Ping-AnsibleHost"
       "Protect-AnsibleVariable"
@@ -78,7 +85,10 @@
     )
     AliasesToExport = @(
       "ansible"
+      "ansible-community"
       "ansible-config"
+      "ansible-connection"
+      "ansible-console"
       "ansible-container"
       "ansible-dev-reset"
       "ansible-dev-play"
@@ -112,6 +122,7 @@
       "ansible-provision-server"
       "ansible-provision-test"
       "ansible-provision-update"
+      "ansible-pull"
       "ansible-raspi-play"
       "ansible-raspi-reset"
       "ansible-reset-dev"
@@ -122,6 +133,7 @@
       "ansible-show-facts"
       "ansible-show-hostvars"
       "ansible-show-vars"
+      "ansible-test"
       "ansible-test-play"
       "ansible-test-reset"
       "ansible-variables"
@@ -131,23 +143,6 @@
       "ansible-vault-view"
       "Check-AnsiblePlaybookSyntax"
       "Validate-AnsiblePlaybookSyntax"
-      "destroy.sh"
-      "new-role.sh"
-      "ping-hosts.sh"
-      "play-base.sh"
-      "play-dev.sh"
-      "provision-check.sh"
-      "provision-server.sh"
-      "provision-test.sh"
-      "provision-update.sh"
-      "reset-dev.sh"
-      "reset-test.sh"
-      "save-facts.sh"
-      "show-facts.sh"
-      "show-hostvars.sh"
-      "show-vars.sh"
-      "update-servers.sh"
-      "vault-edit.sh"
-      "vault-view.sh"
+      "yamllint"
     )
 }

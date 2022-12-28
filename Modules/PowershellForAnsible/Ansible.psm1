@@ -1,5 +1,3 @@
-$script:AnsibleDir = "~/.local/bin"
-
 function Get-AnsibleConfig {
   Invoke-AnsibleConfig list
 }
@@ -12,20 +10,9 @@ function Get-AnsibleConfigFile {
   Invoke-AnsibleConfig view
 }
 
-function Invoke-Ansible {
-  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible" -Command "$args"
-}
-
-Set-Alias -Name ansible -Value Invoke-Ansible
-
-function Invoke-AnsibleConfig {
-  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-config" -Command "$args"
-}
-
-Set-Alias -Name ansible-config -Value Invoke-AnsibleConfig
-
 function Invoke-AnsibleContainer {
   [CmdletBinding()]
+  [Alias("ansible-container")]
   param (
     [string]$EntryPoint,
     [string]$Command,
@@ -67,67 +54,23 @@ function Invoke-AnsibleContainer {
   }
 }
 
-Set-Alias -Name ansible-container -Value Invoke-AnsibleContainer
-
-function Invoke-AnsibleDoc {
-  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-doc" -Command "$args"
-}
-
-Set-Alias -Name ansible-doc -Value Invoke-AnsibleDoc
-
-function Invoke-AnsibleGalaxy {
-  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-galaxy" -Command "$args"
-}
-
-Set-Alias -Name ansible-galaxy -Value Invoke-AnsibleGalaxy
-
-function Invoke-AnsibleInventory {
-  $params = "$args"
-  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-inventory" -Command $params
-}
-
-Set-Alias -Name ansible-inventory -Value Invoke-AnsibleInventory
-
-function Invoke-AnsibleLint {
-  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-lint" -Command "$args"
-}
-
-Set-Alias -Name ansible-lint -Value Invoke-AnsibleLint
-
-function Invoke-AnsiblePlaybook {
+function Show-AnsibleFacts {
   [CmdletBinding()]
-  [Alias("ansible-playbook")]
-  param (
-    [Parameter(Position=0, ValueFromRemainingArguments=$true)]
-    [string] $Parameters
+  [Alias("ansible-facts")]
+  param(
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [Alias("Path")]
+    [string] $InventoryFile
   )
 
-  Write-Verbose "ansible-playbook $Parameters"
-  Invoke-AnsibleContainer -Command "ansible-playbook $Parameters"
-}
+  $workingPath = (($InventoryFile -replace "\\","/") -replace ":","").ToLower().Trim("/")
 
-function Invoke-AnsibleVault {
-  [Alias("ansible-vault")]
-  param ()
+  if ((Resolve-Path $workingPath).Path.Contains($pwd.Path)) {
+    $playbook = "./$((New-Guid).Guid).yml"
 
-  Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-vault" -Command "$args"
-}
-
-function Show-AnsibleFacts {
-    param(
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [Alias("Path")]
-        [string] $InventoryFile
-    )
-
-    $workingPath = (($InventoryFile -replace "\\","/") -replace ":","").ToLower().Trim("/")
-
-    if ((Resolve-Path $workingPath).Path.Contains($pwd.Path)) {
-        $playbook = "./$((New-Guid).Guid).yml"
-
-        Set-Content -Path $playbook -Value @"
+    Set-Content -Path $playbook -Value @"
 ---
 - hosts: all
   become: true
@@ -137,33 +80,30 @@ function Show-AnsibleFacts {
         var: ansible_facts
 "@
 
-        Invoke-AnsiblePlaybook --inventory $workingPath $playbook
+    Invoke-AnsiblePlaybook --inventory $workingPath $playbook
 
-        Remove-Item -Path $playbook -Force
-    } else {
-        Write-Warning "Current PowerShell wrapper only supports files as a child of the current working directory."
-    }
+    Remove-Item -Path $playbook -Force
+  } else {
+    Write-Warning "Current PowerShell wrapper only supports files as a child of the current working directory."
+  }
 }
-
-Set-Alias -Name ansible-facts -Value Show-AnsibleFacts
 
 function Show-AnsibleVariables {
-    param(
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [Alias("Path")]
-        [string] $InventoryFile
-    )
+  [CmdletBinding()]
+  [Alias("ansible-variables", "ansible-vars")]
+  param(
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [Alias("Path")]
+    [string] $InventoryFile
+  )
 
-    $workingPath = (($InventoryFile -replace "\\","/") -replace ":","").ToLower().Trim("/")
+  $workingPath = (($InventoryFile -replace "\\","/") -replace ":","").ToLower().Trim("/")
 
-    if ((Resolve-Path $workingPath).Path.Contains($pwd.Path)) {
-        Invoke-AnsibleInventory --graph --vars --inventory $workingPath
-    } else {
-        Write-Warning "Current PowerShell wrapper only supports files as a child of the current working directory."
-    }
+  if ((Resolve-Path $workingPath).Path.Contains($pwd.Path)) {
+    Invoke-AnsibleInventory --graph --vars --inventory $workingPath
+  } else {
+    Write-Warning "Current PowerShell wrapper only supports files as a child of the current working directory."
+  }
 }
-
-Set-Alias -Name ansible-variables -Value Show-AnsibleVariables
-Set-Alias -Name ansible-vars -Value Show-AnsibleVariables
