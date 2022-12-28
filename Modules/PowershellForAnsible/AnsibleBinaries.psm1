@@ -152,6 +152,17 @@ function Invoke-AnsibleVault {
   executeCommand "ansible-vault" $Parameters
 }
 
+function Invoke-Molecule {
+  [CmdletBinding()]
+  [Alias("molecule")]
+  param (
+    [Parameter(Position=0, ValueFromRemainingArguments=$true)]
+    [string] $Parameters
+  )
+
+  executeCommand "molecule" $Parameters
+}
+
 function Invoke-YamlLint {
   [CmdletBinding()]
   [Alias("yamllint")]

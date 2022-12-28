@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2212.29.1'
+    ModuleVersion = '2212.29.2'
     Description = "A collection of commands to interact with ansible (via a docker container if needed) running the control node instance. Allows a very similar workflow regardless of operating system."
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
@@ -65,6 +65,7 @@
       "Invoke-AnsiblePull"
       "Invoke-AnsibleTest"
       "Invoke-AnsibleVault"
+      "Invoke-Molecule"
       "Invoke-YamlLint"
       "New-AnsibleRole"
       "Ping-AnsibleHost"
@@ -142,6 +143,7 @@
       "ansible-vault-edit"
       "ansible-vault-view"
       "Check-AnsiblePlaybookSyntax"
+      "molecule"
       "Validate-AnsiblePlaybookSyntax"
       "yamllint"
     )
