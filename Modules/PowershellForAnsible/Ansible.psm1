@@ -95,10 +95,16 @@ function Invoke-AnsibleLint {
 Set-Alias -Name ansible-lint -Value Invoke-AnsibleLint
 
 function Invoke-AnsiblePlaybook {
-    Invoke-AnsibleContainer -EntryPoint "${script:AnsibleDir}/ansible-playbook" -Command "$args"
-}
+  [CmdletBinding()]
+  [Alias("ansible-playbook")]
+  param (
+    [Parameter(Position=0, ValueFromRemainingArguments=$true)]
+    [string] $Parameters
+  )
 
-Set-Alias -Name ansible-playbook -Value Invoke-AnsiblePlaybook
+  Write-Verbose "ansible-playbook $Parameters"
+  Invoke-AnsibleContainer -Command "ansible-playbook $Parameters"
+}
 
 function Invoke-AnsibleVault {
   [Alias("ansible-vault")]
