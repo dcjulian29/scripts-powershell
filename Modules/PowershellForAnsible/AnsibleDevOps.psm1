@@ -263,6 +263,7 @@ Set-Alias -Name ansible-hosts-exec -Value Invoke-AnsibleHostCommand
 
 function Invoke-AnsiblePlayBase {
   [CmdletBinding()]
+  [Alias("ansible-play-base")]
   param (
       [string] $Subset,
       [string[]] $Tags,
@@ -300,12 +301,12 @@ function Invoke-AnsiblePlayBase {
   $param += " --tags " + $Tags -join ","
   $param += " -i ./inventories/vagrant.ini ./playbooks/base.yml"
 
+  Write-Verbose $param
+
   Invoke-AnsiblePlaybook $param
 
   returnAnsibleRoot
 }
-
-Set-Alias -Name ansible-play-base -Value Invoke-AnsiblePlayBase
 
 function Invoke-AnsiblePlayDev {
   [CmdletBinding()]
