@@ -1,3 +1,28 @@
+function Find-AnsibleConfig {
+  [CmdletBinding()]
+  param (
+    [string] $Path = $PWD
+  )
+
+  if ($IsWindows) {
+    $top = ($Path -replace (Split-Path -Path $PWD -Qualifier), '') + "\"
+  }
+
+  while (-not (Test-Path -Path (Join-Path $Path "ansible.cfg"))) {
+    $Path = (Split-Path $Path -Parent)
+
+    if (($Path.Length -eq 0) -or ($Path -eq $top)) {
+      return $null
+    }
+  }
+
+  if (Test-Path -Path (Join-Path $Path "ansible.cfg")) {
+    return $Path
+  }
+
+  return $null
+}
+
 function Get-AnsibleConfig {
   Invoke-AnsibleConfig list
 }

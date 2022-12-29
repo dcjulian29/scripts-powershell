@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2212.29.2'
+    ModuleVersion = '2212.30.1'
     Description = "A collection of commands to interact with ansible (via a docker container if needed) running the control node instance. Allows a very similar workflow regardless of operating system."
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
@@ -27,6 +27,7 @@
       "Confirm-AnsiblePlaybookSyntax"
       "Edit-AnsibleVault"
       "Export-AnsibleFacts"
+      "Find-AnsibleConfig"
       "Get-AnsibleConfig"
       "Get-AnsibleConfigDump"
       "Get-AnsibleConfigFile"
