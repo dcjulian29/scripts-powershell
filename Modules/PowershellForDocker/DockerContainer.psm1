@@ -17,8 +17,18 @@ function Get-DockerContainer {
   )
 
   if ($PSCmdlet.ParameterSetName -eq "Individual") {
-    Invoke-Docker "inspect $Id" | ConvertFrom-Json
-    return
+    $container = Invoke-Docker "inspect $Id" | ConvertFrom-Json
+    $container.Created = (Get-Date $container.Created)
+
+    if ($container.State.Status -like "running") {
+      $container.State.FinishedAt = $null
+    } else {
+      $container.State.FinishedAt = (Get-Date $container.State.FinishedAt)
+    }
+
+    $container.State.StartedAt = (Get-Date $container.State.StartedAt)
+
+    return $container
   }
 
   $arg = "ps "
@@ -27,51 +37,37 @@ function Get-DockerContainer {
     $arg += "--all "
   }
 
-  $arg += "--no-trunc --size"
-  $containers = Invoke-Docker $arg
+  $arg += "--no-trunc --size --format ""{{json .}}"""
+
+  $containers = (Invoke-Docker $arg)  | ConvertFrom-Json
 
   $containerList = @()
 
   if ($containers) {
     if ($containers.Length -gt 1) {
-      foreach ($containerLine in $containers) {
-        if ($containerLine.StartsWith("CONTAINER")) {
-          continue # Exclude Header Row
-        }
-
-        $result = $containerLine | Select-String -Pattern '(\S+(?:(?!\s{2}).)+)\s+' -AllMatches
+      foreach ($instance in $containers) {
+        Write-Verbose "docker ps output: $instance"
 
         $container = New-Object -TypeName PSObject
 
-        $container | Add-Member -MemberType NoteProperty -Name Id `
-          -Value $result.Matches[0].Value.Trim()
-        $container | Add-Member -MemberType NoteProperty -Name Image `
-          -Value $result.Matches[1].Value.Trim()
-        $container | Add-Member -MemberType NoteProperty -Name Command `
-          -Value  $result.Matches[2].Value.Trim()
-        $container | Add-Member -MemberType NoteProperty -Name Created `
-          -Value $result.Matches[3].Value.Trim()
-        $container | Add-Member -MemberType NoteProperty -Name Status `
-          -Value $result.Matches[4].Value.Trim()
+        $container | Add-Member -MemberType NoteProperty -Name Id -Value $instance.ID
+        $container | Add-Member -MemberType NoteProperty -Name Image -Value $instance.Image
+        $container | Add-Member -MemberType NoteProperty -Name Command -Value $instance.Command
+        $container | Add-Member -MemberType NoteProperty -Name Status -Value $instance.Status
+        $container | Add-Member -MemberType NoteProperty -Name Ports -Value $intance.Ports
+        $container | Add-Member -MemberType NoteProperty -Name Name -Value $instance.Names
 
-        if ($result.Matches.Length -eq 8) {
-          $ports = $result.Matches[5].Value.Trim()
-          $name = $result.Matches[6].Value.Trim()
-          $size = $result.Matches[7].Value.Trim()
-        } else {
-          $ports = $null
-          $name = $result.Matches[5].Value.Trim()
-          $size = $result.Matches[6].Value.Trim()
-        }
+        $created = "$($Instance.CreatedAt)"
+        $created = $created.Substring(0, $created.LastIndexOf(' '))
+        $container | Add-Member -MemberType NoteProperty -Name Created -Value $(Get-Date $created)
 
-        $container | Add-Member -MemberType NoteProperty -Name Ports -Value $ports
-
-        $container | Add-Member -MemberType NoteProperty -Name Name -Value $name
-
+        $size = "$($instance.Size)"
         $size = $size.Substring(0, $size.IndexOf(' ')).ToUpper()
         $size -match '[A-Za-z]+' | Out-Null
-        $size = [double]::Parse($size -replace '[^0-9.]')
+        $size = [double]::Parse(($size -replace '[^0-9\.]', ''))
+
         switch ($Matches[0]) {
+          "B"  { $size = $size * 1 } # Yes, redundant, but let's be explicit.
           "KB" { $size = $size * 1KB }
           "MB" { $size = $size * 1MB }
           "GB" { $size = $size * 1GB }

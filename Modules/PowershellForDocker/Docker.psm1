@@ -5,8 +5,9 @@ function convertSizeString($Size) {
 
   $size = $size.ToUpper()
   $size -match '[A-Za-z]+' | Out-Null
-  $size = [double]::Parse($size -replace '[^0-9.]')
+  $size = [double]::Parse($size -replace '[^0-9\.]')
   switch ($Matches[0]) {
+    "B"  { $size = $size * 1 } # Yes, redundant, but let's be explicit.
     "KB" { $size = $size * 1KB }
     "MB" { $size = $size * 1MB }
     "GB" { $size = $size * 1GB }
@@ -21,8 +22,11 @@ function convertSizeString($Size) {
 #------------------------------------------------------------------------------
 
 function Find-Docker {
-  First-Path `
-    ((Get-Command docker -ErrorAction SilentlyContinue).Source) `
+  if (Get-Command "docker" -ErrorAction SilentlyContinue) {
+    return "docker"
+  }
+
+  return First-Path `
     "${env:ALLUSERSPROFILE}\DockerDesktop\version-bin\docker.exe" `
     (Find-ProgramFiles "Docker\Docker\Resources\bin\docker.exe")
 }
@@ -183,14 +187,27 @@ function Invoke-Dive {
 Set-Alias -Name dive -Value Invoke-Dive
 
 function Invoke-Docker {
+  [CmdletBinding()]
+  param (
+    [Parameter(Position=0, ValueFromRemainingArguments=$true)]
+    [string] $Parameters
+  )
+
   $docker = Find-Docker
 
+  if ($docker.IndexOf(' ') -gt 0) {
+    $docker = """$docker"""
+  }
+
   if ($docker) {
-    if (Test-Docker) {
-      cmd /c """$docker"" $args"
-    } else {
-      throw "Docker is not installed on this system."
-    }
+    Write-Verbose "$docker $Parameters"
+    Invoke-Expression "& $docker $Parameters"
+  } else {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "Docker is not installed on this system." `
+      -ExceptionType "System.Management.Automation.CommandNotFoundException" `
+      -ErrorId "CommandNotFoundException" `
+      -ErrorCategory "NotInstalled"))
   }
 }
 
@@ -226,13 +243,19 @@ function Switch-DockerWindowsEngine {
 function Test-Docker {
   $docker = Find-Docker
 
-  if ($docker) {
-    if (Test-Path $docker) {
-      return $true
-    } else {
-      return $false
-    }
+  if ($null -eq $docker) {
+    return $false
   }
+
+  if ($docker -eq 'docker') {
+    return $true
+  }
+
+  if (Test-Path $docker) {
+    return $true
+  }
+
+  return $false
 }
 
 function Test-DockerLinuxEngine {
