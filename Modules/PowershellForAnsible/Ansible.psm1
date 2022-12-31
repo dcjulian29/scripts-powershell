@@ -64,11 +64,11 @@ function Invoke-AnsibleContainer {
     }
 
     if ($EntryScript) {
-      $params.Add("EntryScript", $EntryScript)
+      $params.Volume += "$(Get-DockerMountPoint $EntryScript):/docker-entrypoint.d/01_entryscript"
     }
 
     if ($Command) {
-      $params.Add("Command", "$Command")
+      $params.Add("Command", """$Command""")
     }
 
     $params.GetEnumerator().ForEach({ Write-Verbose "$($_.Name)=$($_.Value)" })

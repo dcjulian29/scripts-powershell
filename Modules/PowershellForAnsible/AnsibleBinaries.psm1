@@ -1,11 +1,18 @@
 function executeCommand($command, $parameters) {
   Write-Verbose "~~> $command $parameters"
+
   $InPath = Get-Command $command -ErrorAction SilentlyContinue
 
-  if ($InPath && ($InPath.CommandType -eq "Application")) {
+  if ($null -ne $InPath) {
+    if ($InPath.CommandType -eq "Application") {
+    Write-Verbose "Executing native '$command'..."
     Start-Process -FilePath $command -ArgumentList $parameters -NoNewWindow -Wait
-  } else {
-    Invoke-AnsibleContainer -Command "$command $parameters"
+
+    return
+  }
+
+  Write-Verbose "Executing docker '$command'..."
+  Invoke-AnsibleContainer -Command "$command $parameters"
   }
 }
 

@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2212.30.1'
+    ModuleVersion = '2212.30.3'
     Description = "A collection of commands to interact with ansible (via a docker container if needed) running the control node instance. Allows a very similar workflow regardless of operating system."
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
@@ -7,7 +7,7 @@
     RequiredModules = @(
       @{
         ModuleName = "PowerShellForDocker"
-        ModuleVersion = "2202.7.1"
+        ModuleVersion = "2212.29.1"
         GUID = "2cd0c771-ed8b-48bc-b6bc-be8540c915e4"
        }
     )
@@ -84,6 +84,7 @@
       "Test-AnsibleProvision"
       "Update-AnsibleHost"
       "Update-AnsibleProvision"
+      "Update-AnsibleVagrantImages"
     )
     AliasesToExport = @(
       "ansible"
@@ -101,9 +102,9 @@
       "ansible-facts-save"
       "ansible-facts-show"
       "ansible-galaxy"
-      "ansible-hosts-exec"
-      "ansible-hosts-ping"
-      "ansible-hosts-update"
+      "ansible-host-exec"
+      "ansible-host-ping"
+      "ansible-host-update"
       "ansible-inventory"
       "ansible-lint"
       "ansible-lint-playbook"
@@ -120,6 +121,7 @@
       "ansible-play-dev"
       "ansible-play-raspi"
       "ansible-play-test"
+      "ansible-provision-assert"
       "ansible-provision-check"
       "ansible-provision-server"
       "ansible-provision-test"

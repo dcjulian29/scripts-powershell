@@ -1,5 +1,3 @@
-$script:rootDir = $false
-$script:nested = 0
 $script:vaultPasswd = "./.tmp/.vault_pass"
 
 function checkReset([string[]]$pingHosts) {
@@ -8,18 +6,23 @@ function checkReset([string[]]$pingHosts) {
     switch ($ping)
     {
       5 {
+        Write-Verbose "Bringing Ubuntu VM online..."
         & vagrant up ubuntu
       }
       6 {
+        Write-Verbose "Bringing Rocky Linux VM online..."
         & vagrant up rocky
       }
       7 {
+        Write-Verbose "Bringing Alma Linux VM online..."
         & vagrant up alma
       }
       8 {
+        Write-Verbose "Bringing Fedora VM online..."
         & vagrant up fedora
       }
       9 {
+        Write-Verbose "Bringing Debian VM online..."
         & vagrant up debian
       }
       default {
@@ -64,41 +67,31 @@ function checkReset([string[]]$pingHosts) {
 }
 
 function ensureAnsibleRoot {
-  if ($script:rootDir) {
-    $script:nested++
+  $root = Find-AnsibleConfig
 
-    return
+  Write-Verbose "Ansible root folder: $root"
+
+  if ($null -eq $root) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "Unable to determine the root Ansible folder. Could not find ansible.cfg." `
+      -ExceptionType "System.InvalidOperationException" `
+      -ErrorId "System.InvalidOperation" `
+      -ErrorCategory "InvalidOperation"))
   }
 
-  # is Environment_Var set?
-  # check current directory
-  # walk up filesystem and check each directory until root dir.
+  Push-Location -Path $root
 
-  # if file still not found, pscmdlet.throwterminatingerror
-
-  Push-Location C:\code\ansible
-
-  if (-not (Test-Path ./.tmp)) {
-    New-Item -Path ./.tmp -ItemType Directory | Out-Null
+  if (-not (Test-Path -Path ".tmp" -PathType Container)) {
+    New-Item -Path ".tmp" -ItemType Directory -Force | Out-Null
   }
-
-  $script:rootDir = $true
 }
 
 function returnAnsibleRoot {
-  if ($script:rootDir) {
-    if ($script:nested -gt 0) {
-      $script:nested--
+  Pop-Location
 
-      return
-    }
-
-    Pop-Location
-
+  if ($isWindows) {
     Get-DockerContainer | Where-Object { $_.Name -eq "ansible_shell" } `
       | Remove-DockerContainer | Out-Null
-
-    $script:rootDir = $false
   }
 }
 
@@ -106,6 +99,7 @@ function returnAnsibleRoot {
 
 function Assert-AnsibleProvision {
   [CmdletBinding()]
+  [Alias("ansible-provision-assert", "ansible-provision-check")]
   param (
     [Parameter(Mandatory=$true)]
     [string] $ComputerName
@@ -116,25 +110,41 @@ function Assert-AnsibleProvision {
   $param  = "--ask-vault-password --check --diff"
   $param += " -i ./inventories/hosts.ini ./playbooks/$ComputerName.yml"
 
-  Invoke-AnsibleContainer -EntryPoint "ansible-playbook" `
-    -Command "$param" -EnvironmentVariables @{
+  if ($isWindows) {
+    Invoke-AnsibleContainer -Command "ansible-playbook $param" -EnvironmentVariables @{
       "ANSIBLE_HOST_KEY_CHECKING" = "true"
       "ANSIBLE_DISPLAY_OK_HOSTS" = "no"
       "ANSIBLE_DISPLAY_SKIPPED_HOSTS" = "no"
     }
+  } else {
+    $original_host_key = $env:ANSIBLE_HOST_KEY_CHECKING
+    $orginal_display_ok = $env:ANSIBLE_DISPLAY_OK_HOSTS
+    $original_display_skip = $env:ANSIBLE_DISPLAY_SKIPPED_HOSTS
+
+    $env:ANSIBLE_HOST_KEY_CHECKING = "true"
+    $env:ANSIBLE_DISPLAY_OK_HOSTS = $orginal_display_ok
+    $env:ANSIBLE_DISPLAY_SKIPPED_HOSTS = $original_display_skip
+
+    Invoke-AnsiblePlaybook $param
+
+    $env:ANSIBLE_HOST_KEY_CHECKING = $original_host_key
+    $env:ANSIBLE_DISPLAY_OK_HOSTS = $orginal_display_ok
+    $env:ANSIBLE_DISPLAY_SKIPPED_HOSTS = $original_display_skip
+  }
 
   returnAnsibleRoot
 }
 
-Set-Alias -Name ansible-provision-check -Value Assert-AnsibleProvision
-
 function Export-AnsibleFacts {
+  [CmdletBinding()]
   [Alias("ansible-save-facts", "ansible-facts-save")]
   param (
     [string] $ComputerName = "all",
     [string] $InventoryFile = "./inventories/vagrant.ini",
     [switch] $IncludeVars
   )
+
+  ensureAnsibleRoot
 
   if ($IncludeVars) {
     $facts = "vars"
@@ -158,14 +168,20 @@ function Export-AnsibleFacts {
   $param += "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) .tmp/play.yml"
 
   Invoke-AnsiblePlaybook $param
+
+  returnAnsibleRoot
 }
 
 function Get-AnsibleFacts {
+  [CmdletBinding()]
+  [Alias("ansible-show-facts", "ansible-facts-show")]
   param (
     [string] $ComputerName = "all",
     [string] $InventoryFile = "./inventories/vagrant.ini",
     [switch] $OnlyAnsible
   )
+
+  ensureAnsibleRoot
 
   $play  = "---`n"
   $play += "- hosts: $ComputerName`n"
@@ -192,39 +208,47 @@ function Get-AnsibleFacts {
   $param += "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) .tmp/play.yml"
 
   Invoke-AnsiblePlaybook $param
+
+  returnAnsibleRoot
 }
 
-Set-Alias -Name ansible-show-facts -Value Get-AnsibleFacts
-Set-Alias -Name ansible-facts-show -Value Get-AnsibleFacts
-
 function Get-AnsibleHostVariables {
+  [CmdletBinding()]
+  [Alias("ansible-show-hostvars")]
   param (
     [Parameter(Mandatory=$true)]
     [string] $ComputerName,
     [string] $InventoryFile = "./inventories/vagrant.ini"
   )
 
+  ensureAnsibleRoot
+
   $p = "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) " `
     + "--yaml --vars --host $ComputerName"
 
   Invoke-AnsibleInventory $p
+
+  returnAnsibleRoot
 }
 
-Set-Alias -Name ansible-show-hostvars -Value Get-AnsibleHostVariables
-
 function Get-AnsibleVariables {
+  [CmdletBinding()]
+  [Alias("ansible-show-vars")]
   param (
     [string] $InventoryFile = "./inventories/vagrant.ini"
   )
 
+  ensureAnsibleRoot
+
   $p = "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) --graph --vars -vvv"
 
   Invoke-AnsibleInventory $p
+
+  returnAnsibleRoot
 }
 
-Set-Alias -Name ansible-show-vars -Value Get-AnsibleVariables
-
 function Import-AnsibleFacts {
+  [CmdletBinding()]
   [Alias("ansible-load-facts", "ansible-facts-load")]
   param (
     [string] $ComputerName = "all",
@@ -242,6 +266,7 @@ function Import-AnsibleFacts {
 
 function Invoke-AnsibleHostCommand {
   [CmdletBinding()]
+  [Alias("ansible-host-exec")]
   param (
       [Parameter(Mandatory=$true)]
       [string] $Command,
@@ -251,15 +276,13 @@ function Invoke-AnsibleHostCommand {
 
   ensureAnsibleRoot
 
-  $param  = "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) "
-  $param += "-m command -a `"$Command`" $Subset"
+  $p  = "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) "
+  $p += "-m command -a `"$Command`" $Subset"
 
-  Invoke-Ansible "$param"
+  Invoke-Ansible $p
 
   returnAnsibleRoot
 }
-
-Set-Alias -Name ansible-hosts-exec -Value Invoke-AnsibleHostCommand
 
 function Invoke-AnsiblePlayBase {
   [CmdletBinding()]
@@ -310,6 +333,7 @@ function Invoke-AnsiblePlayBase {
 
 function Invoke-AnsiblePlayDev {
   [CmdletBinding()]
+  [Alias("ansible-dev-play", "ansible-play-dev")]
   param (
       [Parameter(Mandatory=$true)]
       [string] $Role,
@@ -340,18 +364,14 @@ function Invoke-AnsiblePlayDev {
   $param += "--limit $Subset --tags " + $Tags -join ","
   $param += " -i ./inventories/vagrant.ini .tmp/play.yml"
 
-  Write-Verbose "ansible-playbook $param"
-
   Invoke-AnsiblePlaybook $param
 
   returnAnsibleRoot
 }
 
-Set-Alias -Name ansible-dev-play -Value Invoke-AnsiblePlayDev
-Set-Alias -Name ansible-play-dev -Value Invoke-AnsiblePlayDev
-
 function Invoke-AnsibleProvision {
   [CmdletBinding()]
+  [Alias("ansible-provision-server")]
   param (
     [Parameter(Mandatory=$true)]
     [string] $ComputerName
@@ -363,15 +383,20 @@ function Invoke-AnsibleProvision {
   $fileName = Split-Path -Path $logfile -Leaf
   $param  = "--ask-vault-password --ask-become-pass -v"
   $param += " -i ./inventories/hosts.ini ./playbooks/$ComputerName.yml"
-
   $ep  = "#!/bin/bash`n`nansible-playbook $param | tee .tmp/$fileName`n"
 
   Set-Content -Path ".tmp/entrypoint.sh" -Value $ep -Force -NoNewline
 
-  Invoke-AnsibleContainer -EntryScript ".tmp/entrypoint.sh" `
-    -EnvironmentVariables @{
-      "ANSIBLE_NOCOLOR" = "1"
-    }
+  if ($isWindows) {
+    Invoke-AnsibleContainer -EntryScript ".tmp/entrypoint.sh" `
+      -EnvironmentVariables @{
+        "ANSIBLE_NOCOLOR" = "1"
+      }
+  } else {
+    $original = $env:ANSIBLE_NOCOLOR
+    Invoke-AnsiblePlaybook "$param | tee .tmp/$fileName`n"
+    $env:ANSIBLE_NOCOLOR = $original
+  }
 
   if (Test-Path .tmp/$fileName) {
     Move-Item -Path .tmp/$fileName -Destination $logfile
@@ -380,24 +405,21 @@ function Invoke-AnsibleProvision {
   returnAnsibleRoot
 }
 
-Set-Alias -Name ansible-provision-server -Value Invoke-AnsibleProvision
-
 function Invoke-AnsiblePlayRaspi {
   [CmdletBinding()]
+  [Alias("ansible-raspi-play", "ansible-play-raspi")]
   param (
-      [Parameter(Mandatory=$true)]
-      [string] $Role,
-      [string[]] $Tags = @("all")
+    [Parameter(Mandatory=$true)]
+    [string] $Role,
+    [string[]] $Tags = @("all")
   )
 
   Invoke-AnsiblePlayTest -Role $Role -Subset "debian11" -Tags $Tags
 }
 
-Set-Alias -Name ansible-raspi-play -Value Invoke-AnsiblePlayRaspi
-Set-Alias -Name ansible-play-raspi -Value Invoke-AnsiblePlayRaspi
-
 function Invoke-AnsiblePlayTest {
   [CmdletBinding()]
+  [Alias("ansible-test-play", "ansible-play-test")]
   param (
       [Parameter(Mandatory=$true)]
       [string] $Role,
@@ -427,15 +449,13 @@ function Invoke-AnsiblePlayTest {
   returnAnsibleRoot
 }
 
-Set-Alias -Name ansible-test-play -Value Invoke-AnsiblePlayTest
-Set-Alias -Name ansible-play-test -Value Invoke-AnsiblePlayTest
-
 function New-AnsibleRole {
   [CmdletBinding()]
+  [Alias("ansible-role-new", "ansible-new-role")]
   param (
-      [Parameter(Mandatory=$true)]
-      [string] $Role,
-      [switch] $Force
+    [Parameter(Mandatory=$true)]
+    [string] $Role,
+    [switch] $Force
   )
 
   ensureAnsibleRoot
@@ -467,7 +487,7 @@ function New-AnsibleRole {
   Write-Verbose "Creating template for defaults..."
   Set-Content -Path "defaults/main.yml" -Value @"
 ---
-  # Variable defaults for the role.
+# Variable defaults for the role.
 "@
 
   Write-Verbose "Creating readme for files..."
@@ -481,19 +501,19 @@ Script Files for use with the script resource.
   Write-Verbose "Creating template for handlers..."
   Set-Content -Path "handlers/main.yml" -Value @"
 ---
-  # Handlers for the role
+# Handlers for the role
 "@
 
   Write-Verbose "Creating template for meta..."
   Set-Content -Path "meta/main.yml" -Value @"
 ---
-  dependencies: []
+dependencies: []
 "@
 
   Write-Verbose "Creating template for tasks..."
   Set-Content -Path "tasks/main.yml" -Value @"
 ---
-  # Tasks for the role.
+# Tasks for the role.
 "@
 
   Write-Verbose "Creating readme for templates..."
@@ -508,7 +528,7 @@ Templates end in .j2
   Write-Verbose "Creating template for variables..."
   Set-Content -Path "vars/main.yml" -Value @"
 ---
-  # Variables for the role
+# Variables for the role
 "@
 
   Pop-Location
@@ -518,14 +538,12 @@ Templates end in .j2
   Write-Output "Role '$Role' created."
 }
 
-Set-Alias -Name ansible-role-new -Value New-AnsibleRole
-Set-Alias -Name ansible-new-role -Value New-AnsibleRole
-
 function Ping-AnsibleHost {
   [CmdletBinding()]
+  [Alias("ansible-host-ping")]
   param (
-      [string] $Subset = "all",
-      [string] $InventoryFile = "inventories\vagrant.ini"
+    [string] $Subset = "all",
+    [string] $InventoryFile = "inventories\vagrant.ini"
   )
 
   ensureAnsibleRoot
@@ -542,19 +560,21 @@ function Ping-AnsibleHost {
   returnAnsibleRoot
 }
 
-Set-Alias -Name ansible-hosts-ping -Value Ping-AnsibleHost
-
 function Remove-AnsibleVagrantHosts {
   ensureAnsibleRoot
 
-  if (Test-Path "ansible.log") {
+  & vagrant destroy --force
+
+  if (Test-Path -Path "ansible.log") {
     Remove-Item -Path "ansible.log" -Force
   }
 
-  & vagrant destroy --force
-
-  if (Test-Path ".vagrant") {
+  if (Test-Path -Path ".vagrant") {
     Remove-Item -Path ".vagrant" -Recurse -Force
+  }
+
+  if (Test-Path -Path ".tmp") {
+    Remove-Item -Path ".tmp" -Recurse -Force
   }
 
   returnAnsibleRoot
@@ -562,9 +582,9 @@ function Remove-AnsibleVagrantHosts {
 
 function Reset-AnsibleEnvironmentDev {
   [CmdletBinding()]
+  [Alias("ansible-dev-reset", "ansible-reset-dev")]
   param (
-    [string] $Role,
-    [switch] $Docker
+    [string] $Role
   )
 
   $ea = $ErrorActionPreference
@@ -574,17 +594,17 @@ function Reset-AnsibleEnvironmentDev {
   try {
     Remove-AnsibleVagrantHosts
 
-
     checkReset 5,6
 
-    Invoke-AnsiblePlaybook -v --limit ansibledev --tags minimal --flush-cache `
-      -i ./inventories/vagrant.ini ./playbooks/base.yml
+    Write-Verbose "Starting the Base playbook with the minimal tag..."
 
-    if ($Docker) {
-      Invoke-AnsiblePlayDev -Role "Docker" -NoStep
-    }
+    $p = "-v --limit ansibledev --tags minimal --flush-cache " `
+      + "-i ./inventories/vagrant.ini ./playbooks/base.yml"
+
+    Invoke-AnsiblePlaybook $p
 
     if ($Role) {
+      Write-Verbose "Playing the '$Role' play..."
       Invoke-AnsiblePlayDev -Role $Role -NoStep
     }
   } finally {
@@ -594,14 +614,11 @@ function Reset-AnsibleEnvironmentDev {
   }
 }
 
-Set-Alias "ansible-dev-reset" -Value Reset-AnsibleEnvironmentDev
-Set-Alias "ansible-reset-dev" -Value Reset-AnsibleEnvironmentDev
-
 function Reset-AnsibleEnvironmentRaspi {
   [CmdletBinding()]
+  [Alias("ansible-raspi-reset", "ansible-reset-raspi")]
   param (
-    [string] $Role,
-    [switch] $Docker
+    [string] $Role
   )
 
   $ea = $ErrorActionPreference
@@ -611,15 +628,12 @@ function Reset-AnsibleEnvironmentRaspi {
   try {
     Remove-AnsibleVagrantHosts
 
-
     checkReset 9
 
-    Invoke-AnsiblePlaybook -v --limit debian11 --tags minimal --flush-cache `
-      -i ./inventories/vagrant.ini ./playbooks/base.yml
+    $p = "-v --limit debian11 --tags minimal --flush-cache " `
+      + "-i ./inventories/vagrant.ini ./playbooks/base.yml"
 
-    if ($Docker) {
-      Invoke-AnsiblePlayRaspi -Role "Docker" -NoStep
-    }
+    Invoke-AnsiblePlaybook $p
 
     if ($Role) {
       Invoke-AnsiblePlayRaspi -Role $Role -NoStep
@@ -631,14 +645,11 @@ function Reset-AnsibleEnvironmentRaspi {
   }
 }
 
-Set-Alias "ansible-raspi-reset" -Value Reset-AnsibleEnvironmentRaspi
-Set-Alias "ansible-reset-raspi" -Value Reset-AnsibleEnvironmentRaspi
-
 function Reset-AnsibleEnvironmentTest {
   [CmdletBinding()]
+  [Alias("ansible-test-reset", "ansible-reset-test")]
   param (
-    [string] $Role,
-    [switch] $Docker
+    [string] $Role
   )
 
   $ea = $ErrorActionPreference
@@ -650,19 +661,13 @@ function Reset-AnsibleEnvironmentTest {
     Remove-AnsibleVagrantHosts
 
     Write-Output " "
-    & vagrant box update
-
-    & vagrant box prune --force --keep-active-boxes
-
 
     checkReset 5,6,7,8,9,10
 
-    Invoke-AnsiblePlaybook -v --tags minimal --flush-cache `
-      -i ./inventories/vagrant.ini ./playbooks/base.yml
+    $p = "-v --tags minimal --flush-cache " `
+      + "-i ./inventories/vagrant.ini ./playbooks/base.yml"
 
-    if ($Docker) {
-      Invoke-AnsiblePlayTest -Role "Docker" -NoStep
-    }
+    Invoke-AnsiblePlaybook $p
 
     if ($Role) {
       Invoke-AnsiblePlayTest -Role $Role -NoStep
@@ -673,9 +678,6 @@ function Reset-AnsibleEnvironmentTest {
     returnAnsibleRoot
   }
 }
-
-Set-Alias "ansible-test-reset" -Value Reset-AnsibleEnvironmentTest
-Set-Alias "ansible-reset-test" -Value Reset-AnsibleEnvironmentTest
 
 function Remove-AnsibleVaultPassword {
   [CmdletBinding(SupportsShouldProcess)]
@@ -734,6 +736,7 @@ function Set-AnsibleVaultPassword {
 
 function Test-AnsibleProvision {
   [CmdletBinding()]
+  [Alias("ansible-provision-test")]
   param (
     [Parameter(Mandatory=$true)]
     [string] $ComputerName,
@@ -760,7 +763,6 @@ function Test-AnsibleProvision {
     $v = "-v"
   }
 
-
   Invoke-AnsiblePlaybook $("$vault $v -e `"ansible_host=192.168.57.5`" " `
     + "-e `"ansible_ssh_private_key_file=~/.ssh/insecure_private_key`" " `
     + "-e `"ansible_user=vagrant`" " `
@@ -769,10 +771,9 @@ function Test-AnsibleProvision {
   returnAnsibleRoot
 }
 
-Set-Alias -Name ansible-provision-test -Value Test-AnsibleProvision
-
 function Update-AnsibleHost {
   [CmdletBinding()]
+  [Alias("ansible-host-update")]
   param (
     [string] $Role = "updateos",
     [string] $Subset = "all",
@@ -809,10 +810,16 @@ function Update-AnsibleHost {
 
   Set-Content -Path ".tmp/entrypoint.sh" -Value $ep -Force -NoNewline
 
-  Invoke-AnsibleContainer -EntryScript ".tmp/entrypoint.sh" `
-    -EnvironmentVariables @{
-      "ANSIBLE_NOCOLOR" = "1"
-    }
+  if ($isWindows) {
+    Invoke-AnsibleContainer -EntryScript ".tmp/entrypoint.sh" `
+      -EnvironmentVariables @{
+        "ANSIBLE_NOCOLOR" = "1"
+      }
+  } else {
+    $original = $env:ANSIBLE_NOCOLOR
+    Invoke-AnsiblePlaybook "$param | tee .tmp/$fileName`n"
+    $env:ANSIBLE_NOCOLOR = $original
+  }
 
   if (Test-Path .tmp/$fileName) {
     Move-Item -Path .tmp/$fileName -Destination $logfile
@@ -821,10 +828,9 @@ function Update-AnsibleHost {
   returnAnsibleRoot
 }
 
-Set-Alias -Name ansible-hosts-update -Value Update-AnsibleHost
-
 function Update-AnsibleProvision {
   [CmdletBinding()]
+  [Alias("ansible-provision-update")]
   param (
     [Parameter(Mandatory=$true)]
     [string] $ComputerName,
@@ -847,13 +853,32 @@ function Update-AnsibleProvision {
 
   Set-Content -Path ".tmp/entrypoint.sh" -Value $ep -Force -NoNewline
 
-  Invoke-AnsibleContainer -EntryScript ".tmp/entrypoint.sh" `
-    -EnvironmentVariables @{
-      "ANSIBLE_NOCOLOR" = "1"
-      "ANSIBLE_HOST_KEY_CHECKING" = "true"
-      "ANSIBLE_DISPLAY_OK_HOSTS" = "no"
-      "ANSIBLE_DISPLAY_SKIPPED_HOSTS" = "no"
-    }
+  if ($isWindows) {
+    Invoke-AnsibleContainer -EntryScript ".tmp/entrypoint.sh" `
+      -EnvironmentVariables @{
+        "ANSIBLE_NOCOLOR" = "1"
+        "ANSIBLE_HOST_KEY_CHECKING" = "true"
+        "ANSIBLE_DISPLAY_OK_HOSTS" = "no"
+        "ANSIBLE_DISPLAY_SKIPPED_HOSTS" = "no"
+      }
+  } else {
+    $original_nocolor = $env:ANSIBLE_NOCOLOR
+    $original_host_key = $env:ANSIBLE_HOST_KEY_CHECKING
+    $orginal_display_ok = $env:ANSIBLE_DISPLAY_OK_HOSTS
+    $original_display_skip = $env:ANSIBLE_DISPLAY_SKIPPED_HOSTS
+
+    $env:ANSIBLE_NOCOLOR = "1"
+    $env:ANSIBLE_HOST_KEY_CHECKING = "true"
+    $env:ANSIBLE_DISPLAY_OK_HOSTS = "no"
+    $env:ANSIBLE_DISPLAY_SKIPPED_HOSTS = "no"
+
+    Invoke-AnsiblePlaybook $param
+
+    $env:ANSIBLE_NOCOLOR = $original_nocolor
+    $env:ANSIBLE_HOST_KEY_CHECKING = $original_host_key
+    $env:ANSIBLE_DISPLAY_OK_HOSTS = $orginal_display_ok
+    $env:ANSIBLE_DISPLAY_SKIPPED_HOSTS = $original_display_skip
+  }
 
   if (Test-Path .tmp/$fileName) {
     Move-Item -Path .tmp/$fileName -Destination $logfile
@@ -862,27 +887,8 @@ function Update-AnsibleProvision {
   returnAnsibleRoot
 }
 
-Set-Alias -Name ansible-provision-update -Value Update-AnsibleProvision
+function Update-AnsibleVagrantImages {
+  & vagrant box update
 
-#------------------------------------------------------------------------------
-# Temporary as I move from my WSL enviornment to PS/Docker
-Set-Alias -Name "destroy.sh" -Value Remove-AnsibleVagrantHosts
-Set-Alias -Name "exec-hosts.sh" -Value Invoke-AnsibleHostCommand
-Set-Alias -Name "new-role.sh" -Value New-AnsibleRole
-Set-Alias -Name "ping-hosts.sh" -Value Ping-AnsibleHost
-Set-Alias -Name "play-base.sh" -Value Invoke-AnsiblePlayBase
-Set-Alias -Name "play-dev.sh" -Value Invoke-AnsiblePlayDev
-Set-Alias -Name "play-test.sh" -Value Invoke-AnsiblePlayTest
-Set-Alias -Name "provision-check.sh" -Value Assert-AnsibleProvision
-Set-Alias -Name "provision-server.sh" -Value Invoke-AnsibleProvision
-Set-Alias -Name "provision-test.sh" -Value Test-AnsibleProvision
-Set-Alias -Name "provision-update.sh" -Value Update-AnsibleProvision
-Set-Alias -Name "reset-dev.sh" -Value Reset-AnsibleEnvironmentDev
-Set-Alias -Name "reset-test.sh" -Value Reset-AnsibleEnvironmentTest
-Set-Alias -Name "save-facts.sh" -Value Export-AnsibleFacts
-Set-Alias -Name "show-facts.sh" -Value Get-AnsibleFacts
-Set-Alias -Name "show-hostvars.sh" -Value Get-AnsibleHostVariables
-Set-Alias -Name "show-vars.sh" -Value Get-AnsibleVariables
-Set-Alias -Name "update-servers.sh" -Value Update-AnsibleHost
-Set-Alias -Name "vault-edit.sh" -Value Edit-AnsibleVault
-Set-Alias -Name "vault-view.sh" -Value Show-AnsibleVault
+  & vagrant box prune --force --keep-active-boxes
+}
