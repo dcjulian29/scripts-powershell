@@ -460,7 +460,7 @@ function New-AnsibleRole {
 
   ensureAnsibleRoot
 
-  $Path = (Resolve-Path $PWD).Path + "\roles\$Role"
+  $Path = (Resolve-Path $PWD).Path + "/roles/$Role"
 
   Write-Verbose "Role Path: $Path"
 
@@ -475,67 +475,13 @@ function New-AnsibleRole {
     }
   }
 
-  New-Item -Path $Path -ItemType Directory | Out-Null
-  Push-Location -Path $Path
+  Push-Location "roles/"
 
-  @("defaults", "files", "handlers", "meta", "tasks", "templates", "vars") `
-    | ForEach-Object {
-      Write-Verbose "Creating directory for $_..."
-      New-Item -Path $_ -ItemType Directory | Out-Null
-    }
-
-  Write-Verbose "Creating template for defaults..."
-  Set-Content -Path "defaults/main.yml" -Value @"
----
-# Variable defaults for the role.
-"@
-
-  Write-Verbose "Creating readme for files..."
-  Set-Content -Path "files/README.md" -Value @"
-# Files
-
-File for use with the copy resource.
-Script Files for use with the script resource.
-"@
-
-  Write-Verbose "Creating template for handlers..."
-  Set-Content -Path "handlers/main.yml" -Value @"
----
-# Handlers for the role
-"@
-
-  Write-Verbose "Creating template for meta..."
-  Set-Content -Path "meta/main.yml" -Value @"
----
-dependencies: []
-"@
-
-  Write-Verbose "Creating template for tasks..."
-  Set-Content -Path "tasks/main.yml" -Value @"
----
-# Tasks for the role.
-"@
-
-  Write-Verbose "Creating readme for templates..."
-  Set-Content -Path "templates/README.md" -Value @"
-# Templates
-
-Contains files for use with the template resource.
-
-Templates end in .j2
-"@
-
-  Write-Verbose "Creating template for variables..."
-  Set-Content -Path "vars/main.yml" -Value @"
----
-# Variables for the role
-"@
+  Invoke-AnsibleGalaxy init $Role
 
   Pop-Location
 
   returnAnsibleRoot
-
-  Write-Output "Role '$Role' created."
 }
 
 function Ping-AnsibleHost {
