@@ -91,39 +91,31 @@ function Copy-File {
     }
 }
 
-function Find-FirstPath {
-    foreach ($arg in $args) {
-        if ($arg -is [ScriptBlock]) {
-            $path = & $arg
-        } else {
-            $path = $arg
-        }
+function Find-FolderSize {
+  param (
+      [String]$Path = $pwd.Path
+  )
 
-        if ($path) {
-            if (Test-Path "$path") {
-                return $path
-            }
-        }
-    }
+  $width = (Get-Host).UI.RawUI.MaxWindowSize.Width - 5
+  $files = Get-ChildItem $Path -Recurse
+
+  $total = 0
+
+  for ($i = 1; $i -le $files.Count-1; $i++) {
+      $name = $files[$i].FullName
+      $name = $name.Substring(0, [System.Math]::Min($width, $name.Length))
+      Write-Progress -Activity "Calculating total size..." `
+          -Status $name `
+          -PercentComplete ($i / $files.Count * 100)
+      $total += $files[$i].Length
+  }
+
+  "Total size of '$Path': {0:N2} MB" -f ($total / 1MB)
+
 }
 
-Set-Alias -Name First-Path -Value Find-FirstPath
-
-function Find-ProgramFiles {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Path
-    )
-
-    if  (Test-Path "$env:ProgramFiles\$Path") {
-        return "$env:ProgramFiles\$Path"
-    }
-
-    if  (Test-Path "${env:ProgramFiles(x86)}\$Path") {
-        return "${env:ProgramFiles(x86)}\$Path"
-    }
-}
+Set-Alias -Name Calculate-Folder-Size -Value Find-FolderSize
+Set-Alias -Name Calculate-FolderSize -Value Find-FolderSize
 
 function Format-FileWithSpaceIndent {
   [CmdletBinding()]
@@ -191,30 +183,6 @@ function Format-FileWithTabIndent {
   }
 }
 
-function Get-FullDirectoryPath {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Path
-    )
-
-    if ($Path.Substring($Path.Length) -ne [IO.Path]::DirectorySeparatorChar) {
-        $Path = "$Path\"
-    }
-
-    $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($path)
-}
-
-function Get-FullFilePath {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $Path
-    )
-
-    $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($path)
-}
-
 function Get-FileEncoding {
     param (
         [Parameter(Mandatory=$true)]
@@ -252,28 +220,6 @@ function Get-Md5 {
 
 Set-Alias -Name md5 -Value Get-Sha1
 
-function Get-Path {
-    param (
-        [switch]$Positions
-    )
-
-    if (($env:Path).Length -eq 0) {
-        return @()
-    }
-
-    $pathList = ($env:Path).Split(';')
-
-    if ($Positions) {
-        $p = @()
-        for ($i = 0; $i -lt $pathList.Count; $i++) {
-           $p += "{0,3} $($pathList[$i])" -f $i
-        }
-
-        $pathList = $p
-    }
-
-    return $pathList
-}
 
 function Get-Sha1 {
     param (
@@ -722,22 +668,6 @@ function New-Share {
   }
 }
 
-function Optimize-Path {
-    Get-Path | ForEach-Object {
-        if (Test-Path $_) {
-            $list += "$_;"
-        }
-    }
-
-    $list = $list.Substring(0,$list.Length -1)
-
-    if (($env:Path).Length -ne ($list.Length)) {
-        Set-EnvironmentVariable "Path" $list
-    }
-}
-
-Set-Alias -Name Clean-Path -Value Optimize-Path
-
 function Remove-FilePermission {
   [CmdletBinding()]
   param (
@@ -766,22 +696,6 @@ function Remove-FilePermission {
   }
 
   Set-Acl -Path $folder.FullName -AclObject $acl
-}
-
-function Remove-Path {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Path
-    )
-
-    if (Test-InPath $Path) {
-        $pathList = {[System.Collections.ArrayList](Get-Path)}.Invoke()
-        $pathList.Remove($Path) | Out-Null
-        $pathString = $pathList -join ';'
-
-        Set-EnvironmentVariable "Path" $pathString
-    }
 }
 
 function Set-FileInheritance {
@@ -885,74 +799,3 @@ function Set-FileShortCut {
 }
 
 Set-Alias -Name New-FileShortCut -Value Set-FileShortCut
-
-function Set-Path {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Path,
-        [ValidateScript({
-            if ($_ -lt 0) {
-                throw [System.Management.Automation.ValidationMetadataException] "Positions start at 0!"
-            }
-
-            if (($_ -gt (Get-Path).Length)) {
-                throw [System.Management.Automation.ValidationMetadataException] "'${_}' exceeds the number of paths."
-            }
-
-            return $true
-        })]
-        [int]$Position = 0
-    )
-
-    if (($Position -ne (Get-Path).Length) -and (Test-InPathAtPosition -Path $Path -Position $Position)) {
-        return
-    }
-
-    $pathList = New-Object -TypeName System.Collections.ArrayList
-
-    Get-Path | ForEach-Object {
-        $pathList.Add($_) | Out-Null
-    }
-
-    if (Test-InPath $Path) {
-        $pathList.Remove($Path) | Out-Null
-    }
-
-    $pathList.Insert($Position, $Path)
-    $pathString = $pathList -join ';'
-
-    Set-EnvironmentVariable "Path" $pathString
-}
-
-function Test-InPath {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Path
-    )
-
-    return ((-not ($null -eq (Get-Path))) -and ((Get-Path).Contains($Path)))
-}
-
-function Test-InPathAtPosition {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Path,
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({
-            if ($_ -lt 0) {
-                throw [System.Management.Automation.ValidationMetadataException] "Positions start at 0!"
-            }
-
-            return $true
-        })]
-        [int]$Position
-    )
-
-    return ((-not ($null -eq (Get-Path))) `
-        -and (-not ($Position -ge (Get-Path).Length)) `
-        -and ((Get-Path)[$Position] -eq $Path))
-}

@@ -1,41 +1,3 @@
-function ConvertTo-UnixPath {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-    if (Test-WindowsPath $Path) {
-        return "/" + (($Path -replace "\\","/") -replace ":","").ToLower().Trim("/")
-    } else {
-        Write-Error "'$Path' is not a valid Windows Path."
-    }
-}
-
-function Find-FolderSize {
-    param (
-        [String]$Path = $pwd.Path
-    )
-
-    $width = (Get-Host).UI.RawUI.MaxWindowSize.Width - 5
-    $files = Get-ChildItem $Path -Recurse
-
-    $total = 0
-
-    for ($i = 1; $i -le $files.Count-1; $i++) {
-        $name = $files[$i].FullName
-        $name = $name.Substring(0, [System.Math]::Min($width, $name.Length))
-        Write-Progress -Activity "Calculating total size..." `
-            -Status $name `
-            -PercentComplete ($i / $files.Count * 100)
-        $total += $files[$i].Length
-    }
-
-    "Total size of '$Path': {0:N2} MB" -f ($total / 1MB)
-
-}
-
-Set-Alias -Name Calculate-Folder-Size -Value Find-FolderSize
-Set-Alias -Name Calculate-FolderSize -Value Find-FolderSize
-
 function Find-UwpApp {
   param (
     [Parameter(Mandatory=$true)]
@@ -608,7 +570,6 @@ function Test-OSServer {
     return ((Get-CimInstance Win32_OperatingSystem).ProductType -eq 3)
 }
 
-
 function Test-PendingReboot {
     $PendingReboot = $false
 
@@ -633,22 +594,4 @@ function Test-PendingReboot {
     Pop-Location
 
     return $PendingReboot
-}
-
-function Test-UnixPath {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-
-    return $Path -match "^(\/([\w_%!$@:.,~-]+|\\.)*|[^\\])+$"
-}
-
-function Test-WindowsPath {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-
-    return $Path -match "([A-Za-z]+:|\.{1,2}|\\)*((\w+\\)+|\w+)+"
 }
