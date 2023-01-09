@@ -110,10 +110,7 @@ if (Test-Path "$modulesDir\go") {
 
 #------------------------------------------------------------------------------
 
-Write-Output ">>>Configuring Package Repositories..."
-
-Install-Module -Name PackageManagement -Repository PSGallery -MinimumVersion 1.1.0.0 -Force
-Install-Module -Name PowerShellGet -Repository PSGallery -MinimumVersion 2.2.5 -Force
+Write-Output "`n>>>Configuring Package Repositories..."
 
 if ((Get-Module PackageManagement -ListAvailable | Measure-Object).Count -gt 1) {
   Import-Module PackageManagement -RequiredVersion `
