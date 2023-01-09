@@ -2,9 +2,6 @@
 # This profile is loaded with the Visual Studio Code "host" is executed.
 ################################################################################
 
-
-################################################################################
-
 Function prompt {
     $realLASTEXITCODE = $LASTEXITCODE
     $Host.UI.RawUI.BackgroundColor = $(Get-Host).UI.RawUI.BackgroundColor
