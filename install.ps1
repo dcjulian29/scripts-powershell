@@ -104,7 +104,7 @@ if (Test-Path "$modulesDir\go") {
   "VirtualBox"
 ) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Uninstall-Module -Name $_ -AllVersions -Force -Confirm:$false -
+    Uninstall-Module -Name $_ -AllVersions -Force -Confirm:$false
   }
 }
 
