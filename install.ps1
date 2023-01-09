@@ -2,8 +2,6 @@ function removeDownloads() {
   @(
     "${env:TEMP}\scripts-powershell-main.zip"
     "${env:TEMP}\scripts-powershell-main"
-    "${env:TEMP}\posh-go.zip"
-    "${env:TEMP}\Go-Shell-master"
   ) | ForEach-Object {
     if (Test-Path $_) {
         Remove-Item $_ -Recurse -Force
@@ -96,22 +94,19 @@ if ((-not ($env:PSModulePath).Contains($modulesDir))) {
 
 #------------------------------------------------------------------------------
 
-Invoke-WebRequest -Uri "https://github.com/cameronharp/Go-Shell/archive/master.zip" `
-  -UseBasicParsing -OutFile "${env:TEMP}\posh-go.zip"
-
-Microsoft.PowerShell.Archive\Expand-Archive -Path "${env:TEMP}\posh-go.zip" `
-  -DestinationPath "${env:TEMP}\" -Force
-
 if (Test-Path "$modulesDir\go") {
-  Write-Output "Removing previous version of posh-go..."
+  Write-Output "Removing previous version of posh-go as it has been replace with my new Favorite Folders module..."
   Remove-Item "$modulesDir\go" -Recurse -Force
 }
 
-Write-Output "Installing posh-go module..."
-
-New-Item -Type Directory -Path "$modulesDir\go" | Out-Null
-
-Copy-Item -Path "${env:TEMP}\Go-Shell-master\*" -Destination "$modulesDir\go"
+@(
+  "Path"
+  "VirtualBox"
+) | ForEach-Object {
+  if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
+    Uninstall-Module -Name $_ -AllVersions -Force -Confirm:$false -
+  }
+}
 
 #------------------------------------------------------------------------------
 
@@ -154,30 +149,30 @@ Set-PSRepository -Name "dcjulian29-powershell" -InstallationPolicy Trusted
 
 #------------------------------------------------------------------------------
 
-Write-Output ">>>Installing third-party modules..."
+Write-Output "`n`n>>>Installing third-party modules..."
 
 Push-Location "${env:TEMP}\scripts-powershell-main"
 
 (Get-Content "thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
   if (-not (($_ -eq "PackageManagement") -or ($_ -eq "PowerShellGet"))) {
     if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-      Write-Output ">>Updating third-party '$_' module..."
+      Write-Output "`n>>Updating third-party '$_' module..."
       Update-Module -Name $_ -Confirm:$false -Verbose
     } else {
-      Write-Output ">>Installing third-party '$_' module..."
+      Write-Output "`n>>Installing third-party '$_' module..."
       Install-Module -Name $_ -AllowClobber -Verbose
     }
   }
 }
 
-Write-Output ">>>Installing my modules..."
+Write-Output "`n`n>>>Installing my modules..."
 
 (Get-Content "mine.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Write-Output ">>Updating my '$_' module..."
+    Write-Output "`n>>Updating my '$_' module..."
     Update-Module -Name $_ -Confirm:$false -Verbose
   } else {
-    Write-Output ">>Installing my '$_' module..."
+    Write-Output "`n>>Installing my '$_' module..."
     Install-Module -Name $_ -Repository "dcjulian29-powershell" -AllowClobber -Verbose
   }
 }
@@ -216,25 +211,6 @@ $env:PATH = "$([Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory
     $name = Split-Path $path -Leaf
     Write-Output "Running ngen.exe on '$name'..."
     ngen.exe install $path /nologo | Out-Null
-  }
-}
-
-Import-Module "${env:USERPROFILE}\Documents\WindowsPowerShell\Modules\go\go.psm1"
-
-(@{
-  "desktop" = "$env:USERPROFILE\desktop"
-  "docs" = "$env:USERPROFILE\documents"
-  "documents" = "$env:USERPROFILE\documents"
-  "downloads" = "$env:USERPROFILE\downloads"
-  "pics" = "$env:USERPROFILE\pictures"
-  "pictures" = "$env:USERPROFILE\pictures"
-  "videos" = "$env:USERPROFILE\videos"
-  "temp" = "$env:TEMP"
-  "choco-lib" = "$env:ALLUSERSPROFILE\chocolatey\lib"
-}).GetEnumerator() | ForEach-Object {
-  if (Test-Path $_.Value) {
-    gd -Key $_.Key -delete
-    gd -Key $_.Key -SelectedPath $_.Value -add
   }
 }
 
