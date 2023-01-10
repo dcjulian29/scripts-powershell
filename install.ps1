@@ -94,43 +94,15 @@ if ((-not ($env:PSModulePath).Contains($modulesDir))) {
 
 #------------------------------------------------------------------------------
 
-if (Test-Path "$modulesDir\go") {
-  Write-Output "Removing previous version of posh-go as it has been replace with my new Favorite Folders module..."
-  Remove-Item "$modulesDir\go" -Recurse -Force
+Write-Output "`n`n>>>-------->  Configuring Package Repositories...`n`n"
+
+Import-Module PackageManagement
+
+if (-not (Get-PackageProvider -Name NuGet)) {
+  Install-PackageProvider -Name NuGet
 }
 
-@(
-  "Path"
-  "VirtualBox"
-) | ForEach-Object {
-  if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Uninstall-Module -Name $_ -AllVersions -Force -Confirm:$false
-  }
-}
-
-#------------------------------------------------------------------------------
-
-Write-Output "`n>>>Configuring Package Repositories..."
-
-if ((Get-Module PackageManagement -ListAvailable | Measure-Object).Count -gt 1) {
-  Import-Module PackageManagement -RequiredVersion `
-    "$((Get-Module PackageManagement -ListAvailable `
-      | Sort-Object Version -Descending `
-      | Select-Object -First 1).Version.ToString())"
-} else {
-  Import-Module PackageManagement
-}
-
-Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force | Out-Null
-
-if ((Get-Module PowershellGet -ListAvailable | Measure-Object).Count -gt 1) {
-  Import-Module PowerShellGet -RequiredVersion `
-    "$((Get-Module PowershellGet -ListAvailable `
-      | Sort-Object Version -Descending `
-      | Select-Object -First 1).Version.ToString())"
-} else {
-  Import-Module PowerShellGet
-}
+Import-Module PowerShellGet
 
 Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
 
@@ -144,39 +116,47 @@ if (-not (Get-PSRepository -Name "dcjulian29-powershell" -ErrorAction SilentlyCo
 
 Set-PSRepository -Name "dcjulian29-powershell" -InstallationPolicy Trusted
 
+Get-PSRepository
+
 #------------------------------------------------------------------------------
 
-Write-Output "`n`n>>>Installing third-party modules..."
+Write-Output "`n`n>>>-------->  Remove Modules...`n`n"
+
+(Get-Content "remove.json" | ConvertFrom-Json) | ForEach-Object {
+  if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
+    Uninstall-Module -Name $_ -AllVersions -Force -Confirm:$false -Verbose
+  }
+}
+
+Write-Output "`n`n>>>-------->  Third-Party Modules...`n`n"
 
 Push-Location "${env:TEMP}\scripts-powershell-main"
 
 (Get-Content "thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
-  if (-not (($_ -eq "PackageManagement") -or ($_ -eq "PowerShellGet"))) {
-    if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-      Write-Output "`n>>Updating third-party '$_' module..."
-      Update-Module -Name $_ -Confirm:$false -Verbose
-    } else {
-      Write-Output "`n>>Installing third-party '$_' module..."
-      Install-Module -Name $_ -AllowClobber -Verbose
-    }
+  if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
+    Write-Output "`n`n>> Updating third-party '$_' module...`n`n"
+    Update-Module -Name $_ -Confirm:$false -Verbose
+  } else {
+    Write-Output "`n`n>> Installing third-party '$_' module..."
+    Install-Module -Name $_ -AllowClobber -Verbose
   }
 }
 
-Write-Output "`n`n>>>Installing my modules..."
+Write-Output "`n`n>>>-------->  My modules...`n`n"
 
 (Get-Content "mine.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Write-Output "`n>>Updating my '$_' module..."
+    Write-Output "`n`n>> Updating my '$_' module...`n`n"
     Update-Module -Name $_ -Confirm:$false -Verbose
   } else {
-    Write-Output "`n>>Installing my '$_' module..."
+    Write-Output "`n`n>> Installing my '$_' module...`n`n"
     Install-Module -Name $_ -Repository "dcjulian29-powershell" -AllowClobber -Verbose
   }
 }
 
 Pop-Location
 
-Write-Output "Refreshing the list of available modules..."
+Write-Output "`n`n`nRefreshing the list of available modules..."
 
 Get-Module -ListAvailable | Out-Null
 
