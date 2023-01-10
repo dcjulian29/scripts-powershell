@@ -58,22 +58,6 @@ function Find-ProgramFiles {
   }
 }
 
-function Resolve-FullPath {
-  [CmdletBinding()]
-  [Alias("Get-FullDirectoryPath", "Get-FullFilePath")]
-  param (
-    [Parameter(Mandatory=$true)]
-    [ValidateNotNullOrEmpty()]
-    [string] $Path
-  )
-
-  if ($Path.Substring($Path.Length) -ne [IO.Path]::DirectorySeparatorChar) {
-      $Path = Join-Path -Path $Path -ChildPath ""
-  }
-
-  $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
-}
-
 function Get-Path {
   param (
       [switch]$Positions
@@ -128,6 +112,19 @@ function Remove-Path {
       Set-EnvironmentVariable "Path" $pathString
   }
 }
+
+function Resolve-FullPath {
+  [CmdletBinding()]
+  [Alias("Get-FullDirectoryPath", "Get-FullFilePath")]
+  param (
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [string] $Path
+  )
+
+  $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+}
+
 function Set-Path {
   param (
       [Parameter(Mandatory=$true)]
