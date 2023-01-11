@@ -120,6 +120,8 @@ Get-PSRepository
 
 #------------------------------------------------------------------------------
 
+Push-Location "${env:TEMP}\scripts-powershell-main"
+
 Write-Output "`n`n>>>-------->  Remove Modules...`n`n"
 
 (Get-Content "remove.json" | ConvertFrom-Json) | ForEach-Object {
@@ -129,8 +131,6 @@ Write-Output "`n`n>>>-------->  Remove Modules...`n`n"
 }
 
 Write-Output "`n`n>>>-------->  Third-Party Modules...`n`n"
-
-Push-Location "${env:TEMP}\scripts-powershell-main"
 
 (Get-Content "thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
