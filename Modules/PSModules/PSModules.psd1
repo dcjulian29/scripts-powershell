@@ -1,6 +1,6 @@
 @{
   RootModule = 'PSModules.psm1'
-  ModuleVersion = '2211.3.1'
+  ModuleVersion = '2301.10.1'
   Description = "A collection of utilities, commands, and functions specific to Powershell modules."
   GUID = 'c4d33743-f3f8-4dde-a8ff-78c7934497af'
   Author = 'Julian Easterling'
@@ -24,6 +24,7 @@
   VariablesToExport = @()
   AliasesToExport = @(
     "Reload-Module"
+    "Remove-OutdatedModules"
     "Unload-Module"
   )
   PrivateData = @{

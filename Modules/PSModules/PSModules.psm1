@@ -6,6 +6,10 @@ function Get-InstalledModuleReport {
 }
 
 function Optimize-InstalledModules {
+  [CmdletBinding()]
+  [Alias("Remove-OutdatedModules")]
+  param ( )
+
   $latest = Get-InstalledModule
   foreach ($module in $latest) {
     Write-Verbose -Message "Looking for old versions of $($module.Name) $($module.Version)" `
