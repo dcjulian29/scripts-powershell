@@ -16,7 +16,7 @@ function Optimize-InstalledModules {
       -Verbose
     Get-InstalledModule -Name $module.Name -AllVersions `
       | Where-Object {$_.Version -ne $module.Version} `
-      | Uninstall-Module -Verbose
+      | Uninstall-Module -Verbose -Force
   }
 }
 
