@@ -163,7 +163,7 @@ function Set-BingWallpaperScheduledTask {
   </RegistrationInfo>
   <Triggers>
     <CalendarTrigger>
-      <StartBoundary>$(Get-Date -Format"yyyy-MM-dd")T06:00:00</StartBoundary>
+      <StartBoundary>$(Get-Date -Format "yyyy-MM-dd")T06:00:00</StartBoundary>
       <Enabled>true</Enabled>
       <ScheduleByDay>
         <DaysInterval>1</DaysInterval>
