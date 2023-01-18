@@ -1,3 +1,7 @@
+$Script:lastProgressWritten = [datetime]::MinValue
+
+#-----------------------------------------------------------------------------
+
 function Assert-FolderExists {
   process {
     if (-not (Test-Path -Path $_ -PathType Container)) {
@@ -70,13 +74,19 @@ function Copy-File {
                     [int]$remainingTime = 0
                 }
 
-                Write-Progress `
+                $lastProgress = New-TimeSpan -Start $Script:lastProgressWritten -End ([DateTime]::UtcNow)
+
+                if ($lastProgress.TotalMilliseconds -gt 200) {
+                  Write-Progress `
                     -Activity ("Copying file: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s") `
                     -status "$Path -> $Destination" `
                     -PercentComplete $percent `
                     -SecondsRemaining $remainingTime
 
-                Write-Verbose ("Progress: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s")
+                  Write-Verbose ("Progress: {0}% @ " -f $percent + "{0:n2}" -f $xferrate + " MB/s")
+
+                  $Script:lastProgressWritten = [datetime]::UtcNow
+                }
             } while ($count -gt 0)
 
             $sw.Stop()
@@ -104,9 +114,16 @@ function Find-FolderSize {
   for ($i = 1; $i -le $files.Count-1; $i++) {
       $name = $files[$i].FullName
       $name = $name.Substring(0, [System.Math]::Min($width, $name.Length))
-      Write-Progress -Activity "Calculating total size..." `
-          -Status $name `
-          -PercentComplete ($i / $files.Count * 100)
+      $lastProgress = New-TimeSpan -Start $Script:lastProgressWritten -End ([DateTime]::UtcNow)
+
+      if ($lastProgress.TotalMilliseconds -gt 200) {
+        Write-Progress -Activity "Calculating total size..." `
+            -Status $name `
+            -PercentComplete ($i / $files.Count * 100)
+
+        $Script:lastProgressWritten = [datetime]::UtcNow
+      }
+
       $total += $files[$i].Length
   }
 
@@ -327,7 +344,13 @@ function Invoke-DownloadFile {
 
                 $activity = "Downloading ${Url}: $percent% @ {0:n2} MB/s $transferMB MB of $totalMB MB " -f $xferrate
 
-                Write-Progress -Id 0 -Activity  $activity -status "To $Destination" -PercentComplete $percent
+                $lastProgress = New-TimeSpan -Start $Script:lastProgressWritten -End ([DateTime]::UtcNow)
+
+                if ($lastProgress.TotalMilliseconds -gt 200) {
+                  Write-Progress -Id 0 -Activity  $activity -status "To $Destination" -PercentComplete $percent
+
+                  $Script:lastProgressWritten = [datetime]::UtcNow
+                }
             }
 
             $iteration++

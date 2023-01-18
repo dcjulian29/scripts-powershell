@@ -1,6 +1,6 @@
 @{
   RootModule = 'FileSystem.psm1'
-  ModuleVersion = '2301.10.1'
+  ModuleVersion = '2301.18.1'
   Description = "A collection of functions to deal with file systems including path operations."
   GUID = 'aaad40aa-30a0-495c-8377-53e89ea1ec11'
   Author = 'Julian Easterling'
