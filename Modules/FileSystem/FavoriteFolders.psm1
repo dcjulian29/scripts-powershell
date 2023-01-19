@@ -39,7 +39,7 @@ function Add-FavoriteFolder {
     [string] $Key,
     [Parameter(Position=1,ValueFromPipelineByPropertyName=$true)]
     [ValidateNotNullOrEmpty()]
-    [Alias("PSPath")]
+    [Alias("PSPath", "SelectedPath")]
     [string] $Path = $PWD.Path,
     [switch] $Force
   )
@@ -135,6 +135,8 @@ function Push-FavoriteFolder {
 
     [Parameter(Position=1, ParameterSetName="KeyAndPath")]
     [Parameter(Position=1, ParameterSetName="KeyAndAlias")]
+    [ValidateNotNullOrEmpty()]
+    [Alias("PSPath", "SelectedPath")]
     [string] $Path = $PWD.Path,
 
     [Parameter(ParameterSetName="KeyAndAlias")]
