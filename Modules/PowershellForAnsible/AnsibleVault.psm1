@@ -11,8 +11,6 @@ function Edit-AnsibleVault {
   }
 
   Invoke-AnsibleVault edit $Vault
-
-  returnAnsibleRoot
 }
 
 function Protect-AnsibleVariable {
