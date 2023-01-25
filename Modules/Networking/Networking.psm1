@@ -248,12 +248,12 @@ function Get-NetworkEstablishedConnection {
         if ($NoResolve) {
             $remoteName = $null
         } else {
-            if (-not ($dnsCache.ContainsKey($_.RemoteAddress))) {
-                $dnsCache.Add($_.RemoteAddress, `
+            if (-not ($Script:dnsCache.ContainsKey($_.RemoteAddress))) {
+                $Script:dnsCache.Add($_.RemoteAddress, `
                     $(Resolve-DnsName $_.RemoteAddress -ErrorAction SilentlyContinue))
             }
 
-            $remoteName = $dnsCache[$_.RemoteAddress]
+            $remoteName = $Script:dnsCache[$_.RemoteAddress]
         }
 
         $process = Get-Process | Where-Object Id -eq $_.OwningProcess
@@ -573,22 +573,26 @@ function Search-Network {
         if ($NoResolve) {
           $remoteName = $null
         } else {
-            if (-not ($dnsCache.ContainsKey($target))) {
-                $dnsCache.Add($target, `
+            if (-not ($Script:dnsCache.ContainsKey($target))) {
+                $Script:dnsCache.Add($target, `
                     $(Resolve-DnsName $target -NoHostsFile -NetbiosFallback -ErrorAction SilentlyContinue))
             }
 
-            $remoteName = $dnsCache[$target].NameHost
-
-            if (($remoteName.GetType()).BaseType -eq "System.Array") {
-              $remoteName = $remoteName[0]
+            if ($null -eq $Script:dnsCache[$target]) {
+              $remoteName = "<$target>"
+            } else {
+              if (($Script:dnsCache[$target].GetType()).BaseType -eq "System.Array") {
+                $remoteName = $Script:dnsCache[$target][0]
+              } else {
+                $remoteName = $Script:dnsCache[$target].NameHost
+              }
             }
         }
 
         $results += [PSCustomObject]@{
           Address    = $target
           ResponseTime = $status.RoundtripTime
-          MAC   = $((Get-NetNeighbor -IPAddress $target -ErrorAcction SilentlyContinue).LinkLayerAddress -replace '-', ':')
+          MAC   = $((Get-NetNeighbor -IPAddress $target -ErrorAction SilentlyContinue).LinkLayerAddress -replace '-', ':')
           Name     = $remoteName
         }
       } else {
