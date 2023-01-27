@@ -51,7 +51,7 @@ function Invoke-AnsibleContainer {
       Image = "dcjulian29/ansible"
       Tag = "latest"
       Interactive = $true
-      Name = "ansible_shell"
+      Name = "ansible_$(Get-Date -Format "yyyyMMdd_HHmmss")"
       Volume = @(
         "$(Get-DockerMountPoint $PWD):/home/ansible/data"
         "$(Get-DockerMountPoint "${env:SYSTEMDRIVE}/etc/ssh/wsl"):/ssh"
