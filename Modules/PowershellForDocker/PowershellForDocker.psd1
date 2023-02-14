@@ -1,6 +1,6 @@
 @{
   RootModule = 'Docker.psm1'
-  ModuleVersion = '2212.29.1'
+  ModuleVersion = '2302.14.1'
   Description = "A collection of commands to interact with Docker."
   GUID = '2cd0c771-ed8b-48bc-b6bc-be8540c915e4'
   Author = 'Julian Easterling'
