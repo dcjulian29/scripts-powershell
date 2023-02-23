@@ -1,5 +1,5 @@
 @{
-  ModuleVersion = '2302.22.2'
+  ModuleVersion = '2302.22.3'
   GUID = '099256ed-ac18-4e56-8017-bb9d9077fb74'
   Author = 'Julian Easterling'
   PowerShellVersion = '3.0'

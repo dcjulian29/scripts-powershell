@@ -21,15 +21,21 @@ function Find-GraphicalGitHistory {
 }
 
 function Get-GitRootDirectory {
-    $root = & "$(Find-Git)" rev-parse --show-toplevel 2>nul
+  param(
+    [string] $Path = $PWD.Path
+  )
 
-    if ($root.length -gt 0) {
-      if (Test-Path $root) {
-          return Get-Item $root
+  if (Test-GitRepository -Path $Path) {
+    $root = & "$(Find-Git)" -C $Path rev-parse --show-toplevel
+
+    if ($root.Length -gt 0) {
+      if (Test-Path -Path $root -PathType Container) {
+        return Get-Item $root
       }
     }
+  }
 
-    return $null
+  return $null
 }
 
 function Get-GitRepositoryStatus {
