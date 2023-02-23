@@ -1,5 +1,5 @@
 @{
-  ModuleVersion = '2301.31.1'
+  ModuleVersion = '2302.22.1'
   GUID = '099256ed-ac18-4e56-8017-bb9d9077fb74'
   Author = 'Julian Easterling'
   PowerShellVersion = '3.0'
@@ -88,6 +88,7 @@
     "Test-GitCommit"
     "Test-GitRepository"
     "Test-GitRepositoryDirty"
+    "Test-GitRepositoryRoot"
     "Update-AllGitRepositories"
     "Update-GitFlowFeature"
     "Update-GitHubFlowFeature"

@@ -262,6 +262,14 @@ function Test-GitRepositoryDirty {
     }
 }
 
+function Test-GitRepositoryRoot {
+  param (
+      [string] $Path = $PWD.Path
+  )
+
+  return ($Path -eq (Get-GitRootDirectory).FullName)
+}
+
 function Update-AllGitRepositories {
     param (
         [ValidateNotNullorEmpty()]
