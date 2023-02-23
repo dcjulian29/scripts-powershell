@@ -21,10 +21,12 @@ function Find-GraphicalGitHistory {
 }
 
 function Get-GitRootDirectory {
-    $root = & "$(Find-Git)" rev-parse --show-toplevel
+    $root = & "$(Find-Git)" rev-parse --show-toplevel 2>nul
 
-    if (Test-Path $root) {
-        return Get-Item $root
+    if ($root.length -gt 0) {
+      if (Test-Path $root) {
+          return Get-Item $root
+      }
     }
 
     return $null
