@@ -142,7 +142,7 @@ Write-Output "`n`n>>>-------->  Third-Party Modules...`n`n"
   }
 }
 
-Write-Output "`n`n>>>-------->  My modules...`n"
+Write-Output "`n`n>>>-------->  My modules...`n`n"
 
 (Get-Content "mine.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
