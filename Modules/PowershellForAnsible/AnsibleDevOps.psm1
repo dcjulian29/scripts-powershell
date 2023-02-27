@@ -122,8 +122,8 @@ function Assert-AnsibleProvision {
     $original_display_skip = $env:ANSIBLE_DISPLAY_SKIPPED_HOSTS
 
     $env:ANSIBLE_HOST_KEY_CHECKING = "true"
-    $env:ANSIBLE_DISPLAY_OK_HOSTS = $orginal_display_ok
-    $env:ANSIBLE_DISPLAY_SKIPPED_HOSTS = $original_display_skip
+    $env:ANSIBLE_DISPLAY_OK_HOSTS = "no"
+    $env:ANSIBLE_DISPLAY_SKIPPED_HOSTS = "no"
 
     Invoke-AnsiblePlaybook $param
 
