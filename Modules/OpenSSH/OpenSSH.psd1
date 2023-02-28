@@ -1,5 +1,5 @@
 @{
-  ModuleVersion = '2212.17.1'
+  ModuleVersion = '2302.27.1'
   GUID = '2b2add2f-ba2d-461a-8bac-6cfb19894a0d'
   Author = 'Julian Easterling'
   PowerShellVersion = '3.0'
@@ -15,6 +15,7 @@
   FormatsToProcess = @()
   FunctionsToExport = @(
     "Add-OpenSSHClient"
+    "Add-OpenSSHAuthorizedKey"
     "Add-OpenSSHServer"
     "Add-OpenSSHKnownHost"
     "Enable-OpenSSHServer"
@@ -42,6 +43,7 @@
   )
   AliasesToExport = @(
     "Execute-OpenSSHCommand"
+    "Install-OpenSSHServer"
     "Invoke-OpenSSHCommand"
     "secure-copy"
     "secure-copy-receive"

@@ -1,3 +1,36 @@
+function Add-OpenSSHAuthorizedKey {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
+    [string] $Path
+  )
+
+  if (-not ((ssh-keygen -l -f ./website.lnk 2>1) | Out-Null)) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "'$Path' is not a OpenSSH public key file." `
+      -ExceptionType "System.ArgumentException" `
+      -ErrorId "ArgumentException" -ErrorCategory "InvalidArgument"))
+  }
+
+  $authorizedKey = Get-Content -Path $Path $Path -Raw
+
+  if (-not ($authorizedKey.StartsWith('ssh-rsa')) {
+    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
+      -Message "'$Path' is not a OpenSSH public key file." `
+      -ExceptionType "System.ArgumentException" `
+      -ErrorId "ArgumentException" -ErrorCategory "InvalidArgument"))
+  }
+
+  if (-not (Test-Path -Path "${env:USERPROFILE}/.ssh")) {
+    New-Folder-Path "${env:USERPROFILE}/.ssh"
+  }
+
+  Add-Content -Path "${env:USERPROFILE}\.ssh\authorized_keys" `
+    -Value $authorizedKey -Force
+}
+
 function Find-OpenSSH {
   First-Path `
       (Find-ProgramFiles 'OpenSSH\ssh.exe') `
@@ -6,6 +39,7 @@ function Find-OpenSSH {
 
 function Invoke-OpenSSH {
   [CmdletBinding()]
+  [Alias("sshell", "sshellc", "Execute-OpenSSHCommand", "Invoke-OpenSSHCommand")]
   param (
     [Parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
@@ -67,8 +101,3 @@ function Invoke-OpenSSH {
 
   $host.UI.RawUI.WindowTitle = $oldTitle
 }
-
-Set-Alias -Name "sshell" -Value Invoke-OpenSSH
-Set-Alias -Name "sshellc" -Value Invoke-OpenSSH
-Set-Alias -Name "Execute-OpenSSHCommand" -Value Invoke-OpenSSH
-Set-Alias -Name "Invoke-OpenSSHCommand" -Value Invoke-OpenSSH

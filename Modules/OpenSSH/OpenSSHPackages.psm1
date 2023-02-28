@@ -28,7 +28,10 @@ function Add-OpenSSHClient {
 
 function Add-OpenSSHServer {
   [CmdletBinding()]
-  param ()
+  [Alias("Install-OpenSSHServer")]
+  param (
+    [switch] $AllowKeyAuth
+  )
 
   if (Test-Elevation) {
     if (-not (Test-OpenSSHServer)) {
@@ -40,6 +43,28 @@ function Add-OpenSSHServer {
         if (Get-Service -Name 'sshd') {
           Set-Service -Name 'sshd' -StartupType 'Automatic'
           Start-Service -Name 'sshd'
+        }
+
+        $fw = (Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue `
+          | Select-Object Name, Enabled)
+
+        if (-not $fw) {
+          New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' `
+            -DisplayName 'OpenSSH Server (sshd)' -Enabled True `
+            -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+        }
+
+        if ($AllowKeyAuth) {
+          $config = "${env:ProgramData}\ssh\sshd_config"
+          @(
+            @('#PubkeyAuthentication', 'PubkeyAuthentication')
+            @('AuthorizedKeysFile __PROGRAMDATA__', '#AuthorizedKeysFile __PROGRAMDATA__')
+            @('Match Group administrators', '#Match Group administrators')
+          ) | ForEach-Object {
+            (Get-Content $config) -replace $_[0], $_[1] | Out-File -Encoding ASCII $config
+          }
+
+          Restart-Service sshd
         }
       }
     }
