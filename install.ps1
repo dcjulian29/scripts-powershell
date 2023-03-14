@@ -42,7 +42,28 @@ if (-not (Test-Path $modulesDir)) {
 
 #------------------------------------------------------------------------------
 
-Write-Output "Installing binary scripts to '$binDir' ..."
+Write-Output "`nUpdating Execution Policies for 32-bit PowerShell..."
+
+& ${env:SystemRoot}\SysWOW64\WindowsPowerShell\v1.0\powershell.exe `
+  "Set-ExecutionPolicy RemoteSigned" | Out-Null
+& ${env:SystemRoot}\SysWOW64\WindowsPowerShell\v1.0\powershell.exe `
+  "Set-ExecutionPolicy RemoteSigned" | Out-Null
+& ${env:SystemRoot}\SysWOW64\WindowsPowerShell\v1.0\powershell.exe `
+  "Set-ExecutionPolicy RemoteSigned" | Out-Null
+
+Write-Output "`nUpdating Execution Policies for 64-bit PowerShell..."
+  # 64-bit
+& ${env:SystemRoot}\System32\WindowsPowerShell\v1.0\powershell.exe `
+  "Set-ExecutionPolicy RemoteSigned" | Out-Null
+& ${env:SystemRoot}\System32\WindowsPowerShell\v1.0\powershell.exe `
+  "Set-ExecutionPolicy RemoteSigned" | Out-Null
+& ${env:SystemRoot}\System32\WindowsPowerShell\v1.0\powershell.exe `
+  "Set-ExecutionPolicy RemoteSigned" | Out-Null
+
+
+#------------------------------------------------------------------------------
+
+Write-Output "`nInstalling binary scripts to '$binDir' ..."
 
 Copy-Item -Path "${env:TEMP}\scripts-powershell-main\bin\*" -Destination $binDir -Recurse -Force
 
