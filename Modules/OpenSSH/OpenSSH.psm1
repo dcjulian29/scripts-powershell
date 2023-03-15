@@ -7,7 +7,7 @@ function Add-OpenSSHAuthorizedKey {
     [string] $Path
   )
 
-  if (-not ((ssh-keygen -l -f ./website.lnk 2>1) | Out-Null)) {
+  if (-not ((ssh-keygen -l -f $Path 2>&1) | Out-Null)) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
       -Message "'$Path' is not a OpenSSH public key file." `
       -ExceptionType "System.ArgumentException" `
@@ -16,7 +16,7 @@ function Add-OpenSSHAuthorizedKey {
 
   $authorizedKey = Get-Content -Path $Path $Path -Raw
 
-  if (-not ($authorizedKey.StartsWith('ssh-rsa')) {
+  if (-not ($authorizedKey.StartsWith('ssh-rsa'))) {
     $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
       -Message "'$Path' is not a OpenSSH public key file." `
       -ExceptionType "System.ArgumentException" `
