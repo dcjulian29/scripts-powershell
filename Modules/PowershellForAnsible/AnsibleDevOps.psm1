@@ -6,8 +6,8 @@ function checkReset([string[]]$pingHosts) {
     switch ($ping)
     {
       5 {
-        Write-Verbose "Bringing Ubuntu VM online..."
-        & vagrant up ubuntu
+        Write-Verbose "Bringing Debian VM online..."
+        & vagrant up debian
       }
       6 {
         Write-Verbose "Bringing Rocky Linux VM online..."
@@ -22,8 +22,8 @@ function checkReset([string[]]$pingHosts) {
         & vagrant up fedora
       }
       9 {
-        Write-Verbose "Bringing Debian VM online..."
-        & vagrant up debian
+        Write-Verbose "Bringing Ubuntu VM online..."
+        & vagrant up ubuntu
       }
       default {
         $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
