@@ -1,5 +1,14 @@
 [
-    "Go",
-    "Path",
-    "VirtualBox"
+  "AnsibleVault",
+  "BurntToast",
+  "Go",
+  "Lability",
+  "Microsoft.PowerShell.ConsoleGuiTools",
+  "MicrosoftTeams",
+  "NtpTime",
+  "Path",
+  "SHiPS",
+  "Trackyon.Utils",
+  "VirtualBox",
+  "VSTeam"
 ]
