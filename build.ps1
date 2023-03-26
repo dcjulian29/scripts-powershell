@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 $baseDir = (Resolve-Path $("$PSScriptRoot")).Path
 $toolDir = Join-Path -Path $baseDir -ChildPath ".tools"
 
-if (Get-Command -Name "nuget" -ErrorAction ContinueSilent) {
+if (Get-Command -Name "nuget" -ErrorAction SilentlyContinue) {
   $nuget = (Get-Command -Name "nuget").Source
 } else {
   $nuget = Join-Path -Path $toolDir -ChildPath "nuget.exe"
