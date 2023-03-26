@@ -21,13 +21,6 @@ if($env:TERM_PROGRAM -eq 'vscode') {
   exit
 }
 
-if ($PSVersionTable.PSEdition -eq "Core") {
-  $batch = $false
-} else {
-  $batch = (Get-WmiObject Win32_Process -filter "ProcessID=$pid").CommandLine `
-    -match "-NonInteractive"
-}
-
 if ((Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue).Version.Major -lt 2) {
   Set-PSReadLineOption -TokenKind Parameter -ForegroundColor Cyan
   Set-PSReadlineOption -TokenKind Operator -ForegroundColor Green
@@ -67,8 +60,6 @@ if (Get-Command dotnet -ErrorAction SilentlyContinue) {
 if (Test-Path("${env:ChocolateyInstall}\helpers\chocolateyProfile.psm1")) {
   Import-Module "${env:ChocolateyInstall}\helpers\chocolateyProfile.psm1"
 }
-
-#------------------------------------------------------------------------------
 
 if (Get-Command starship -ErrorAction SilentlyContinue) {
   Invoke-Expression (&starship init powershell)
