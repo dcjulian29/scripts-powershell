@@ -8,7 +8,7 @@ Function prompt {
     $originalColor = $Host.UI.RawUI.ForegroundColor
 
     Write-Host('§ ') -nonewline -foregroundcolor Yellow
-    Write-Host($pwd) -nonewline -foregroundcolor Green
+    Write-Host($pwd) -foregroundcolor Green
     Write-Host(">") -nonewline -foregroundcolor $originalColor
 
     $Host.UI.RawUI.ForegroundColor = $originalColor
