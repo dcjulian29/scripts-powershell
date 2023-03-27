@@ -57,6 +57,10 @@ if (Get-Command dotnet -ErrorAction SilentlyContinue) {
   }
 }
 
+if (Get-Command gh -ErrorAction SilentlyContinue) {
+  Invoke-Expression -Command $(gh completion -s powershell | Out-String)
+}
+
 if (Test-Path("${env:ChocolateyInstall}\helpers\chocolateyProfile.psm1")) {
   Import-Module "${env:ChocolateyInstall}\helpers\chocolateyProfile.psm1"
 }
