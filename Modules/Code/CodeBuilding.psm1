@@ -186,43 +186,48 @@ function Find-MSBuild {
 }
 
 function Invoke-BuildProject {
-    $param = "$args"
-    if (Test-Path build.cake) {
-        if (-not (Test-Path ("./build.ps1"))) {
-            if (-not ((& dotnet tool list) -like "*cake.tool*")) {
-                if (-not (Test-Path ".config/dotnet-tools.json")) {
-                    & dotnet new tool-manifest | Out-Null
-                }
+  $param = "$args"
 
-                & dotnet tool install Cake.Tool | Out-Null
-            }
+  if (Test-Path build.cake) {
+    if (-not ((& dotnet tool list) -like "*cake.tool*")) {
+      if (-not (Test-Path ".config/dotnet-tools.json")) {
+        & dotnet new tool-manifest | Out-Null
+      }
 
-            $cake = "dotnet cake"
-        } else {
-            $cake = "./build.ps1"
-        }
-
-        $tee = "| Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
-
-        if (-not ($param.StartsWith('-'))) {
-            if ($param) {
-                # Assume a target was passed in
-                Invoke-Expression "$cake --target=$param $tee"
-            } else {
-                Invoke-Expression "$cake $tee"
-            }
-        } else {
-            Invoke-Expression "$cake $param $tee"
-        }
-    } elseif (Test-Path build.ps1) {
-        Invoke-Psake .\build.ps1 $param
-    } elseif (Test-Path build.bat) {
-        .\build.bat $param
-    } elseif (Test-Path build.cmd) {
-        .\build.cmd $param
-    } else {
-        Write-Host "This directory does not include build script to build the project"
+      & dotnet tool install Cake.Tool | Out-Null
     }
+
+    $cake = "dotnet cake"
+
+    $tee = "| Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+
+    if (-not ($param.StartsWith('-'))) {
+      # Assume just a target was passed in
+      $param = "--target=$param"
+    }
+
+    Invoke-Expression "$cake $param $tee"
+  } elseif (Test-Path build.ps1) {
+    ./build.ps1 $param
+  } elseif (Test-Path build.bat) {
+     ./build.bat $param
+  } elseif (Test-Path build.cmd) {
+    ./build.cmd $param
+  } elseif (Test-Path build.sh) {
+    ./build.sh $param
+  } elseif ((Get-ChildItem -Recurse -Filter *.go).Count -gt 0) {
+    if (Get-Command -Name go.exe -ErrorAction SilentlyContinue) {
+      if (-not (Test-Path go.mod)) {
+        go mod init
+      }
+
+      go mod download
+      go build -v ./...
+      go test ./... -v
+    }
+  } else {
+    Write-Error "Nothing found to build!"
+  }
 }
 
 Set-Alias bp Invoke-BuildProject
