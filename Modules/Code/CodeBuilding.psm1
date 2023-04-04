@@ -197,8 +197,6 @@ function Invoke-BuildProject {
       & dotnet tool install Cake.Tool | Out-Null
     }
 
-    $cake = "dotnet cake"
-
     $tee = "| Tee-Object ${env:TEMP}\cake_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 
     if (-not ($param.StartsWith('-'))) {
@@ -206,17 +204,21 @@ function Invoke-BuildProject {
       $param = "--target=$param"
     }
 
-    Invoke-Expression "$cake $param $tee"
-  } elseif (Test-Path build.ps1) {
+    Invoke-Expression "dotnet cake $param $tee"
+  } elseif (Test-Path ./build.ps1) {
     ./build.ps1 $param
-  } elseif (Test-Path build.bat) {
+  } elseif (Test-Path ./build.bat) {
      ./build.bat $param
-  } elseif (Test-Path build.cmd) {
+  } elseif (Test-Path ./build.cmd) {
     ./build.cmd $param
-  } elseif (Test-Path build.sh) {
+  } elseif (Test-Path ./build.sh) {
     ./build.sh $param
+  } elseif (Test-Path ./.goreleaser.yaml) {
+    if (Get-Command -Name goreleaser -ErrorAction SilentlyContinue) {
+      goreleaser release --snapshot --clean
+    }
   } elseif ((Get-ChildItem -Recurse -Filter *.go).Count -gt 0) {
-    if (Get-Command -Name go.exe -ErrorAction SilentlyContinue) {
+    if (Get-Command -Name go -ErrorAction SilentlyContinue) {
       if (-not (Test-Path go.mod)) {
         go mod init
       }
