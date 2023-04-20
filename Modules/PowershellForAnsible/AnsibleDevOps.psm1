@@ -234,41 +234,6 @@ function Invoke-AnsibleProvision {
   returnAnsibleRoot
 }
 
-function New-AnsibleRole {
-  [CmdletBinding()]
-  [Alias("ansible-role-new", "ansible-new-role")]
-  param (
-    [Parameter(Mandatory=$true)]
-    [string] $Role,
-    [switch] $Force
-  )
-
-  ensureAnsibleRoot
-
-  $Path = (Resolve-Path $PWD).Path + "/roles/$Role"
-
-  Write-Verbose "Role Path: $Path"
-
-  if (Test-Path $Path) {
-    if ($Force) {
-      Remove-Item -Path $Path -Recurse -Force
-    } else {
-      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-      -Message "Role exists! Use -Force to replace." `
-      -ExceptionType "System.IO.IOException" `
-      -ErrorId "NewItemIOError" -ErrorCategory "ResourceExists"))
-    }
-  }
-
-  Push-Location "roles/"
-
-  Invoke-AnsibleGalaxy init $Role
-
-  Pop-Location
-
-  returnAnsibleRoot
-}
-
 function Remove-AnsibleVaultPassword {
   [CmdletBinding(SupportsShouldProcess)]
   param ()
