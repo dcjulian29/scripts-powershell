@@ -213,19 +213,9 @@ function Invoke-BuildProject {
     ./build.cmd $param
   } elseif (Test-Path ./build.sh) {
     ./build.sh $param
-  } elseif (Test-Path ./.goreleaser.yaml) {
+  } elseif (Test-Path ./.goreleaser.yml) {
     if (Get-Command -Name goreleaser -ErrorAction SilentlyContinue) {
       goreleaser release --snapshot --clean
-    }
-  } elseif ((Get-ChildItem -Recurse -Filter *.go).Count -gt 0) {
-    if (Get-Command -Name go -ErrorAction SilentlyContinue) {
-      if (-not (Test-Path go.mod)) {
-        go mod init
-      }
-
-      go mod download
-      go build -v ./...
-      go test ./... -v
     }
   } else {
     Write-Error "Nothing found to build!"
