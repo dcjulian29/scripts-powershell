@@ -116,17 +116,17 @@ function executeAnsibleLint {
   }
 
   Write-Verbose $params
-  Invoke-AnsibleLint $params.Trim()
+  ansible-lint $params.Trim()
 }
 
 #------------------------------------------------------------------------------
 
 function Get-AnsibleLintRules {
-  Invoke-AnsibleLint -L
+  ansible-lint -L
 }
 
 function Get-AnsibleLintTags {
-  Invoke-AnsibleLint -T
+  ansible-lint -T
 }
 
 function Invoke-AnsibleLintRole {

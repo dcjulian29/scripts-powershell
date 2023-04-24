@@ -24,15 +24,15 @@ function Find-AnsibleConfig {
 }
 
 function Get-AnsibleConfig {
-  Invoke-AnsibleConfig list
+  ansible-config list
 }
 
 function Get-AnsibleConfigDump {
-  Invoke-AnsibleConfig dump
+  ansible-config dump
 }
 
 function Get-AnsibleConfigFile {
-  Invoke-AnsibleConfig view
+  ansible-config view
 }
 
 function Invoke-AnsibleContainer {
@@ -105,7 +105,7 @@ function Show-AnsibleFacts {
         var: ansible_facts
 "@
 
-    Invoke-AnsiblePlaybook --inventory $workingPath $playbook
+    ansible-playbook --inventory $workingPath $playbook
 
     Remove-Item -Path $playbook -Force
   } else {
@@ -127,7 +127,7 @@ function Show-AnsibleVariables {
   $workingPath = (($InventoryFile -replace "\\","/") -replace ":","").ToLower().Trim("/")
 
   if ((Resolve-Path $workingPath).Path.Contains($pwd.Path)) {
-    Invoke-AnsibleInventory --graph --vars --inventory $workingPath
+    ansible-inventory --graph --vars --inventory $workingPath
   } else {
     Write-Warning "Current PowerShell wrapper only supports files as a child of the current working directory."
   }

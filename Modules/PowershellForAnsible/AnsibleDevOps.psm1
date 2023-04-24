@@ -59,7 +59,7 @@ function Assert-AnsibleProvision {
     $env:ANSIBLE_DISPLAY_OK_HOSTS = "no"
     $env:ANSIBLE_DISPLAY_SKIPPED_HOSTS = "no"
 
-    Invoke-AnsiblePlaybook $param
+    ansible-playbook $param
 
     $env:ANSIBLE_HOST_KEY_CHECKING = $original_host_key
     $env:ANSIBLE_DISPLAY_OK_HOSTS = $orginal_display_ok
@@ -101,7 +101,7 @@ function Export-AnsibleFacts {
   $param = "-v --limit $ComputerName "
   $param += "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) .tmp/play.yml"
 
-  Invoke-AnsiblePlaybook $param
+  ansible-playbook $param
 
   returnAnsibleRoot
 }
@@ -141,7 +141,7 @@ function Get-AnsibleFacts {
 
   $param += "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) .tmp/play.yml"
 
-  Invoke-AnsiblePlaybook $param
+  ansible-playbook $param
 
   returnAnsibleRoot
 }
@@ -160,7 +160,7 @@ function Get-AnsibleHostVariables {
   $p = "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) " `
     + "--yaml --vars --host $ComputerName"
 
-  Invoke-AnsibleInventory $p
+  ansible-inventory $p
 
   returnAnsibleRoot
 }
@@ -176,7 +176,7 @@ function Get-AnsibleVariables {
 
   $p = "-i $(Get-FilePathForContainer $InventoryFile -MustBeChild) --graph --vars -vvv"
 
-  Invoke-AnsibleInventory $p
+  ansible-inventory $p
 
   returnAnsibleRoot
 }
@@ -223,7 +223,7 @@ function Invoke-AnsibleProvision {
       }
   } else {
     $original = $env:ANSIBLE_NOCOLOR
-    Invoke-AnsiblePlaybook "$param | tee .tmp/$fileName`n"
+    ansible-playbook "$param | tee .tmp/$fileName`n"
     $env:ANSIBLE_NOCOLOR = $original
   }
 
@@ -335,7 +335,7 @@ function Update-AnsibleHost {
       }
   } else {
     $original = $env:ANSIBLE_NOCOLOR
-    Invoke-AnsiblePlaybook "$param | tee .tmp/$fileName`n"
+    ansible-playbook "$param | tee .tmp/$fileName`n"
     $env:ANSIBLE_NOCOLOR = $original
   }
 
@@ -390,7 +390,7 @@ function Update-AnsibleProvision {
     $env:ANSIBLE_DISPLAY_OK_HOSTS = "no"
     $env:ANSIBLE_DISPLAY_SKIPPED_HOSTS = "no"
 
-    Invoke-AnsiblePlaybook $param
+    ansible-playbook $param
 
     $env:ANSIBLE_NOCOLOR = $original_nocolor
     $env:ANSIBLE_HOST_KEY_CHECKING = $original_host_key

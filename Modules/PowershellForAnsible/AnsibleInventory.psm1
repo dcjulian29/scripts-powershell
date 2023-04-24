@@ -4,9 +4,9 @@ function executeInventory([string]$Action, [string]$InventoryFile) {
   if ("" -ne $InventoryFile) {
     $InventoryFile = Get-FileNameForContainer $InventoryFile
 
-    Invoke-AnsibleInventory "--inventory $InventoryFile $Action"
+    ansible-inventory "--inventory $InventoryFile $Action"
   } else {
-    Invoke-AnsibleInventory "$Action"
+    ansible-inventory "$Action"
   }
 }
 

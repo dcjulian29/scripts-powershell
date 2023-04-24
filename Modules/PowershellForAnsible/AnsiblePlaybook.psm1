@@ -39,7 +39,7 @@ function executePlaybook {
   }
 
   Write-Verbose $Action
-  Invoke-AnsiblePlaybook "$Action"
+  ansible-playbook "$Action"
 }
 
 #------------------------------------------------------------------------------

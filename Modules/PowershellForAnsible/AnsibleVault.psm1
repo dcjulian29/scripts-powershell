@@ -10,7 +10,7 @@ function Edit-AnsibleVault {
     $Vault = "./secrets.yml"
   }
 
-  Invoke-AnsibleVault edit $Vault
+  ansible-vault edit $Vault
 }
 
 function Protect-AnsibleVariable {
@@ -24,7 +24,7 @@ function Protect-AnsibleVariable {
       [string] $VariableName
   )
 
-  Invoke-AnsibleVault encrypt_string `"$Value`" --name $VariableName
+  ansible-vault encrypt_string `"$Value`" --name $VariableName
 }
 
 function Show-AnsibleVault {
@@ -39,5 +39,5 @@ function Show-AnsibleVault {
     $Vault = "./secrets.yml"
   }
 
-  Invoke-AnsibleVault view $Vault
+  ansible-vault view $Vault
 }
