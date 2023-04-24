@@ -213,7 +213,7 @@ function Invoke-BuildProject {
     ./build.cmd $param
   } elseif (Test-Path ./build.sh) {
     ./build.sh $param
-  } elseif (Test-Path ./.goreleaser.yml) {
+  } elseif ((Test-Path ./.goreleaser.yml) -or (Test-Path ./.goreleaser.yaml)) {
     if (Get-Command -Name goreleaser -ErrorAction SilentlyContinue) {
       goreleaser release --snapshot --clean
     }
