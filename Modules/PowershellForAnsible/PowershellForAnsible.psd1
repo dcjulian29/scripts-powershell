@@ -46,7 +46,6 @@
       "Invoke-AnsibleContainer"
       "Invoke-AnsibleLintPlaybook"
       "Invoke-AnsibleLintRole"
-      "Invoke-AnsiblePlayRaspi"
       "Invoke-AnsibleProvision"
       "Protect-AnsibleVariable"
       "Remove-AnsibleVaultPassword"
