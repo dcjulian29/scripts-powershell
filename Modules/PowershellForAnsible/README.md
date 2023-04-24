@@ -5,7 +5,6 @@ Provides functions to interact with an Ansible control node via Docker for Deskt
 
 ## Functions
 
-- [Assert-AnsibleProvision](docs/Assert-AnsibleProvision.md)
 - [Confirm-AnsiblePlaybookSyntax](docs/Confirm-AnsiblePlaybookSyntax.md)
 - [Edit-AnsibleVault](docs/Edit-AnsibleVault.md)
 - [Export-AnsibleFacts](docs/Export-AnsibleFacts.md)
@@ -28,19 +27,11 @@ Provides functions to interact with an Ansible control node via Docker for Deskt
 - [Invoke-AnsibleHostCommand](docs/Invoke-AnsibleHostCommand.md)
 - [Invoke-AnsibleLintPlaybook](docs/Invoke-AnsibleLintPlaybook.md)
 - [Invoke-AnsibleLintRole](docs/Invoke-AnsibleLintRole.md)
-- [Invoke-AnsiblePlayBase](docs/Invoke-AnsiblePlayBase.md)
-- [Invoke-AnsiblePlayDev](docs/Invoke-AnsiblePlayDev.md)
-- [Invoke-AnsiblePlayTest](docs/Invoke-AnsiblePlayTest.md)
-- [Invoke-AnsibleProvision](docs/Invoke-AnsibleProvision.md)
 - [Ping-AnsibleHost](docs/Ping-AnsibleHost.md)
 - [Protect-AnsibleVariable](docs/Protect-AnsibleVariable.md)
-- [Remove-AnsibleVagrantHosts](docs/Remove-AnsibleVagrantHosts.md)
-- [Reset-AnsibleEnvironmentDev](docs/Reset-AnsibleEnvironmentDev.md)
-- [Reset-AnsibleEnvironmentTest](docs/Reset-AnsibleEnvironmentTest.md)
 - [Show-AnsibleFacts](docs/Show-AnsibleFacts.md)
 - [Show-AnsibleVariables](docs/Show-AnsibleVariables.md)
 - [Show-AnsibleVault](docs/Show-AnsibleVault.md)
 - [Test-AnsiblePlaybookSyntax](docs/Test-AnsiblePlaybookSyntax.md)
 - [Test-AnsibleProvision](docs/Test-AnsibleProvision.md)
 - [Update-AnsibleHost](docs/Update-AnsibleHost.md)
-- [Update-AnsibleProvision](docs/Update-AnsibleProvision.md)

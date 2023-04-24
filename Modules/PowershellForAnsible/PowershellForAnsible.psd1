@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2304.24.1'
+    ModuleVersion = '2304.24.2'
     Description = "A collection of commands to interact with ansible (via a docker container if needed) running the control node instance. Allows a very similar workflow regardless of operating system."
     GUID = '907bef0d-cf0d-47de-a77b-282e48ce85b1'
     Author = 'Julian Easterling'
@@ -22,7 +22,6 @@
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
-      "Assert-AnsibleProvision"
       "Confirm-AnsiblePlaybookSyntax"
       "Edit-AnsibleVault"
       "Export-AnsibleFacts"
@@ -46,7 +45,6 @@
       "Invoke-AnsibleContainer"
       "Invoke-AnsibleLintPlaybook"
       "Invoke-AnsibleLintRole"
-      "Invoke-AnsibleProvision"
       "Protect-AnsibleVariable"
       "Remove-AnsibleVaultPassword"
       "Set-AnsibleVaultPassword"
@@ -54,8 +52,6 @@
       "Show-AnsibleVariables"
       "Show-AnsibleVault"
       "Test-AnsiblePlaybookSyntax"
-      "Update-AnsibleHost"
-      "Update-AnsibleProvision"
     )
     AliasesToExport = @(
       "ansible-container"
@@ -72,10 +68,6 @@
       "ansible-playbook-syntaxcheck"
       "ansible-playbook-tags"
       "ansible-playbook-tasks"
-      "ansible-provision-assert"
-      "ansible-provision-check"
-      "ansible-provision-server"
-      "ansible-provision-update"
       "ansible-save-facts"
       "ansible-show-facts"
       "ansible-show-hostvars"
