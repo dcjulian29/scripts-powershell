@@ -223,49 +223,6 @@ function Get-FileEncoding {
     }
 }
 
-function Get-Md5 {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [Alias("File")]
-        [string]$Path
-    )
-
-    (Get-FileHash -Path $(Get-FullFilePath $Path) -Algorithm MD5).Hash
-}
-
-Set-Alias -Name md5 -Value Get-Sha1
-
-
-function Get-Sha1 {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [Alias("File")]
-        [string]$Path
-    )
-
-    (Get-FileHash -Path $(Get-FullFilePath $Path) -Algorithm SHA1).Hash
-}
-
-Set-Alias -Name sha1 -Value Get-Sha1
-
-function Get-Sha256 {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-        [Alias("File")]
-        [string]$Path
-    )
-
-    (Get-FileHash -Path $(Get-FullFilePath $Path) -Algorithm SHA256).Hash
-}
-
-Set-Alias -Name sha256 -Value Get-Sha256
-
 function Get-Share {
   Get-WMIObject Win32_share
 }

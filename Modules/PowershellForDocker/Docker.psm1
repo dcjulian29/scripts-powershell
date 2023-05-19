@@ -156,16 +156,6 @@ function Get-PathForContainer {
   return Get-DockerMountPoint $Path -UnixStyle
 }
 
-function Invoke-AlpineContainer {
-  if (Test-DockerLinuxEngine) {
-    New-DockerContainer -Image "alpine" -Tag "latest" -Interactive -Name "alpine_shell"
-  } else {
-    Write-Error "Alpine Linux requires the Linux Docker Engine!" -Category ResourceUnavailable
-  }
-}
-
-Set-Alias -Name alpine -Value Invoke-AlpineContainer
-
 function Invoke-DebianContainer {
   if (Test-DockerLinuxEngine) {
     New-DockerContainer -Image "debian" -Tag "bullseye-slim" -Interactive -Name "debian_shell"

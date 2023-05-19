@@ -1,34 +1,4 @@
-﻿function ConvertTo-UnixLineEnding {
-  [CmdletBinding()]
-  [Alias("ct-unix", "dos2unix")]
-  param (
-    [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
-    [ValidateNotNullOrEmpty()]
-    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-    [string] $Path
-  )
-
-  $Path = Resolve-FullPath $Path
-  $content = [IO.File]::ReadAllText($Path) -replace "`\r\n","`n"
-  [IO.File]::WriteAllText($Path, $content)
-}
-
-function ConvertTo-WindowsLineEnding {
-  [CmdletBinding()]
-  [Alias("ct-win", "unix2dos")]
-  param (
-    [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
-    [ValidateNotNullOrEmpty()]
-    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-    [string] $Path
-  )
-
-  $Path = Resolve-FullPath $Path
-  $content = [IO.File]::ReadAllText($Path) -replace "[^\r]\n","`r`n"
-  [IO.File]::WriteAllText($Path, $content)
-}
-
-Function Format-XML {
+﻿Function Format-XML {
     param (
         [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
         [ValidateNotNullOrEmpty()]

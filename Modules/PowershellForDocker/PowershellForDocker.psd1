@@ -1,6 +1,6 @@
 @{
   RootModule = 'Docker.psm1'
-  ModuleVersion = '2302.14.1'
+  ModuleVersion = '2305.18.1'
   Description = "A collection of commands to interact with Docker."
   GUID = '2cd0c771-ed8b-48bc-b6bc-be8540c915e4'
   Author = 'Julian Easterling'
@@ -39,7 +39,6 @@
     "Get-FilePathForContainer"
     "Get-PathForContainer"
     "Get-RunningDockerContainers"
-    "Invoke-AlpineContainer"
     "Invoke-DebianContainer"
     "Invoke-Dive"
     "Invoke-Docker"
@@ -82,7 +81,6 @@
   CmdletsToExport = @()
   VariablesToExport = @()
   AliasesToExport = @(
-    "alpine"
     "dc"
     "dcb"
     "dcd"

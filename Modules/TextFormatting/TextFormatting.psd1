@@ -1,6 +1,6 @@
 @{
   RootModule = 'TextFormatting.psm1'
-  ModuleVersion = '2301.10.1'
+  ModuleVersion = '2305.18.1'
   Description = "A collection of commands to interact with text formats."
   GUID = '1827839b-9a40-473b-bf01-2f4141ecadc1'
   Author = 'Julian Easterling'
@@ -19,20 +19,13 @@
   FormatsToProcess = @()
   NestedModules = @()
   FunctionsToExport = @(
-    "ConvertTo-UnixLineEnding"
-    "ConvertTo-WindowsLineEnding"
     "Format-Xml"
     "Format-Json"
     "Convert"
   )
   CmdletsToExport = @()
   VariablesToExport = @()
-  AliasesToExport = @(
-    "ct-unix"
-    "ct-win"
-    "dos2unix"
-    "unix2dos"
-  )
+  AliasesToExport = @()
   PrivateData = @{
     PSData = @{
       Tags = @(
