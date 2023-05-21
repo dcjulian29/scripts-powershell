@@ -124,20 +124,6 @@ subjectKeyIdentifier    = hash
 "@
 }
 
-function ext_subca($public) {
- return @"
-[subca_ext]
-authorityInfoAccess     = @issuer_info
-authorityKeyIdentifier  = keyid:always
-basicConstraints        = critical,CA:true,pathlen:0
-crlDistributionPoints   = @crl_info
-extendedKeyUsage        = clientAuth,serverAuth
-keyUsage                = critical,keyCertSign,cRLSign
-subjectKeyIdentifier    = hash
-$(if (-not ($public)) { "nameConstraints         = @name_constraints" })
-"@
-}
-
 function ext_timestamp {
   return @"
 [timestamp_ext]
@@ -180,168 +166,6 @@ function Get-SubordinateAuthority {
   return $sub
 }
 
-function New-CertificateAuthority {
-  [CmdletBinding()]
-  param (
-    [Parameter(Position = 0)]
-    [ValidateScript({ Test-Path })]
-    [string] $Path = ($PWD.Path),
-    [string] $Name = "root",
-    [string] $Domain = "contoso.local",
-    [Parameter(Mandatory = $true)]
-    [securestring] $KeyPassword,
-    [string] $Country = "US",
-    [string] $Organization = "Contoso",
-    [string] $CommonName = "RootCA",
-    [switch] $Public,
-    [switch] $UseOcsp
-  )
-
-  if (Test-CertificateAuthority $Path) {
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "'$Path' is already an Certificate Authority." `
-       -ExceptionType "System.InvalidOperationException" `
-       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  }
-
-  $origialErrorActionPreference = $ErrorActionPreference
-  $ErrorActionPreference = "Stop"
-
-  Write-Output "`nCreating certificate authority directories..."
-
-  if (-not (Test-Path $Path)) {
-    New-Folder $Path
-  }
-
-  Push-Location $Path
-
-  @("certs", "csr", "db", "private") | ForEach-Object {
-    New-Folder $_
-  }
-
-  Write-Output "Initalizing certificate authority..."
-
-  New-Item -Path "db/index" -ItemType File | Out-Null
-  New-Item -Path "db/serial" -ItemType File `
-    -Value $(Get-OpenSslRandom 15 -Hex)  | Out-Null
-  New-Item -Path "db/crlnumber" -Value "1001" | Out-Null
-
-  Set-Content -Path "$($script:cnf_ca)" -Value @"
-[default]
-name                    = $Name
-domain_suffix           = $Domain
-$(cnf_default $UseOcsp)
-
-[ca_dn]
-countryName             = "$Country"
-organizationName        = "$Organization"
-commonName              = "$CommonName"
-
-$($script:cnf_default_ca)
-copy_extensions         = none
-default_days            = 7300
-default_crl_days        = 365
-$(if (-not ($Public)) { cnf_policy })
-
-$($script:cnf_crl_info)
-
-$(if ($UseOcsp) { $script:cnf_ocsp_info } else { $script:cnf_issuer_info })
-
-$(if (-not ($Public)) { $script:cnf_name_constraints })
-
-[req]
-encrypt_key             = yes
-default_md              = sha256
-utf8                    = yes
-string_mask             = utf8only
-prompt                  = no
-distinguished_name      = ca_dn
-req_extensions          = ca_ext
-
-$(ext_ca)
-
-$(if ($UseOcsp) { ext_ocsp })
-
-$(ext_subca($Public))
-"@
-
-  $cred = New-Object System.Management.Automation.PSCredential -ArgumentList "ni", $KeyPassword
-  $passin = "-passin pass:$(($cred.GetNetworkCredential().Password).Trim())"
-
-  Write-Output "`nGenerating the root certificate private key..."
-
-  New-OpenSslEdwardsCurveKeypair -Path "./private/ca.key" -Password $KeyPassword -NoPublicFile
-
-  Write-Output "Generating the root certificate request..."
-
-  Invoke-OpenSsl "req -new -config $($script:cnf_ca) -out csr/ca.csr -key private/ca.key $passin"
-
-  Write-Output "`n`nGenerating the root certificate for this authority..."
-
-  Invoke-OpenSsl "ca -selfsign -config $($script:cnf_ca) -in csr/ca.csr -out certs/ca.pem -extensions ca_ext -notext $passin"
-
-  Set-Content -Path ".openssl_ca" -Encoding UTF8 -Value @"
-.type=root
-.public=$Public
-.name=$Name
-.domain=$Domain
-.c=$Country
-.org=$Organization
-.cn=$CommonName
-.ocsp=$UseOcsp
-.timestamp=False
-"@
-
-  if ($UseOcsp) {
-    Update-OcspCertificate -AuthorityPassword $KeyPassword -Reset
-  }
-
-  Set-Content -Path ".\.gitignore" -Value @"
-/**/private/*
-/**/secrets/*
-/**/*.old
-.publish/
-"@
-
-  Set-Content -Path ".\.gitattributes" -Value @"
-*       text eol=lf
-*.cer   binary
-*.csr   text
-*.crl   text
-*.crt   binary
-*.der   binary
-*.pem   text
-*.p12   binary
-*.pfx   binary
-*.key   text
-"@
-
-  Set-Content -Path ".\.editorconfig" -Value @"
-root = true
-
-[*]
-end_of_line = lf
-indent_style = space
-indent_size = 2
-trim_trailing_whitespace = true
-insert_final_newline = true
-
-[{*.pem,*.crl,*.csr,*.key}]
-insert_final_newline = false
-"@
-
-  Write-Output "`n`nCreation of a root certificate authority complete...`n"
-
-  Pop-Location
-
-  $ErrorActionPreference = $origialErrorActionPreference
-
-  Write-Output "`n~~~~~~`n"
-  Write-Output "A root certificate authority should only have subordinate authorities"
-  Write-Output "so create at least one subordinate certificate authority to sign"
-  Write-Output "certificates within this authority...`n"
-}
-
 function New-SubordinateAuthority {
   [CmdletBinding()]
   param (
@@ -362,16 +186,6 @@ function New-SubordinateAuthority {
     [switch] $UseOcsp,
     [switch] $UseTimestamp
   )
-
-  if (-not (Test-CertificateAuthority -Root)) {
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "Subordinate authorities must be created within a root authority managed by this module." `
-       -ExceptionType "System.InvalidOperationException" `
-       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  }
-
-  $origialErrorActionPreference = $ErrorActionPreference
-  $ErrorActionPreference = "Stop"
 
   # if ((Get-CertificateAuthoritySetting SubCA) -contains $Name) {
   #   if (-not $Force) {
