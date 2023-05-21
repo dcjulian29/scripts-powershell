@@ -518,7 +518,7 @@ function New-LabWindowsServer {
 
     Pop-Location
 
-    Write-Output "Starting Virtual Macine..."
+    Write-Output "Starting Virtual Machine..."
     Start-VM -VMName $ComputerName
 
     Start-Sleep -Seconds 2
