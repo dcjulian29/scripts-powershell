@@ -1,6 +1,6 @@
 @{
   RootModule = 'CertificateAuthority.psm1'
-  ModuleVersion = '2209.28.3'
+  ModuleVersion = '2305.22.1'
   Description = "A collection of commands to manage and operate a certificte authority using OpenSSL."
   GUID = '8c0c42a2-05e2-4e17-b9d4-77e77bf91b30'
   Author = 'Julian Easterling'
@@ -36,8 +36,6 @@
     "Get-CertificateAuthoritySetting"
     "Get-SubordinateAuthority"
     "Import-CertificateRequest"
-    "New-CertificateAuthority"
-    "New-SubordinateAuthority"
     "New-ServerCertificate"
     "New-ServerCertificateRequest"
     "New-UserCertificate"
