@@ -40,7 +40,6 @@
     "New-UserCertificate"
     "New-UserCertificateRequest"
     "Revoke-Certificate"
-    "Remove-SubordinateAuthority"
     "Set-CertificateAuthoritySetting"
     "Start-OcspServer"
     "Stop-OcspServer"

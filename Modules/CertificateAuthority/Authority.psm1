@@ -39,61 +39,6 @@ function Get-SubordinateAuthority {
   return $sub
 }
 
-function Remove-SubordinateAuthority {
-  [CmdletBinding()]
-  [Alias("remove-subca")]
-  param (
-    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-    [string] $Path = ($PWD.Path),
-    [string] $Name = $(Split-Path -Path $Path -Leaf)
-  )
-
-  assertAuthority $Path
-
-  if (Test-CertificateAuthority $Path -Subordinate) {
-    Push-Location -Path "$((Get-Item -Path $Path).Parent.FullName)"
-  } else {
-    Push-Location $Path
-  }
-
-  if (-not (Test-CertificateAuthority -Root)) {
-    Pop-Location
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "'$Path' is not part of a certificate authority that includes the root authority." `
-       -ExceptionType "System.InvalidOperationException" `
-       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  }
-
-  $subca = (Get-CertificateAuthoritySetting subca | Where-Object { $_ -like $Name })
-
-  if ($subca.Length -gt 0) {
-    $sn = Get-CertificateAuthoritySetting "subca_$Name"
-
-    if ($sn -eq "~REVOKED~") {
-      Set-CertificateAuthoritySetting -Name "subca" -Value $Name -Remove
-      Set-CertificateAuthoritySetting -Name "subca_$Name" -Remove
-
-      if (Test-Path "$Name/") {
-        Remove-Item -Path $Name -Recurse -Force
-      }
-    } else {
-      Pop-Location
-      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-        -Message "'$Name' authority must be revoked before it can be removed." `
-        -ExceptionType "System.InvalidOperationException" `
-        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-    }
-  } else {
-    Pop-Location
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-      -Message "'$Name' authority is not currently managed by this root authority." `
-      -ExceptionType "System.InvalidOperationException" `
-      -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  }
-
-  Pop-Location
-}
-
 function Test-CertificateAuthority {
   [CmdletBinding()]
   [Alias("ca-test")]
