@@ -1,6 +1,6 @@
 @{
   RootModule = 'CertificateAuthority.psm1'
-  ModuleVersion = '2305.25.1'
+  ModuleVersion = '2305.26.1'
   Description = "A collection of commands to manage and operate a certificte authority using OpenSSL."
   GUID = '8c0c42a2-05e2-4e17-b9d4-77e77bf91b30'
   Author = 'Julian Easterling'
@@ -28,7 +28,6 @@
   )
   FunctionsToExport = @(
     "Approve-ServerCertificate"
-    "Approve-SubordinateAuthority"
     "Approve-UserCertificate"
     "Get-ImportedCertificateRequest"
     "Get-IssuedCertificate"
@@ -42,16 +41,11 @@
     "New-UserCertificateRequest"
     "Revoke-Certificate"
     "Remove-SubordinateAuthority"
-    "Revoke-SubordinateAuthority"
     "Set-CertificateAuthoritySetting"
     "Start-OcspServer"
     "Stop-OcspServer"
     "Test-CertificateAuthority"
     "Test-SubordinateAuthorityMounted"
-    "Update-CertificateAuthorityDatabase"
-    "Update-CertificateAuthorityRevocationList"
-    "Update-OcspCertificate"
-    "Update-TimestampCertificate"
   )
   CmdletsToExport = @()
   VariablesToExport = @()
@@ -59,8 +53,6 @@
     "ca-get"
     "ca-set"
     "ca-test"
-    "ca-update"
-    "crl-update"
     "Get-RevokedIssuedCertificate"
     "import-csr"
     "list-imported-requests"
@@ -70,18 +62,9 @@
     "new-user-certificate"
     "ocsp-start"
     "ocsp-stop"
-    "ocsp-update"
-    "remove-subca"
     "revoke-issued-certificate"
-    "revoke-subca"
     "sign-server-certificate"
-    "sign-subordinate-authority"
-    "sign-subca"
     "sign-user-certificate"
-    "update-ca"
-    "update-crl"
-    "update-ocsp"
-    "update-timestamp"
   )
   PrivateData = @{
     PSData = @{

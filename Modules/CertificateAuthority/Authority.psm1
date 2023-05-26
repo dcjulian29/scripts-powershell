@@ -94,68 +94,6 @@ function Remove-SubordinateAuthority {
   Pop-Location
 }
 
-function Revoke-SubordinateAuthority {
-  [CmdletBinding()]
-  [Alias("revoke-subca")]
-  param (
-    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-    [string] $Path = ($PWD.Path),
-    [string] $Name = $(Split-Path -Path $Path -Leaf),
-    [ValidateSet("unspecified", "keyCompromise", "CACompromise", "affiliationChanged", "superseded", "cessationOfOperation", "certificateHold", "removeFromCRL")]
-    [string] $Reason = "unspecified"
-  )
-
-  assertAuthority $Path
-
-  if (Test-CertificateAuthority $Path -Subordinate) {
-    Push-Location -Path "$((Get-Item -Path $Path).Parent.FullName)"
-  } else {
-    Push-Location $Path
-  }
-
-  if (-not (Test-CertificateAuthority -Root)) {
-    Pop-Location
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "'$Path' is not part of a certificate authority that includes the root authority." `
-       -ExceptionType "System.InvalidOperationException" `
-       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  }
-
-  $subca = (Get-CertificateAuthoritySetting subca | Where-Object { $_ -like $Name })
-
-  if ($subca.Length -gt 0) {
-    $sn = Get-CertificateAuthoritySetting "subca_$Name"
-
-    if ($sn -eq "~REVOKED~") {
-      Pop-Location
-      $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-        -Message "'$Name' authority has already been revoked." `
-        -ExceptionType "System.InvalidOperationException" `
-        -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-    }
-
-    if ($sn.Length -gt 0) {
-      Invoke-OpenSsl "ca -config $($script:cnf_ca) -revoke certs/$sn.pem -crl_reason $Reason"
-
-      Move-Item -Path "certs/$sn.pem" "certs/$sn.pem.revoked"
-
-      Set-CertificateAuthoritySetting -Name "subca_$Name" -Value "~REVOKED~"
-
-      if (Test-Path "$Name/") {
-        ###TODO: If subordinate authority is mounted (directly below root), cycle through each issued certificate and revoke them as well
-      }
-    }
-  } else {
-    Pop-Location
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-      -Message "'$Name' authority is not currently managed by this root authority." `
-      -ExceptionType "System.InvalidOperationException" `
-      -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  }
-
-  Pop-Location
-}
-
 function Test-CertificateAuthority {
   [CmdletBinding()]
   [Alias("ca-test")]
