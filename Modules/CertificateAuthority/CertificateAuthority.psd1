@@ -32,7 +32,6 @@
     "Get-ImportedCertificateRequest"
     "Get-IssuedCertificate"
     "Get-IssuedCertificateValidity"
-    "Get-CertificateAuthoritySetting"
     "Get-SubordinateAuthority"
     "Import-CertificateRequest"
     "New-ServerCertificate"
@@ -49,8 +48,6 @@
   CmdletsToExport = @()
   VariablesToExport = @()
   AliasesToExport = @(
-    "ca-get"
-    "ca-set"
     "ca-test"
     "Get-RevokedIssuedCertificate"
     "import-csr"
