@@ -40,8 +40,6 @@
     "New-UserCertificateRequest"
     "Revoke-Certificate"
     "Set-CertificateAuthoritySetting"
-    "Start-OcspServer"
-    "Stop-OcspServer"
     "Test-CertificateAuthority"
     "Test-SubordinateAuthorityMounted"
   )
@@ -56,8 +54,6 @@
     "list-revoked-certificates"
     "new-server-certificate"
     "new-user-certificate"
-    "ocsp-start"
-    "ocsp-stop"
     "revoke-issued-certificate"
     "sign-server-certificate"
     "sign-user-certificate"
