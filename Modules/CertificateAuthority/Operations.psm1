@@ -367,33 +367,6 @@ function Get-IssuedCertificateValidity {
   }
 }
 
-function Import-CertificateRequest {
-  [CmdletBinding()]
-  [Alias("import-csr")]
-  param (
-    [Parameter(Mandatory = $true, Position = 0)]
-    [ValidateScript({ Test-Path $(Resolve-Path $_) })]
-    [string] $Path
-  )
-
-  if (-not (Test-CertificateAuthority $Path)) {
-    $PSCmdlet.ThrowTerminatingError((New-ErrorRecord `
-       -Message "This is not a certificate authority that can be managed by this module." `
-       -ExceptionType "System.InvalidOperationException" `
-       -ErrorId "System.InvalidOperation" -ErrorCategory "InvalidOperation"))
-  }
-
-  if (-not (Test-Path csr)) {
-    New-Item -Path csr -ItemType Directory | Out-Null
-  }
-
-  $id = Get-OpenSslRandom 16 -Hex
-
-  Copy-Item -Path $Path -Destination "csr/$id.csr"
-
-  return $id
-}
-
 function New-ServerCertificate {
   [CmdletBinding()]
   [Alias("new-server-certificate")]

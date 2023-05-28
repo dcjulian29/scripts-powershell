@@ -1,6 +1,6 @@
 @{
   RootModule = 'CertificateAuthority.psm1'
-  ModuleVersion = '2305.26.1'
+  ModuleVersion = '2305.28.1'
   Description = "A collection of commands to manage and operate a certificte authority using OpenSSL."
   GUID = '8c0c42a2-05e2-4e17-b9d4-77e77bf91b30'
   Author = 'Julian Easterling'
@@ -33,7 +33,6 @@
     "Get-IssuedCertificate"
     "Get-IssuedCertificateValidity"
     "Get-SubordinateAuthority"
-    "Import-CertificateRequest"
     "New-ServerCertificate"
     "New-ServerCertificateRequest"
     "New-UserCertificate"
@@ -48,8 +47,7 @@
   AliasesToExport = @(
     "ca-test"
     "Get-RevokedIssuedCertificate"
-    "import-csr"
-    "list-imported-requests"
+   "list-imported-requests"
     "list-issued-certificates"
     "list-revoked-certificates"
     "new-server-certificate"
