@@ -29,9 +29,7 @@
   FunctionsToExport = @(
     "Get-ImportedCertificateRequest"
     "Get-IssuedCertificate"
-    "Get-IssuedCertificateValidity"
     "Get-SubordinateAuthority"
-    "Revoke-Certificate"
   )
   CmdletsToExport = @()
   VariablesToExport = @()
@@ -40,7 +38,6 @@
     "list-imported-requests"
     "list-issued-certificates"
     "list-revoked-certificates"
-    "revoke-issued-certificate"
   )
   PrivateData = @{
     PSData = @{
