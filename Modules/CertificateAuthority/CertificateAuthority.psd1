@@ -1,6 +1,6 @@
 @{
   RootModule = 'CertificateAuthority.psm1'
-  ModuleVersion = '2305.28.2'
+  ModuleVersion = '2306.1.1'
   Description = "A collection of commands to manage and operate a certificte authority using OpenSSL."
   GUID = '8c0c42a2-05e2-4e17-b9d4-77e77bf91b30'
   Author = 'Julian Easterling'
@@ -27,16 +27,10 @@
     "Operations.psm1"
   )
   FunctionsToExport = @(
-    "Approve-ServerCertificate"
-    "Approve-UserCertificate"
     "Get-ImportedCertificateRequest"
     "Get-IssuedCertificate"
     "Get-IssuedCertificateValidity"
     "Get-SubordinateAuthority"
-    "New-ServerCertificate"
-    "New-ServerCertificateRequest"
-    "New-UserCertificate"
-    "New-UserCertificateRequest"
     "Revoke-Certificate"
   )
   CmdletsToExport = @()
@@ -46,11 +40,7 @@
     "list-imported-requests"
     "list-issued-certificates"
     "list-revoked-certificates"
-    "new-server-certificate"
-    "new-user-certificate"
     "revoke-issued-certificate"
-    "sign-server-certificate"
-    "sign-user-certificate"
   )
   PrivateData = @{
     PSData = @{
