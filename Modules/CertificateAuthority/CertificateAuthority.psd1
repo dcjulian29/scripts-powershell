@@ -1,6 +1,6 @@
 @{
-  RootModule = 'CertificateAuthority.psm1'
-  ModuleVersion = '2306.1.1'
+  RootModule         = 'Authority.psm1'
+  ModuleVersion = '2306.2.1'
   Description = "A collection of commands to manage and operate a certificte authority using OpenSSL."
   GUID = '8c0c42a2-05e2-4e17-b9d4-77e77bf91b30'
   Author = 'Julian Easterling'
@@ -22,23 +22,13 @@
   ScriptsToProcess = @()
   TypesToProcess = @()
   FormatsToProcess = @()
-  NestedModules = @(
-    "Authority.psm1"
-    "Operations.psm1"
-  )
+  NestedModules = @()
   FunctionsToExport = @(
-    "Get-ImportedCertificateRequest"
-    "Get-IssuedCertificate"
     "Get-SubordinateAuthority"
   )
   CmdletsToExport = @()
   VariablesToExport = @()
-  AliasesToExport = @(
-    "Get-RevokedIssuedCertificate"
-    "list-imported-requests"
-    "list-issued-certificates"
-    "list-revoked-certificates"
-  )
+  AliasesToExport = @()
   PrivateData = @{
     PSData = @{
       Tags = @(
