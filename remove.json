@@ -1,6 +1,7 @@
 [
   "AnsibleVault",
   "BurntToast",
+  "CertificateAuthority",
   "Go",
   "Lability",
   "Microsoft.PowerShell.ConsoleGuiTools",
