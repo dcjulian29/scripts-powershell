@@ -34,7 +34,7 @@ $lastTag = git describe --tags --abbrev=0 --match "[0-9]*.[0-9]*.[0-9]*" | ForEa
 $lastVersion = [version]$lastTag
 
 $major = Get-Date -Format "yyMM"
-$minor = Get-Date -Format "d"
+$minor = (Get-Date).Day
 $patch = "1"
 
 if ($major -eq $lastVersion.Major) {
