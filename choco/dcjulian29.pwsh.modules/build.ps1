@@ -35,7 +35,7 @@ $nuspec = Join-Path -Path $PSScriptRoot -ChildPath chocolateyPackage.nuspec
 $project = "dcjulian29.pwsh.modules"
 $major = Get-Date -Format "yyMM"
 $minor = (Get-Date).Day
-$patch = "1"
+$patch = 1
 $baseUrl = "https://www.myget.org/F/dcjulian29-chocolatey/api/v2/package"
 $version = ""
 
@@ -45,9 +45,9 @@ while ($version.Length -eq 0) {
     -Uri "$baseUrl/$project/$major.$minor.$patch" `
     -Method Head
 
-    $version = "$major.$minor.$patch"
-  } catch {
     $patch++
+  } catch {
+    $version = "$major.$minor.$patch"
   }
 }
 
