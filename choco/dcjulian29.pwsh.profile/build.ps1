@@ -28,24 +28,28 @@ if (-not (Test-Path $packDir)) {
   New-Item -Path $packDir -ItemType Directory | Out-Null
 }
 
-$nuspec = Join-Path -Path ((Resolve-Path $(Split-Path $PSScriptRoot)).Path) -ChildPath chocolateyInstall.ps1
+$nuspec = Join-Path -Path ((Resolve-Path $(Split-Path $PSScriptRoot)).Path) `
+  -ChildPath chocolateyPackage.nuspec
 
 #------------------------------------------------------------------------------
-
-$lastTag = git describe --tags --abbrev=0 --match "[0-9]*.[0-9]*.[0-9]*" | ForEach-Object { $_.Trim() }
-$lastVersion = [version]$lastTag
 
 $major = Get-Date -Format "yyMM"
 $minor = (Get-Date).Day
 $patch = "1"
+$baseUrl = "https://www.myget.org/F/dcjulian29-chocolatey/api/v2/package"
+$version = ""
 
-if ($major -eq $lastVersion.Major) {
-  if ($minor -eq $lastVersion.Minor) {
-    $patch = $lastVersion.Build + 1
+while ($version.Length -eq 0) {
+  $response = Invoke-RestMethod `
+    -Uri "$baseUrl/dcjulian29.pwsh.profile/$major.$minor.$patch" `
+    -Method Head -ErrorAction SilentlyContinue
+
+  if ($response.StatusCode -eq 200) {
+    $patch++
+  } else {
+    $version = "$major.$minor.$patch"
   }
 }
-
-$version = "$major.$minor.$patch"
 
 #------------------------------------------------------------------------------
 
