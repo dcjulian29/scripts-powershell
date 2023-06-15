@@ -1,0 +1,45 @@
+name: Update Powershell Modules Packages
+
+on:
+  push:
+    paths:
+      - bin/**
+      - choco/dcjulian29.pshell.modules\**
+      - choco/dcjulian29.pwsh.modules\**
+      - modules/**
+
+  pull_request:
+    types: [opened, reopened]
+    paths:
+      - bin/**
+      - choco/dcjulian29.pshell.modules/**
+      - choco/dcjulian29.pwsh.modules/**
+      - modules/**
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.1.1
+
+      - name: Create Powershell modules package
+        run: ./choco/dcjulian29.pshell.modules/build.ps1
+
+      - name: Create Powershell Core modules package
+        run: ./choco/dcjulian29.pwsh.modules/build.ps1
+
+      - name: Publish packages
+        if: startsWith(github.ref, 'refs/heads/main')
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: 1
+        run: >
+          dotnet nuget push .packages/*.nupkg
+          --api-key '${{ secrets.NUGET_API_KEY }}'
+          --source '${{ vars.NUGET_URL }}'
+          --skip-duplicate
