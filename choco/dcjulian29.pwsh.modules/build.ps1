@@ -41,7 +41,7 @@ $version = ""
 while ($version.Length -eq 0) {
   try {
   Invoke-RestMethod `
-    -Uri "$baseUrl/dcjulian29.pwsh.profile/$major.$minor.$patch" `
+    -Uri "$baseUrl/dcjulian29.pwsh.modules/$major.$minor.$patch" `
     -Method Head | Out-Null
 
     $patch++
