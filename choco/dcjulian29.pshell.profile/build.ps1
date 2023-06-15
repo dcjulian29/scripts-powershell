@@ -39,7 +39,7 @@ $patch = "1"
 
 if ($major == $lastVersion.Major) {
   if ($minor == $lastVersion.Minor) {
-    $patch == $lastVersion.Build + 1
+    $patch = $lastVersion.Build + 1
   }
 }
 
