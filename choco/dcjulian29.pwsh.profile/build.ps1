@@ -28,8 +28,7 @@ if (-not (Test-Path $packDir)) {
   New-Item -Path $packDir -ItemType Directory | Out-Null
 }
 
-$nuspec = Join-Path -Path ((Resolve-Path $(Split-Path $PSScriptRoot)).Path) `
-  -ChildPath chocolateyPackage.nuspec
+$nuspec = Join-Path -Path $PSScriptRoot -ChildPath chocolateyPackage.nuspec
 
 #------------------------------------------------------------------------------
 
