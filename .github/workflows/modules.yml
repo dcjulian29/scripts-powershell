@@ -41,5 +41,5 @@ jobs:
         run: >
           dotnet nuget push .packages/*.nupkg
           --api-key '${{ secrets.NUGET_API_KEY }}'
-          --source '${{ vars.NUGET_URL }}'
+          --source '${{ vars.CHOCO_URL }}'
           --skip-duplicate
