@@ -4,7 +4,7 @@ trap [System.Exception] {
 }
 
 $ErrorActionPreference = "Stop"
-$baseDir = (Resolve-Path $(Split-Path -Parent $PSScriptRoot)).Path
+$baseDir = (Resolve-Path $(Split-Path -Parent (Split-Path -Parent $PSScriptRoot))).Path
 $toolDir = Join-Path -Path $baseDir -ChildPath ".tools"
 
 if (Get-Command -Name "nuget" -ErrorAction SilentlyContinue) {
