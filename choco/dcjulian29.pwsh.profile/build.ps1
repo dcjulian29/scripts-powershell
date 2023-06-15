@@ -37,8 +37,8 @@ $major = Get-Date -Format "yyMM"
 $minor = Get-Date -Format "d"
 $patch = "1"
 
-if ($major == $lastVersion.Major) {
-  if ($minor == $lastVersion.Minor) {
+if ($major -eq $lastVersion.Major) {
+  if ($minor -eq $lastVersion.Minor) {
     $patch = $lastVersion.Build + 1
   }
 }
