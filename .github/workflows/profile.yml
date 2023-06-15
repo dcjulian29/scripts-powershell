@@ -1,4 +1,4 @@
-name: Update Powershell Profile Packages
+name: Create and publish profile packages
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: Update Powershell Modules Packages
+name: Create and publish module packages
 
 on:
   push:

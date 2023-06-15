@@ -1,4 +1,4 @@
-name: Create and Publish Packages
+name: Create and publish my modules packages
 
 on:
   push:
