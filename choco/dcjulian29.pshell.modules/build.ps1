@@ -42,7 +42,7 @@ while ($version.Length -eq 0) {
   try {
   Invoke-RestMethod `
     -Uri "$baseUrl/dcjulian29.pshell.modules/$major.$minor.$patch" `
-    -Method Head | Out-Null
+    -Method Head
 
     $patch++
   } catch {
