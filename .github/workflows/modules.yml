@@ -4,16 +4,16 @@ on:
   push:
     paths:
       - 'bin/**'
-      - 'choco/dcjulian29.pshell.modules\**'
-      - 'choco/dcjulian29.pwsh.modules\**'
+      - 'choco/dcjulian29.pshell.modules/**'
+      - 'choco/dcjulian29.pwsh.modules/**'
       - 'modules/**'
 
   pull_request:
     types: [opened, reopened]
     paths:
       - 'bin/**'
-      - 'choco/dcjulian29.pshell.modules\**'
-      - 'choco/dcjulian29.pwsh.modules\**'
+      - 'choco/dcjulian29.pshell.modules/**'
+      - 'choco/dcjulian29.pwsh.modules/**'
       - 'modules/**'
 
   workflow_dispatch:
