@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>dcjulian29.pwsh.modules</id>
+    <authors>Julian Easterling</authors>
+    <owners>Julian Easterling</owners>
+    <licenseUrl>https://raw.githubusercontent.com/dcjulian29/scripts-powershell/main/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/dcjulian29/scripts-powershell</projectUrl>
+    <description>My Powershell Core modules</description>
+    <tags>dcjulian29 pwsh powershell modules</tags>
+  </metadata>
+</package>

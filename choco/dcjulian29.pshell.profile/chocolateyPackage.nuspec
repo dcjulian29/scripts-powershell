@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>dcjulian29.pshell.profile</id>
+    <version>$version$</version>
+    <authors>Julian Easterling</authors>
+    <owners>Julian Easterling</owners>
+    <licenseUrl>https://raw.githubusercontent.com/dcjulian29/scripts-powershell/main/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/dcjulian29/scripts-powershell</projectUrl>
+    <description>My Powershell profile</description>
+    <tags>dcjulian29 pshell powershell profile</tags>
+  </metadata>
+  <files>
+    <file src="chocolateyInstall.ps1" target="tools/" />
+    <file src="../../Profile.ps1" target="content/" />
+    <file src="../../Microsoft.PowerShell_profile.ps1" target="content/" />
+    <file src="../../Microsoft.VSCode_profile.ps1" target="content/" />
+    <file src="../../bin/_isElevated.cmd" target="content/" />
+    <file src="../../bin/elevate.bat" target="content/" />
+    <file src="../../bin/elevate.js" target="content/" />
+    <file src="../../bin/invis.js" target="content/" />
+  </files>
+</package>
