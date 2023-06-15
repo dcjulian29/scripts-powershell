@@ -2,9 +2,13 @@ name: Create and publish my modules packages
 
 on:
   push:
+    paths:
+      - modules/**
 
   pull_request:
     types: [opened, reopened]
+    paths:
+      - modules/**
 
   workflow_dispatch:
 
