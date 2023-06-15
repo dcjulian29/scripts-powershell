@@ -4,7 +4,7 @@ trap [System.Exception] {
 }
 
 $ErrorActionPreference = "Stop"
-$baseDir = (Resolve-Path $("$PSScriptRoot")).Path
+$baseDir = (Resolve-Path $(Split-Path -Parent $PSScriptRoot)).Path
 $toolDir = Join-Path -Path $baseDir -ChildPath ".tools"
 
 if (Get-Command -Name "nuget" -ErrorAction SilentlyContinue) {
@@ -28,6 +28,8 @@ if (-not (Test-Path $packDir)) {
   New-Item -Path $packDir -ItemType Directory | Out-Null
 }
 
+$nuspec = Join-Path -Path ((Resolve-Path $(Split-Path $PSScriptRoot)).Path) -ChildPath chocolateyInstall.ps1
+
 #------------------------------------------------------------------------------
 
 $lastTag = git describe --tags --abbrev=0 --match "[0-9]*.[0-9]*.[0-9]*" | ForEach-Object { $_.Trim() }
@@ -49,7 +51,7 @@ $version = "$major.$minor.$patch"
 
 $al = @(
   "pack"
-  "chocolateyPackage.nuspec"
+  "$nuspec"
   "-OutputDirectory $packDir"
   "-Verbosity detailed"
   "-NoPackageAnalysis"
