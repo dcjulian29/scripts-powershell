@@ -32,6 +32,7 @@ $nuspec = Join-Path -Path $PSScriptRoot -ChildPath chocolateyPackage.nuspec
 
 #------------------------------------------------------------------------------
 
+$project = "dcjulian29.pshell.modules"
 $major = Get-Date -Format "yyMM"
 $minor = (Get-Date).Day
 $patch = "1"
@@ -41,12 +42,12 @@ $version = ""
 while ($version.Length -eq 0) {
   try {
   Invoke-RestMethod `
-    -Uri "$baseUrl/dcjulian29.pshell.modules/$major.$minor.$patch" `
+    -Uri "$baseUrl/$project/$major.$minor.$patch" `
     -Method Head
 
-    $patch++
-  } catch {
     $version = "$major.$minor.$patch"
+  } catch {
+    $patch++
   }
 }
 
