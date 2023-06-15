@@ -43,7 +43,7 @@ jobs:
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
         run: >
-          dotnet nuget push '${{ github.workspace }}/.packages/*.nupkg'
+          dotnet nuget push **/*.nupkg
           --api-key '${{ secrets.NUGET_API_KEY }}'
           --source '${{ vars.CHOCO_URL }}'
           --skip-duplicate
