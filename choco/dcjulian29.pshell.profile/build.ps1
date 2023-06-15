@@ -40,13 +40,13 @@ $baseUrl = "https://www.myget.org/F/dcjulian29-chocolatey/api/v2/package"
 $version = ""
 
 while ($version.Length -eq 0) {
-  $response = Invoke-RestMethod `
+  try {
+  Invoke-RestMethod `
     -Uri "$baseUrl/dcjulian29.pshell.profile/$major.$minor.$patch" `
-    -Method Head -ErrorAction SilentlyContinue
+    -Method Head | Out-Null
 
-  if ($response.StatusCode -eq 200) {
     $patch++
-  } else {
+  } catch {
     $version = "$major.$minor.$patch"
   }
 }
