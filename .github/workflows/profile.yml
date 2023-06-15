@@ -3,9 +3,9 @@ name: Create and publish profile packages
 on:
   push:
     paths:
-      - bin/**
-      - choco/dcjulian29.pshell.profile\**
-      - choco/dcjulian29.pwsh.profile\**
+      - 'bin/**'
+      - 'choco/dcjulian29.pshell.profile\**'
+      - 'choco/dcjulian29.pwsh.profile\**'
       - Microsoft.PowerShell_profile.ps1
       - Microsoft.VSCode_profile.ps1
       - Profile.ps1
@@ -13,9 +13,9 @@ on:
   pull_request:
     types: [opened, reopened]
     paths:
-      - bin/**
-      - choco/dcjulian29.pshell.profile/**
-      - choco/dcjulian29.pwsh.profile/**
+      - 'bin/**'
+      - 'choco/dcjulian29.pshell.profile/**'
+      - 'choco/dcjulian29.pwsh.profile/**'
       - Microsoft.PowerShell_profile.ps1
       - Microsoft.VSCode_profile.ps1
       - Profile.ps1
