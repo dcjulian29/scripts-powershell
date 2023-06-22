@@ -3,12 +3,12 @@ name: Create and publish my modules packages
 on:
   push:
     paths:
-      - 'modules/**'
+      - 'modules/**/*.*'
 
   pull_request:
     types: [opened, reopened]
     paths:
-      - 'modules/**'
+      - 'modules/**/*.*'
 
   workflow_dispatch:
 
