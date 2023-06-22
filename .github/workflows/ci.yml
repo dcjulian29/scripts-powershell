@@ -3,7 +3,7 @@ name: Create and publish my modules packages
 on:
   push:
     paths:
-      - 'modules/**/*.*'
+      - 'Modules/**'
 
   pull_request:
     types: [opened, reopened]

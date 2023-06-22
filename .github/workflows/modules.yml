@@ -6,7 +6,7 @@ on:
       - 'bin/**'
       - 'choco/dcjulian29.pshell.modules/**'
       - 'choco/dcjulian29.pwsh.modules/**'
-      - 'modules/**'
+      - 'Modules/**'
 
   pull_request:
     types: [opened, reopened]
