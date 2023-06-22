@@ -1,6 +1,6 @@
 @{
   RootModule = 'Docker.psm1'
-  ModuleVersion = '2305.18.1'
+  ModuleVersion = '2306.22.1'
   Description = "A collection of commands to interact with Docker."
   GUID = '2cd0c771-ed8b-48bc-b6bc-be8540c915e4'
   Author = 'Julian Easterling'
@@ -24,6 +24,7 @@
     "Disconnect-DockerNetwork"
     "Find-Docker"
     "Find-DockerCompose"
+    "Get-ContainerIP"
     "Get-DockerComposeLog"
     "Get-DockerContainer"
     "Get-DockerContainerIds"

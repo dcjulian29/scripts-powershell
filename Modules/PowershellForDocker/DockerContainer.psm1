@@ -7,6 +7,15 @@ function Connect-DockerContainer {
   Invoke-Docker "attach $Id"
 }
 
+function Get-ContainerIP {
+  param (
+    [Parameter(Mandatory = $true)]
+    [string]$Id
+  )
+
+  Invoke-Docker "inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $Id"
+}
+
 function Get-DockerContainer {
   [CmdletBinding(DefaultParameterSetName = 'All')]
   param (
