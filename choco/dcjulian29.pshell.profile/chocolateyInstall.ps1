@@ -36,7 +36,7 @@ Write-Output "`nUpdating Execution Policies for 64-bit PowerShell..."
 
 Write-Output "`nInstalling binary scripts to '$binDir' ..."
 
-Copy-Item -Path "$srcDir/_IsElevate.cmd" -Destination $binDir -Force
+Copy-Item -Path "$srcDir/_IsElevated.cmd" -Destination $binDir -Force
 Copy-Item -Path "$srcDir/elevate.bat" -Destination $binDir -Force
 Copy-Item -Path "$srcDir/elevate.js" -Destination $binDir -Force
 Copy-Item -Path "$srcDir/invis.js" -Destination $binDir -Force
