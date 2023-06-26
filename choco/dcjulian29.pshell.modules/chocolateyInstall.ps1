@@ -11,7 +11,7 @@ if (-not (Test-Path $modulesDir)) {
   New-Item -Path $modulesDir -ItemType Directory | Out-Null
 }
 
-Write-Output "Checking modules path for '$modulesDir' ..."
+Write-Output "`nChecking modules path for '$modulesDir' ..."
 
 if ((-not ($env:PSModulePath).Contains($modulesDir))) {
   Write-Output "Adding '$modulesDir' to modules path..."
@@ -75,7 +75,7 @@ Write-Output "`n`n>>>-------->  Third-Party Modules...`n`n"
   }
 }
 
-Write-Output "`n`n>>>-------->  My modules...`n`n"
+Write-Output "`n`n>>>-------->  My Modules...`n`n"
 
 (Get-Content "$srcDir/mine.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
@@ -101,28 +101,6 @@ Write-Output (Get-InstalledModule `
   | Format-Table | Out-String)
 
 Write-Output "============================================================================"
-
-#------------------------------------------------------------------------------
-
-Write-Output "Importing all available modules to make sure assemblies are loaded..."
-Write-Warning "You can ignore any errors until the next divider."
-
-Get-Module -ListAvailable | Import-Module -ErrorAction SilentlyContinue | Out-Null
-
-Write-Output "============================================================================"
-
-Write-Output "Making sure all runtime assemblies are pre-compiled if necessary..."
-
-$env:PATH = "$([Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory());${env:PATH}"
-
-[AppDomain]::CurrentDomain.GetAssemblies() | ForEach-Object {
-  $path = $_.Location
-  if ($path) {
-    $name = Split-Path $path -Leaf
-    Write-Output "Running ngen.exe on '$name'..."
-    ngen.exe install $path /nologo | Out-Null
-  }
-}
 
 if (Test-Path "$poshDir\installed.txt") {
   Add-Content -Path "$poshDir\installed.txt" `

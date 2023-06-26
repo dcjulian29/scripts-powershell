@@ -10,4 +10,10 @@
     <description>My Powershell profile</description>
     <tags>dcjulian29 pshell powershell modules</tags>
   </metadata>
+  <files>
+    <file src="chocolateyInstall.ps1" target="tools/" />
+    <file src="mine.json" target="content/" />
+    <file src="remove.json" target="content/" />
+    <file src="thirdparty.json" target="content/" />
+  </files>
 </package>

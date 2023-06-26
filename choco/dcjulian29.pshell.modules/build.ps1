@@ -34,7 +34,7 @@ $nuspec = Join-Path -Path $PSScriptRoot -ChildPath chocolateyPackage.nuspec
 
 $project = "dcjulian29.pshell.modules"
 $major = Get-Date -Format "yyMM"
-$minor = 15 #(Get-Date).Day
+$minor = (Get-Date).Day
 $patch = 1
 $baseUrl = "https://www.myget.org/F/dcjulian29-chocolatey/api/v2/package"
 $version = ""

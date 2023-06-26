@@ -75,7 +75,7 @@ Write-Output "`n`n>>>-------->  Third-Party Modules...`n`n"
   }
 }
 
-Write-Output "`n`n>>>-------->  My modules...`n`n"
+Write-Output "`n`n>>>-------->  My Modules...`n`n"
 
 (Get-Content "$srcDir/mine.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
@@ -101,8 +101,6 @@ Write-Output (Get-InstalledModule `
   | Format-Table | Out-String)
 
 Write-Output "============================================================================"
-
-#------------------------------------------------------------------------------
 
 if (Test-Path "$pwshDir\installed.txt") {
   Add-Content -Path "$pwshDir\installed.txt" `
