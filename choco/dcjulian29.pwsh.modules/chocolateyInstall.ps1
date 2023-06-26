@@ -10,7 +10,7 @@ Write-Output ">>>-------->  Configuring Package Repositories..."
 
 Import-Module PackageManagement
 
-Get-PackageProvider -Name NuGet -ForceBootstrap
+Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
 Import-Module PowerShellGet
 
