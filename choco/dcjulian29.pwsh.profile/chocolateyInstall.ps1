@@ -18,6 +18,10 @@ if (Test-Path "$pwshDir\Profile.ps1") {
   }
 }
 
+if (-not (Test-Path -Path $pwshDir)) {
+  New-Item -Path $pwshDir -ItemType Directory -Force | Out-Null
+}
+
 Write-Output "Installing profile to '$pwshDir' ..."
 
 @(
