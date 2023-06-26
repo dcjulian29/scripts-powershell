@@ -6,7 +6,7 @@ if (-not (Test-Path $pwshDir)) {
   New-Item -Path $pwshDir -ItemType Directory | Out-Null
 }
 
-Write-Output "`n`n>>>-------->  Configuring Package Repositories...`n`n"
+Write-Output ">>>-------->  Configuring Package Repositories..."
 
 Import-Module PackageManagement
 
@@ -32,41 +32,42 @@ Get-PSRepository
 
 #------------------------------------------------------------------------------
 
-Write-Output "`n`n>>>-------->  Remove Modules...`n`n"
+Write-Output "`n>>>-------->  Remove Modules..."
 
 (Get-Content "$srcDir/remove.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
+    Write-Output ">> Removing '$_' module..."
     Uninstall-Module -Name $_ -AllVersions -Force -Confirm:$false
   }
 }
 
-Write-Output "`n`n>>>-------->  Third-Party Modules...`n`n"
+Write-Output "`n>>>-------->  Third-Party Modules..."
 
 (Get-Content "$srcDir/thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Write-Output "`n`n>> Updating third-party '$_' module...`n`n"
+    Write-Output ">> Updating third-party '$_' module..."
     Update-Module -Name $_ -Confirm:$false
   } else {
-    Write-Output "`n`n>> Installing third-party '$_' module..."
+    Write-Output ">> Installing third-party '$_' module..."
     Install-Module -Name $_ -AllowClobber
   }
 }
 
-Write-Output "`n`n>>>-------->  My Modules...`n`n"
+Write-Output "`n>>>-------->  My Modules..."
 
 (Get-Content "$srcDir/mine.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Write-Output "`n`n>> Updating my '$_' module...`n`n"
+    Write-Output ">> Updating my '$_' module..."
     Update-Module -Name $_ -Confirm:$false
   } else {
-    Write-Output "`n`n>> Installing my '$_' module...`n`n"
+    Write-Output ">> Installing my '$_' module..."
     Install-Module -Name $_ -Repository "dcjulian29-powershell" -AllowClobber -Verbose
   }
 }
 
 Pop-Location
 
-Write-Output "`n`n`nRefreshing the list of available modules..."
+Write-Output "`nRefreshing the list of available modules..."
 
 Get-Module -ListAvailable | Out-Null
 
