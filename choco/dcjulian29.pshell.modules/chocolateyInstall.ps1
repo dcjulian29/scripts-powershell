@@ -10,9 +10,7 @@ Write-Output ">>>-------->  Configuring Package Repositories..."
 
 Import-Module PackageManagement
 
-if (-not (Get-PackageProvider -Name NuGet)) {
-  Install-PackageProvider -Name NuGet -Force -Confirm:$false
-}
+Get-PackageProvider -Name NuGet -ForceBootstrap
 
 Import-Module PowerShellGet
 
@@ -32,35 +30,35 @@ Get-PSRepository
 
 #------------------------------------------------------------------------------
 
-Write-Output "`n>>>-------->  Remove Modules..."
+Write-Output "`n-------->  Remove Modules..."
 
 (Get-Content "$srcDir/remove.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Write-Output ">> Removing '$_' module..."
+    Write-Output "`r-->  Removing '$_' module..."
     Uninstall-Module -Name $_ -AllVersions -Force -Confirm:$false
   }
 }
 
-Write-Output "`n>>>-------->  Third-Party Modules..."
+Write-Output "`n-------->  Third-Party Modules..."
 
 (Get-Content "$srcDir/thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Write-Output ">> Updating third-party '$_' module..."
+    Write-Output "`r-->  Updating third-party '$_' module..."
     Update-Module -Name $_ -Confirm:$false
   } else {
-    Write-Output ">> Installing third-party '$_' module..."
+    Write-Output "`r-->  Installing third-party '$_' module..."
     Install-Module -Name $_ -AllowClobber
   }
 }
 
-Write-Output "`n>>>-------->  My Modules..."
+Write-Output "`n-------->  My Modules..."
 
 (Get-Content "$srcDir/mine.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Write-Output ">> Updating my '$_' module..."
+    Write-Output "`r-->  Updating my '$_' module..."
     Update-Module -Name $_ -Confirm:$false
   } else {
-    Write-Output ">> Installing my '$_' module..."
+    Write-Output "`r-->  Installing my '$_' module..."
     Install-Module -Name $_ -Repository "dcjulian29-powershell" -AllowClobber
   }
 }
