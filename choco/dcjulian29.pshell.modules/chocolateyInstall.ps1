@@ -1,40 +1,17 @@
 $srcDir = Join-Path -Path (Split-Path -Parent $PSScriptRoot) -ChildPath content
 $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
 $poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
-$modulesDir = Join-Path -Path $poshDir -ChildPath Modules
 
 if (-not (Test-Path $poshDir)) {
   New-Item -Path $poshDir -ItemType Directory | Out-Null
 }
-
-if (-not (Test-Path $modulesDir)) {
-  New-Item -Path $modulesDir -ItemType Directory | Out-Null
-}
-
-Write-Output "`nChecking modules path for '$modulesDir' ..."
-
-if ((-not ($env:PSModulePath).Contains($modulesDir))) {
-  Write-Output "Adding '$modulesDir' to modules path..."
-
-  $userPath = $modulesDir + ";" `
-    + [Environment]::GetEnvironmentVariable('PSModulePath', 'User')
-  $machinePath = [Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')
-
-  $env:PSModulePath = $userPath + ";" + $machinePath
-
-  Get-Module -ListAvailable | Out-Null
-
-  Invoke-Expression "[Environment]::SetEnvironmentVariable('PSModulePath', '$userPath', 'User')"
-}
-
-#------------------------------------------------------------------------------
 
 Write-Output "`n`n>>>-------->  Configuring Package Repositories...`n`n"
 
 Import-Module PackageManagement
 
 if (-not (Get-PackageProvider -Name NuGet)) {
-  Install-PackageProvider -Name NuGet
+  Install-PackageProvider -Name NuGet -Force -Confirm:$false
 }
 
 Import-Module PowerShellGet
@@ -59,7 +36,7 @@ Write-Output "`n`n>>>-------->  Remove Modules...`n`n"
 
 (Get-Content "$srcDir/remove.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Uninstall-Module -Name $_ -AllVersions -Force -Confirm:$false -Verbose
+    Uninstall-Module -Name $_ -AllVersions -Force -Confirm:$false
   }
 }
 
@@ -68,10 +45,10 @@ Write-Output "`n`n>>>-------->  Third-Party Modules...`n`n"
 (Get-Content "$srcDir/thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
     Write-Output "`n`n>> Updating third-party '$_' module...`n`n"
-    Update-Module -Name $_ -Confirm:$false -Verbose
+    Update-Module -Name $_ -Confirm:$false
   } else {
     Write-Output "`n`n>> Installing third-party '$_' module..."
-    Install-Module -Name $_ -AllowClobber -Verbose
+    Install-Module -Name $_ -AllowClobber
   }
 }
 
@@ -80,10 +57,10 @@ Write-Output "`n`n>>>-------->  My Modules...`n`n"
 (Get-Content "$srcDir/mine.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
     Write-Output "`n`n>> Updating my '$_' module...`n`n"
-    Update-Module -Name $_ -Confirm:$false -Verbose
+    Update-Module -Name $_ -Confirm:$false
   } else {
     Write-Output "`n`n>> Installing my '$_' module...`n`n"
-    Install-Module -Name $_ -Repository "dcjulian29-powershell" -AllowClobber -Verbose
+    Install-Module -Name $_ -Repository "dcjulian29-powershell" -AllowClobber
   }
 }
 
