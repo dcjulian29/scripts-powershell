@@ -9,6 +9,9 @@
     <projectUrl>https://github.com/dcjulian29/scripts-powershell</projectUrl>
     <description>My Powershell Core modules</description>
     <tags>dcjulian29 pwsh powershell modules</tags>
+    <dependencies>
+      <dependency id="powershell-core" />
+    </dependencies>
   </metadata>
   <files>
     <file src="chocolateyInstall.ps1" target="tools/" />
