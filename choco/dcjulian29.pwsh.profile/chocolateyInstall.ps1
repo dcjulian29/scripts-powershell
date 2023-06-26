@@ -34,8 +34,9 @@ Write-Output "Installing profile to '$pwshDir' ..."
 
 if (Test-Path "$pwshDir\installed.txt") {
   Add-Content -Path "$pwshDir\installed.txt" `
-    -Value "Updated: ${env:ChocolateyPackageVersion} on $(Get-Date)"
-} else {
+    -Value "$(Get-Date): profile-${env:ChocolateyPackageVersion}"
+}
+else {
   Set-Content -Path "$pwshDir\installed.txt" `
-    -Value "Installed: ${env:ChocolateyPackageVersion} on $(Get-Date)"
+    -Value "$(Get-Date): profile-${env:ChocolateyPackageVersion}"
 }
