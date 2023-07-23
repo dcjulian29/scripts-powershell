@@ -61,7 +61,7 @@ function Invoke-ElasticSearchApi {
         $response = $_.ErrorDetails.Message
 
         if (-not $Raw) {
-            $response = $response | ConvertFrom-Json
+            $response = $response | ConvertFrom-Json -AsHashTable
         }
     }
 
