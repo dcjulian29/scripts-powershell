@@ -32,7 +32,7 @@ $nuspec = Join-Path -Path $PSScriptRoot -ChildPath chocolateyPackage.nuspec
 
 #------------------------------------------------------------------------------
 
-$project = "dcjulian29.pshell.modules"
+$project = "dcjulian29.psmodules"
 $major = Get-Date -Format "yyMM"
 $minor = (Get-Date).Day
 $patch = 1

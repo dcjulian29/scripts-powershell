@@ -1,12 +1,9 @@
 $srcDir = Join-Path -Path (Split-Path -Parent $PSScriptRoot) -ChildPath content
 $docDir = Join-Path -Path $env:UserProfile -ChildPath Documents
+$pwshDir = Join-Path -Path $docDir -ChildPath PowerShell
 $poshDir = Join-Path -Path $docDir -ChildPath WindowsPowerShell
 
-if (-not (Test-Path $poshDir)) {
-  New-Item -Path $poshDir -ItemType Directory | Out-Null
-}
-
-Write-Output "-------->  Configuring Package Repositories..."
+Write-Output " `n-------->  Configuring Package Repositories..."
 
 Import-Module PackageManagement
 
@@ -34,7 +31,7 @@ Write-Output " `n-------->  Remove Modules..."
 
 (Get-Content "$srcDir/remove.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Write-Output "   -->  Removing '$_' module..."
+    Write-Output " `n     --->  Removing '$_' module..."
     Uninstall-Module -Name $_ -AllVersions -Force -Confirm:$false
   }
 }
@@ -43,10 +40,10 @@ Write-Output " `n-------->  Third-Party Modules..."
 
 (Get-Content "$srcDir/thirdparty.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Write-Output "   -->  Updating third-party '$_' module..."
+    Write-Output " `n     --->  Updating third-party '$_' module..."
     Update-Module -Name $_ -Confirm:$false
   } else {
-    Write-Output "   -->  Installing third-party '$_' module..."
+    Write-Output " `n     --->  Installing third-party '$_' module..."
     Install-Module -Name $_ -AllowClobber
   }
 }
@@ -55,10 +52,10 @@ Write-Output " `n-------->  My Modules..."
 
 (Get-Content "$srcDir/mine.json" | ConvertFrom-Json) | ForEach-Object {
   if (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue) {
-    Write-Output "   -->  Updating my '$_' module..."
+    Write-Output " `n     --->  Updating my '$_' module..."
     Update-Module -Name $_ -Confirm:$false
   } else {
-    Write-Output "   -->  Installing my '$_' module..."
+    Write-Output " `n     --->  Installing my '$_' module..."
     Install-Module -Name $_ -Repository "dcjulian29-powershell" -AllowClobber
   }
 }
@@ -78,10 +75,22 @@ Write-Output (Get-InstalledModule `
 
 Write-Output "============================================================================"
 
-if (Test-Path "$poshDir\installed.txt") {
-  Add-Content -Path "$poshDir\installed.txt" `
-    -Value "$(Get-Date): modules-${env:ChocolateyPackageVersion}"
-} else {
-  Set-Content -Path "$poshDir\installed.txt" `
-    -Value "$(Get-Date): modules-${env:ChocolateyPackageVersion}"
+if (Test-Path $pwshDir) {
+  if (Test-Path "$pwshDir\installed.txt") {
+    Add-Content -Path "$pwshDir\installed.txt" `
+      -Value "$(Get-Date): psmodules-${env:ChocolateyPackageVersion}"
+  } else {
+    Set-Content -Path "$pwshDir\installed.txt" `
+      -Value "$(Get-Date): psmodules-${env:ChocolateyPackageVersion}"
+  }
+}
+
+if (Test-Path $poshDir) {
+  if (Test-Path "$poshDir\installed.txt") {
+    Add-Content -Path "$poshDir\installed.txt" `
+      -Value "$(Get-Date): psmodules-${env:ChocolateyPackageVersion}"
+  } else {
+    Set-Content -Path "$poshDir\installed.txt" `
+      -Value "$(Get-Date): psmodules-${env:ChocolateyPackageVersion}"
+  }
 }
