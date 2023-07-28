@@ -4,16 +4,14 @@ on:
   push:
     paths:
       - 'bin/**'
-      - 'choco/dcjulian29.pshell.modules/**'
-      - 'choco/dcjulian29.pwsh.modules/**'
+      - 'choco/dcjulian29.psmodules/**'
       - 'Modules/**'
 
   pull_request:
     types: [opened, reopened]
     paths:
       - 'bin/**'
-      - 'choco/dcjulian29.pshell.modules/**'
-      - 'choco/dcjulian29.pwsh.modules/**'
+      - 'choco/dcjulian29.psmodules/**'
       - 'modules/**'
 
   workflow_dispatch:
@@ -29,10 +27,7 @@ jobs:
         uses: NuGet/setup-nuget@v1.1.1
 
       - name: Create Powershell modules package
-        run: ./choco/dcjulian29.pshell.modules/build.ps1
-
-      - name: Create Powershell Core modules package
-        run: ./choco/dcjulian29.pwsh.modules/build.ps1
+        run: ./choco/dcjulian29.psmodules/build.ps1
 
       - name: Publish packages
         if: startsWith(github.ref, 'refs/heads/main')
