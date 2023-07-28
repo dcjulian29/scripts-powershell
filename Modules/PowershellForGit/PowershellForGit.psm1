@@ -51,6 +51,36 @@ function Invoke-FetchGitRepository {
 Set-Alias Fetch-GitRepository Invoke-FetchGitRepository
 Set-Alias gfetch Invoke-FetchGitRepository
 
+function Invoke-Git {
+  param(
+    [Parameter(Mandatory = $true, Position = 0, ValueFromRemainingArguments = $true)]
+    [string] $Command
+  )
+
+  try {
+    $exit = 0
+    $path = [System.IO.Path]::GetTempFileName()
+
+    Invoke-Expression "git $Command 2> $path"
+    $exit = $LASTEXITCODE
+
+    if ( $exit -gt 0 ) {
+      Write-Error (Get-Content $path).ToString()
+    }
+    else {
+      Get-Content $path | Select-Object -First 1
+    }
+  }
+  catch {
+    Write-Host "Error: $_`n$($_.ScriptStackTrace)"
+  }
+  finally {
+    if ( Test-Path $path ) {
+      Remove-Item $path
+    }
+  }
+}
+
 function Invoke-GitAdd {
   & "$(Find-Git)" add $("$args")
 }
