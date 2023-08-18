@@ -4,19 +4,19 @@
 
 function Find-Git {
   First-Path `
-    ((Get-Command git -ErrorAction SilentlyContinue).Source) `
+    ((Get-Command git.exe -ErrorAction SilentlyContinue).Source) `
     ("${env:ProgramFiles}\Git\bin\git.exe")
 }
 
 function Find-GraphicalGit {
   First-Path `
-    ((Get-Command git-gui -ErrorAction SilentlyContinue).Source) `
+    ((Get-Command git-gui.exe -ErrorAction SilentlyContinue).Source) `
     ("${env:ProgramFiles}\Git\cmd\git-gui.exe")
 }
 
 function Find-GraphicalGitHistory {
   First-Path `
-    ((Get-Command gitk -ErrorAction SilentlyContinue).Source) `
+    ((Get-Command gitk.exe -ErrorAction SilentlyContinue).Source) `
     ("${env:ProgramFiles}\Git\cmd\gitk.exe")
 }
 
@@ -253,7 +253,7 @@ function Start-GitGraphicalInterface {
     & "$(Find-GraphicalGit)"
 }
 
-Set-Alias gitk Start-GitGraphicalInterface
+Set-Alias git-gui Start-GitGraphicalInterface
 
 function Test-GitCommit {
   param (
