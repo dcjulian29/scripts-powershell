@@ -1,19 +1,5 @@
 [
-  "7Zip4Powershell",
-  "GitlabCli",
-  "Grok",
   "Microsoft.PowerShell.SecretManagement",
   "Microsoft.PowerShell.SecretStore",
-  "platyPS",
-  "Posh-ACME",
-  "PowerShellForGitHub",
-  "PsIni",
-  "PSParseHTML",
-  "PSRule",
-  "PSScriptAnalyzer",
-  "PSWriteExcel",
-  "PSWriteHTML",
-  "PSWritePDF",
-  "PSWriteWord",
-  "RobocopyPS"
+  "PSScriptAnalyzer"
 ]
