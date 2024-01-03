@@ -31,6 +31,9 @@ if ((Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue).Version.Maj
   }
 }
 
+# Turn off the very broken and bad implementation of autocomplete provided by PSReadLine
+Set-PSReadLineOption -PredictionSource None
+
 #------------------------------------------------------------------------------
 
 if (Get-Command winget -ErrorAction SilentlyContinue) {
