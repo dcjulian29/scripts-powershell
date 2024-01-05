@@ -28,11 +28,12 @@ if ((Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue).Version.Maj
   if (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue) {
     Set-PSReadLineOption -Colors @{ "Parameter" = "$([char]0x1b)[1;35m"  }
     Set-PSReadLineOption -Colors @{ "Operator" = "$([char]0x1b)[1;32m"  }
+
+    # Turn off the very broken and bad implementation of autocomplete provided by PSReadLine
+    Set-PSReadLineOption -PredictionSource None
   }
 }
 
-# Turn off the very broken and bad implementation of autocomplete provided by PSReadLine
-Set-PSReadLineOption -PredictionSource None
 
 #------------------------------------------------------------------------------
 
