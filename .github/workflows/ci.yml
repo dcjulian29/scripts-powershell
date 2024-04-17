@@ -1,14 +1,16 @@
-name: Create and publish my modules packages
+name: Create and publish my packages
 
 on:
   push:
     paths:
+      - 'choco/dcjulian29.psmodules/**'
       - 'Modules/**'
 
   pull_request:
     types: [opened, reopened]
     paths:
-      - 'modules/**/*.*'
+      - 'choco/dcjulian29.psmodules/**'
+      - 'modules/**'
 
   workflow_dispatch:
 
@@ -22,15 +24,28 @@ jobs:
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v1.1.1
 
-      - name: Create packages
+      - name: Create individual module packages
         run: ./choco/build.ps1
 
-      - name: Publish packages
+      - name: Create chocolatey package
+        run: ./choco/dcjulian29.psmodules/build.ps1
+
+      - name: Publish module packages
         if: startsWith(github.ref, 'refs/heads/main')
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
         run: >
-          dotnet nuget push **/*.nupkg
+          dotnet nuget push .packages/*.nupkg
           --api-key '${{ secrets.NUGET_API_KEY }}'
           --source '${{ vars.NUGET_URL }}'
+          --skip-duplicate
+
+      - name: Publish chocolatey package
+        if: startsWith(github.ref, 'refs/heads/main')
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: 1
+        run: >
+          dotnet nuget push .meta/*.nupkg
+          --api-key '${{ secrets.NUGET_API_KEY }}'
+          --source '${{ vars.CHOCO_URL }}'
           --skip-duplicate

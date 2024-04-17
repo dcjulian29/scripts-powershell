@@ -22,7 +22,7 @@ if (Get-Command -Name "nuget" -ErrorAction SilentlyContinue) {
   }
 }
 
-$packDir = Join-Path -Path $baseDir -ChildPath ".packages"
+$packDir = Join-Path -Path $baseDir -ChildPath ".meta"
 
 if (-not (Test-Path $packDir)) {
   New-Item -Path $packDir -ItemType Directory | Out-Null

@@ -1,12 +1,6 @@
-# My PowerShell
+# My PowerShell Modules
 
-![Issues](https://img.shields.io/github/issues-raw/dcjulian29/scripts-powershell)
-
-## My PowerShell profile and module packages
-
-![Version](https://img.shields.io/myget/dcjulian29-chocolatey/v/dcjulian29.pshell.profile?label=Profile-Powershell) ![Version](https://img.shields.io/myget/dcjulian29-chocolatey/v/dcjulian29.pwsh.profile?label=Profile-PowershellCore) ![Version](https://img.shields.io/myget/dcjulian29-chocolatey/v/dcjulian29.pshell.modules?label=Modules-Powershell) ![Version](https://img.shields.io/myget/dcjulian29-chocolatey/v/dcjulian29.pwsh.modules?label=Modules-PowershellCore)
-
-## My Published modules
+![Issues](https://img.shields.io/github/issues-raw/dcjulian29/scripts-powershell) ![Version](https://img.shields.io/myget/dcjulian29-chocolatey/v/dcjulian29.psmodules?label=Chocolatey%20Package)
 
 | Module  | Version  |
 | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
