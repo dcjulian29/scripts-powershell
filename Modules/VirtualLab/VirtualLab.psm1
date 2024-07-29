@@ -1,9 +1,13 @@
-﻿function LatestIsoFile {
+﻿$script:ISODir = "$env:USERPROFILE\vm\iso"
+$script:VHDXDir = "$env:USERPROFILE\vm\vhdx"
+$script:ETCDir = "$env:USERPROFILE\vm\etc"
+
+function LatestIsoFile {
     param (
         [string]$Pattern
     )
 
-    $isoDir = "$env:SystemDrive\Virtual Machines\ISO"
+    $isoDir = "$script:ISODir\"
 
     $latest = Get-ChildItem -Path $IsoDir `
         | Where-Object { $_.Name -match "^$($Pattern).*" } `
@@ -56,13 +60,13 @@ function New-LabDomainController {
 
     $ComputerName = $ComputerName.ToUpperInvariant()
     $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\$ComputerName.vhdx"
-    $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.firstdc.xml"
+    $unattend = "$script:ETCDir\unattend.firstdc.xml"
 
     $netBios = $DomainName.Substring(0, $DomainName.IndexOf('.')).ToUpperInvariant()
 
     Uninstall-VirtualMachine $ComputerName
 
-    $reference = "$env:SystemDrive\Virtual Machines\BaseVHDX\Win2022Base.vhdx"
+    $reference = "$script:VHDXDir\Win2022Base.vhdx"
 
     New-DifferencingVHDX -ReferenceDisk $reference -VhdxFile $vhdx
 
@@ -472,7 +476,7 @@ function New-LabWindowsServer {
         $switch = "LAB"
     }
 
-    Push-Location "$env:SystemDrive\Virtual Machines\BaseVHDX"
+    Push-Location "$script:VHDXDir"
 
     $baseImage = "$((Get-ChildItem -Path "Win${Version}BaseCore.vhdx").FullName)"
 
@@ -491,7 +495,7 @@ function New-LabWindowsServer {
             $Credentials = $(Get-Credential -Message "Enter Lab Domain Administrator Account (UPN)")
         }
 
-        $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.server.domain.xml"
+        $unattend = "$script:ETCDir\unattend.server.domain.xml"
         $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)"
         Copy-Item -Path $unattend -Destination $unattendFile  -Force
 
@@ -501,7 +505,7 @@ function New-LabWindowsServer {
         (Get-Content $unattendFile).Replace("Administrator", $Credentials.UserName) `
             | Set-Content $unattendFile
     } else {
-        $unattendFile = "${env:SYSTEMDRIVE}\etc\vm\unattend.server.xml"
+        $unattendFile = "$script:ETCDir\unattend.server.xml"
     }
 
     Write-Output "Inserting Unattend File...`n"
@@ -542,8 +546,8 @@ function New-LabWindowsWorkstation {
     $ErrorActionPreference = "Stop";
 
     $ComputerName = $ComputerName.ToUpperInvariant()
-    $startScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
-    $baseImage = "$env:SystemDrive\Virtual Machines\BaseVHDX\Win11Base.vhdx"
+    $startScript = "$script:ETCDir\startup.ps1"
+    $baseImage = "$script:VHDXDir\Win11Base.vhdx"
     $vhdx = "$((Get-VMHost).VirtualHardDiskPath)\$ComputerName.vhdx"
     $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
 
@@ -568,9 +572,9 @@ function New-LabWindowsWorkstation {
     New-DifferencingVHDX -ReferenceDisk $baseImage -VhdxFile "$vhdx"
 
     if ($DomainJoin) {
-        $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.workstation.domain.xml"
+        $unattend = "$script:ETCDir\unattend.workstation.domain.xml"
     } else {
-        $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.workstation.xml"
+        $unattend = "$script:ETCDir\unattend.workstation.xml"
     }
 
     $unattendFile = "$env:TEMP\$(Split-Path $unattend -Leaf)"
