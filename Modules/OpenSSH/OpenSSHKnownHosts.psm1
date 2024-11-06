@@ -72,10 +72,12 @@ function New-OpenSSHKey {
     [Parameter(Mandatory = $true, Position = 0)]
     [Alias("Host", "RemoteHost")]
     [string] $ComputerName,
-    [string] $User = "${env:USERNAME}"
+    [string] $User = "${env:USERNAME}",
+    [string] $KeyType = "ecdsa",
+    [int] $KeySize = 521
   )
 
-  & C:\Windows\System32\OpenSSH\ssh-keygen.exe -t ecdsa -b 521 -m PEM `
+  & C:\Windows\System32\OpenSSH\ssh-keygen.exe -t $KeyType -b $KeySize -m PEM `
     -C "$User@$ComputerName" -N "" -f "${env:SystemDrive}/etc/ssh/$ComputerName.key"
 }
 
