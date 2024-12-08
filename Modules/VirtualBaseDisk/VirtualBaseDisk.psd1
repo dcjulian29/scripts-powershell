@@ -1,6 +1,6 @@
 @{
   RootModule = 'VirtualBaseDisk.psm1'
-  ModuleVersion = '2204.29.1'
+  ModuleVersion = '2212.7.1'
   Description = "A collection of commands to create Windows VHDX file that can be used with differencing disks."
   GUID = 'ed6e65e3-8813-426c-aa4c-b0373081f509'
   Author = 'Julian Easterling'
@@ -16,7 +16,7 @@
     "Get-WindowsImagesInISO"
     "Get-WindowsImagesInWIM"
     "New-BaseVhdxDisk"
-    "New-BaseServerVhdxDisks"
+    "New-BaseServerVhdxDisk"
     "New-DevBaseVhdxDisk"
   )
   CmdletsToExport = @()
