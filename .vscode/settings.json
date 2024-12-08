@@ -1,11 +1,32 @@
 {
   "cSpell.words": [
+    "Adcs",
+    "ADSI",
+    "choco",
+    "cmdletbinding",
+    "contoso",
     "dcjulian",
+    "devvm",
     "dism",
+    "firstdc",
+    "HKLM",
     "hyperv",
+    "LNXDEV",
+    "MSVM",
+    "myvm",
+    "Nsense",
+    "NTFS",
+    "pshellcmd",
+    "pshellexe",
+    "psobject",
     "Robocopy",
+    "Rsat",
     "sshellc",
+    "TCPIP",
     "UEFI",
-    "Vhdx"
+    "unattend",
+    "Vhdx",
+    "vmconnect",
+    "vmms"
   ]
 }

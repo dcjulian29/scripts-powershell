@@ -1,4 +1,6 @@
-﻿function Install-DevVmPackage {
+﻿$Script:VhdxLocation = (Get-VMHost).VirtualHardDiskPath
+
+function Install-DevVmPackage {
     param(
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -17,13 +19,6 @@
 
     $Command = @"
         Start-Transcript "$logFile"
-
-        # For some reason, my PSModules environment keeps getting reset installing packages,
-        # so let explictly add it each and everytime
-        `$env:PSModulePath = "`$(Split-Path `$profile)\Modules;`$(`$env:PSModulePath)"
-        `$env:PSModulePath = "`$(Split-Path `$profile)\MyModules;`$(`$env:PSModulePath)"
-
-        Get-Module -ListAvailable | Out-Null
 
         $choco
 
@@ -54,16 +49,16 @@
 function New-DevVM {
     $errorPreviousAction = $ErrorActionPreference
     $ErrorActionPreference = "Stop";
-    $startScript = "${env:SYSTEMDRIVE}\etc\vm\startup.ps1"
-    $unattend = "${env:SYSTEMDRIVE}\etc\vm\unattend.xml"
+    $startScript = "$env:USERPROFILE\vm\etc\startup.ps1"
+    $unattend = "$env:USERPROFILE\vm\etc\unattend.xml"
     $computerName = "$(($env:COMPUTERNAME).ToUpper())DEV"
     $vhdx = "$computerName.vhdx"
     $password = $(Get-Credential -Message "Enter Password for VM..." -UserName "julian")
-    $startLayout = "$($env:SYSTEMDRIVE)\etc\vm\StartScreenLayout.xml"
+    $startLayout = "$env:USERPROFILE\vm\etc\StartScreenLayout.xml"
 
     Uninstall-VirtualMachine $computerName
 
-    $baseImage = (Get-ChildItem -Path "$env:SytemDrive\Virtual Machines\BaseVHDX" `
+    $baseImage = (Get-ChildItem -Path "$env:USERPROFILE\vm\vhdx" `
         | Where-Object { $_.Name -match "^Win11BaseInsider-.*" } `
         | Sort-Object Name -Descending `
         | Select-Object -First 1).FullName
@@ -85,7 +80,7 @@ function New-DevVM {
     Move-StartLayoutToVM -VhdxFile $vhdx -LayoutFile $startLayout | Out-Null
 
     $destination = "Windows\Setup\Scripts\"
-    $source = "${env:SYSTEMDRIVE}\etc\syncthing"
+    $source = "${env:USERPROFILE}\etc\syncthing"
     $c = "$source\$computerName"
 
     if (Test-Path "$c\config.xml") {
@@ -93,14 +88,6 @@ function New-DevVM {
           "$c\config.xml"
           "$c\key.pem"
           "$c\cert.pem"
-      )
-    } else {
-      $files = @(
-          "$c.id"
-          "$source\server.id"
-          "$source\server.name"
-          "$c.key"
-          "$c.cert"
       )
     }
 
@@ -142,8 +129,8 @@ function New-LinuxDevVM {
   param (
     [Parameter(ParameterSetName = "Ubuntu")]
     [Switch]$UseUbuntu,
-    [Parameter(ParameterSetName = "Xubuntu")]
-    [Switch]$UseXubuntu,
+    [Parameter(ParameterSetName = "Debian")]
+    [Switch]$UseDebian,
     [Parameter(ParameterSetName = "LinuxMint")]
     [Switch]$UseMint,
     [Parameter(ParameterSetName="Default")]
@@ -158,14 +145,14 @@ function New-LinuxDevVM {
   $vhdx = "$computerName.vhdx"
 
   if (-not $IsoFilePath) {
-    $isoDir = "$env:SystemDrive\Virtual Machines\ISO"
+    $isoDir = "$env:USERPROFILE\vm\iso"
 
     $latest = Get-ChildItem -Filter "pop-os_*" -Path $isoDir `
       | Sort-Object Name -Descending `
       | Select-Object -First 1
 
-    if ($UseXubuntu) {
-      $latest = Get-ChildItem -Filter "xubuntu-*" -Path $isoDir `
+    if ($UseDebian) {
+      $latest = Get-ChildItem -Filter "debian-*" -Path $isoDir `
         | Sort-Object Name -Descending `
         | Select-Object -First 1
     }

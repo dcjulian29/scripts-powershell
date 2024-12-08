@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2020.2.2.1'
+    ModuleVersion = '2412.7.1'
     GUID = 'e6dcee49-99f8-4788-b4ca-786ec17b7aba'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -20,7 +20,6 @@
         "Move-VMStartUpScriptFileToVM"
         "New-DataVhdx"
         "New-DifferencingVhdx"
-        "New-SqlDataVhdx"
         "New-SystemVhdx"
         "New-UnattendFile"
         "New-VirtualMachine"

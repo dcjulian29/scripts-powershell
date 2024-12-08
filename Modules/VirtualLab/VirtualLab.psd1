@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '2407.28.1'
+    ModuleVersion = '2412.7.1'
     GUID = 'fa07d906-a7c4-4a32-a845-6b54a7cb04d6'
     Author = 'Julian Easterling'
     PowerShellVersion = '3.0'
@@ -7,11 +7,11 @@
     TypesToProcess = @()
     FormatsToProcess = @()
     FunctionsToExport = @(
-        "New-LabCentOSServer"
         "New-LabDebianServer"
         "New-LabDomainController"
         "New-LabFirewall"
         "New-LabMintWorkstation"
+        "New-LabRockyServer"
         "New-LabUbuntuServer"
         "New-LabUbuntuMateWorkstation"
         "New-LabUbuntuWorkstation"

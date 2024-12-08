@@ -21,19 +21,6 @@ function LatestIsoFile {
 
 ###############################################################################
 
-function New-LabCentOSServer {
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        $ComputerName,
-        [switch]$UseDefaultSwitch
-    )
-
-    $IsoFilePath = LatestIsoFile "CentOS-"
-    New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath `
-        -UseDefaultSwitch:$UseDefaultSwitch.IsPresent
-}
-
 function New-LabDebianServer {
     param (
         [Parameter(Mandatory=$true)]
@@ -335,6 +322,19 @@ function New-LabMintWorkstation {
         -UseDefaultSwitch:$UseDefaultSwitch.IsPresent
 }
 
+function New-LabRockyServer {
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        $ComputerName,
+        [switch]$UseDefaultSwitch
+    )
+
+    $IsoFilePath = LatestIsoFile "Rocky-"
+    New-LabVMFromISO -ComputerName $ComputerName -IsoFilePath $IsoFilePath `
+        -UseDefaultSwitch:$UseDefaultSwitch.IsPresent
+}
+
 function New-LabUbuntuServer {
     param (
         [Parameter(Mandatory=$true)]
@@ -422,7 +422,7 @@ function New-LabVMFromISO {
 
     Pop-Location
 
-    Write-Output "Starting Virtual Macine..."
+    Write-Output "Starting Virtual Machine..."
     Start-VM -VMName $ComputerName
 
     Start-Sleep -Seconds 2
@@ -603,7 +603,7 @@ function New-LabWindowsWorkstation {
 
     Pop-Location
 
-    Write-Output "Starting Virtual Macine..."
+    Write-Output "Starting Virtual Machine..."
     Start-VM -VMName $ComputerName
 
     Start-Sleep -Seconds 2

@@ -135,24 +135,6 @@ function Get-VirtualMachineStatus {
         | Format-Table -AutoSize
 }
 
-function Initialize-WorkstationHyperV {
-    $vm = "${env:SYSTEMDRIVE}\Virtual Machines"
-
-    if (-not (Test-Path -Path $vm)) {
-        New-Item -Path $vm -ItemType Directory | Out-Null
-    }
-
-    if (-not (Test-Path -Path "$vm\Discs")) {
-        New-Item -Path "$vm\Discs" -ItemType Directory | Out-Null
-    }
-
-    if (-not (Test-Path -Path "$vm\ISO")) {
-        New-Item -Path "$vm\ISO" -ItemType Directory | Out-Null
-    }
-
-    Set-VMHost -VirtualMachinePath $vm -VirtualHardDiskPath "$vm\Discs"
-}
-
 function Mount-Vhdx {
     param (
         [Parameter(Mandatory=$true)]
@@ -369,39 +351,6 @@ function New-DifferencingVhdx {
     New-VHD –Path $VhdxFile -Differencing –ParentPath $ReferenceDisk
 }
 
-function New-SqlDataVhdx {
-    [Cmdletbinding()]
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $VhdxFile,
-        [UInt64] $DiskSize = 100GB
-    )
-
-    if (-not $(Assert-Elevation)) { return }
-
-    Write-Output "Creating a SQL Data Disk [$($VhdxFile)] sized [$($DiskSize)]"
-    New-VHD -Path $VhdxFile -SizeBytes $DiskSize -Dynamic
-
-    $fullPath = Get-FullFilePath $VhdxFile
-
-    Mount-DiskImage -ImagePath $fullPath
-
-    $diskNumber = (Get-DiskImage -ImagePath $fullPath | Get-Disk).Number
-
-    Write-Output "Initializing SQL Data Disk..."
-
-    Initialize-Disk -Number $diskNumber -PartitionStyle GPT
-    $partition = New-Partition -DiskNumber $diskNumber -UseMaximumSize `
-        -GptType '{ebd0a0a2-b9e5-4433-87c0-68b6b72699c7}'
-
-    Write-Output "Formatting SQL Data Disk..."
-
-    Format-Volume -FileSystem ReFS -Partition $partition -Confirm:$false -AllocationUnitSize 64KB
-
-    Dismount-DiskImage -ImagePath $fullPath
-}
-
 function New-SystemVhdx {
     param (
         [Parameter(Mandatory=$true)]
@@ -599,5 +548,4 @@ function Uninstall-VirtualMachine {
             Remove-Item -Path $vhdx -Confirm
         }
     }
-
 }
