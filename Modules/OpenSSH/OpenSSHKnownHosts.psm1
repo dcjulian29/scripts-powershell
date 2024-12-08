@@ -73,12 +73,13 @@ function New-OpenSSHKey {
     [Alias("Host", "RemoteHost")]
     [string] $ComputerName,
     [string] $User = "${env:USERNAME}",
+    [ValidateSet("rsa", "ecdsa", "ed25519", IgnoreCase=$false)]
     [string] $KeyType = "ecdsa",
     [int] $KeySize = 521
   )
 
   & C:\Windows\System32\OpenSSH\ssh-keygen.exe -t $KeyType -b $KeySize -m PEM `
-    -C "$User@$ComputerName" -N "" -f "${env:SystemDrive}/etc/ssh/$ComputerName.key"
+    -C "$User@$ComputerName" -N "" -f "${env:USERPROFILE}/.ssh/$ComputerName.key"
 }
 
 function Remove-OpenSSHKnownHost {
