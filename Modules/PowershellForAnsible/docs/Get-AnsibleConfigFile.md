@@ -36,7 +36,7 @@ host_key_checking           = false
 inventory                   = ./inventories/hosts.ini
 log_path                    = ./ansible.log
 roles_path                  = ./roles
-stdout_callback             = community.general.yaml
+callback_result_format      = yaml
 use_persistent_connections  = true
 verbosity                   = 1
 
