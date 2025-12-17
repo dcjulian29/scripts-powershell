@@ -18,7 +18,7 @@ function Get-BingWallpaper {
 
     $wallpaper = '{0}/HPImageArchive.aspx?format=xml&idx={1}&n=8&mkt={2}' -f $bingUrl, 0, $Region
 
-    $request = Invoke-WebRequest -Uri $wallpaper
+    $request = Invoke-WebRequest -Uri $wallpaper -UseBasicParsing
     [xml]$content = $request.Content
 
     $image = $content.images.image[0]
