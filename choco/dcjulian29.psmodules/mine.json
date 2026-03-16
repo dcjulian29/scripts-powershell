@@ -8,7 +8,6 @@
   "ElasticSearch",
   "Elevation",
   "FileSystem",
-  "Kubernetes",
   "LinuxSubsystem",
   "Logging",
   "LogStash",
