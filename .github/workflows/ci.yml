@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup NuGet
-        uses: NuGet/setup-nuget@v2.0.2
+        uses: NuGet/setup-nuget@v3.0.0
 
       - name: Create individual module packages
         run: ./choco/build.ps1
